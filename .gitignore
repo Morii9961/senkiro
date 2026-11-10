@@ -1,0 +1,39 @@
+# Dependencies and build output (any depth, including labs/*)
+node_modules/
+dist/
+coverage/
+
+# Vite
+.vite/
+vite.config.*.timestamp-*
+
+# Playwright
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+# Secrets: never commit
+.env
+.env.*
+!.env.example
+
+# Raw downloaded data (not redistributable by default)
+**/data/raw/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editors
+.idea/
+**/.vscode/*
+!**/.vscode/extensions.json
