@@ -112,12 +112,45 @@ function fitView(target: Vector3, box: Box, aspect: number, fit: { x: number; y:
   return radius;
 }
 
+/** Screen rectangle of a label that is currently shown, for click picking. */
+interface LabelRect {
+  x0: number;
+  y0: number;
+  x1: number;
+  y1: number;
+  elementId: string | null;
+}
+
 export function Scene3D(props: Props) {
   const labelLayer = useRef<HTMLDivElement>(null);
+  const labelRects = useRef<LabelRect[]>([]);
+  const down = useRef<{ x: number; y: number } | null>(null);
   const onKeyDown = useKeyboard(props.handleRef);
 
+  // Labels never take pointer events — dragging or scrolling over one must still
+  // move the camera. A click that lands on a label selects its element instead.
+  const onClickCapture = (e: React.MouseEvent<HTMLDivElement>) => {
+    const start = down.current;
+    if (start && Math.hypot(e.clientX - start.x, e.clientY - start.y) > 6) return; // a drag
+    const box = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - box.left;
+    const y = e.clientY - box.top;
+    const hit = labelRects.current.find((r) => r.elementId !== null && x >= r.x0 && x <= r.x1 && y >= r.y0 && y <= r.y1);
+    if (hit?.elementId) {
+      e.stopPropagation();
+      props.onSelect(hit.elementId);
+    }
+  };
+
   return (
-    <div className="scene" data-testid="scene-3d">
+    <div
+      className="scene"
+      data-testid="scene-3d"
+      onPointerDownCapture={(e) => {
+        down.current = { x: e.clientX, y: e.clientY };
+      }}
+      onClickCapture={onClickCapture}
+    >
       <Canvas
         flat
         dpr={[1, 2]}
@@ -130,22 +163,13 @@ export function Scene3D(props: Props) {
         onKeyDown={onKeyDown}
         onPointerMissed={() => props.onSelect(null)}
       >
-        <SceneContent {...props} labelLayer={labelLayer} />
+        <SceneContent {...props} labelLayer={labelLayer} labelRects={labelRects} />
       </Canvas>
       <div className="labels" ref={labelLayer} aria-hidden={!props.showLabels} hidden={!props.showLabels}>
         {props.labels.map((l) => (
-          <button
-            key={l.key}
-            type="button"
-            tabIndex={-1}
-            className={`label label-${l.variant}`}
-            data-key={l.key}
-            data-tier={l.tier}
-            style={HIDDEN}
-            onClick={() => l.elementId && props.onSelect(l.elementId)}
-          >
+          <span key={l.key} className={`label label-${l.variant}`} data-key={l.key} data-tier={l.tier} style={HIDDEN}>
             {l.text}
-          </button>
+          </span>
         ))}
       </div>
     </div>
@@ -187,7 +211,8 @@ function SceneContent({
   onSelect,
   onStats,
   labelLayer,
-}: Props & { labelLayer: RefObject<HTMLDivElement | null> }) {
+  labelRects,
+}: Props & { labelLayer: RefObject<HTMLDivElement | null>; labelRects: RefObject<LabelRect[]> }) {
   const { camera, gl, invalidate, size } = useThree();
   const controlsRef = useRef<OrbitControls | null>(null);
   const opaqueRef = useRef<Mesh>(null);
@@ -345,9 +370,9 @@ function SceneContent({
         items.push({ el, label, x: (v.x * 0.5 + 0.5) * size.width, y: (-v.y * 0.5 + 0.5) * size.height, w: sz.w, h: sz.h });
       }
       items.sort((a, b) => b.label.priority - a.label.priority);
-      const placed: { x0: number; y0: number; x1: number; y1: number }[] = [];
+      const placed: LabelRect[] = [];
       for (const it of items) {
-        const r = { x0: it.x - it.w / 2 - 3, x1: it.x + it.w / 2 + 3, y0: it.y - it.h - 2, y1: it.y + 2 };
+        const r: LabelRect = { x0: it.x - it.w / 2 - 3, x1: it.x + it.w / 2 + 3, y0: it.y - it.h - 2, y1: it.y + 2, elementId: it.label.elementId };
         const clash = placed.some((q) => r.x0 < q.x1 && q.x0 < r.x1 && r.y0 < q.y1 && q.y0 < r.y1);
         if (clash) {
           it.el.style.display = 'none';
@@ -358,6 +383,9 @@ function SceneContent({
         it.el.style.display = '';
         it.el.style.transform = `translate(${Math.round(it.x - it.w / 2)}px, ${Math.round(it.y - it.h)}px)`;
       }
+      labelRects.current = placed;
+    } else {
+      labelRects.current = [];
     }
 
     // The renderer draws right after these callbacks, inside the same animation

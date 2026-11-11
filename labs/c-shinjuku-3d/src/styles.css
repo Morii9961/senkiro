@@ -417,7 +417,7 @@ fieldset.segmented > label.on {
   font-size: 11px;
   line-height: 1.35;
   white-space: nowrap;
-  pointer-events: auto;
+  pointer-events: none;
   will-change: transform;
   text-shadow:
     0 0 2px var(--paper),

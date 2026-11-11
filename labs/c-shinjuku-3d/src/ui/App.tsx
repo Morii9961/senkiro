@@ -82,6 +82,18 @@ export function App() {
     remember('theme', theme);
   }, [lang, theme]);
 
+  // Escape closes whatever floats on top: the help dialog first, then the inspector.
+  useEffect(() => {
+    if (!helpOpen && selectedId === null) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      if (helpOpen) setHelpOpen(false);
+      else setSelectedId(null);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [helpOpen, selectedId]);
+
   // --- levels, top floor first --------------------------------------------------------
   const levels = useMemo(() => [...model.levels].sort((a, b) => b.elevation - a.elevation), [model]);
 
