@@ -38,6 +38,23 @@ export function pointInFootprint(p: PlanPoint, footprint: PlanRect[]): boolean {
   return footprint.some((r) => pointInRect(p, r));
 }
 
+/** The point of a footprint nearest to p (p itself when it is inside). */
+export function nearestInFootprint(p: PlanPoint, footprint: PlanRect[]): { point: PlanPoint; distance: number } {
+  let best = { point: p, distance: Infinity };
+  for (const r of footprint) {
+    const q = { x: Math.min(r.x1, Math.max(r.x0, p.x)), z: Math.min(r.z1, Math.max(r.z0, p.z)) };
+    const d = Math.hypot(q.x - p.x, q.z - p.z);
+    if (d < best.distance) best = { point: q, distance: d };
+  }
+  return best;
+}
+
+/**
+ * A gate is drawn on the line between the two areas it separates, so it may sit
+ * in the narrow gap between their footprints — but no further away than this.
+ */
+export const GATE_LINE_TOLERANCE = 0.75;
+
 function rectsOverlap(a: PlanRect, b: PlanRect, eps = 1e-6): boolean {
   return a.x0 < b.x1 - eps && b.x0 < a.x1 - eps && a.z0 < b.z1 - eps && b.z0 < a.z1 - eps;
 }
@@ -86,7 +103,9 @@ export function validateModel(model: StationModel, sources: SourceRecord[]): Val
       if (!sourceIds.has(s)) push('provenance', e.id, `unknown source ${s}`);
     }
     if (!DATA_NATURES.has(e.provenance.dataNature)) push('provenance', e.id, 'bad dataNature');
-    if (!('validFrom' in e) || !('validTo' in e)) push('validity', e.id, 'validFrom/validTo missing');
+    // Hand-entered data: the compiler guarantees the keys, this guards the JSON round trip.
+    const raw = e as unknown as Record<string, unknown>;
+    if (raw.validFrom === undefined || raw.validTo === undefined) push('validity', e.id, 'validFrom/validTo missing');
   }
 
   for (const e of allElements(model)) {
@@ -192,6 +211,10 @@ export function validateModel(model: StationModel, sources: SourceRecord[]): Val
         zones.push(area.fareZone);
         if (levelById.get(area.levelId)?.ordinal !== levelById.get(g.levelId)?.ordinal) {
           push('gate-level', g.id, `${area.id} is on another level`);
+        }
+        // the drawing and the graph must agree on where the gate is: on the edge of each area it joins
+        if (nearestInFootprint(g.position, area.footprint).distance > GATE_LINE_TOLERANCE) {
+          push('gate-position', g.id, `drawn away from ${area.id}`);
         }
       } else {
         if (!blockIds.has(side.blockId)) push('reference', g.id, `unknown block ${side.blockId}`);

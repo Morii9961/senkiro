@@ -40,6 +40,13 @@ describe('data validation', () => {
     expect(rules(model)).toContain('fare-zone');
   });
 
+  it('rejects a gate drawn away from the areas it joins (drawing and graph would disagree)', () => {
+    const model = loadModel();
+    const gate = model.gates.find((g) => g.id === 'sk:gate:jr-east-gate')!;
+    gate.position = { x: gate.position.x + 6, z: gate.position.z };
+    expect(rules(model)).toContain('gate-position');
+  });
+
   it('rejects an entrance that opens straight into a paid area', () => {
     const model = loadModel();
     model.entrances[0]!.areaId = 'sk:area:jr-2f-south-concourse';
