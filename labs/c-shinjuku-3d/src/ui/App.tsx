@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DEMO_ROUTES } from '../domain/demo';
 import { bindOverlay, worstStatus, type OverlayResult, type RunningStatus } from '../domain/overlay';
 import { findRoute, type RouteMode, type RouteResult } from '../domain/route';
@@ -9,9 +9,13 @@ import { LANGS, makeT, type Lang, type StrKey } from './i18n';
 import { makeNamer } from './naming';
 import { HelpDialog, InfoPanel, Inspector, LayersPanel, OpsPanel, RoutePanel, type OpsMode, type RouteChoice } from './panels';
 import { Plan2D } from './Plan2D';
-import { Scene3D, type RenderStats, type SceneHandle } from './Scene3D';
+import type { RenderStats, SceneHandle } from './Scene3D';
 import { buildLabels, type ViewOptions } from './scene/build';
 import { PALETTES, type ThemeName } from './theme';
+
+// three.js is most of the bundle. It is loaded on demand so that the page
+// frame, the panels and the 2D plans do not wait for it.
+const Scene3D = lazy(() => import('./Scene3D').then((m) => ({ default: m.Scene3D })));
 
 type Tab = 'route' | 'layers' | 'ops' | 'info';
 type ViewMode = '3d' | '2d';
@@ -248,18 +252,26 @@ export function App() {
 
       <main className="stage" style={{ background: palette.background }}>
         {viewMode === '3d' ? (
-          <Scene3D
-            model={model}
-            graph={graph}
-            view={view}
-            labels={labels}
-            showLabels={showLabels}
-            ariaLabel={t('canvasLabel')}
-            handleRef={sceneRef}
-            onSelect={select}
-            onStats={setStats}
-            continuous={params.get('perf') === '1'}
-          />
+          <Suspense
+            fallback={
+              <p className="scene-loading" role="status" data-testid="scene-loading">
+                {t('sceneLoading')}
+              </p>
+            }
+          >
+            <Scene3D
+              model={model}
+              graph={graph}
+              view={view}
+              labels={labels}
+              showLabels={showLabels}
+              ariaLabel={t('canvasLabel')}
+              handleRef={sceneRef}
+              onSelect={select}
+              onStats={setStats}
+              continuous={params.get('perf') === '1'}
+            />
+          </Suspense>
         ) : (
           <Plan2D
             model={model}

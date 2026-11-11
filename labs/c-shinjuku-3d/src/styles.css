@@ -384,6 +384,16 @@ fieldset.segmented > label.on {
   touch-action: none;
 }
 
+.scene-loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 0.875rem;
+}
+
 .scene > div:first-child:focus-visible {
   outline: 2px solid var(--focus);
   outline-offset: -3px;

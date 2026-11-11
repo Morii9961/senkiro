@@ -280,6 +280,7 @@ const dict = {
     en: 'Lost? Press "Reset view".',
     zh: '找不到模型了？点「重置视角」。',
   },
+  sceneLoading: { ja: '3D ビューを読み込み中…', en: 'Loading the 3D view…', zh: '正在加载 3D 视图…' },
   canvasLabel: {
     ja: '新宿駅の 3D 模式モデル。矢印キーで回転、プラス・マイナスで拡大縮小、0 でリセット。',
     en: '3D schematic model of Shinjuku Station. Arrow keys rotate, plus and minus zoom, zero resets.',

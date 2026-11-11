@@ -8,6 +8,7 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false,
+    // three.js + React Three Fiber sit in their own lazily loaded chunk (see App.tsx).
     chunkSizeWarningLimit: 1200,
   },
   test: {
