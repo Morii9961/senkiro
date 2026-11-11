@@ -38,7 +38,7 @@ npm install && npm run build && npm test
 | `npm run preview` | 在 4173 端口预览生产构建 |
 | `npm test` | 单元测试 + 端到端测试 |
 | `npm run test:unit` | 只跑 Vitest（84 条，不需要浏览器） |
-| `npm run test:e2e` | 只跑 Playwright（14 条，对着生产构建跑） |
+| `npm run test:e2e` | 只跑 Playwright（15 条，对着生产构建跑） |
 | `npm run perf` | 只跑性能测量，结果写到 `test-results/perf.json` |
 | `npm run data:build` | 从 `data/manual/*.ts` 重新生成 `data/processed/*.json`、`data/sources.json` 和 SOURCES.md 里的元素核对表 |
 | `npm run data:check` | 同上但不写文件；生成物过期就失败 |
@@ -52,7 +52,7 @@ npm install && npm run build && npm test
 ## 怎么用
 
 - **3D 视图**：左键拖动旋转，右键或 Shift+拖动平移，滚轮缩放。触屏是单指旋转、双指捏合缩放、双指拖动平移。键盘：方向键旋转，`+` / `-` 缩放，`0` 重置。
-- **重置视角**：右上角按钮，镜头迷路时用；单层模式下会对准当前楼层。
+- **重置视角**：3D 画面角上的按钮（或按 `0`），镜头迷路时用；单层模式下会对准当前楼层。
 - **楼层**：画面上的楼层条切换「全部 / 2F / 1F / B1F / 京王 B1F / 京王 B2F」。「楼层」面板里可以把楼层拉开（剥离）、调外壳透明度、开关标签、垂直设施和未核实体块。
 - **2D / 3D**：顶栏切换。两个视图读同一份数据，路线高亮也一致。
 - **路线**：「路线」面板里有三条演示路线，也可以自己选起点和终点；可切换「只走电梯」模式。结果只给段数、楼层变化次数和过检票口次数。

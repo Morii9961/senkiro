@@ -486,6 +486,23 @@ fieldset.segmented > label.on {
   text-shadow: none;
 }
 
+.stage-notice {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 6;
+  width: max-content;
+  max-width: calc(100% - 24px);
+  margin: 0;
+  padding: 6px 12px;
+  border-left: 3px solid var(--warn);
+  background: var(--warn-bg);
+  color: var(--ink);
+  font-size: 12.5px;
+  box-shadow: var(--shadow);
+}
+
 .sample-banner {
   position: absolute;
   top: 10px;

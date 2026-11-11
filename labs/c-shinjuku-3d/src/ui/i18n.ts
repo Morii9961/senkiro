@@ -271,14 +271,19 @@ const dict = {
   },
   helpKeys: { ja: 'キーボード', en: 'Keyboard', zh: '键盘' },
   helpKeysBody: {
-    ja: '図にフォーカスして矢印キーで回転、+ / − で拡大縮小、0 で視点リセット。すべての操作は右上のボタンと左のパネルからも行えます。',
-    en: 'Focus the drawing, then arrow keys rotate, + / − zoom and 0 resets the view. Everything is also reachable through the buttons and the panel.',
-    zh: '让图获得焦点后，方向键旋转，+ / − 缩放，0 重置视角。所有操作也都可以通过右上按钮和左侧面板完成。',
+    ja: '図にフォーカスして矢印キーで回転、+ / − で拡大縮小、0 で視点リセット。すべての操作は図の上のボタンと操作パネルからも行えます。',
+    en: 'Focus the drawing, then arrow keys rotate, + / − zoom and 0 resets the view. Everything is also reachable through the on-screen buttons and the panel.',
+    zh: '让图获得焦点后，方向键旋转，+ / − 缩放，0 重置视角。所有操作也都可以通过图上的按钮和操作面板完成。',
   },
   helpLost: {
     ja: '迷ったら「視点をリセット」。',
     en: 'Lost? Press "Reset view".',
     zh: '找不到模型了？点「重置视角」。',
+  },
+  no3d: {
+    ja: 'このブラウザでは 3D 表示（WebGL 2）を開始できません。同じデータの 2D 平面図を表示しています。',
+    en: 'The 3D view (WebGL 2) cannot start in this browser. Showing the 2D plans of the same data instead.',
+    zh: '此浏览器无法启动 3D 视图（WebGL 2）。现在显示的是同一份数据的 2D 平面图。',
   },
   sceneLoading: { ja: '3D ビューを読み込み中…', en: 'Loading the 3D view…', zh: '正在加载 3D 视图…' },
   canvasLabel: {

@@ -177,6 +177,25 @@ test.describe('views', () => {
     expect(errors).toEqual([]);
   });
 
+  test('without WebGL the app falls back to the 2D plans and says so', async ({ page }) => {
+    await page.addInitScript(() => {
+      const original = HTMLCanvasElement.prototype.getContext;
+      HTMLCanvasElement.prototype.getContext = function (this: HTMLCanvasElement, type: string, ...rest: unknown[]) {
+        if (type === 'webgl' || type === 'webgl2' || type === 'experimental-webgl') return null;
+        return (original as (...a: unknown[]) => unknown).call(this, type, ...rest);
+      } as typeof HTMLCanvasElement.prototype.getContext;
+    });
+    const errors = await open(page);
+    await expect(page.getByTestId('no-3d')).toBeVisible();
+    await expect(page.locator('.plan-card')).toHaveCount(5);
+    await expect(page.getByTestId('view-3d')).toBeDisabled();
+    await expect(page.locator('canvas')).toHaveCount(0);
+    // routing does not depend on the 3D view
+    await page.getByTestId('demo-1').click();
+    await expect(page.getByTestId('route-legs').locator('li')).toHaveCount(4);
+    expect(errors).toEqual([]);
+  });
+
   test('the canvas takes keyboard focus and the arrow keys turn the model', async ({ page }) => {
     const errors = await open(page);
     await waitForScene(page);

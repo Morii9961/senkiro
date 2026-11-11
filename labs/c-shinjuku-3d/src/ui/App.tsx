@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Component, lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { DEMO_ROUTES } from '../domain/demo';
 import { bindOverlay, worstStatus, type OverlayResult, type RunningStatus } from '../domain/overlay';
 import { findRoute, type RouteMode, type RouteResult } from '../domain/route';
@@ -12,10 +12,25 @@ import { Plan2D } from './Plan2D';
 import type { RenderStats, SceneHandle } from './Scene3D';
 import { buildLabels, type ViewOptions } from './scene/build';
 import { PALETTES, type ThemeName } from './theme';
+import { webgl2Available } from './webgl';
 
 // three.js is most of the bundle. It is loaded on demand so that the page
 // frame, the panels and the 2D plans do not wait for it.
 const Scene3D = lazy(() => import('./Scene3D').then((m) => ({ default: m.Scene3D })));
+
+/** If the 3D view cannot start (chunk failed to load, WebGL context lost for good), fall back to 2D. */
+class SceneBoundary extends Component<{ onFail(): void; children: ReactNode }, { failed: boolean }> {
+  override state = { failed: false };
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  override componentDidCatch() {
+    this.props.onFail();
+  }
+  override render() {
+    return this.state.failed ? null : this.props.children;
+  }
+}
 
 type Tab = 'route' | 'layers' | 'ops' | 'info';
 type ViewMode = '3d' | '2d';
@@ -52,7 +67,9 @@ export function App() {
   const [theme, setTheme] = useState<ThemeName>(() =>
     stored('theme', ['light', 'dark'] as const, window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
   );
-  const [viewMode, setViewMode] = useState<ViewMode>(() => stored('view', ['3d', '2d'] as const, '3d'));
+  const [wantedView, setViewMode] = useState<ViewMode>(() => stored('view', ['3d', '2d'] as const, '3d'));
+  const [no3d, setNo3d] = useState(() => !webgl2Available());
+  const viewMode: ViewMode = no3d ? '2d' : wantedView;
   const [tab, setTab] = useState<Tab>('route');
   const [panelOpen, setPanelOpen] = useState(true);
   const [helpOpen, setHelpOpen] = useState(false);
@@ -221,6 +238,7 @@ export function App() {
                 type="button"
                 aria-pressed={viewMode === m}
                 className={viewMode === m ? 'on' : ''}
+                disabled={m === '3d' && no3d}
                 onClick={() => {
                   setViewMode(m);
                   remember('view', m);
@@ -252,6 +270,7 @@ export function App() {
 
       <main className="stage" style={{ background: palette.background }}>
         {viewMode === '3d' ? (
+          <SceneBoundary onFail={() => setNo3d(true)}>
           <Suspense
             fallback={
               <p className="scene-loading" role="status" data-testid="scene-loading">
@@ -272,6 +291,7 @@ export function App() {
               continuous={params.get('perf') === '1'}
             />
           </Suspense>
+          </SceneBoundary>
         ) : (
           <Plan2D
             model={model}
@@ -290,6 +310,12 @@ export function App() {
             onSelect={select}
             onFocusLevel={setActiveLevelId}
           />
+        )}
+
+        {no3d && (
+          <p className="stage-notice" role="status" data-testid="no-3d">
+            {t('no3d')}
+          </p>
         )}
 
         {synthetic && (
