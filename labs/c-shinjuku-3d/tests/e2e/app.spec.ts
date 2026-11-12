@@ -38,9 +38,24 @@ async function waitForScene(page: Page): Promise<Stats> {
   return (await stats(page))!;
 }
 
-/** Waits until a camera move has finished. */
+/**
+ * Waits until the view has come to rest: no camera move in progress and no new
+ * frame for a moment (the scene renders on demand, so frames stop when it is still).
+ */
 async function settled(page: Page): Promise<Stats> {
-  await expect.poll(async () => (await stats(page))?.animating ?? true, { timeout: 5_000 }).toBe(false);
+  let last = -1;
+  await expect
+    .poll(
+      async () => {
+        const s = await stats(page);
+        if (!s || s.animating) return false;
+        const still = s.frames === last;
+        last = s.frames;
+        return still;
+      },
+      { timeout: 8_000, intervals: [250] },
+    )
+    .toBe(true);
   return (await stats(page))!;
 }
 
@@ -266,6 +281,7 @@ test.describe('camera', () => {
     await page.mouse.wheel(0, -1000);
     await expect.poll(async () => (await stats(page))!.cameraDistance).toBeLessThan(home.cameraDistance * 0.9);
     await page.getByTestId('reset-view').click();
+    await expect.poll(async () => (await stats(page))!.cameraDistance).toBeGreaterThan(home.cameraDistance * 0.95);
     const back = await settled(page);
     expect(back.cameraDistance).toBeCloseTo(home.cameraDistance, 1);
     expect(back.cameraPolar).toBeCloseTo(home.cameraPolar, 3);
@@ -300,14 +316,14 @@ test.describe('camera', () => {
     await waitForScene(page);
     await page.getByRole('application').focus();
     for (let i = 0; i < 30; i++) await page.keyboard.press('ArrowDown');
-    await expect.poll(async () => (await stats(page))!.cameraPolar).toBeLessThanOrEqual(MAX_POLAR + 1e-3);
-    expect((await stats(page))!.cameraPolar).toBeGreaterThan(1.2);
+    await expect.poll(async () => (await stats(page))!.cameraPolar).toBeGreaterThan(1.2);
+    expect((await settled(page)).cameraPolar).toBeLessThanOrEqual(MAX_POLAR + 1e-3);
     for (let i = 0; i < 40; i++) await page.keyboard.press('ArrowUp');
     await expect.poll(async () => (await stats(page))!.cameraPolar).toBeLessThan(0.3);
-    expect((await stats(page))!.cameraPolar).toBeGreaterThanOrEqual(MIN_POLAR - 1e-3);
+    expect((await settled(page)).cameraPolar).toBeGreaterThanOrEqual(MIN_POLAR - 1e-3);
     for (let i = 0; i < 40; i++) await page.keyboard.press('+');
     await expect.poll(async () => (await stats(page))!.cameraDistance).toBeLessThan(MIN_DISTANCE + 1);
-    expect((await stats(page))!.cameraDistance).toBeGreaterThanOrEqual(MIN_DISTANCE - 1e-3);
+    expect((await settled(page)).cameraDistance).toBeGreaterThanOrEqual(MIN_DISTANCE - 1e-3);
 
     // dragging the model far away stops at the edge of the allowed region
     const c = await canvasCentre(page);
@@ -317,8 +333,7 @@ test.describe('camera', () => {
       await page.mouse.move(c.x + 250, c.y, { steps: 4 });
       await page.mouse.up({ button: 'middle' });
     }
-    await page.waitForTimeout(500);
-    const t = (await stats(page))!.cameraTarget;
+    const t = (await settled(page)).cameraTarget;
     expect(Math.hypot(t[0], t[2])).toBeLessThan(120);
   });
 
