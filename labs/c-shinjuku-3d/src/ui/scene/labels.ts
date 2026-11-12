@@ -5,7 +5,8 @@
 import { floorsOf } from '../../domain/floors';
 import type { StationModel } from '../../domain/types';
 import { routeElementIds, levelVisibility } from './arch/context';
-import { PLATFORM_TOP, SLAB_TOP, boundsOf, elevationY, levelY, type Vec3, type ViewOptions } from './prims';
+import { plateRects } from './arch/slabs';
+import { PLATFORM_TOP, SLAB_TOP, elevationY, levelY, type Vec3, type ViewOptions } from './prims';
 import { ROUTE_LIFT, type RoutePoint } from './routeLine';
 
 export interface LabelChip {
@@ -57,11 +58,15 @@ export function buildLabels(
   for (const floor of floorsOf(model)) {
     const levels = floor.levelIds.filter(visible);
     if (levels.length === 0) continue;
-    const rects = model.areas.filter((a) => levels.includes(a.levelId)).flatMap((a) => a.footprint);
-    if (rects.length === 0) continue;
-    const b = boundsOf(rects);
-    const y = Math.max(...levels.map(yOf));
-    labels.push({ key: `floor:${floor.ordinal}`, elementId: null, text: floor.label, position: [b.x0 - 1.6, y + 0.2, b.z1 + 1.6], tier: 0, priority: 90, variant: 'level' });
+    // at the corner of the floor's plates that is nearest to the viewer's left in the home view (north-west)
+    let best: { x: number; z: number; y: number } | null = null;
+    for (const levelId of levels) {
+      for (const r of plateRects(model, [levelId])) {
+        if (!best || r.z1 - r.x0 > best.z - best.x) best = { x: r.x0, z: r.z1, y: yOf(levelId) };
+      }
+    }
+    if (!best) continue;
+    labels.push({ key: `floor:${floor.ordinal}`, elementId: null, text: floor.label, position: [best.x, best.y + 0.2, best.z], tier: 0, priority: 90, variant: 'level' });
   }
 
   for (const area of model.areas) {

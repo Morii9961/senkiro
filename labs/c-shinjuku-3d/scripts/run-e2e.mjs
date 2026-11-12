@@ -1,5 +1,5 @@
 // Runs the Playwright suite. Before starting it makes sure that
-//   1. a production build exists (the tests run against `vite preview`), and
+//   1. the production build is fresh (the tests run against `vite preview`), and
 //   2. a Chromium-family browser can be launched: Playwright's own build if it
 //      is installed, otherwise an installed Edge / Chrome, otherwise it tries
 //      `playwright install chromium` once.
@@ -13,8 +13,10 @@ import { chromium } from '@playwright/test';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const run = (cmd, args, env = {}) => spawnSync(cmd, args, { cwd: root, stdio: 'inherit', shell: true, env: { ...process.env, ...env } }).status ?? 1;
 
-if (!existsSync(resolve(root, 'dist', 'index.html'))) {
-  console.log('[e2e] no build found — running `npm run build` first');
+// Always rebuild: a build left over from before the last change would make the tests check the old app.
+// SENKIRO_E2E_SKIP_BUILD=1 keeps an existing build (for repeated runs while writing tests).
+if (process.env.SENKIRO_E2E_SKIP_BUILD !== '1' || !existsSync(resolve(root, 'dist', 'index.html'))) {
+  console.log('[e2e] building first (`npm run build`)');
   const code = run('npm', ['run', 'build']);
   if (code !== 0) process.exit(code);
 }

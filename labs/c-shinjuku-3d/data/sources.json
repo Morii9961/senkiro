@@ -251,8 +251,25 @@
     "publisher": "新宿ターミナル協議会 (Shinjuku Station Committee; secretariat: 東京都・新宿区) — published on the Keio station page",
     "url": "https://www.keio.co.jp/train/station/ko01_shinjuku/images/station_terminal_map1.jpg",
     "attributionText": "Facts read from the 新宿ターミナルマップ (2020年7月現在).",
-    "notes": "Printed on the map: \"2020年7月現在\" — older than every other source here. Used only for the line letters in its legend (JY, JB, JC, JA, KO, S, E), the name 京王新線通路, and as an overview of which operator lies where. No route in the model rests on it.",
+    "notes": "Printed on the map: \"2020年7月現在\" — older than every other source here. Used for the line letters in its legend (JY, JB, JC, JA, KO, S, E), the name 京王新線通路, and — because no operator draws the space outside its own gates — for 西口地下広場 and the walkways that join the operators: JR 西改札 / Odakyu 西口地下改札 / 京王西口 / メトロ通路 around the plaza, 東口地下通路 into メトロ通路, 南口 with the JR and Odakyu south gates, and the crossing of 甲州街道. Those links are marked as resting on a 2020 sheet; the west exit has been under reconstruction since. The PDF of the same map (ko01_shinjuku_terminal_map.pdf) was read enlarged.",
     "sourceDate": "2020-07"
+  },
+  {
+    "retrievedAt": "2026-11-12",
+    "license": "All rights reserved — no open licence is stated. Site terms were not reviewed.",
+    "licenseUrl": null,
+    "commercialUse": "unknown",
+    "redistribution": "no",
+    "shareAlike": "unknown",
+    "accessedVia": null,
+    "usedInData": true,
+    "id": "src:keio-new-line-works-notice",
+    "title": "京王新線・都営新宿線 新宿駅エスカレーター新設工事に伴う 4・5番線ホーム階段一時幅員縮小のお知らせ (dousen_shinsen2.pdf)",
+    "publisher": "Keio Corporation (京王電鉄)",
+    "url": "https://www.keio.co.jp/assets/pdf/dousen_shinsen2.pdf",
+    "attributionText": "Facts read from a 京王電鉄 works notice for 京王新線新宿駅 (階段幅員縮小 2026年9月4日〜).",
+    "notes": "Linked from the Keio station page as \"現在のお客さま動線\". States that from 2026-09-04 one staircase of platforms 4·5 is narrowed by hoardings, and marks one escalator between the west B4F mezzanine and the platform as \"エスカレーター更新工事中 ※階段は通行可能\". Its 駅構内図 also names 大江戸線改札B on the B1F passage and prints \"大江戸線ホームへ\" on the B4F mezzanine. A temporary state: re-read before relying on it.",
+    "sourceDate": "2026-09"
   },
   {
     "retrievedAt": "2026-11-12",
@@ -268,7 +285,7 @@
     "publisher": "Bureau of Transportation, Tokyo Metropolitan Government (東京都交通局)",
     "url": "https://www.kotsu.metro.tokyo.jp/subway/stations/shinjuku.html",
     "attributionText": "Facts read from the 東京都交通局 新宿駅構内立体図.",
-    "notes": "Direct requests returned an anti-bot page; read through the Internet Archive snapshot of 2026-11-02. The drawing carries no date. It is small (1110 px wide): floors B1F / B3F / B4F / B5F / B7F, platform numbers 4–7 with directions, exits 3–8 and A1, and the lifts could be read; the inside of the Oedo Line gates could not be followed in detail. Page text: \"【新宿線】この駅は京王電鉄の管理駅です\", and the lift / escalator counts quoted in the data notes. Site notice: \"文書・画像等の無断使用・転載を禁止します\".",
+    "notes": "Direct requests returned an anti-bot page; read through the Internet Archive snapshot of 2026-11-02. The drawing carries no date. It is small (1110 px wide): floors B1F / B3F / B4F / B5F / B7F, platform numbers 4–7 with directions, exits 3–8 and A1, and the lifts could be read. Read again enlarged on 2026-11-12: the gate line west of 京王新線口 (Keio: 大江戸線改札B) with flights down to the mezzanine, the two escalator banks and the flights at the 光が丘 end of the Oedo platform, the track lines on both sides of that platform, and the のりかえ・出口案内 table (car positions of stairs, escalators and lifts). Landings and the exact split between B3F and B4F remain a reading of a small drawing. Page text: \"【新宿線】この駅は京王電鉄の管理駅です\", and the lift / escalator counts quoted in the data notes. Site notice: \"文書・画像等の無断使用・転載を禁止します\".",
     "sourceDate": null
   },
   {

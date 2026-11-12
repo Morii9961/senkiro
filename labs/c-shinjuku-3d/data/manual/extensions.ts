@@ -17,8 +17,8 @@ import type {
   RailLine, Station, UnverifiedBlock, VerticalFacility, VerticalKind,
 } from '../../src/domain/types';
 import {
-  A, AGG, AGG_ESC, BUSTA, D2, KEIO, LV, METRO, ODAKYU, PAID_KEIO, TOEI, X,
-  a, b, base, block, concourse, entity, entrance, gate, line, link, names, passageArea, prov, pt, rect, svc, unnamed, vertical,
+  A, AGG, AGG_ESC, BUSTA, D2, KEIO, LV, METRO, ODAKYU, PAID_KEIO, PUBLIC, TOEI, X,
+  a, base, concourse, entity, entrance, gate, line, link, names, passageArea, prov, pt, rect, svc, unnamed, vertical,
   type Common,
 } from './shinjuku';
 
@@ -28,6 +28,7 @@ const p2 = (ids: string[], note?: string): Provenance => prov(ids, note, D2);
 const S_OD = 'src:odakyu-shinjuku-map';
 const S_NL = 'src:keio-new-line-map';
 const S_NL_LAYER = 'src:keio-new-line-layer-map';
+const S_NL_NOTICE = 'src:keio-new-line-works-notice';
 const S_KEIO_LAYER = 'src:keio-layer-map';
 const S_TOEI = 'src:toei-shinjuku-map';
 const S_METRO = 'src:tokyo-metro-shinjuku-map';
@@ -239,7 +240,7 @@ const NL = {
   b4East: 'sk:area:keio-new-line-b4f-east',
   pf: 'sk:platform:keio-new-line-shinjuku-4-5',
 };
-const BLK_OEDO_B = 'sk:block:toei-oedo-gate-b-inside';
+const OEDO_GATE_B_INSIDE = 'sk:area:toei-oedo-b1f-gate-b-inside';
 
 const nlLevels: Level[] = [
   level(NL.lB1, KEIO, 'B1F', -1, -5.4, nlProv, nlCommon, 'Drawn level with Keio Line B1F, which the 京王モール passage joins it to. Relative heights are not from a source.'),
@@ -277,9 +278,9 @@ const nlGates: Gate[] = [
     { common: nlCommon, stepFree: true, notes: NL_GREEN }),
   gate('keio-shintoshin-gate', NL.lB1, names('新都心口', 'Shintoshin Gate', '新都心口'), pt(34.4, 55), [a(NL.conc), a(NL.paidWest)], nlToeiProv,
     { common: nlCommon, hours: '6:45〜22:00', notes: 'Staffed by intercom according to the Keio map.' }),
-  gate('toei-oedo-gate-b', NL.lB1, names('大江戸線改札B', 'Oedo Line Gate B', '大江户线检票口B'), pt(34.4, 46), [a(NL.conc), b(BLK_OEDO_B)], p2([S_NL_LAYER]),
+  gate('toei-oedo-gate-b', NL.lB1, names('大江戸線改札B', 'Oedo Line Gate B', '大江户线检票口B'), pt(34.4, 46), [a(NL.conc), a(OEDO_GATE_B_INSIDE)], p2([S_NL_LAYER, S_NL_NOTICE, S_TOEI]),
     { common: { stationId: 'sk:station:toei-oedo-shinjuku', asOf: '2026-03', geometryConfidence: 'unknown' },
-      notes: 'Printed on the Keio 階層図 beside the B1F passage. What lies inside it was NOT read, so no route goes through this gate.' }),
+      notes: 'Named on the Keio drawings beside the B1F passage, west of 京王新線口. The Toei 立体図 draws a gate line at the same place with flights leading down from it.' }),
 ];
 
 const nlEntrances: Entrance[] = [
@@ -300,7 +301,8 @@ const nlEntrances: Entrance[] = [
 const NL_LETTER = 'Lettered on the Keio 階層図';
 const nlVerticals: VerticalFacility[] = [
   ...pair('keio-new-line-KIND-shintoshin-gate-to-b4f', ['stairs', 'escalator'], { levelId: NL.lB1, areaId: NL.paidWest, at: pt(36.5, 57) }, { levelId: NL.lB4, areaId: NL.b4West, at: pt(36.5, 54.6) }, nlProv, nlCommon, `${NL_LETTER} (Ⓐ Ⓑ).`, true),
-  ...pair('keio-new-line-KIND-b4f-west-to-platform', ['stairs', 'escalator'], { levelId: NL.lB4, areaId: NL.b4West, at: pt(36.3, 53) }, { levelId: NL.lB5, areaId: NL.pf, at: pt(36.2, 50.4) }, nlProv, nlCommon, `${NL_LETTER} (Ⓕ).`),
+  ...pair('keio-new-line-KIND-b4f-west-to-platform', ['stairs', 'escalator'], { levelId: NL.lB4, areaId: NL.b4West, at: pt(36.3, 53) }, { levelId: NL.lB5, areaId: NL.pf, at: pt(36.2, 50.4) }, p2([S_NL_LAYER, S_NL, S_NL_NOTICE]), nlCommon,
+    `${NL_LETTER} (Ⓕ). A Keio works notice read on 2026-11-12 marks the escalator here "エスカレーター更新工事中 ※階段は通行可能"; the same notice says one staircase of platforms 4·5 is narrowed from 2026-09-04.`),
   ...pair('keio-new-line-KIND-new-line-gate-to-b4f', ['stairs', 'escalator'], { levelId: NL.lB1, areaId: NL.paidEast, at: pt(36.5, 39.3) }, { levelId: NL.lB4, areaId: NL.b4Mid, at: pt(36.5, 42) }, nlProv, nlCommon, `${NL_LETTER} (Ⓒ Ⓓ).`, true),
   ...pair('keio-new-line-KIND-b4f-central-to-platform', ['stairs', 'escalator'], { levelId: NL.lB4, areaId: NL.b4Mid, at: pt(36.3, 43.4) }, { levelId: NL.lB5, areaId: NL.pf, at: pt(36.2, 46) }, nlProv, nlCommon, `${NL_LETTER} (Ⓖ Ⓗ Ⓙ Ⓚ).`),
   ...pair('keio-new-line-KIND-b1f-east-to-b4f', ['stairs', 'escalator'], { levelId: NL.lB1, areaId: NL.paidEast, at: pt(36.5, 29.4) }, { levelId: NL.lB4, areaId: NL.b4East, at: pt(36.5, 27.2) }, nlProv, nlCommon, `${NL_LETTER} (Ⓔ).`, true),
@@ -312,19 +314,22 @@ const nlVerticals: VerticalFacility[] = [
 ];
 
 // ===========================================================================
-// Toei Oedo Line Shinjuku — 都営 新宿駅構内立体図 (deliberately coarse)
+// Toei Oedo Line Shinjuku — 都営 新宿駅構内立体図
 // ===========================================================================
 
 const ST_OEDO = 'sk:station:toei-oedo-shinjuku';
 const PAID_TOEI: FareZone = 'paid:toei';
 const oedoCommon: Common = { stationId: ST_OEDO, asOf: '2026-11', geometryConfidence: 'unknown' };
 const oedoProv = p2([S_TOEI]);
-const OEDO_COARSE = 'Read from the Toei 立体図 at the size it is published; the layout inside the Oedo Line gates is coarse.';
+const OEDO_SMALL = 'Read from the Toei 立体図, which is published small; positions are schematic.';
+const OEDO_TABLE = 'the のりかえ・出口案内 table under the Toei 立体図';
 
 const OE = {
+  lB1: 'sk:level:toei-oedo-shinjuku-b1f',
   lB3: 'sk:level:toei-oedo-shinjuku-b3f',
   lB4: 'sk:level:toei-oedo-shinjuku-b4f',
   lB7: 'sk:level:toei-oedo-shinjuku-b7f',
+  gateBIn: OEDO_GATE_B_INSIDE,
   link: 'sk:area:toei-oedo-b4f-transfer-passage',
   conc: 'sk:area:toei-oedo-b3f-concourse',
   out: 'sk:area:toei-oedo-b3f-unpaid',
@@ -332,49 +337,61 @@ const OE = {
 };
 
 const oedoLevels: Level[] = [
-  level(OE.lB3, TOEI, 'B3F', -3, -11, oedoProv, oedoCommon),
-  level(OE.lB4, TOEI, 'B4F', -4, -14, oedoProv, oedoCommon, 'Only the Oedo side of the transfer gate to the Shinjuku Line mezzanine.'),
+  level(OE.lB1, TOEI, 'B1F', -1, -5.4, p2([S_TOEI, S_NL_LAYER]), oedoCommon, 'Only the landing inside 大江戸線改札B, level with the new-line passage.'),
+  level(OE.lB3, TOEI, 'B3F', -3, -11, oedoProv, oedoCommon, 'The part of the Oedo concourse with the gate towards exit A1. See uc-oedo-floors about the floor label.'),
+  level(OE.lB4, TOEI, 'B4F', -4, -14, oedoProv, oedoCommon, 'The Oedo side of the mezzanine it shares with the Shinjuku Line station.'),
   level(OE.lB7, TOEI, 'B7F', -7, -21, oedoProv, oedoCommon),
 ];
 
 const oedoAreas: Area[] = [
-  passageArea(OE.link, OE.lB4, PAID_TOEI, names(null, 'Oedo Line side of the transfer gate (B4F)', '大江户线换乘口内侧（B4F）'),
-    [rect(39.8, 41.4, 36, 40)], pt(40.6, 38), p2([S_TOEI, S_NL_LAYER]), oedoCommon, `Unnamed. ${OEDO_COARSE}`),
-  concourse(OE.conc, OE.lB3, PAID_TOEI, names('大江戸線 改札内コンコース（B3F）', 'Oedo Line concourse (inside gates, B3F)', '大江户线站厅（付费区，B3F）'),
-    [rect(41.8, 48, 35.4, 39.4)], pt(45, 38.6), oedoProv, oedoCommon, `The label is descriptive. ${OEDO_COARSE}`),
-  concourse(OE.out, OE.lB3, 'unpaid', names('大江戸線 改札外（B3F・A1出口側）', 'Outside the Oedo Line gates (B3F, exit A1 side)', '大江户线检票口外（B3F，A1出口侧）'),
-    [rect(48.8, 52, 35.4, 39.4)], pt(50.4, 38.4), oedoProv, oedoCommon, `The label is descriptive. ${OEDO_COARSE}`),
+  concourse(OE.gateBIn, OE.lB1, PAID_TOEI, names('大江戸線改札B 改札内（B1F）', 'Inside Oedo Line Gate B (B1F)', '大江户线检票口B内侧（B1F）'),
+    [rect(34.8, 37.4, 44.8, 47.2)], pt(36, 46), p2([S_TOEI, S_NL_LAYER]), oedoCommon,
+    `The small paid landing drawn behind the gate line; the label is descriptive. ${OEDO_SMALL}`),
+  concourse(OE.link, OE.lB4, PAID_TOEI, names('大江戸線 コンコース（B4F・新宿線のりかえ側）', 'Oedo Line concourse (B4F, Shinjuku Line transfer side)', '大江户线站厅（B4F，新宿线换乘侧）'),
+    [rect(39.8, 46, 35.4, 39.4), rect(39.8, 42.2, 39.4, 47.2)], pt(42.5, 37.4), p2([S_TOEI, S_NL_LAYER]), oedoCommon,
+    `Unnamed on the drawing; the label is descriptive. The slab marked B4F beside the Shinjuku Line mezzanine, with an arm that the flights from 大江戸線改札B come down to. ${OEDO_SMALL}`),
+  concourse(OE.conc, OE.lB3, PAID_TOEI, names('大江戸線 改札内コンコース（A1出口側）', 'Oedo Line concourse (inside gates, exit A1 side)', '大江户线站厅（付费区，A1出口侧）'),
+    [rect(47, 58, 35.4, 39.4)], pt(52.5, 38.6), oedoProv, oedoCommon,
+    `The label is descriptive. The station office, the toilets and the lift to the platform are drawn on this part. ${OEDO_SMALL}`),
+  concourse(OE.out, OE.lB3, 'unpaid', names('大江戸線 改札外（A1出口側）', 'Outside the Oedo Line gates (exit A1 side)', '大江户线检票口外（A1出口侧）'),
+    [rect(58.8, 62, 35.4, 39.4)], pt(60.4, 37.4), oedoProv, oedoCommon, `The label is descriptive. Ticket machines, a lift and an escalator marked "地上へ" are drawn here. ${OEDO_SMALL}`),
   platform(OE.pf, OE.lB7, PAID_TOEI, names('6・7番線ホーム', 'Platforms 6–7', '6·7号站台'), rect(43, 62, 36.4, 38.4), pt(53, 37.4),
     [
-      { number: '6', services: [svc(L_OEDO, '六本木方面（代々木）', 'for Roppongi (next: Yoyogi)')], side: null },
-      { number: '7', services: [svc(L_OEDO, '光が丘方面（都庁前）', 'for Hikarigaoka (next: Tochomae)')], side: null },
+      { number: '6', services: [svc(L_OEDO, '六本木方面（代々木）', 'for Roppongi (next: Yoyogi)')], side: 'z-' },
+      { number: '7', services: [svc(L_OEDO, '光が丘方面（都庁前）', 'for Hikarigaoka (next: Tochomae)')], side: 'z+' },
     ], oedoProv, oedoCommon,
-    'Toei prints the two directions at the ends of the platform only; which edge each track runs along was not established, so no track is drawn.'),
+    'An island platform with a track line drawn along each side. The arrow "⑥ 六本木方面（代々木）" leaves the far track line at the south-east end and "⑦ 光が丘方面（都庁前）" leaves the near one at the north-west end; with the compass on the drawing that puts track 6 on the north-east side. Car numbers on the Toei table run from 8 (光が丘 end) to 1 (六本木 end).'),
 ];
 
 const oedoGates: Gate[] = [
   gate('toei-oedo-transfer-gate', NL.lB4, names('大江戸線連絡口', 'Oedo Line transfer gate', '大江户线换乘口'), pt(39.4, 38), [a(NL.b4Mid), a(OE.link)], p2([S_NL_LAYER, S_NL, S_TOEI]),
     { common: { stationId: null, asOf: '2026-03', geometryConfidence: 'unknown' }, transfer: true,
       notes: 'Keio prints "大江戸線連絡口(B4F)" and "都営大江戸線へ" on its B4F mezzanine. Not on either operator\'s wheelchair route as far as could be read.' }),
-  gate('toei-oedo-gate-a1-side', OE.lB3, names('大江戸線 改札（A1出口側）', 'Oedo Line gate (exit A1 side)', '大江户线检票口（A1出口侧）'), pt(48.4, 37.4), [a(OE.conc), a(OE.out)], oedoProv,
+  gate('toei-oedo-gate-a1-side', OE.lB3, names('大江戸線 改札（A1出口側）', 'Oedo Line gate (exit A1 side)', '大江户线检票口（A1出口侧）'), pt(58.4, 37.4), [a(OE.conc), a(OE.out)], oedoProv,
     { common: oedoCommon, stepFree: true,
       notes: 'The gate line is drawn on the Toei 立体図 without a name; the label is descriptive. Toei marks the lift route from exit A1 through it to the platform.' }),
 ];
 
 const oedoEntrances: Entrance[] = [
-  entrance('toei-oedo-exit-a1', OE.lB3, OE.out, names('出口 A1', 'Exit A1', 'A1出口'), pt(52, 37.4),
+  entrance('toei-oedo-exit-a1', OE.lB3, OE.out, names('出口 A1', 'Exit A1', 'A1出口'), pt(62, 37.4),
     '新宿マインズタワー・ホテルサンルートプラザ新宿・JR東京総合病院・バスタ新宿', 'Shinjuku Maynds Tower, Hotel Sunroute Plaza Shinjuku, JR Tokyo General Hospital, Busta Shinjuku', oedoProv,
     { common: oedoCommon, stepFree: true, notes: 'Toei marks A1 with EV and ES.' }),
 ];
 
 const oedoVerticals: VerticalFacility[] = [
-  ...pair('toei-oedo-KIND-transfer-passage-to-concourse', ['stairs'], { levelId: OE.lB4, areaId: OE.link, at: pt(40.9, 38) }, { levelId: OE.lB3, areaId: OE.conc, at: pt(42.8, 38) }, oedoProv, oedoCommon,
-    `Whether this short flight is stairs, an escalator or both was not legible; entered as stairs. ${OEDO_COARSE}`),
-  ...pair('toei-oedo-KIND-concourse-to-platform', ['escalator'], { levelId: OE.lB3, areaId: OE.conc, at: pt(46.6, 36.6) }, { levelId: OE.lB7, areaId: OE.pf, at: pt(51, 36.9) }, oedoProv, oedoCommon,
-    'Long escalators are drawn between the Oedo concourse and the platform; Toei lists 16 escalators for the Oedo Line here.', true),
+  ...pair('toei-oedo-KIND-gate-b-to-b4f', ['stairs', 'escalator'], { levelId: OE.lB1, areaId: OE.gateBIn, at: pt(36.9, 46) }, { levelId: OE.lB4, areaId: OE.link, at: pt(40.6, 46) }, oedoProv, oedoCommon,
+    'Stairs and escalators are drawn leading down from the gate line of 大江戸線改札B, with two intermediate landings that are left out here.', true),
+  ...pair('toei-oedo-KIND-transfer-passage-to-concourse', ['stairs'], { levelId: OE.lB4, areaId: OE.link, at: pt(45.2, 38.6) }, { levelId: OE.lB3, areaId: OE.conc, at: pt(47.8, 38.6) }, oedoProv, oedoCommon,
+    `Whether this short flight is stairs, an escalator or both was not legible; entered as stairs. ${OEDO_SMALL}`),
+  ...pair('toei-oedo-KIND-b4f-to-platform-north-end', ['stairs', 'escalator'], { levelId: OE.lB4, areaId: OE.link, at: pt(41, 37.4) }, { levelId: OE.lB7, areaId: OE.pf, at: pt(44.2, 37.4) }, oedoProv, oedoCommon,
+    `Drawn at the 光が丘 end of the platform, by way of an intermediate landing; ${OEDO_TABLE} shows an escalator and stairs at car 8.`, true),
+  ...pair('toei-oedo-KIND-b4f-to-platform', ['escalator'], { levelId: OE.lB4, areaId: OE.link, at: pt(44.6, 36.9) }, { levelId: OE.lB7, areaId: OE.pf, at: pt(49, 36.9) }, oedoProv, oedoCommon,
+    `One of the two long escalator banks drawn between the concourse and the platform; ${OEDO_TABLE} shows an escalator at car 3, with the Shinjuku Line as a transfer. Toei lists 16 escalators for the Oedo Line here.`, true),
+  ...pair('toei-oedo-KIND-concourse-to-platform', ['escalator'], { levelId: OE.lB3, areaId: OE.conc, at: pt(51, 37.9) }, { levelId: OE.lB7, areaId: OE.pf, at: pt(55.5, 37.9) }, oedoProv, oedoCommon,
+    `The other long escalator bank; ${OEDO_TABLE} shows an escalator and a lift at car 1, towards exit A1.`, true),
   vertical('toei-oedo-elevator-concourse-to-platform', 'elevator', names('エレベーター（改札内 B3F ⇔ ホーム B7F）', 'Elevator (concourse B3F ⇔ platform B7F)', '电梯（站厅 B3F ⇔ 站台 B7F）'),
-    [{ levelId: OE.lB3, areaId: OE.conc, at: pt(44.4, 37.6) }, { levelId: OE.lB7, areaId: OE.pf, at: pt(44.4, 37.6) }],
-    oedoProv, { common: oedoCommon, nonAdjacent: true, notes: 'Drawn as a shaft from B3F to B7F on the Toei 立体図. Toei lists two lifts for the Oedo Line; the other is at exit A1.' }),
+    [{ levelId: OE.lB3, areaId: OE.conc, at: pt(57, 37.4) }, { levelId: OE.lB7, areaId: OE.pf, at: pt(57, 37.4) }],
+    oedoProv, { common: oedoCommon, nonAdjacent: true, notes: 'Drawn as a shaft from the concourse beside the gate down to the platform. Toei lists two lifts for the Oedo Line; the other is at exit A1.' }),
 ];
 
 // ===========================================================================
@@ -502,25 +519,53 @@ const bustaVerticals: VerticalFacility[] = [
 // links between operators
 // ===========================================================================
 
+const TM_DATE = 'The sheet is dated 2020年7月現在, older than the operator drawings.';
+
+// --- 西口地下広場: a public space that belongs to no operator ---------------------------
+const pubCommon: Common = { stationId: null, asOf: '2020-07', geometryConfidence: 'unknown' };
+const pubProv = p2([S_TERMINAL]);
+const PUB = {
+  lB1: 'sk:level:public-west-plaza-b1f',
+  plaza: 'sk:area:west-exit-underground-plaza',
+};
+const publicLevels: Level[] = [
+  level(PUB.lB1, PUBLIC, 'B1F', -1, -4, pubProv, pubCommon, 'Drawn level with the JR and Odakyu B1F. Relative heights are not from a source.'),
+];
+const publicAreas: Area[] = [
+  concourse(PUB.plaza, PUB.lB1, 'unpaid', names('西口地下広場', 'West Exit underground plaza (West Concourse)', '西口地下广场'),
+    [rect(-24.4, -4.6, 25, 31), rect(-18.5, -15, 22, 25)], pt(-14, 28), pubProv, pubCommon,
+    `Named "西口地下広場 West Concourse" on the underground sheet of the 新宿ターミナルマップ, which draws it as one walkable space between JR 西改札, the Odakyu 西口地下改札, 京王西口 and the Marunouchi Line passage. ${TM_DATE} The west exit is being rebuilt.`),
+];
+const publicEntrances: Entrance[] = [
+  entrance('west-plaza-street-stairs', PUB.lB1, PUB.plaza, names('地上への階段（1〜18）', 'Stairs to street level (1–18)', '通往地面的楼梯（1～18）'), pt(-14, 31),
+    '西口バスのりば・タクシーのりば', 'West Exit bus stops and taxi stand', pubProv,
+    { common: pubCommon, notes: `One entry for the numbered stairs drawn around the plaza; the street-level sheet prints 西口バスのりば above them. ${TM_DATE}` }),
+];
+
 const crossCommon: Common = { stationId: null, asOf: '2026-08', geometryConfidence: 'unknown' };
 const inferred = (slug: string, from: string, to: string, srcs: string[], notes: string, stepFree: boolean | null = null): Passage =>
   link(slug, from, to, p2(srcs), stepFree, { inferred: true, common: crossCommon, notes: `INFERRED from signage text only: ${notes}` });
+/** A link between operators that the 新宿ターミナルマップ draws as walkable. */
+const drawn = (slug: string, from: string, to: string, srcs: string[], notes: string, stepFree: boolean | null = null): Passage =>
+  link(slug, from, to, p2([S_TERMINAL, ...srcs]), stepFree, { common: pubCommon, notes: `${notes} ${TM_DATE}` });
 
 const crossPassages: Passage[] = [
-  inferred('jr-south-exit-to-odakyu-south-exit', A.southUnpaid, OD.south2, [S_JR_2F, S_JR_B1, S_OD],
-    'JR prints "小田急線へ" outside 南改札 and Odakyu prints "JR線・バスタ新宿" outside 南口改札口; both open onto the same side of 甲州街道. JR also directs barrier-free transfers to the Odakyu and Keio lines to 南口.', true),
-  inferred('jr-west-exit-to-odakyu-west-underground', A.westUnpaid, OD.plazaB1, [S_JR_B1, S_OD],
-    'Odakyu prints "JR線" outside 西口地下改札口; JR draws the west end of its free passage there. The plaza between them is under reconstruction.'),
+  drawn('jr-west-exit-to-west-plaza', A.westUnpaid, PUB.plaza, [S_JR_B1],
+    'JR 西改札 opens onto 西口地下広場 on the underground sheet; JR prints "京王線へ／西口バスのりば／丸ノ内線" at the west end of its free passage.'),
+  drawn('odakyu-west-underground-to-west-plaza', OD.plazaB1, PUB.plaza, [S_OD],
+    'The space in front of the Odakyu 西口地下改札 runs into 西口地下広場; Odakyu prints "京王線", "丸ノ内線" and "JR線" there.'),
+  drawn('keio-west-gate-to-west-plaza', A.keioWestUnpaid, PUB.plaza, [S_KEIO_LAYER],
+    '京王西口 is drawn at the south edge of 西口地下広場; Keio prints "丸ノ内線 西口方面" and "JR線・小田急線へ 東口方面" outside it. The two are drawn at different heights here only because the Keio floor is.'),
+  drawn('marunouchi-concourse-to-west-plaza', ME.conc, PUB.plaza, [S_METRO],
+    'メトロ通路 with the Marunouchi Line gates runs along the north side of 西口地下広場 (exits A10–A13); Tokyo Metro prints "JR線・小田急線・京王線" at exit A12.'),
+  drawn('jr-east-basement-to-marunouchi-concourse', A.eastUnpaid, ME.conc, [S_JR_B1, S_METRO],
+    '東口地下通路 in front of JR 東改札 and 中央東改札 runs north into メトロ通路 at exit A9; JR prints "東京メトロ丸ノ内線へ" there and Tokyo Metro prints "JR線" at A9.'),
+  drawn('jr-south-exit-to-odakyu-south-exit', A.southUnpaid, OD.south2, [S_JR_2F, S_JR_B1, S_OD],
+    'The street-level sheet draws JR 南改札 and the Odakyu 南口改札 side by side on the pavement it calls 南口 (South Concourse). JR directs barrier-free transfers to the Odakyu and Keio lines to 南口.', true),
+  drawn('jr-south-exit-to-koshu-kaido-gate-crossing', A.southUnpaid, A.koshuUnpaid, [S_JR_2F],
+    'Outdoors: the pedestrian crossing over 甲州街道 drawn on the street-level sheet between 南口 and the side of 甲州街道改札 and バスタ新宿. A public road crossing, not a station passage.'),
   inferred('jr-central-west-outside-to-odakyu-west-underground', A.chuoWestUnpaid, OD.plazaB1, [S_JR_B1, S_OD],
-    'Odakyu prints a second "JR線" arrow beside its B1F gate line, on the side where JR draws 中央西改札. JR draws only a ticket office outside that gate.'),
-  inferred('odakyu-west-underground-to-keio-west-gate', OD.plazaB1, A.keioWestUnpaid, [S_OD, S_KEIO_LAYER],
-    'Odakyu prints "京王線" outside 西口地下改札口; Keio prints "JR線・小田急線へ 東口方面" outside 京王西口.'),
-  inferred('jr-east-basement-to-marunouchi-concourse', A.eastUnpaid, ME.conc, [S_JR_B1, S_METRO],
-    'JR prints "東京メトロ丸ノ内線へ" at its east basement passage; Tokyo Metro prints "JR線" at exit A9.'),
-  inferred('jr-west-exit-to-marunouchi-concourse', A.westUnpaid, ME.conc, [S_JR_B1, S_METRO],
-    'JR prints "丸ノ内線" at the west end of its free passage; Tokyo Metro prints "JR線・小田急線・京王線" at exit A12.'),
-  inferred('odakyu-west-underground-to-marunouchi-concourse', OD.plazaB1, ME.conc, [S_OD, S_METRO],
-    'Odakyu prints "丸ノ内線" outside 西口地下改札口; Tokyo Metro prints "小田急線" at exit A12.'),
+    'Odakyu prints a second "JR線" arrow beside its B1F gate line, on the side where JR draws 中央西改札. JR draws only a ticket office outside that gate, and the 新宿ターミナルマップ does not settle it.'),
   link('keio-mall-to-new-line-concourse', A.keioMall, NL.conc, p2([S_NL_LAYER, S_KEIO_LAYER]), true,
     { common: nlCommon, notes: `京王モール runs into the new-line passage on the Keio 階層図. ${NL_GREEN}` }),
   link('keio-lumine-gate-outside-to-new-line-concourse', A.keioLumineUnpaid, NL.conc, p2([S_NL_LAYER, S_KEIO_LAYER]), null,
@@ -552,21 +597,19 @@ const stations: Station[] = [
   station(ST_METRO, METRO, names('東京メトロ丸ノ内線 新宿駅', 'Tokyo Metro Marunouchi Line Shinjuku Station', '东京地铁丸之内线新宿站'), p2([S_METRO]), [L_MARU]),
 ];
 
-const unverifiedBlocks: UnverifiedBlock[] = [
-  block(BLK_OEDO_B, TOEI, names('大江戸線改札B の内側', 'Inside Oedo Line Gate B', '大江户线检票口B内侧'), rect(34.8, 36.4, 45, 47), -5.4, 1.2,
-    'NOT VERIFIED. The gate is printed on the Keio 階層図; the way from it down to the Oedo Line was not read.'),
-];
+// Every gate now leads somewhere that was read from a drawing; nothing is left as an abstract block.
+const unverifiedBlocks: UnverifiedBlock[] = [];
 
 export const extensions = {
   railLines,
   stations,
-  levels: [...odLevels, ...nlLevels, ...oedoLevels, ...metroLevels, ...bustaLevels],
-  areas: [...odAreas, ...nlAreas, ...oedoAreas, ...metroAreas, ...bustaAreas],
+  levels: [...odLevels, ...nlLevels, ...oedoLevels, ...metroLevels, ...bustaLevels, ...publicLevels],
+  areas: [...odAreas, ...nlAreas, ...oedoAreas, ...metroAreas, ...bustaAreas, ...publicAreas],
   passages: [...odPassages, ...crossPassages],
   gates: [...odGates, ...nlGates, ...oedoGates, ...metroGates],
-  entrances: [...odEntrances, ...nlEntrances, ...oedoEntrances, ...metroEntrances, ...bustaEntrances],
+  entrances: [...odEntrances, ...nlEntrances, ...oedoEntrances, ...metroEntrances, ...bustaEntrances, ...publicEntrances],
   verticals: [...odVerticals, ...nlVerticals, ...oedoVerticals, ...metroVerticals, ...bustaVerticals],
   unverifiedBlocks,
 };
 
-export const EXT_IDS = { OD, NL, OE, ME, BU, BLK_OEDO_B } as const;
+export const EXT_IDS = { OD, NL, OE, ME, BU, PUB } as const;

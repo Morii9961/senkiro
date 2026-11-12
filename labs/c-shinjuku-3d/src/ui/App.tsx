@@ -7,6 +7,7 @@ import { createExampleOverlayProvider } from '../providers/exampleOverlayProvide
 import { createOdptOverlayProvider } from '../providers/odptOverlayProvider';
 import { loadStationData } from '../providers/stationDataProvider';
 import { Icon } from './atoms';
+import { FloorPicker } from './FloorPicker';
 import { LANGS, makeT, type Lang, type StrKey } from './i18n';
 import { makeNamer, pickName } from './naming';
 import { FacilityCard, hasCard } from './panels/FacilityCard';
@@ -80,6 +81,11 @@ export function App() {
   const viewMode: ViewMode = no3d ? '2d' : wantedView;
   const [tab, setTab] = useState<Tab>('route');
   const [helpOpen, setHelpOpen] = useState(false);
+  const [panelOpen, setPanelOpenState] = useState(() => stored('panel', ['open', 'closed'] as const, 'open') === 'open');
+  const setPanelOpen = (open: boolean) => {
+    setPanelOpenState(open);
+    remember('panel', open ? 'open' : 'closed');
+  };
 
   const [floorMode, setFloorMode] = useState<FloorMode>('all');
   const [explode, setExplode] = useState(0.3);
@@ -265,6 +271,17 @@ export function App() {
 
   const is3d = viewMode === '3d';
   const floorActive = (ordinal: number) => (is3d ? focusLeg === null && floorMode === ordinal : planOrdinal === ordinal);
+  const routeOrdinals = useMemo(() => new Set(route ? floorSequence(route.levelSequence, ordinals) : []), [route, ordinals]);
+  /** What the folded floor button of the 3D view says. */
+  const floorCurrent = useMemo(() => {
+    const label = (o: number) => floors.find((f) => f.ordinal === o)?.label ?? '';
+    if (route && focusLeg !== null && focusOrdinals) {
+      return { mode: 'step', text: [...focusOrdinals].sort((a, b) => b - a).map(label).join(' · ') };
+    }
+    if (floorMode === 'route' && route) return { mode: 'route', text: t('routeLevels') };
+    if (typeof floorMode === 'number') return { mode: 'floor', text: label(floorMode) };
+    return { mode: 'all', text: t('allLevels') };
+  }, [route, focusLeg, focusOrdinals, floorMode, floors, t]);
   const fareZones = useMemo(() => {
     const zones = [...new Set(model.areas.filter((a) => a.kind !== 'platform').map((a) => a.fareZone))];
     return zones.map((zone) => {
@@ -283,8 +300,8 @@ export function App() {
   const leg = route && focusLeg !== null ? route.legs[focusLeg] : undefined;
 
   return (
-    <div className="app">
-      <a className="skip" href="#panel">
+    <div className={`app ${panelOpen ? '' : 'panel-closed'}`}>
+      <a className="skip" href="#panel" onClick={() => setPanelOpen(true)}>
         {t('skipToPanel')}
       </a>
 
@@ -331,6 +348,22 @@ export function App() {
           </button>
           <button type="button" className="icon-btn" onClick={() => setHelpOpen(true)} aria-label={t('help')} title={t('help')} data-testid="help">
             ?
+          </button>
+          <button
+            type="button"
+            className={`icon-btn panel-toggle ${panelOpen ? 'on' : ''}`}
+            onClick={() => setPanelOpen(!panelOpen)}
+            aria-expanded={panelOpen}
+            aria-controls="panel"
+            aria-label={panelOpen ? t('panelHide') : t('panelShow')}
+            title={panelOpen ? t('panelHide') : t('panelShow')}
+            data-testid="panel-toggle"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true">
+              <rect x="3" y="4" width="18" height="16" rx="1.5" />
+              <path d="M15 4v16" />
+              {panelOpen && <path d="M15 4h4.5a1.5 1.5 0 011.5 1.5v13a1.5 1.5 0 01-1.5 1.5H15z" fill="currentColor" stroke="none" />}
+            </svg>
           </button>
         </div>
       </header>
@@ -394,26 +427,20 @@ export function App() {
           </div>
         )}
 
-        <nav className="hud floor-rail" aria-label={t('levels')}>
-          {is3d && (
-            <button type="button" aria-pressed={focusLeg === null && floorMode === 'all'} onClick={() => pickFloor('all')} data-testid="floor-all">
-              {t('allLevels')}
-            </button>
-          )}
-          {is3d && route && (
-            <button type="button" aria-pressed={focusLeg === null && floorMode === 'route'} onClick={() => pickFloor('route')} data-testid="floor-route">
-              {t('routeLevels')}
-            </button>
-          )}
-          {floors.map((f) => {
-            const onRoute = route ? floorSequence(route.levelSequence, ordinals).includes(f.ordinal) : false;
-            return (
-              <button key={f.ordinal} type="button" aria-pressed={floorActive(f.ordinal)} className={onRoute ? 'has-route' : ''} onClick={() => pickFloor(f.ordinal)} data-testid={`floor-${f.label}`}>
-                {f.label}
-              </button>
-            );
-          })}
-        </nav>
+        <FloorPicker
+          t={t}
+          collapsible={is3d}
+          showAll={is3d}
+          showRoute={is3d && route !== null}
+          allActive={focusLeg === null && floorMode === 'all'}
+          routeActive={focusLeg === null && floorMode === 'route'}
+          current={floorCurrent.text}
+          currentMode={floorCurrent.mode}
+          floors={floors.map((f) => ({ ordinal: f.ordinal, label: f.label, onRoute: routeOrdinals.has(f.ordinal), active: floorActive(f.ordinal) }))}
+          onAll={() => pickFloor('all')}
+          onRoute={() => pickFloor('route')}
+          onFloor={pickFloor}
+        />
 
         <div className="hud hud-view" role="group" aria-label={t('viewControls')}>
           <button type="button" onClick={() => sceneRef.current?.zoom(0.8)} aria-label={t('zoomIn')} title={t('zoomIn')}>
@@ -495,16 +522,18 @@ export function App() {
             onFrom={(id) => {
               setFromId(id);
               setTab('route');
+              setPanelOpen(true);
             }}
             onTo={(id) => {
               setToId(id);
               setTab('route');
+              setPanelOpen(true);
             }}
           />
         )}
       </main>
 
-      <aside id="panel" className="panel" aria-label={t('skipToPanel')}>
+      <aside id="panel" className="panel" aria-label={t('skipToPanel')} hidden={!panelOpen}>
         <div className="tabs" role="tablist">
           {tabs.map((x) => (
             <button key={x.id} type="button" role="tab" id={`tab-${x.id}`} aria-selected={tab === x.id} aria-controls="tabpanel" className={tab === x.id ? 'on' : ''} onClick={() => setTab(x.id)} data-testid={`tab-${x.id}`}>

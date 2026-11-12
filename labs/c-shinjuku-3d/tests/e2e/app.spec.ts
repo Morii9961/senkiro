@@ -59,6 +59,18 @@ async function settled(page: Page): Promise<Stats> {
   return (await stats(page))!;
 }
 
+/** In the 3D view the floor list is folded away until the pointer is over its button. */
+async function openFloors(page: Page) {
+  const toggle = page.getByTestId('floor-toggle');
+  if ((await toggle.count()) > 0) await toggle.hover();
+  await expect(page.getByTestId('floor-list')).toBeVisible();
+}
+
+async function pickFloor(page: Page, testId: string) {
+  await openFloors(page);
+  await page.getByTestId(testId).click();
+}
+
 async function canvasCentre(page: Page) {
   const box = (await page.locator('[data-testid="scene-3d"] canvas').boundingBox())!;
   return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
@@ -126,7 +138,8 @@ test.describe('routes', () => {
     // track numbers repeat between operators, so every platform is listed with its lines
     const yamanote = to.locator('option', { hasText: '山手線' });
     expect(await yamanote.count()).toBeGreaterThanOrEqual(2);
-    await expect(to.locator('optgroup').first().locator('option', { hasText: '京王線' })).toHaveCount(1);
+    // the Keio Line has two platforms (tracks 1·2 and track 3); the Keio New Line is a different line
+    await expect(to.locator('optgroup').first().locator('option', { hasText: /京王線/ })).toHaveCount(2);
     await page.getByTestId('route-from').selectOption('sk:gate:jr-south-gate');
     await to.selectOption('sk:platform:jr-east-shinjuku-15-16');
     await expect(page.getByTestId('route-legs').locator('li').first()).toBeVisible();
@@ -159,7 +172,7 @@ test.describe('routes', () => {
     // Escape leaves the step; the whole route is shown again
     await page.keyboard.press('Escape');
     await expect(page.getByTestId('route-legs').locator('li.on')).toHaveCount(0);
-    await expect(page.getByTestId('floor-all')).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByTestId('floor-toggle')).toHaveAttribute('data-mode', 'all');
     expect(errors).toEqual([]);
   });
 
@@ -190,25 +203,75 @@ test.describe('floors', () => {
     await open(page);
     await waitForScene(page);
     const rail = page.getByRole('navigation', { name: '階' });
-    const labels = await rail.locator('button').allInnerTexts();
-    expect(labels.slice(1).every((l) => /^B?\d+F$/.test(l.trim()))).toBe(true);
+    await openFloors(page);
+    const labels = await rail.locator('button[data-floor]').allInnerTexts();
+    expect(labels.length).toBeGreaterThanOrEqual(8);
+    expect(labels.every((l) => /^B?\d+F$/.test(l.trim()))).toBe(true);
     expect(new Set(labels).size).toBe(labels.length);
     expect(labels.join(' ')).not.toMatch(/京王|JR|小田急/);
     for (const label of await page.locator('.label-level').allInnerTexts()) expect(label).toMatch(/^B?\d+F$/);
   });
 
+  test('in 3D the floor list is folded into one button and opens on hover or focus', async ({ page }) => {
+    await open(page);
+    await waitForScene(page);
+    const toggle = page.getByTestId('floor-toggle');
+    await expect(toggle).toHaveText(/全階/);
+    await expect(page.getByTestId('floor-list')).toHaveCount(0);
+
+    await toggle.hover();
+    await expect(page.getByTestId('floor-list')).toBeVisible();
+    await page.getByTestId('floor-B2F').click();
+    await expect(toggle).toHaveText(/B2F/);
+    await expect(toggle).toHaveAttribute('data-mode', 'floor');
+    // moving away folds it again; the button keeps saying which floor is shown
+    const c = await canvasCentre(page);
+    await page.mouse.move(c.x, c.y);
+    await expect(page.getByTestId('floor-list')).toHaveCount(0);
+    await expect(toggle).toHaveText(/B2F/);
+
+    // keyboard: focus opens it, Escape folds it
+    await toggle.focus();
+    await expect(page.getByTestId('floor-list')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByTestId('floor-list')).toHaveCount(0);
+  });
+
+  test('the side panel can be folded away to give the drawing the whole width', async ({ page }) => {
+    const errors = await open(page);
+    await waitForScene(page);
+    const canvas = page.locator('[data-testid="scene-3d"] canvas');
+    const before = (await canvas.boundingBox())!.width;
+    await page.getByTestId('demo-1').click();
+    await page.getByTestId('panel-toggle').click();
+    await expect(page.locator('#panel')).toBeHidden();
+    await expect(page.getByTestId('panel-toggle')).toHaveAttribute('aria-expanded', 'false');
+    await expect.poll(async () => (await canvas.boundingBox())!.width).toBeGreaterThan(before + 300);
+    // the route stays, and can still be walked through with the arrows under the drawing
+    await expect(page.getByTestId('step-nav')).toBeVisible();
+    await page.getByTestId('step-next').click();
+    await expect(page.getByTestId('step-text')).toBeVisible();
+    await settled(page);
+
+    await page.getByTestId('panel-toggle').click();
+    await expect(page.locator('#panel')).toBeVisible();
+    await expect(page.getByTestId('route-legs').locator('li')).toHaveCount(4);
+    await expect.poll(async () => (await canvas.boundingBox())!.width).toBeLessThan(before + 2);
+    expect(errors).toEqual([]);
+  });
+
   test('one floor, all floors, and the floors of the route', async ({ page }) => {
     await open(page);
     const all = await waitForScene(page);
-    await page.getByTestId('floor-B1F').click();
+    await pickFloor(page, 'floor-B1F');
     await expect(page.getByTestId('floor-B1F')).toHaveAttribute('aria-pressed', 'true');
     const one = await settled(page);
     expect(one.cameraDistance).toBeLessThan(all.cameraDistance);
     await expect(page.getByTestId('floor-route')).toHaveCount(0);
 
     await page.getByTestId('demo-1').click();
-    await expect(page.getByTestId('floor-all')).toHaveAttribute('aria-pressed', 'true');
-    await page.getByTestId('floor-route').click();
+    await expect(page.getByTestId('floor-toggle')).toHaveAttribute('data-mode', 'all');
+    await pickFloor(page, 'floor-route');
     await expect(page.getByTestId('floor-route')).toHaveAttribute('aria-pressed', 'true');
     // the floors the route passes carry a marker
     await expect(page.getByTestId('floor-1F')).toHaveClass(/has-route/);
@@ -240,7 +303,7 @@ test.describe('2D plan', () => {
 
     await page.getByTestId('view-3d').click();
     await waitForScene(page);
-    await expect(page.getByTestId('floor-1F')).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByTestId('floor-toggle')).toHaveText(/1F/);
     await expect(page.getByTestId('route-legs').locator('li')).toHaveCount(4);
     expect(errors).toEqual([]);
   });
@@ -409,9 +472,7 @@ test.describe('facility card', () => {
     await expect(card).toContainText('結ぶ階');
 
     // a click on a hall closes the card and opens none
-    const svg = plan.locator('svg');
-    const box = (await svg.boundingBox())!;
-    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+    await plan.locator('g[data-area="sk:area:jr-b1f-north-concourse"] rect').first().click({ position: { x: 5, y: 5 }, force: true });
     await expect(card).toHaveCount(0);
   });
 });
@@ -552,10 +613,10 @@ test.describe('performance', () => {
       // switching views repeatedly must not leave geometries behind
       const geometriesBefore = s.geometries;
       for (let i = 0; i < 6; i++) {
-        await page.getByTestId(i % 2 ? 'floor-all' : 'floor-B1F').click();
+        await pickFloor(page, i % 2 ? 'floor-all' : 'floor-B1F');
         await page.waitForTimeout(150);
       }
-      await page.getByTestId('floor-all').click();
+      await pickFloor(page, 'floor-all');
       await page.waitForTimeout(400);
       const geometriesAfter = (await stats(page))!.geometries;
 

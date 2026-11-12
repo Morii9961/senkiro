@@ -18,10 +18,12 @@ import {
   WALL_HEIGHT,
   boundsOf,
   box,
+  linkEnds,
   openAt,
   outlineEdges,
   rectsTouch,
   subtractRects,
+  unionRects,
   type Edge,
   type Vec3,
 } from '../prims';
@@ -40,6 +42,25 @@ export function areasTouch(a: Area, b: Area): boolean {
   return a.footprint.some((ra) => b.footprint.some((rb) => rectsTouch(ra, rb)));
 }
 
+/** How far a floor plate reaches beyond the areas standing on it. */
+export const PLATE_PAD = 1.4;
+
+/**
+ * The floor plate of one drawn height: the areas of every level at that
+ * elevation, each grown by a margin, joined into one outline. It follows the
+ * shape of what is built there instead of boxing it in — an L-shaped floor
+ * gets an L-shaped plate, not a rectangle that is mostly empty.
+ */
+export function plateRects(model: Ctx['model'], levelIds: readonly string[], pad = PLATE_PAD): PlanRect[] {
+  const ids = new Set(levelIds);
+  return unionRects(
+    model.areas
+      .filter((a) => ids.has(a.levelId))
+      .flatMap((a) => a.footprint)
+      .map((r) => ({ x0: r.x0 - pad, x1: r.x1 + pad, z0: r.z0 - pad, z1: r.z1 + pad })),
+  );
+}
+
 /**
  * Faint plate under each floor plane: it makes the floors read as planes when
  * they are pulled apart. Levels of different operators drawn at the same
@@ -48,29 +69,38 @@ export function areasTouch(a: Area, b: Area): boolean {
 export function buildShells(ctx: Ctx): void {
   const { p, opts } = ctx;
   if (opts.shellOpacity <= 0.004) return;
-  const planes = new Map<number, { vis: 'full' | 'ghost'; rects: PlanRect[]; y: number }>();
+  const planes = new Map<number, { vis: 'full' | 'ghost'; levelIds: string[]; y: number }>();
   for (const level of ctx.model.levels) {
     const v = ctx.vis(level.id);
     if (v === 'hidden') continue;
     if (!ctx.model.areas.some((a) => a.levelId === level.id)) continue;
-    const plane = planes.get(level.elevation) ?? { vis: 'ghost' as const, rects: [], y: ctx.yOf(level.id) };
+    const plane = planes.get(level.elevation) ?? { vis: 'ghost' as const, levelIds: [], y: ctx.yOf(level.id) };
     if (v === 'full') plane.vis = 'full';
-    plane.rects.push(levelBounds(ctx, level.id));
+    plane.levelIds.push(level.id);
     planes.set(level.elevation, plane);
   }
-  for (const { vis, rects, y } of planes.values()) {
-    const b = boundsOf(rects);
-    ctx.prims.push({
-      elementId: null,
-      role: 'shell',
-      material: 'glass',
-      ...box(b.x0, b.x1, y - 0.3, y - 0.2, b.z0, b.z1),
-      color: p.shell,
-      alpha: vis === 'ghost' ? Math.min(opts.shellOpacity * 0.2, 0.04) : opts.shellOpacity * 0.5,
-      outline: true,
-      outlineColor: mix(p.shell, p.background, vis === 'ghost' ? 0.75 : 0.35),
-      pickable: false,
-    });
+  for (const { vis, levelIds, y } of planes.values()) {
+    const rects = plateRects(ctx.model, levelIds);
+    const outlineColor = mix(p.shell, p.background, vis === 'ghost' ? 0.75 : 0.35);
+    for (const r of rects) {
+      ctx.prims.push({
+        elementId: null,
+        role: 'shell',
+        material: 'glass',
+        ...box(r.x0, r.x1, y - 0.3, y - 0.2, r.z0, r.z1),
+        color: p.shell,
+        alpha: vis === 'ghost' ? Math.min(opts.shellOpacity * 0.2, 0.04) : opts.shellOpacity * 0.5,
+        outline: false,
+        outlineColor,
+        pickable: false,
+      });
+    }
+    // The outline of the whole plate, not of its pieces: a beam without width
+    // or thickness is nothing but its outline, which is drawn as a line.
+    for (const e of outlineEdges(rects)) {
+      const [a, b]: [Vec3, Vec3] = e.axis === 'x' ? [[e.lo, y - 0.2, e.at], [e.hi, y - 0.2, e.at]] : [[e.at, y - 0.2, e.lo], [e.at, y - 0.2, e.hi]];
+      ctx.prims.push({ elementId: null, role: 'shell-edge', material: 'glass', a, b, width: 0, thickness: 0, color: p.shell, alpha: 0, outline: true, outlineColor, pickable: false });
+    }
   }
 }
 
@@ -165,8 +195,9 @@ export function buildLinks(ctx: Ctx): void {
     const vis = vf === 'full' || vt === 'full' ? 'full' : vf;
     const s = ctx.style(link.id, p.link, vis);
     if (!s) continue;
-    const a: Vec3 = [from.anchor.x, ctx.topOf(from.id) + 0.03, from.anchor.z];
-    const b: Vec3 = [to.anchor.x, ctx.topOf(to.id) + 0.03, to.anchor.z];
+    const [pa, pb] = linkEnds(from, to);
+    const a: Vec3 = [pa.x, ctx.topOf(from.id) + 0.03, pa.z];
+    const b: Vec3 = [pb.x, ctx.topOf(to.id) + 0.03, pb.z];
     for (const [da, db] of dashes(a, b, link.connection === 'inferred' ? 1.1 : 0)) {
       ctx.add(link.id, 'link', 'accent', { a: da, b: db, width: 0.26, thickness: 0.05 }, s, { pickable: false });
     }

@@ -50,8 +50,11 @@ describe('provenance and honesty rules', () => {
     }
   });
 
-  it('what could not be read stays a block marked unverified, with synthetic provenance', () => {
-    expect(model.unverifiedBlocks.map((b) => b.id)).toEqual(['sk:block:toei-oedo-gate-b-inside']);
+  it('nothing is left as an abstract block; whatever would be one must be marked unverified and synthetic', () => {
+    // every operator's part was read from a drawing, the inside of 大江戸線改札B last
+    expect(model.unverifiedBlocks.map((b) => b.id)).toEqual([]);
+    // what is still open is written down instead
+    expect(model.unconfirmedConnections.length).toBeGreaterThan(5);
     for (const b of model.unverifiedBlocks) {
       expect(b.existence).toBe('unverified');
       expect(b.geometryConfidence).toBe('unknown');

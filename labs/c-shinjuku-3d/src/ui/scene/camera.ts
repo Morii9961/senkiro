@@ -11,7 +11,7 @@
  */
 import { Spherical, Vector3 } from 'three';
 import type { StationModel } from '../../domain/types';
-import { modelBounds, sceneBox } from './build';
+import { modelBounds, scenePoints } from './build';
 import { LEVEL_SCALE, EXPLODE_GAIN, type Vec3, type ViewOptions } from './prims';
 
 export const FOV = 36;
@@ -47,14 +47,30 @@ function corners(box: Box): Vector3[] {
   return out;
 }
 
-/** How far the middle of `box`, as seen from the given direction, sits from `target` (in the view plane). */
-export function screenOffset(target: Vector3, box: Box, polar: number, azimuth: number): Vector3 {
+/** What has to stay in view: a box (its corners) or a cloud of points. */
+type Extent = Box | readonly Vec3[];
+const pointsOf = (e: Extent): Vector3[] => ('min' in e ? corners(e) : e.map((v) => new Vector3(v[0], v[1], v[2])));
+
+function boxOf(points: readonly Vec3[]): Box {
+  const min: Vec3 = [Infinity, Infinity, Infinity];
+  const max: Vec3 = [-Infinity, -Infinity, -Infinity];
+  for (const v of points) {
+    for (const i of [0, 1, 2] as const) {
+      min[i] = Math.min(min[i], v[i]);
+      max[i] = Math.max(max[i], v[i]);
+    }
+  }
+  return { min, max };
+}
+
+/** How far the middle of the extent, as seen from the given direction, sits from `target` (in the view plane). */
+export function screenOffset(target: Vector3, extent: Extent, polar: number, azimuth: number): Vector3 {
   const { right, up } = basis(polar, azimuth);
   let u0 = Infinity;
   let u1 = -Infinity;
   let v0 = Infinity;
   let v1 = -Infinity;
-  for (const c of corners(box)) {
+  for (const c of pointsOf(extent)) {
     c.sub(target);
     u0 = Math.min(u0, c.dot(right));
     u1 = Math.max(u1, c.dot(right));
@@ -64,13 +80,13 @@ export function screenOffset(target: Vector3, box: Box, polar: number, azimuth: 
   return right.multiplyScalar((u0 + u1) / 2).add(up.multiplyScalar((v0 + v1) / 2));
 }
 
-/** Camera distance at which every corner of `box` is inside the given fraction of the view. */
-export function fitDistance(target: Vector3, box: Box, aspect: number, fit: { x: number; y: number }, polar: number, azimuth: number): number {
+/** Camera distance at which every point of the extent is inside the given fraction of the view. */
+export function fitDistance(target: Vector3, extent: Extent, aspect: number, fit: { x: number; y: number }, polar: number, azimuth: number): number {
   const { dir, right, up } = basis(polar, azimuth);
   const tanY = Math.tan((FOV * Math.PI) / 360);
   const tanX = tanY * aspect;
   let radius = 0;
-  for (const c of corners(box)) {
+  for (const c of pointsOf(extent)) {
     c.sub(target);
     const depth = c.dot(dir);
     radius = Math.max(radius, depth + Math.abs(c.dot(right)) / (tanX * fit.x), depth + Math.abs(c.dot(up)) / (tanY * fit.y));
@@ -82,13 +98,14 @@ const centre = (b: Box) => new Vector3((b.min[0] + b.max[0]) / 2, (b.min[1] + b.
 
 /** The default view: the floors in focus (or the whole station) seen from the home direction. */
 export function homePose(model: StationModel, view: Pick<ViewOptions, 'explode' | 'focusOrdinals' | 'showBlocks'>, aspect: number): Pose {
-  const station = sceneBox(model, { ...view, showBlocks: false });
-  const everything = sceneBox(model, view);
-  const target = centre(station);
-  target.add(screenOffset(target, everything, HOME_POLAR, HOME_AZIMUTH).multiplyScalar(0.8));
+  const station = scenePoints(model, { ...view, showBlocks: false });
+  const everything = scenePoints(model, view);
+  const target = centre(boxOf(station));
+  // look at the middle of what is seen, so that the picture sits in the middle of the view
+  for (let i = 0; i < 3; i++) target.add(screenOffset(target, station, HOME_POLAR, HOME_AZIMUTH));
   const radius = Math.max(
     MIN_DISTANCE,
-    fitDistance(target, station, aspect, { x: 0.8, y: 0.74 }, HOME_POLAR, HOME_AZIMUTH),
+    fitDistance(target, station, aspect, { x: 0.9, y: 0.86 }, HOME_POLAR, HOME_AZIMUTH),
     fitDistance(target, everything, aspect, { x: 0.97, y: 0.95 }, HOME_POLAR, HOME_AZIMUTH),
   );
   return { target, radius, polar: HOME_POLAR, azimuth: HOME_AZIMUTH };

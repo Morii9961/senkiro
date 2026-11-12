@@ -179,6 +179,11 @@ a {
   min-width: 1080px;
 }
 
+/* the panel folded away: the drawing takes the whole width */
+.app.panel-closed {
+  grid-template-columns: minmax(0, 1fr) 0;
+}
+
 .topbar {
   grid-area: top;
   display: flex;
@@ -304,6 +309,14 @@ a {
 }
 
 .icon-btn:hover {
+  border-color: var(--rule-strong);
+}
+
+.panel-toggle {
+  margin-left: 6px;
+}
+
+.panel-toggle.on {
   border-color: var(--rule-strong);
 }
 
@@ -652,12 +665,62 @@ a {
   z-index: 5;
 }
 
-.floor-rail {
+.floor-picker {
   left: 12px;
   top: 12px;
   display: flex;
   flex-direction: column;
-  width: 92px;
+  align-items: stretch;
+  gap: 4px;
+  min-width: 92px;
+}
+
+/* 3D view: one button; the list opens under it on hover or focus */
+.floor-toggle {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 34px;
+  padding: 0 9px 0 10px;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  box-shadow: var(--shadow);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.floor-toggle[data-mode='floor'] .floor-current,
+.floor-toggle[data-mode='step'] .floor-current {
+  font-family: var(--mono);
+}
+
+.floor-toggle[data-mode='floor'],
+.floor-toggle[data-mode='route'],
+.floor-toggle[data-mode='step'] {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.floor-current {
+  flex: 1;
+  text-align: left;
+}
+
+.floor-caret {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.floor-picker.open .floor-caret {
+  transform: rotate(180deg);
+}
+
+.floor-rail {
+  display: flex;
+  flex-direction: column;
+  min-width: 92px;
   border: 1px solid var(--rule-strong);
   border-radius: var(--radius);
   background: var(--surface-2);
@@ -679,10 +742,13 @@ a {
   border-top: 0;
 }
 
-.floor-rail button[data-testid='floor-all'],
-.floor-rail button[data-testid='floor-route'] {
+.floor-rail button.wide {
   font-family: var(--sans);
   font-size: 12.5px;
+}
+
+.floor-picker.collapsible .floor-rail button {
+  padding: 5px 10px;
 }
 
 .floor-rail button:hover {
@@ -1058,6 +1124,10 @@ a {
   min-height: 0;
   border-left: 1px solid var(--rule-strong);
   background: var(--surface);
+}
+
+.panel[hidden] {
+  display: none;
 }
 
 .tabs {

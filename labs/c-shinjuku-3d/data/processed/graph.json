@@ -505,6 +505,18 @@
       }
     },
     {
+      "id": "sk:area:toei-oedo-b1f-gate-b-inside",
+      "kind": "area",
+      "elementId": "sk:area:toei-oedo-b1f-gate-b-inside",
+      "levelId": "sk:level:toei-oedo-shinjuku-b1f",
+      "levelOrdinal": -1,
+      "zone": "paid:toei",
+      "position": {
+        "x": 36,
+        "z": 46
+      }
+    },
+    {
       "id": "sk:area:toei-oedo-b3f-concourse",
       "kind": "area",
       "elementId": "sk:area:toei-oedo-b3f-concourse",
@@ -512,7 +524,7 @@
       "levelOrdinal": -3,
       "zone": "paid:toei",
       "position": {
-        "x": 45,
+        "x": 52.5,
         "z": 38.6
       }
     },
@@ -524,8 +536,8 @@
       "levelOrdinal": -3,
       "zone": "unpaid",
       "position": {
-        "x": 50.4,
-        "z": 38.4
+        "x": 60.4,
+        "z": 37.4
       }
     },
     {
@@ -536,8 +548,8 @@
       "levelOrdinal": -4,
       "zone": "paid:toei",
       "position": {
-        "x": 40.6,
-        "z": 38
+        "x": 42.5,
+        "z": 37.4
       }
     },
     {
@@ -574,6 +586,18 @@
       "position": {
         "x": -22.5,
         "z": 9
+      }
+    },
+    {
+      "id": "sk:area:west-exit-underground-plaza",
+      "kind": "area",
+      "elementId": "sk:area:west-exit-underground-plaza",
+      "levelId": "sk:level:public-west-plaza-b1f",
+      "levelOrdinal": -1,
+      "zone": "unpaid",
+      "position": {
+        "x": -14,
+        "z": 28
       }
     },
     {
@@ -848,7 +872,7 @@
       "levelOrdinal": -3,
       "zone": "unpaid",
       "position": {
-        "x": 52,
+        "x": 62,
         "z": 37.4
       }
     },
@@ -910,6 +934,18 @@
       "position": {
         "x": -25.7,
         "z": 26
+      }
+    },
+    {
+      "id": "sk:entrance:west-plaza-street-stairs",
+      "kind": "entrance",
+      "elementId": "sk:entrance:west-plaza-street-stairs",
+      "levelId": "sk:level:public-west-plaza-b1f",
+      "levelOrdinal": -1,
+      "zone": "unpaid",
+      "position": {
+        "x": -14,
+        "z": 31
       }
     },
     {
@@ -1196,7 +1232,7 @@
       "levelOrdinal": -3,
       "zone": "gate",
       "position": {
-        "x": 48.4,
+        "x": 58.4,
         "z": 37.4
       }
     },
@@ -4304,8 +4340,8 @@
       "levelOrdinal": -3,
       "zone": "paid:toei",
       "position": {
-        "x": 44.4,
-        "z": 37.6
+        "x": 57,
+        "z": 37.4
       }
     },
     {
@@ -4316,8 +4352,56 @@
       "levelOrdinal": -7,
       "zone": "paid:toei",
       "position": {
-        "x": 44.4,
-        "z": 37.6
+        "x": 57,
+        "z": 37.4
+      }
+    },
+    {
+      "id": "sk:vertical:toei-oedo-escalator-b4f-to-platform-north-end@sk:level:toei-oedo-shinjuku-b4f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:toei-oedo-escalator-b4f-to-platform-north-end",
+      "levelId": "sk:level:toei-oedo-shinjuku-b4f",
+      "levelOrdinal": -4,
+      "zone": "paid:toei",
+      "position": {
+        "x": 41,
+        "z": 37.949999999999996
+      }
+    },
+    {
+      "id": "sk:vertical:toei-oedo-escalator-b4f-to-platform-north-end@sk:level:toei-oedo-shinjuku-b7f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:toei-oedo-escalator-b4f-to-platform-north-end",
+      "levelId": "sk:level:toei-oedo-shinjuku-b7f",
+      "levelOrdinal": -7,
+      "zone": "paid:toei",
+      "position": {
+        "x": 44.2,
+        "z": 37.949999999999996
+      }
+    },
+    {
+      "id": "sk:vertical:toei-oedo-escalator-b4f-to-platform@sk:level:toei-oedo-shinjuku-b4f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:toei-oedo-escalator-b4f-to-platform",
+      "levelId": "sk:level:toei-oedo-shinjuku-b4f",
+      "levelOrdinal": -4,
+      "zone": "paid:toei",
+      "position": {
+        "x": 44.6,
+        "z": 36.9
+      }
+    },
+    {
+      "id": "sk:vertical:toei-oedo-escalator-b4f-to-platform@sk:level:toei-oedo-shinjuku-b7f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:toei-oedo-escalator-b4f-to-platform",
+      "levelId": "sk:level:toei-oedo-shinjuku-b7f",
+      "levelOrdinal": -7,
+      "zone": "paid:toei",
+      "position": {
+        "x": 49,
+        "z": 36.9
       }
     },
     {
@@ -4328,8 +4412,8 @@
       "levelOrdinal": -3,
       "zone": "paid:toei",
       "position": {
-        "x": 46.6,
-        "z": 36.6
+        "x": 51,
+        "z": 37.9
       }
     },
     {
@@ -4340,8 +4424,80 @@
       "levelOrdinal": -7,
       "zone": "paid:toei",
       "position": {
-        "x": 51,
-        "z": 36.9
+        "x": 55.5,
+        "z": 37.9
+      }
+    },
+    {
+      "id": "sk:vertical:toei-oedo-escalator-gate-b-to-b4f@sk:level:toei-oedo-shinjuku-b1f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:toei-oedo-escalator-gate-b-to-b4f",
+      "levelId": "sk:level:toei-oedo-shinjuku-b1f",
+      "levelOrdinal": -1,
+      "zone": "paid:toei",
+      "position": {
+        "x": 36.9,
+        "z": 46.55
+      }
+    },
+    {
+      "id": "sk:vertical:toei-oedo-escalator-gate-b-to-b4f@sk:level:toei-oedo-shinjuku-b4f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:toei-oedo-escalator-gate-b-to-b4f",
+      "levelId": "sk:level:toei-oedo-shinjuku-b4f",
+      "levelOrdinal": -4,
+      "zone": "paid:toei",
+      "position": {
+        "x": 40.6,
+        "z": 46.55
+      }
+    },
+    {
+      "id": "sk:vertical:toei-oedo-stairs-b4f-to-platform-north-end@sk:level:toei-oedo-shinjuku-b4f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:toei-oedo-stairs-b4f-to-platform-north-end",
+      "levelId": "sk:level:toei-oedo-shinjuku-b4f",
+      "levelOrdinal": -4,
+      "zone": "paid:toei",
+      "position": {
+        "x": 41,
+        "z": 36.85
+      }
+    },
+    {
+      "id": "sk:vertical:toei-oedo-stairs-b4f-to-platform-north-end@sk:level:toei-oedo-shinjuku-b7f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:toei-oedo-stairs-b4f-to-platform-north-end",
+      "levelId": "sk:level:toei-oedo-shinjuku-b7f",
+      "levelOrdinal": -7,
+      "zone": "paid:toei",
+      "position": {
+        "x": 44.2,
+        "z": 36.85
+      }
+    },
+    {
+      "id": "sk:vertical:toei-oedo-stairs-gate-b-to-b4f@sk:level:toei-oedo-shinjuku-b1f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:toei-oedo-stairs-gate-b-to-b4f",
+      "levelId": "sk:level:toei-oedo-shinjuku-b1f",
+      "levelOrdinal": -1,
+      "zone": "paid:toei",
+      "position": {
+        "x": 36.9,
+        "z": 45.45
+      }
+    },
+    {
+      "id": "sk:vertical:toei-oedo-stairs-gate-b-to-b4f@sk:level:toei-oedo-shinjuku-b4f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:toei-oedo-stairs-gate-b-to-b4f",
+      "levelId": "sk:level:toei-oedo-shinjuku-b4f",
+      "levelOrdinal": -4,
+      "zone": "paid:toei",
+      "position": {
+        "x": 40.6,
+        "z": 45.45
       }
     },
     {
@@ -4352,8 +4508,8 @@
       "levelOrdinal": -3,
       "zone": "paid:toei",
       "position": {
-        "x": 42.8,
-        "z": 38
+        "x": 47.8,
+        "z": 38.6
       }
     },
     {
@@ -4364,8 +4520,8 @@
       "levelOrdinal": -4,
       "zone": "paid:toei",
       "position": {
-        "x": 40.9,
-        "z": 38
+        "x": 45.2,
+        "z": 38.6
       }
     },
     {
@@ -4674,6 +4830,17 @@
       "from": "sk:area:jr-2f-koshu-kaido-unpaid",
       "to": "sk:area:jr-2f-miraina-tower-unpaid",
       "id": "sk:area:jr-2f-koshu-kaido-unpaid→sk:area:jr-2f-miraina-tower-unpaid"
+    },
+    {
+      "kind": "passage",
+      "elementId": "sk:passage:jr-south-exit-to-koshu-kaido-gate-crossing",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:jr-2f-koshu-kaido-unpaid",
+      "to": "sk:area:jr-2f-south-exit-unpaid",
+      "id": "sk:area:jr-2f-koshu-kaido-unpaid→sk:area:jr-2f-south-exit-unpaid"
     },
     {
       "kind": "entrance-approach",
@@ -5282,11 +5449,22 @@
     },
     {
       "kind": "passage",
+      "elementId": "sk:passage:jr-south-exit-to-koshu-kaido-gate-crossing",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:jr-2f-south-exit-unpaid",
+      "to": "sk:area:jr-2f-koshu-kaido-unpaid",
+      "id": "sk:area:jr-2f-south-exit-unpaid→sk:area:jr-2f-koshu-kaido-unpaid"
+    },
+    {
+      "kind": "passage",
       "elementId": "sk:passage:jr-south-exit-to-odakyu-south-exit",
       "verticalKind": null,
       "levelChange": 0,
       "stepFree": true,
-      "connection": "inferred",
+      "connection": "verified",
       "from": "sk:area:jr-2f-south-exit-unpaid",
       "to": "sk:area:odakyu-2f-south-gate-unpaid",
       "id": "sk:area:jr-2f-south-exit-unpaid→sk:area:odakyu-2f-south-gate-unpaid"
@@ -5649,7 +5827,7 @@
       "verticalKind": null,
       "levelChange": 0,
       "stepFree": null,
-      "connection": "inferred",
+      "connection": "verified",
       "from": "sk:area:jr-b1f-east-unpaid",
       "to": "sk:area:tokyo-metro-b1f-concourse",
       "id": "sk:area:jr-b1f-east-unpaid→sk:area:tokyo-metro-b1f-concourse"
@@ -6030,36 +6208,14 @@
     },
     {
       "kind": "passage",
-      "elementId": "sk:passage:jr-west-exit-to-keio-west-gate",
+      "elementId": "sk:passage:jr-west-exit-to-west-plaza",
       "verticalKind": null,
       "levelChange": 0,
       "stepFree": null,
-      "connection": "inferred",
+      "connection": "verified",
       "from": "sk:area:jr-b1f-west-unpaid",
-      "to": "sk:area:keio-b1f-west-gate-unpaid",
-      "id": "sk:area:jr-b1f-west-unpaid→sk:area:keio-b1f-west-gate-unpaid"
-    },
-    {
-      "kind": "passage",
-      "elementId": "sk:passage:jr-west-exit-to-odakyu-west-underground",
-      "verticalKind": null,
-      "levelChange": 0,
-      "stepFree": null,
-      "connection": "inferred",
-      "from": "sk:area:jr-b1f-west-unpaid",
-      "to": "sk:area:odakyu-b1f-west-underground-gate-unpaid",
-      "id": "sk:area:jr-b1f-west-unpaid→sk:area:odakyu-b1f-west-underground-gate-unpaid"
-    },
-    {
-      "kind": "passage",
-      "elementId": "sk:passage:jr-west-exit-to-marunouchi-concourse",
-      "verticalKind": null,
-      "levelChange": 0,
-      "stepFree": null,
-      "connection": "inferred",
-      "from": "sk:area:jr-b1f-west-unpaid",
-      "to": "sk:area:tokyo-metro-b1f-concourse",
-      "id": "sk:area:jr-b1f-west-unpaid→sk:area:tokyo-metro-b1f-concourse"
+      "to": "sk:area:west-exit-underground-plaza",
+      "id": "sk:area:jr-b1f-west-unpaid→sk:area:west-exit-underground-plaza"
     },
     {
       "kind": "entrance-approach",
@@ -6188,7 +6344,7 @@
       "verticalKind": null,
       "levelChange": 0,
       "stepFree": null,
-      "connection": "inferred",
+      "connection": "verified",
       "from": "sk:area:keio-b1f-department-store-side-unpaid",
       "to": "sk:area:keio-b1f-west-gate-unpaid",
       "id": "sk:area:keio-b1f-department-store-side-unpaid→sk:area:keio-b1f-west-gate-unpaid"
@@ -6382,36 +6538,25 @@
     },
     {
       "kind": "passage",
-      "elementId": "sk:passage:jr-west-exit-to-keio-west-gate",
-      "verticalKind": null,
-      "levelChange": 0,
-      "stepFree": null,
-      "connection": "inferred",
-      "from": "sk:area:keio-b1f-west-gate-unpaid",
-      "to": "sk:area:jr-b1f-west-unpaid",
-      "id": "sk:area:keio-b1f-west-gate-unpaid→sk:area:jr-b1f-west-unpaid"
-    },
-    {
-      "kind": "passage",
       "elementId": "sk:passage:keio-b1f-west-gate-outside-to-department-store-side",
       "verticalKind": null,
       "levelChange": 0,
       "stepFree": null,
-      "connection": "inferred",
+      "connection": "verified",
       "from": "sk:area:keio-b1f-west-gate-unpaid",
       "to": "sk:area:keio-b1f-department-store-side-unpaid",
       "id": "sk:area:keio-b1f-west-gate-unpaid→sk:area:keio-b1f-department-store-side-unpaid"
     },
     {
       "kind": "passage",
-      "elementId": "sk:passage:odakyu-west-underground-to-keio-west-gate",
+      "elementId": "sk:passage:keio-west-gate-to-west-plaza",
       "verticalKind": null,
       "levelChange": 0,
       "stepFree": null,
-      "connection": "inferred",
+      "connection": "verified",
       "from": "sk:area:keio-b1f-west-gate-unpaid",
-      "to": "sk:area:odakyu-b1f-west-underground-gate-unpaid",
-      "id": "sk:area:keio-b1f-west-gate-unpaid→sk:area:odakyu-b1f-west-underground-gate-unpaid"
+      "to": "sk:area:west-exit-underground-plaza",
+      "id": "sk:area:keio-b1f-west-gate-unpaid→sk:area:west-exit-underground-plaza"
     },
     {
       "kind": "entrance-approach",
@@ -7035,7 +7180,7 @@
       "verticalKind": null,
       "levelChange": 0,
       "stepFree": true,
-      "connection": "inferred",
+      "connection": "verified",
       "from": "sk:area:odakyu-2f-south-gate-unpaid",
       "to": "sk:area:jr-2f-south-exit-unpaid",
       "id": "sk:area:odakyu-2f-south-gate-unpaid→sk:area:jr-2f-south-exit-unpaid"
@@ -7163,36 +7308,14 @@
     },
     {
       "kind": "passage",
-      "elementId": "sk:passage:jr-west-exit-to-odakyu-west-underground",
+      "elementId": "sk:passage:odakyu-west-underground-to-west-plaza",
       "verticalKind": null,
       "levelChange": 0,
       "stepFree": null,
-      "connection": "inferred",
+      "connection": "verified",
       "from": "sk:area:odakyu-b1f-west-underground-gate-unpaid",
-      "to": "sk:area:jr-b1f-west-unpaid",
-      "id": "sk:area:odakyu-b1f-west-underground-gate-unpaid→sk:area:jr-b1f-west-unpaid"
-    },
-    {
-      "kind": "passage",
-      "elementId": "sk:passage:odakyu-west-underground-to-keio-west-gate",
-      "verticalKind": null,
-      "levelChange": 0,
-      "stepFree": null,
-      "connection": "inferred",
-      "from": "sk:area:odakyu-b1f-west-underground-gate-unpaid",
-      "to": "sk:area:keio-b1f-west-gate-unpaid",
-      "id": "sk:area:odakyu-b1f-west-underground-gate-unpaid→sk:area:keio-b1f-west-gate-unpaid"
-    },
-    {
-      "kind": "passage",
-      "elementId": "sk:passage:odakyu-west-underground-to-marunouchi-concourse",
-      "verticalKind": null,
-      "levelChange": 0,
-      "stepFree": null,
-      "connection": "inferred",
-      "from": "sk:area:odakyu-b1f-west-underground-gate-unpaid",
-      "to": "sk:area:tokyo-metro-b1f-concourse",
-      "id": "sk:area:odakyu-b1f-west-underground-gate-unpaid→sk:area:tokyo-metro-b1f-concourse"
+      "to": "sk:area:west-exit-underground-plaza",
+      "id": "sk:area:odakyu-b1f-west-underground-gate-unpaid→sk:area:west-exit-underground-plaza"
     },
     {
       "kind": "entrance-approach",
@@ -7237,6 +7360,39 @@
       "from": "sk:area:odakyu-b1f-west-underground-gate-unpaid",
       "to": "sk:vertical:odakyu-stairs-west-exit-street-to-underground@sk:level:odakyu-shinjuku-b1f",
       "id": "sk:area:odakyu-b1f-west-underground-gate-unpaid→sk:vertical:odakyu-stairs-west-exit-street-to-underground@sk:level:odakyu-shinjuku-b1f"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:toei-oedo-gate-b",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:toei-oedo-b1f-gate-b-inside",
+      "to": "sk:gate:toei-oedo-gate-b",
+      "id": "sk:area:toei-oedo-b1f-gate-b-inside→sk:gate:toei-oedo-gate-b"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:toei-oedo-escalator-gate-b-to-b4f",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:toei-oedo-b1f-gate-b-inside",
+      "to": "sk:vertical:toei-oedo-escalator-gate-b-to-b4f@sk:level:toei-oedo-shinjuku-b1f",
+      "id": "sk:area:toei-oedo-b1f-gate-b-inside→sk:vertical:toei-oedo-escalator-gate-b-to-b4f@sk:level:toei-oedo-shinjuku-b1f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:toei-oedo-stairs-gate-b-to-b4f",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:toei-oedo-b1f-gate-b-inside",
+      "to": "sk:vertical:toei-oedo-stairs-gate-b-to-b4f@sk:level:toei-oedo-shinjuku-b1f",
+      "id": "sk:area:toei-oedo-b1f-gate-b-inside→sk:vertical:toei-oedo-stairs-gate-b-to-b4f@sk:level:toei-oedo-shinjuku-b1f"
     },
     {
       "kind": "gate-approach",
@@ -7317,6 +7473,61 @@
     },
     {
       "kind": "vertical-approach",
+      "elementId": "sk:vertical:toei-oedo-escalator-b4f-to-platform-north-end",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:toei-oedo-b4f-transfer-passage",
+      "to": "sk:vertical:toei-oedo-escalator-b4f-to-platform-north-end@sk:level:toei-oedo-shinjuku-b4f",
+      "id": "sk:area:toei-oedo-b4f-transfer-passage→sk:vertical:toei-oedo-escalator-b4f-to-platform-north-end@sk:level:toei-oedo-shinjuku-b4f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:toei-oedo-escalator-b4f-to-platform",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:toei-oedo-b4f-transfer-passage",
+      "to": "sk:vertical:toei-oedo-escalator-b4f-to-platform@sk:level:toei-oedo-shinjuku-b4f",
+      "id": "sk:area:toei-oedo-b4f-transfer-passage→sk:vertical:toei-oedo-escalator-b4f-to-platform@sk:level:toei-oedo-shinjuku-b4f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:toei-oedo-escalator-gate-b-to-b4f",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:toei-oedo-b4f-transfer-passage",
+      "to": "sk:vertical:toei-oedo-escalator-gate-b-to-b4f@sk:level:toei-oedo-shinjuku-b4f",
+      "id": "sk:area:toei-oedo-b4f-transfer-passage→sk:vertical:toei-oedo-escalator-gate-b-to-b4f@sk:level:toei-oedo-shinjuku-b4f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:toei-oedo-stairs-b4f-to-platform-north-end",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:toei-oedo-b4f-transfer-passage",
+      "to": "sk:vertical:toei-oedo-stairs-b4f-to-platform-north-end@sk:level:toei-oedo-shinjuku-b4f",
+      "id": "sk:area:toei-oedo-b4f-transfer-passage→sk:vertical:toei-oedo-stairs-b4f-to-platform-north-end@sk:level:toei-oedo-shinjuku-b4f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:toei-oedo-stairs-gate-b-to-b4f",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:toei-oedo-b4f-transfer-passage",
+      "to": "sk:vertical:toei-oedo-stairs-gate-b-to-b4f@sk:level:toei-oedo-shinjuku-b4f",
+      "id": "sk:area:toei-oedo-b4f-transfer-passage→sk:vertical:toei-oedo-stairs-gate-b-to-b4f@sk:level:toei-oedo-shinjuku-b4f"
+    },
+    {
+      "kind": "vertical-approach",
       "elementId": "sk:vertical:toei-oedo-stairs-transfer-passage-to-concourse",
       "verticalKind": "stairs",
       "levelChange": 0,
@@ -7332,32 +7543,21 @@
       "verticalKind": null,
       "levelChange": 0,
       "stepFree": null,
-      "connection": "inferred",
+      "connection": "verified",
       "from": "sk:area:tokyo-metro-b1f-concourse",
       "to": "sk:area:jr-b1f-east-unpaid",
       "id": "sk:area:tokyo-metro-b1f-concourse→sk:area:jr-b1f-east-unpaid"
     },
     {
       "kind": "passage",
-      "elementId": "sk:passage:jr-west-exit-to-marunouchi-concourse",
+      "elementId": "sk:passage:marunouchi-concourse-to-west-plaza",
       "verticalKind": null,
       "levelChange": 0,
       "stepFree": null,
-      "connection": "inferred",
+      "connection": "verified",
       "from": "sk:area:tokyo-metro-b1f-concourse",
-      "to": "sk:area:jr-b1f-west-unpaid",
-      "id": "sk:area:tokyo-metro-b1f-concourse→sk:area:jr-b1f-west-unpaid"
-    },
-    {
-      "kind": "passage",
-      "elementId": "sk:passage:odakyu-west-underground-to-marunouchi-concourse",
-      "verticalKind": null,
-      "levelChange": 0,
-      "stepFree": null,
-      "connection": "inferred",
-      "from": "sk:area:tokyo-metro-b1f-concourse",
-      "to": "sk:area:odakyu-b1f-west-underground-gate-unpaid",
-      "id": "sk:area:tokyo-metro-b1f-concourse→sk:area:odakyu-b1f-west-underground-gate-unpaid"
+      "to": "sk:area:west-exit-underground-plaza",
+      "id": "sk:area:tokyo-metro-b1f-concourse→sk:area:west-exit-underground-plaza"
     },
     {
       "kind": "entrance-approach",
@@ -7501,6 +7701,61 @@
       "from": "sk:area:tokyo-metro-b1f-paid-west",
       "to": "sk:vertical:tokyo-metro-stairs-west-gates-to-platform@sk:level:tokyo-metro-shinjuku-b1f",
       "id": "sk:area:tokyo-metro-b1f-paid-west→sk:vertical:tokyo-metro-stairs-west-gates-to-platform@sk:level:tokyo-metro-shinjuku-b1f"
+    },
+    {
+      "kind": "passage",
+      "elementId": "sk:passage:jr-west-exit-to-west-plaza",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:west-exit-underground-plaza",
+      "to": "sk:area:jr-b1f-west-unpaid",
+      "id": "sk:area:west-exit-underground-plaza→sk:area:jr-b1f-west-unpaid"
+    },
+    {
+      "kind": "passage",
+      "elementId": "sk:passage:keio-west-gate-to-west-plaza",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:west-exit-underground-plaza",
+      "to": "sk:area:keio-b1f-west-gate-unpaid",
+      "id": "sk:area:west-exit-underground-plaza→sk:area:keio-b1f-west-gate-unpaid"
+    },
+    {
+      "kind": "passage",
+      "elementId": "sk:passage:odakyu-west-underground-to-west-plaza",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:west-exit-underground-plaza",
+      "to": "sk:area:odakyu-b1f-west-underground-gate-unpaid",
+      "id": "sk:area:west-exit-underground-plaza→sk:area:odakyu-b1f-west-underground-gate-unpaid"
+    },
+    {
+      "kind": "passage",
+      "elementId": "sk:passage:marunouchi-concourse-to-west-plaza",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:west-exit-underground-plaza",
+      "to": "sk:area:tokyo-metro-b1f-concourse",
+      "id": "sk:area:west-exit-underground-plaza→sk:area:tokyo-metro-b1f-concourse"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:west-plaza-street-stairs",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:west-exit-underground-plaza",
+      "to": "sk:entrance:west-plaza-street-stairs",
+      "id": "sk:area:west-exit-underground-plaza→sk:entrance:west-plaza-street-stairs"
     },
     {
       "kind": "entrance-approach",
@@ -7809,6 +8064,17 @@
       "from": "sk:entrance:tokyo-metro-west-end",
       "to": "sk:area:tokyo-metro-b1f-concourse",
       "id": "sk:entrance:tokyo-metro-west-end→sk:area:tokyo-metro-b1f-concourse"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:west-plaza-street-stairs",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:entrance:west-plaza-street-stairs",
+      "to": "sk:area:west-exit-underground-plaza",
+      "id": "sk:entrance:west-plaza-street-stairs→sk:area:west-exit-underground-plaza"
     },
     {
       "kind": "gate-approach",
@@ -8326,6 +8592,17 @@
       "from": "sk:gate:toei-oedo-gate-b",
       "to": "sk:area:keio-new-line-b1f-concourse",
       "id": "sk:gate:toei-oedo-gate-b→sk:area:keio-new-line-b1f-concourse"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:toei-oedo-gate-b",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:gate:toei-oedo-gate-b",
+      "to": "sk:area:toei-oedo-b1f-gate-b-inside",
+      "id": "sk:gate:toei-oedo-gate-b→sk:area:toei-oedo-b1f-gate-b-inside"
     },
     {
       "kind": "gate-approach",
@@ -9594,6 +9871,28 @@
     },
     {
       "kind": "vertical-approach",
+      "elementId": "sk:vertical:toei-oedo-escalator-b4f-to-platform-north-end",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:platform:toei-oedo-shinjuku-6-7",
+      "to": "sk:vertical:toei-oedo-escalator-b4f-to-platform-north-end@sk:level:toei-oedo-shinjuku-b7f",
+      "id": "sk:platform:toei-oedo-shinjuku-6-7→sk:vertical:toei-oedo-escalator-b4f-to-platform-north-end@sk:level:toei-oedo-shinjuku-b7f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:toei-oedo-escalator-b4f-to-platform",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:platform:toei-oedo-shinjuku-6-7",
+      "to": "sk:vertical:toei-oedo-escalator-b4f-to-platform@sk:level:toei-oedo-shinjuku-b7f",
+      "id": "sk:platform:toei-oedo-shinjuku-6-7→sk:vertical:toei-oedo-escalator-b4f-to-platform@sk:level:toei-oedo-shinjuku-b7f"
+    },
+    {
+      "kind": "vertical-approach",
       "elementId": "sk:vertical:toei-oedo-escalator-concourse-to-platform",
       "verticalKind": "escalator",
       "levelChange": 0,
@@ -9602,6 +9901,17 @@
       "from": "sk:platform:toei-oedo-shinjuku-6-7",
       "to": "sk:vertical:toei-oedo-escalator-concourse-to-platform@sk:level:toei-oedo-shinjuku-b7f",
       "id": "sk:platform:toei-oedo-shinjuku-6-7→sk:vertical:toei-oedo-escalator-concourse-to-platform@sk:level:toei-oedo-shinjuku-b7f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:toei-oedo-stairs-b4f-to-platform-north-end",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:platform:toei-oedo-shinjuku-6-7",
+      "to": "sk:vertical:toei-oedo-stairs-b4f-to-platform-north-end@sk:level:toei-oedo-shinjuku-b7f",
+      "id": "sk:platform:toei-oedo-shinjuku-6-7→sk:vertical:toei-oedo-stairs-b4f-to-platform-north-end@sk:level:toei-oedo-shinjuku-b7f"
     },
     {
       "kind": "vertical-approach",
@@ -14962,6 +15272,94 @@
     },
     {
       "kind": "vertical-approach",
+      "elementId": "sk:vertical:toei-oedo-escalator-b4f-to-platform-north-end",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:toei-oedo-escalator-b4f-to-platform-north-end@sk:level:toei-oedo-shinjuku-b4f",
+      "to": "sk:area:toei-oedo-b4f-transfer-passage",
+      "id": "sk:vertical:toei-oedo-escalator-b4f-to-platform-north-end@sk:level:toei-oedo-shinjuku-b4f→sk:area:toei-oedo-b4f-transfer-passage"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:toei-oedo-escalator-b4f-to-platform-north-end",
+      "verticalKind": "escalator",
+      "levelChange": 3,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:toei-oedo-escalator-b4f-to-platform-north-end@sk:level:toei-oedo-shinjuku-b4f",
+      "to": "sk:vertical:toei-oedo-escalator-b4f-to-platform-north-end@sk:level:toei-oedo-shinjuku-b7f",
+      "id": "sk:vertical:toei-oedo-escalator-b4f-to-platform-north-end@sk:level:toei-oedo-shinjuku-b4f→sk:vertical:toei-oedo-escalator-b4f-to-platform-north-end@sk:level:toei-oedo-shinjuku-b7f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:toei-oedo-escalator-b4f-to-platform-north-end",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:toei-oedo-escalator-b4f-to-platform-north-end@sk:level:toei-oedo-shinjuku-b7f",
+      "to": "sk:platform:toei-oedo-shinjuku-6-7",
+      "id": "sk:vertical:toei-oedo-escalator-b4f-to-platform-north-end@sk:level:toei-oedo-shinjuku-b7f→sk:platform:toei-oedo-shinjuku-6-7"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:toei-oedo-escalator-b4f-to-platform-north-end",
+      "verticalKind": "escalator",
+      "levelChange": 3,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:toei-oedo-escalator-b4f-to-platform-north-end@sk:level:toei-oedo-shinjuku-b7f",
+      "to": "sk:vertical:toei-oedo-escalator-b4f-to-platform-north-end@sk:level:toei-oedo-shinjuku-b4f",
+      "id": "sk:vertical:toei-oedo-escalator-b4f-to-platform-north-end@sk:level:toei-oedo-shinjuku-b7f→sk:vertical:toei-oedo-escalator-b4f-to-platform-north-end@sk:level:toei-oedo-shinjuku-b4f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:toei-oedo-escalator-b4f-to-platform",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:toei-oedo-escalator-b4f-to-platform@sk:level:toei-oedo-shinjuku-b4f",
+      "to": "sk:area:toei-oedo-b4f-transfer-passage",
+      "id": "sk:vertical:toei-oedo-escalator-b4f-to-platform@sk:level:toei-oedo-shinjuku-b4f→sk:area:toei-oedo-b4f-transfer-passage"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:toei-oedo-escalator-b4f-to-platform",
+      "verticalKind": "escalator",
+      "levelChange": 3,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:toei-oedo-escalator-b4f-to-platform@sk:level:toei-oedo-shinjuku-b4f",
+      "to": "sk:vertical:toei-oedo-escalator-b4f-to-platform@sk:level:toei-oedo-shinjuku-b7f",
+      "id": "sk:vertical:toei-oedo-escalator-b4f-to-platform@sk:level:toei-oedo-shinjuku-b4f→sk:vertical:toei-oedo-escalator-b4f-to-platform@sk:level:toei-oedo-shinjuku-b7f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:toei-oedo-escalator-b4f-to-platform",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:toei-oedo-escalator-b4f-to-platform@sk:level:toei-oedo-shinjuku-b7f",
+      "to": "sk:platform:toei-oedo-shinjuku-6-7",
+      "id": "sk:vertical:toei-oedo-escalator-b4f-to-platform@sk:level:toei-oedo-shinjuku-b7f→sk:platform:toei-oedo-shinjuku-6-7"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:toei-oedo-escalator-b4f-to-platform",
+      "verticalKind": "escalator",
+      "levelChange": 3,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:toei-oedo-escalator-b4f-to-platform@sk:level:toei-oedo-shinjuku-b7f",
+      "to": "sk:vertical:toei-oedo-escalator-b4f-to-platform@sk:level:toei-oedo-shinjuku-b4f",
+      "id": "sk:vertical:toei-oedo-escalator-b4f-to-platform@sk:level:toei-oedo-shinjuku-b7f→sk:vertical:toei-oedo-escalator-b4f-to-platform@sk:level:toei-oedo-shinjuku-b4f"
+    },
+    {
+      "kind": "vertical-approach",
       "elementId": "sk:vertical:toei-oedo-escalator-concourse-to-platform",
       "verticalKind": "escalator",
       "levelChange": 0,
@@ -15003,6 +15401,138 @@
       "from": "sk:vertical:toei-oedo-escalator-concourse-to-platform@sk:level:toei-oedo-shinjuku-b7f",
       "to": "sk:vertical:toei-oedo-escalator-concourse-to-platform@sk:level:toei-oedo-shinjuku-b3f",
       "id": "sk:vertical:toei-oedo-escalator-concourse-to-platform@sk:level:toei-oedo-shinjuku-b7f→sk:vertical:toei-oedo-escalator-concourse-to-platform@sk:level:toei-oedo-shinjuku-b3f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:toei-oedo-escalator-gate-b-to-b4f",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:toei-oedo-escalator-gate-b-to-b4f@sk:level:toei-oedo-shinjuku-b1f",
+      "to": "sk:area:toei-oedo-b1f-gate-b-inside",
+      "id": "sk:vertical:toei-oedo-escalator-gate-b-to-b4f@sk:level:toei-oedo-shinjuku-b1f→sk:area:toei-oedo-b1f-gate-b-inside"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:toei-oedo-escalator-gate-b-to-b4f",
+      "verticalKind": "escalator",
+      "levelChange": 3,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:toei-oedo-escalator-gate-b-to-b4f@sk:level:toei-oedo-shinjuku-b1f",
+      "to": "sk:vertical:toei-oedo-escalator-gate-b-to-b4f@sk:level:toei-oedo-shinjuku-b4f",
+      "id": "sk:vertical:toei-oedo-escalator-gate-b-to-b4f@sk:level:toei-oedo-shinjuku-b1f→sk:vertical:toei-oedo-escalator-gate-b-to-b4f@sk:level:toei-oedo-shinjuku-b4f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:toei-oedo-escalator-gate-b-to-b4f",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:toei-oedo-escalator-gate-b-to-b4f@sk:level:toei-oedo-shinjuku-b4f",
+      "to": "sk:area:toei-oedo-b4f-transfer-passage",
+      "id": "sk:vertical:toei-oedo-escalator-gate-b-to-b4f@sk:level:toei-oedo-shinjuku-b4f→sk:area:toei-oedo-b4f-transfer-passage"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:toei-oedo-escalator-gate-b-to-b4f",
+      "verticalKind": "escalator",
+      "levelChange": 3,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:toei-oedo-escalator-gate-b-to-b4f@sk:level:toei-oedo-shinjuku-b4f",
+      "to": "sk:vertical:toei-oedo-escalator-gate-b-to-b4f@sk:level:toei-oedo-shinjuku-b1f",
+      "id": "sk:vertical:toei-oedo-escalator-gate-b-to-b4f@sk:level:toei-oedo-shinjuku-b4f→sk:vertical:toei-oedo-escalator-gate-b-to-b4f@sk:level:toei-oedo-shinjuku-b1f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:toei-oedo-stairs-b4f-to-platform-north-end",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:toei-oedo-stairs-b4f-to-platform-north-end@sk:level:toei-oedo-shinjuku-b4f",
+      "to": "sk:area:toei-oedo-b4f-transfer-passage",
+      "id": "sk:vertical:toei-oedo-stairs-b4f-to-platform-north-end@sk:level:toei-oedo-shinjuku-b4f→sk:area:toei-oedo-b4f-transfer-passage"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:toei-oedo-stairs-b4f-to-platform-north-end",
+      "verticalKind": "stairs",
+      "levelChange": 3,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:toei-oedo-stairs-b4f-to-platform-north-end@sk:level:toei-oedo-shinjuku-b4f",
+      "to": "sk:vertical:toei-oedo-stairs-b4f-to-platform-north-end@sk:level:toei-oedo-shinjuku-b7f",
+      "id": "sk:vertical:toei-oedo-stairs-b4f-to-platform-north-end@sk:level:toei-oedo-shinjuku-b4f→sk:vertical:toei-oedo-stairs-b4f-to-platform-north-end@sk:level:toei-oedo-shinjuku-b7f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:toei-oedo-stairs-b4f-to-platform-north-end",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:toei-oedo-stairs-b4f-to-platform-north-end@sk:level:toei-oedo-shinjuku-b7f",
+      "to": "sk:platform:toei-oedo-shinjuku-6-7",
+      "id": "sk:vertical:toei-oedo-stairs-b4f-to-platform-north-end@sk:level:toei-oedo-shinjuku-b7f→sk:platform:toei-oedo-shinjuku-6-7"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:toei-oedo-stairs-b4f-to-platform-north-end",
+      "verticalKind": "stairs",
+      "levelChange": 3,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:toei-oedo-stairs-b4f-to-platform-north-end@sk:level:toei-oedo-shinjuku-b7f",
+      "to": "sk:vertical:toei-oedo-stairs-b4f-to-platform-north-end@sk:level:toei-oedo-shinjuku-b4f",
+      "id": "sk:vertical:toei-oedo-stairs-b4f-to-platform-north-end@sk:level:toei-oedo-shinjuku-b7f→sk:vertical:toei-oedo-stairs-b4f-to-platform-north-end@sk:level:toei-oedo-shinjuku-b4f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:toei-oedo-stairs-gate-b-to-b4f",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:toei-oedo-stairs-gate-b-to-b4f@sk:level:toei-oedo-shinjuku-b1f",
+      "to": "sk:area:toei-oedo-b1f-gate-b-inside",
+      "id": "sk:vertical:toei-oedo-stairs-gate-b-to-b4f@sk:level:toei-oedo-shinjuku-b1f→sk:area:toei-oedo-b1f-gate-b-inside"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:toei-oedo-stairs-gate-b-to-b4f",
+      "verticalKind": "stairs",
+      "levelChange": 3,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:toei-oedo-stairs-gate-b-to-b4f@sk:level:toei-oedo-shinjuku-b1f",
+      "to": "sk:vertical:toei-oedo-stairs-gate-b-to-b4f@sk:level:toei-oedo-shinjuku-b4f",
+      "id": "sk:vertical:toei-oedo-stairs-gate-b-to-b4f@sk:level:toei-oedo-shinjuku-b1f→sk:vertical:toei-oedo-stairs-gate-b-to-b4f@sk:level:toei-oedo-shinjuku-b4f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:toei-oedo-stairs-gate-b-to-b4f",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:toei-oedo-stairs-gate-b-to-b4f@sk:level:toei-oedo-shinjuku-b4f",
+      "to": "sk:area:toei-oedo-b4f-transfer-passage",
+      "id": "sk:vertical:toei-oedo-stairs-gate-b-to-b4f@sk:level:toei-oedo-shinjuku-b4f→sk:area:toei-oedo-b4f-transfer-passage"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:toei-oedo-stairs-gate-b-to-b4f",
+      "verticalKind": "stairs",
+      "levelChange": 3,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:toei-oedo-stairs-gate-b-to-b4f@sk:level:toei-oedo-shinjuku-b4f",
+      "to": "sk:vertical:toei-oedo-stairs-gate-b-to-b4f@sk:level:toei-oedo-shinjuku-b1f",
+      "id": "sk:vertical:toei-oedo-stairs-gate-b-to-b4f@sk:level:toei-oedo-shinjuku-b4f→sk:vertical:toei-oedo-stairs-gate-b-to-b4f@sk:level:toei-oedo-shinjuku-b1f"
     },
     {
       "kind": "vertical-approach",

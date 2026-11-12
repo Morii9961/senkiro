@@ -77,6 +77,7 @@ export const ODAKYU = 'sk:operator:odakyu';
 export const METRO = 'sk:operator:tokyo-metro';
 export const TOEI = 'sk:operator:toei';
 export const BUSTA = 'sk:operator:busta-shinjuku';
+export const PUBLIC = 'sk:operator:public-space';
 /** Areas of other operators that JR and Keio gates open into (defined in extensions.ts). */
 export const X = {
   odakyuB1Concourse: 'sk:area:odakyu-b1f-concourse',
@@ -153,6 +154,8 @@ const operators: Operator[] = [
   { kind: 'operator', ...entity(METRO, names('東京メトロ', 'Tokyo Metro', '东京地铁'), prov(['src:tokyo-metro-shinjuku-map'], undefined, D2)) },
   { kind: 'operator', ...entity(TOEI, names('東京都交通局（都営地下鉄）', 'Toei Subway', '都营地铁'), prov(['src:toei-shinjuku-map'], undefined, D2)) },
   { kind: 'operator', ...entity(BUSTA, names('バスタ新宿', 'Busta Shinjuku', 'Busta 新宿'), prov(['src:busta-floor-maps'], 'A bus terminal, not a railway operator; listed so that its floors have an owner.', D2)) },
+  { kind: 'operator', ...entity(PUBLIC, names('公共地下通路（事業者の改札外）', 'Public underground space (outside every operator\'s gates)', '公共地下通道（各运营方检票口之外）'),
+    prov([S_TERMINAL], 'Not an operator. 西口地下広場 belongs to no railway; listed so that its floor has an owner. Named and drawn on the 新宿ターミナルマップ.', D2)) },
 ];
 
 export const COLOR_NOTE =
@@ -566,14 +569,11 @@ const passages: Passage[] = [
     { notes: `${RED} The red line runs as far as elevator Ⓖ.` }),
   link('jr-b1f-central-to-keio-corridor', A.central, A.keioLink, prov([S_B1, S_KEIO]), false,
     { hasSteps: true, notes: 'Two flights of steps are drawn in this corridor. JR B1F map: "バリアフリー経路を利用して小田急線・京王線へのお乗換えを利用されるお客さまは南口をご利用ください".' }),
-  link('jr-west-exit-to-keio-west-gate', A.westUnpaid, A.keioWestUnpaid, prov([S_B1, S_KEIO]), null,
-    { inferred: true, common: { stationId: null, asOf: JR_ASOF, geometryConfidence: 'unknown' },
-      notes: 'INFERRED from signage text only: JR prints "京王線へ" at the west end of the free passage, Keio prints "JR線・小田急線 東口方面" outside 京王西口. Neither map draws the walkway between them, and the area is under reconstruction.' }),
   link('keio-b2f-head-to-platform-1-2', A.keioHead, A.keioP12, prov([S_KEIO_LAYER], undefined, D2), null, { common: keioCommon }),
   link('keio-b2f-head-to-platform-3', A.keioHead, A.keioP3, prov([S_KEIO_LAYER], undefined, D2), null, { common: keioCommon }),
-  link('keio-b1f-west-gate-outside-to-department-store-side', A.keioWestUnpaid, A.keioDeptUnpaid, prov([S_KEIO_LAYER], undefined, D2), null,
-    { inferred: true, common: keioCommon,
-      notes: 'INFERRED: the unpaid tone of the Keio drawing is continuous along the west side between 京王西口 and 京王百貨店口, but no walkway is labelled there.' }),
+  link('keio-b1f-west-gate-outside-to-department-store-side', A.keioWestUnpaid, A.keioDeptUnpaid, prov([S_KEIO_LAYER, S_TERMINAL], undefined, D2), null,
+    { common: keioCommon,
+      notes: 'The underground sheet of the 新宿ターミナルマップ (2020年7月現在) draws a walkway from 京王西口 past the east side of the Keio gates to 京王百貨店口 and JR 中央西改札; the Keio drawing tints the same side as unpaid. Whether there are steps on it was not read.' }),
   link('keio-b1f-department-store-side-to-keio-mall', A.keioDeptUnpaid, A.keioMall, prov([S_KEIO_LAYER], undefined, D2), true,
     { common: keioCommon, notes: 'On the wheelchair route (green dotted line) of the Keio 階層図.' }),
 ];
@@ -964,8 +964,6 @@ export function block(id: string, operatorId: string | null, n: Names, box: Plan
 // ---------------------------------------------------------------------------
 
 const unconfirmedConnections: StationModel['unconfirmedConnections'] = [
-  { id: 'uc-2f-south-to-new-south-street', description: '南口 (outside 南改札) ⇄ 甲州街道改札 across 甲州街道 at street level.',
-    reason: 'A public road crossing, not drawn as a walkway on the JR 2F map. The two JR 2F paid areas are joined in this model only through the platforms.' },
   { id: 'uc-southeast-to-south', description: '東南改札外 ⇄ 南口 (outside 南改札) on 2F.',
     reason: 'Separated by ルミネ2 on the JR 2F map; no direct unpaid walkway was read.' },
   { id: 'uc-platform-13-16-south-zone', description: 'A zone at the south end of platforms 13–16 that the JR 1F map tints differently and labels "B1F 中央東改札・中央西改札", and "小田急線連絡口" drawn near platforms 14 / 16 on the 立体図.',
@@ -976,10 +974,12 @@ const unconfirmedConnections: StationModel['unconfirmedConnections'] = [
     reason: 'Alighting only; left out. Its stairs carry time-dependent directions on the Keio drawing.' },
   { id: 'uc-odakyu-platform-1', description: 'Odakyu ground-level platform 1 and anything east of track 2.',
     reason: 'The Odakyu map of 2026.7.25 shows platforms 2–6 on 1F and 7–10 on B1F only; the station is being rebuilt.' },
-  { id: 'uc-oedo-gate-b', description: 'What lies inside 大江戸線改札B on the B1F new-line concourse.',
-    reason: 'Keio prints the gate; the way from it down to the Oedo Line could not be followed on the Toei 立体図 at the size it is published.' },
-  { id: 'uc-oedo-track-sides', description: 'Which edge of the Oedo Line platform tracks 6 and 7 run along.',
-    reason: 'The Toei 立体図 labels the two directions at the platform ends only. No tracks are drawn beside that platform.' },
+  { id: 'uc-oedo-floors', description: 'Floor labels and landings inside the Oedo Line gates.',
+    reason: 'The Toei 立体図 prints "B3F" and "B4F" close together where the Oedo concourse meets the Shinjuku Line mezzanine, and draws the flights from 大江戸線改札B and from the north end of the platform with intermediate landings. The landings are left out and the split between B3F and B4F is this reading of a small drawing.' },
+  { id: 'uc-oedo-a1-surface', description: '出口 A1 of the Oedo Line: the lift and escalator from the concourse up to the street.',
+    reason: 'Drawn on the Toei 立体図 ("地上へ"), but the street level around it is outside the modelled area; A1 is entered as an exit on the concourse floor.' },
+  { id: 'uc-west-plaza-interior', description: 'The inside of 西口地下広場: the numbered stairs 1–18, the taxi stand, and the walking lines between them.',
+    reason: 'The plaza is entered as one area from the 新宿ターミナルマップ of 2020年7月. The west exit is being rebuilt, so the walking lines inside it today may differ; none are drawn.' },
   { id: 'uc-metro-temporary-lift', description: 'The lift marked （仮設） near exit A12 of the Marunouchi Line station, and the lifts from its B1F concourse to street level.',
     reason: 'Whether the temporary lift lands inside or outside the gates was not legible; street-level lifts are outside the modelled area.' },
   { id: 'uc-metro-oedo-nishiguchi', description: 'The west end of the Marunouchi Line concourse ⇄ 都営大江戸線 新宿西口駅.',

@@ -122,6 +122,27 @@
       },
       "validFrom": null,
       "validTo": null
+    },
+    {
+      "kind": "operator",
+      "id": "sk:operator:public-space",
+      "externalIds": {},
+      "names": {
+        "ja": "公共地下通路（事業者の改札外）",
+        "ja_kana": null,
+        "en": "Public underground space (outside every operator's gates)",
+        "zh": "公共地下通道（各运营方检票口之外）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:shinjuku-terminal-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12",
+        "note": "Not an operator. 西口地下広場 belongs to no railway; listed so that its floor has an owner. Named and drawn on the 新宿ターミナルマップ."
+      },
+      "validFrom": null,
+      "validTo": null
     }
   ],
   "railLines": [
@@ -1069,6 +1090,37 @@
     },
     {
       "kind": "level",
+      "id": "sk:level:toei-oedo-shinjuku-b1f",
+      "externalIds": {},
+      "names": {
+        "ja": "B1F",
+        "ja_kana": null,
+        "en": "B1F",
+        "zh": "B1F"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-map",
+          "src:keio-new-line-layer-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-oedo-shinjuku",
+      "existence": "verified",
+      "geometryConfidence": "unknown",
+      "asOf": "2026-11",
+      "notes": "Only the landing inside 大江戸線改札B, level with the new-line passage.",
+      "operatorId": "sk:operator:toei",
+      "label": "B1F",
+      "ordinal": -1,
+      "elevation": -5.4,
+      "elevationNote": "Schematic. Floor heights were not measured; only the vertical order is taken from the source."
+    },
+    {
+      "kind": "level",
       "id": "sk:level:toei-oedo-shinjuku-b3f",
       "externalIds": {},
       "names": {
@@ -1090,6 +1142,7 @@
       "existence": "verified",
       "geometryConfidence": "unknown",
       "asOf": "2026-11",
+      "notes": "The part of the Oedo concourse with the gate towards exit A1. See uc-oedo-floors about the floor label.",
       "operatorId": "sk:operator:toei",
       "label": "B3F",
       "ordinal": -3,
@@ -1119,7 +1172,7 @@
       "existence": "verified",
       "geometryConfidence": "unknown",
       "asOf": "2026-11",
-      "notes": "Only the Oedo side of the transfer gate to the Shinjuku Line mezzanine.",
+      "notes": "The Oedo side of the mezzanine it shares with the Shinjuku Line station.",
       "operatorId": "sk:operator:toei",
       "label": "B4F",
       "ordinal": -4,
@@ -1270,6 +1323,36 @@
       "label": "4F",
       "ordinal": 3,
       "elevation": 12,
+      "elevationNote": "Schematic. Floor heights were not measured; only the vertical order is taken from the source."
+    },
+    {
+      "kind": "level",
+      "id": "sk:level:public-west-plaza-b1f",
+      "externalIds": {},
+      "names": {
+        "ja": "B1F",
+        "ja_kana": null,
+        "en": "B1F",
+        "zh": "B1F"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:shinjuku-terminal-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "unknown",
+      "asOf": "2020-07",
+      "notes": "Drawn level with the JR and Odakyu B1F. Relative heights are not from a source.",
+      "operatorId": "sk:operator:public-space",
+      "label": "B1F",
+      "ordinal": -1,
+      "elevation": -4,
       "elevationNote": "Schematic. Floor heights were not measured; only the vertical order is taken from the source."
     }
   ],
@@ -3963,14 +4046,14 @@
       ]
     },
     {
-      "kind": "passage",
-      "id": "sk:area:toei-oedo-b4f-transfer-passage",
+      "kind": "concourse",
+      "id": "sk:area:toei-oedo-b1f-gate-b-inside",
       "externalIds": {},
       "names": {
-        "ja": null,
+        "ja": "大江戸線改札B 改札内（B1F）",
         "ja_kana": null,
-        "en": "Oedo Line side of the transfer gate (B4F)",
-        "zh": "大江户线换乘口内侧（B4F）"
+        "en": "Inside Oedo Line Gate B (B1F)",
+        "zh": "大江户线检票口B内侧（B1F）"
       },
       "provenance": {
         "sourceIds": [
@@ -3986,20 +4069,66 @@
       "existence": "verified",
       "geometryConfidence": "unknown",
       "asOf": "2026-11",
-      "notes": "Unnamed. Read from the Toei 立体図 at the size it is published; the layout inside the Oedo Line gates is coarse.",
+      "notes": "The small paid landing drawn behind the gate line; the label is descriptive. Read from the Toei 立体図, which is published small; positions are schematic.",
+      "levelId": "sk:level:toei-oedo-shinjuku-b1f",
+      "fareZone": "paid:toei",
+      "footprint": [
+        {
+          "x0": 34.8,
+          "x1": 37.4,
+          "z0": 44.8,
+          "z1": 47.2
+        }
+      ],
+      "anchor": {
+        "x": 36,
+        "z": 46
+      }
+    },
+    {
+      "kind": "concourse",
+      "id": "sk:area:toei-oedo-b4f-transfer-passage",
+      "externalIds": {},
+      "names": {
+        "ja": "大江戸線 コンコース（B4F・新宿線のりかえ側）",
+        "ja_kana": null,
+        "en": "Oedo Line concourse (B4F, Shinjuku Line transfer side)",
+        "zh": "大江户线站厅（B4F，新宿线换乘侧）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-map",
+          "src:keio-new-line-layer-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-oedo-shinjuku",
+      "existence": "verified",
+      "geometryConfidence": "unknown",
+      "asOf": "2026-11",
+      "notes": "Unnamed on the drawing; the label is descriptive. The slab marked B4F beside the Shinjuku Line mezzanine, with an arm that the flights from 大江戸線改札B come down to. Read from the Toei 立体図, which is published small; positions are schematic.",
       "levelId": "sk:level:toei-oedo-shinjuku-b4f",
       "fareZone": "paid:toei",
       "footprint": [
         {
           "x0": 39.8,
-          "x1": 41.4,
-          "z0": 36,
-          "z1": 40
+          "x1": 46,
+          "z0": 35.4,
+          "z1": 39.4
+        },
+        {
+          "x0": 39.8,
+          "x1": 42.2,
+          "z0": 39.4,
+          "z1": 47.2
         }
       ],
       "anchor": {
-        "x": 40.6,
-        "z": 38
+        "x": 42.5,
+        "z": 37.4
       }
     },
     {
@@ -4007,10 +4136,10 @@
       "id": "sk:area:toei-oedo-b3f-concourse",
       "externalIds": {},
       "names": {
-        "ja": "大江戸線 改札内コンコース（B3F）",
+        "ja": "大江戸線 改札内コンコース（A1出口側）",
         "ja_kana": null,
-        "en": "Oedo Line concourse (inside gates, B3F)",
-        "zh": "大江户线站厅（付费区，B3F）"
+        "en": "Oedo Line concourse (inside gates, exit A1 side)",
+        "zh": "大江户线站厅（付费区，A1出口侧）"
       },
       "provenance": {
         "sourceIds": [
@@ -4025,19 +4154,19 @@
       "existence": "verified",
       "geometryConfidence": "unknown",
       "asOf": "2026-11",
-      "notes": "The label is descriptive. Read from the Toei 立体図 at the size it is published; the layout inside the Oedo Line gates is coarse.",
+      "notes": "The label is descriptive. The station office, the toilets and the lift to the platform are drawn on this part. Read from the Toei 立体図, which is published small; positions are schematic.",
       "levelId": "sk:level:toei-oedo-shinjuku-b3f",
       "fareZone": "paid:toei",
       "footprint": [
         {
-          "x0": 41.8,
-          "x1": 48,
+          "x0": 47,
+          "x1": 58,
           "z0": 35.4,
           "z1": 39.4
         }
       ],
       "anchor": {
-        "x": 45,
+        "x": 52.5,
         "z": 38.6
       }
     },
@@ -4046,10 +4175,10 @@
       "id": "sk:area:toei-oedo-b3f-unpaid",
       "externalIds": {},
       "names": {
-        "ja": "大江戸線 改札外（B3F・A1出口側）",
+        "ja": "大江戸線 改札外（A1出口側）",
         "ja_kana": null,
-        "en": "Outside the Oedo Line gates (B3F, exit A1 side)",
-        "zh": "大江户线检票口外（B3F，A1出口侧）"
+        "en": "Outside the Oedo Line gates (exit A1 side)",
+        "zh": "大江户线检票口外（A1出口侧）"
       },
       "provenance": {
         "sourceIds": [
@@ -4064,20 +4193,20 @@
       "existence": "verified",
       "geometryConfidence": "unknown",
       "asOf": "2026-11",
-      "notes": "The label is descriptive. Read from the Toei 立体図 at the size it is published; the layout inside the Oedo Line gates is coarse.",
+      "notes": "The label is descriptive. Ticket machines, a lift and an escalator marked \"地上へ\" are drawn here. Read from the Toei 立体図, which is published small; positions are schematic.",
       "levelId": "sk:level:toei-oedo-shinjuku-b3f",
       "fareZone": "unpaid",
       "footprint": [
         {
-          "x0": 48.8,
-          "x1": 52,
+          "x0": 58.8,
+          "x1": 62,
           "z0": 35.4,
           "z1": 39.4
         }
       ],
       "anchor": {
-        "x": 50.4,
-        "z": 38.4
+        "x": 60.4,
+        "z": 37.4
       }
     },
     {
@@ -4103,7 +4232,7 @@
       "existence": "verified",
       "geometryConfidence": "unknown",
       "asOf": "2026-11",
-      "notes": "Toei prints the two directions at the ends of the platform only; which edge each track runs along was not established, so no track is drawn.",
+      "notes": "An island platform with a track line drawn along each side. The arrow \"⑥ 六本木方面（代々木）\" leaves the far track line at the south-east end and \"⑦ 光が丘方面（都庁前）\" leaves the near one at the north-west end; with the compass on the drawing that puts track 6 on the north-east side. Car numbers on the Toei table run from 8 (光が丘 end) to 1 (六本木 end).",
       "levelId": "sk:level:toei-oedo-shinjuku-b7f",
       "fareZone": "paid:toei",
       "footprint": [
@@ -4128,7 +4257,7 @@
               "towardsEn": "for Roppongi (next: Yoyogi)"
             }
           ],
-          "side": null
+          "side": "z-"
         },
         {
           "number": "7",
@@ -4139,7 +4268,7 @@
               "towardsEn": "for Hikarigaoka (next: Tochomae)"
             }
           ],
-          "side": null
+          "side": "z+"
         }
       ]
     },
@@ -4401,6 +4530,51 @@
         "x": 30,
         "z": -4
       }
+    },
+    {
+      "kind": "concourse",
+      "id": "sk:area:west-exit-underground-plaza",
+      "externalIds": {},
+      "names": {
+        "ja": "西口地下広場",
+        "ja_kana": null,
+        "en": "West Exit underground plaza (West Concourse)",
+        "zh": "西口地下广场"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:shinjuku-terminal-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "unknown",
+      "asOf": "2020-07",
+      "notes": "Named \"西口地下広場 West Concourse\" on the underground sheet of the 新宿ターミナルマップ, which draws it as one walkable space between JR 西改札, the Odakyu 西口地下改札, 京王西口 and the Marunouchi Line passage. The sheet is dated 2020年7月現在, older than the operator drawings. The west exit is being rebuilt.",
+      "levelId": "sk:level:public-west-plaza-b1f",
+      "fareZone": "unpaid",
+      "footprint": [
+        {
+          "x0": -24.4,
+          "x1": -4.6,
+          "z0": 25,
+          "z1": 31
+        },
+        {
+          "x0": -18.5,
+          "x1": -15,
+          "z0": 22,
+          "z1": 25
+        }
+      ],
+      "anchor": {
+        "x": -14,
+        "z": 28
+      }
     }
   ],
   "passages": [
@@ -4645,37 +4819,6 @@
     },
     {
       "kind": "passage-link",
-      "id": "sk:passage:jr-west-exit-to-keio-west-gate",
-      "externalIds": {},
-      "names": {
-        "ja": null,
-        "ja_kana": null,
-        "en": null,
-        "zh": null
-      },
-      "provenance": {
-        "sourceIds": [
-          "src:jreast-floormap-b1f",
-          "src:keio-station-map"
-        ],
-        "dataNature": "manual-verified",
-        "lastVerifiedAt": "2026-11-11"
-      },
-      "validFrom": null,
-      "validTo": null,
-      "stationId": null,
-      "existence": "verified",
-      "geometryConfidence": "unknown",
-      "asOf": "2026-08",
-      "notes": "INFERRED from signage text only: JR prints \"京王線へ\" at the west end of the free passage, Keio prints \"JR線・小田急線 東口方面\" outside 京王西口. Neither map draws the walkway between them, and the area is under reconstruction.",
-      "fromAreaId": "sk:area:jr-b1f-west-unpaid",
-      "toAreaId": "sk:area:keio-b1f-west-gate-unpaid",
-      "connection": "inferred",
-      "stepFree": null,
-      "hasSteps": null
-    },
-    {
-      "kind": "passage-link",
       "id": "sk:passage:keio-b2f-head-to-platform-1-2",
       "externalIds": {},
       "names": {
@@ -4744,7 +4887,8 @@
       },
       "provenance": {
         "sourceIds": [
-          "src:keio-layer-map"
+          "src:keio-layer-map",
+          "src:shinjuku-terminal-map"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-12"
@@ -4755,10 +4899,10 @@
       "existence": "verified",
       "geometryConfidence": "schematic",
       "asOf": "2026-03",
-      "notes": "INFERRED: the unpaid tone of the Keio drawing is continuous along the west side between 京王西口 and 京王百貨店口, but no walkway is labelled there.",
+      "notes": "The underground sheet of the 新宿ターミナルマップ (2020年7月現在) draws a walkway from 京王西口 past the east side of the Keio gates to 京王百貨店口 and JR 中央西改札; the Keio drawing tints the same side as unpaid. Whether there are steps on it was not read.",
       "fromAreaId": "sk:area:keio-b1f-west-gate-unpaid",
       "toAreaId": "sk:area:keio-b1f-department-store-side-unpaid",
-      "connection": "inferred",
+      "connection": "verified",
       "stepFree": null,
       "hasSteps": null
     },
@@ -4974,6 +5118,162 @@
     },
     {
       "kind": "passage-link",
+      "id": "sk:passage:jr-west-exit-to-west-plaza",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:shinjuku-terminal-map",
+          "src:jreast-floormap-b1f"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "unknown",
+      "asOf": "2020-07",
+      "notes": "JR 西改札 opens onto 西口地下広場 on the underground sheet; JR prints \"京王線へ／西口バスのりば／丸ノ内線\" at the west end of its free passage. The sheet is dated 2020年7月現在, older than the operator drawings.",
+      "fromAreaId": "sk:area:jr-b1f-west-unpaid",
+      "toAreaId": "sk:area:west-exit-underground-plaza",
+      "connection": "verified",
+      "stepFree": null,
+      "hasSteps": null
+    },
+    {
+      "kind": "passage-link",
+      "id": "sk:passage:odakyu-west-underground-to-west-plaza",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:shinjuku-terminal-map",
+          "src:odakyu-shinjuku-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "unknown",
+      "asOf": "2020-07",
+      "notes": "The space in front of the Odakyu 西口地下改札 runs into 西口地下広場; Odakyu prints \"京王線\", \"丸ノ内線\" and \"JR線\" there. The sheet is dated 2020年7月現在, older than the operator drawings.",
+      "fromAreaId": "sk:area:odakyu-b1f-west-underground-gate-unpaid",
+      "toAreaId": "sk:area:west-exit-underground-plaza",
+      "connection": "verified",
+      "stepFree": null,
+      "hasSteps": null
+    },
+    {
+      "kind": "passage-link",
+      "id": "sk:passage:keio-west-gate-to-west-plaza",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:shinjuku-terminal-map",
+          "src:keio-layer-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "unknown",
+      "asOf": "2020-07",
+      "notes": "京王西口 is drawn at the south edge of 西口地下広場; Keio prints \"丸ノ内線 西口方面\" and \"JR線・小田急線へ 東口方面\" outside it. The two are drawn at different heights here only because the Keio floor is. The sheet is dated 2020年7月現在, older than the operator drawings.",
+      "fromAreaId": "sk:area:keio-b1f-west-gate-unpaid",
+      "toAreaId": "sk:area:west-exit-underground-plaza",
+      "connection": "verified",
+      "stepFree": null,
+      "hasSteps": null
+    },
+    {
+      "kind": "passage-link",
+      "id": "sk:passage:marunouchi-concourse-to-west-plaza",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:shinjuku-terminal-map",
+          "src:tokyo-metro-shinjuku-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "unknown",
+      "asOf": "2020-07",
+      "notes": "メトロ通路 with the Marunouchi Line gates runs along the north side of 西口地下広場 (exits A10–A13); Tokyo Metro prints \"JR線・小田急線・京王線\" at exit A12. The sheet is dated 2020年7月現在, older than the operator drawings.",
+      "fromAreaId": "sk:area:tokyo-metro-b1f-concourse",
+      "toAreaId": "sk:area:west-exit-underground-plaza",
+      "connection": "verified",
+      "stepFree": null,
+      "hasSteps": null
+    },
+    {
+      "kind": "passage-link",
+      "id": "sk:passage:jr-east-basement-to-marunouchi-concourse",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:shinjuku-terminal-map",
+          "src:jreast-floormap-b1f",
+          "src:tokyo-metro-shinjuku-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "unknown",
+      "asOf": "2020-07",
+      "notes": "東口地下通路 in front of JR 東改札 and 中央東改札 runs north into メトロ通路 at exit A9; JR prints \"東京メトロ丸ノ内線へ\" there and Tokyo Metro prints \"JR線\" at A9. The sheet is dated 2020年7月現在, older than the operator drawings.",
+      "fromAreaId": "sk:area:jr-b1f-east-unpaid",
+      "toAreaId": "sk:area:tokyo-metro-b1f-concourse",
+      "connection": "verified",
+      "stepFree": null,
+      "hasSteps": null
+    },
+    {
+      "kind": "passage-link",
       "id": "sk:passage:jr-south-exit-to-odakyu-south-exit",
       "externalIds": {},
       "names": {
@@ -4984,6 +5284,7 @@
       },
       "provenance": {
         "sourceIds": [
+          "src:shinjuku-terminal-map",
           "src:jreast-floormap-2f",
           "src:jreast-floormap-b1f",
           "src:odakyu-shinjuku-map"
@@ -4996,17 +5297,17 @@
       "stationId": null,
       "existence": "verified",
       "geometryConfidence": "unknown",
-      "asOf": "2026-08",
-      "notes": "INFERRED from signage text only: JR prints \"小田急線へ\" outside 南改札 and Odakyu prints \"JR線・バスタ新宿\" outside 南口改札口; both open onto the same side of 甲州街道. JR also directs barrier-free transfers to the Odakyu and Keio lines to 南口.",
+      "asOf": "2020-07",
+      "notes": "The street-level sheet draws JR 南改札 and the Odakyu 南口改札 side by side on the pavement it calls 南口 (South Concourse). JR directs barrier-free transfers to the Odakyu and Keio lines to 南口. The sheet is dated 2020年7月現在, older than the operator drawings.",
       "fromAreaId": "sk:area:jr-2f-south-exit-unpaid",
       "toAreaId": "sk:area:odakyu-2f-south-gate-unpaid",
-      "connection": "inferred",
+      "connection": "verified",
       "stepFree": true,
       "hasSteps": null
     },
     {
       "kind": "passage-link",
-      "id": "sk:passage:jr-west-exit-to-odakyu-west-underground",
+      "id": "sk:passage:jr-south-exit-to-koshu-kaido-gate-crossing",
       "externalIds": {},
       "names": {
         "ja": null,
@@ -5016,8 +5317,8 @@
       },
       "provenance": {
         "sourceIds": [
-          "src:jreast-floormap-b1f",
-          "src:odakyu-shinjuku-map"
+          "src:shinjuku-terminal-map",
+          "src:jreast-floormap-2f"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-12"
@@ -5027,11 +5328,11 @@
       "stationId": null,
       "existence": "verified",
       "geometryConfidence": "unknown",
-      "asOf": "2026-08",
-      "notes": "INFERRED from signage text only: Odakyu prints \"JR線\" outside 西口地下改札口; JR draws the west end of its free passage there. The plaza between them is under reconstruction.",
-      "fromAreaId": "sk:area:jr-b1f-west-unpaid",
-      "toAreaId": "sk:area:odakyu-b1f-west-underground-gate-unpaid",
-      "connection": "inferred",
+      "asOf": "2020-07",
+      "notes": "Outdoors: the pedestrian crossing over 甲州街道 drawn on the street-level sheet between 南口 and the side of 甲州街道改札 and バスタ新宿. A public road crossing, not a station passage. The sheet is dated 2020年7月現在, older than the operator drawings.",
+      "fromAreaId": "sk:area:jr-2f-south-exit-unpaid",
+      "toAreaId": "sk:area:jr-2f-koshu-kaido-unpaid",
+      "connection": "verified",
       "stepFree": null,
       "hasSteps": null
     },
@@ -5059,133 +5360,9 @@
       "existence": "verified",
       "geometryConfidence": "unknown",
       "asOf": "2026-08",
-      "notes": "INFERRED from signage text only: Odakyu prints a second \"JR線\" arrow beside its B1F gate line, on the side where JR draws 中央西改札. JR draws only a ticket office outside that gate.",
+      "notes": "INFERRED from signage text only: Odakyu prints a second \"JR線\" arrow beside its B1F gate line, on the side where JR draws 中央西改札. JR draws only a ticket office outside that gate, and the 新宿ターミナルマップ does not settle it.",
       "fromAreaId": "sk:area:jr-b1f-central-west-unpaid",
       "toAreaId": "sk:area:odakyu-b1f-west-underground-gate-unpaid",
-      "connection": "inferred",
-      "stepFree": null,
-      "hasSteps": null
-    },
-    {
-      "kind": "passage-link",
-      "id": "sk:passage:odakyu-west-underground-to-keio-west-gate",
-      "externalIds": {},
-      "names": {
-        "ja": null,
-        "ja_kana": null,
-        "en": null,
-        "zh": null
-      },
-      "provenance": {
-        "sourceIds": [
-          "src:odakyu-shinjuku-map",
-          "src:keio-layer-map"
-        ],
-        "dataNature": "manual-verified",
-        "lastVerifiedAt": "2026-11-12"
-      },
-      "validFrom": null,
-      "validTo": null,
-      "stationId": null,
-      "existence": "verified",
-      "geometryConfidence": "unknown",
-      "asOf": "2026-08",
-      "notes": "INFERRED from signage text only: Odakyu prints \"京王線\" outside 西口地下改札口; Keio prints \"JR線・小田急線へ 東口方面\" outside 京王西口.",
-      "fromAreaId": "sk:area:odakyu-b1f-west-underground-gate-unpaid",
-      "toAreaId": "sk:area:keio-b1f-west-gate-unpaid",
-      "connection": "inferred",
-      "stepFree": null,
-      "hasSteps": null
-    },
-    {
-      "kind": "passage-link",
-      "id": "sk:passage:jr-east-basement-to-marunouchi-concourse",
-      "externalIds": {},
-      "names": {
-        "ja": null,
-        "ja_kana": null,
-        "en": null,
-        "zh": null
-      },
-      "provenance": {
-        "sourceIds": [
-          "src:jreast-floormap-b1f",
-          "src:tokyo-metro-shinjuku-map"
-        ],
-        "dataNature": "manual-verified",
-        "lastVerifiedAt": "2026-11-12"
-      },
-      "validFrom": null,
-      "validTo": null,
-      "stationId": null,
-      "existence": "verified",
-      "geometryConfidence": "unknown",
-      "asOf": "2026-08",
-      "notes": "INFERRED from signage text only: JR prints \"東京メトロ丸ノ内線へ\" at its east basement passage; Tokyo Metro prints \"JR線\" at exit A9.",
-      "fromAreaId": "sk:area:jr-b1f-east-unpaid",
-      "toAreaId": "sk:area:tokyo-metro-b1f-concourse",
-      "connection": "inferred",
-      "stepFree": null,
-      "hasSteps": null
-    },
-    {
-      "kind": "passage-link",
-      "id": "sk:passage:jr-west-exit-to-marunouchi-concourse",
-      "externalIds": {},
-      "names": {
-        "ja": null,
-        "ja_kana": null,
-        "en": null,
-        "zh": null
-      },
-      "provenance": {
-        "sourceIds": [
-          "src:jreast-floormap-b1f",
-          "src:tokyo-metro-shinjuku-map"
-        ],
-        "dataNature": "manual-verified",
-        "lastVerifiedAt": "2026-11-12"
-      },
-      "validFrom": null,
-      "validTo": null,
-      "stationId": null,
-      "existence": "verified",
-      "geometryConfidence": "unknown",
-      "asOf": "2026-08",
-      "notes": "INFERRED from signage text only: JR prints \"丸ノ内線\" at the west end of its free passage; Tokyo Metro prints \"JR線・小田急線・京王線\" at exit A12.",
-      "fromAreaId": "sk:area:jr-b1f-west-unpaid",
-      "toAreaId": "sk:area:tokyo-metro-b1f-concourse",
-      "connection": "inferred",
-      "stepFree": null,
-      "hasSteps": null
-    },
-    {
-      "kind": "passage-link",
-      "id": "sk:passage:odakyu-west-underground-to-marunouchi-concourse",
-      "externalIds": {},
-      "names": {
-        "ja": null,
-        "ja_kana": null,
-        "en": null,
-        "zh": null
-      },
-      "provenance": {
-        "sourceIds": [
-          "src:odakyu-shinjuku-map",
-          "src:tokyo-metro-shinjuku-map"
-        ],
-        "dataNature": "manual-verified",
-        "lastVerifiedAt": "2026-11-12"
-      },
-      "validFrom": null,
-      "validTo": null,
-      "stationId": null,
-      "existence": "verified",
-      "geometryConfidence": "unknown",
-      "asOf": "2026-08",
-      "notes": "INFERRED from signage text only: Odakyu prints \"丸ノ内線\" outside 西口地下改札口; Tokyo Metro prints \"小田急線\" at exit A12.",
-      "fromAreaId": "sk:area:odakyu-b1f-west-underground-gate-unpaid",
-      "toAreaId": "sk:area:tokyo-metro-b1f-concourse",
       "connection": "inferred",
       "stepFree": null,
       "hasSteps": null
@@ -6366,7 +6543,9 @@
       },
       "provenance": {
         "sourceIds": [
-          "src:keio-new-line-layer-map"
+          "src:keio-new-line-layer-map",
+          "src:keio-new-line-works-notice",
+          "src:toei-shinjuku-map"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-12"
@@ -6377,7 +6556,7 @@
       "existence": "verified",
       "geometryConfidence": "unknown",
       "asOf": "2026-03",
-      "notes": "Printed on the Keio 階層図 beside the B1F passage. What lies inside it was NOT read, so no route goes through this gate.",
+      "notes": "Named on the Keio drawings beside the B1F passage, west of 京王新線口. The Toei 立体図 draws a gate line at the same place with flights leading down from it.",
       "levelId": "sk:level:keio-new-line-shinjuku-b1f",
       "gateKind": "ticket",
       "position": {
@@ -6389,7 +6568,7 @@
           "areaId": "sk:area:keio-new-line-b1f-concourse"
         },
         {
-          "blockId": "sk:block:toei-oedo-gate-b-inside"
+          "areaId": "sk:area:toei-oedo-b1f-gate-b-inside"
         }
       ],
       "direction": "both",
@@ -6469,7 +6648,7 @@
       "levelId": "sk:level:toei-oedo-shinjuku-b3f",
       "gateKind": "ticket",
       "position": {
-        "x": 48.4,
+        "x": 58.4,
         "z": 37.4
       },
       "sides": [
@@ -7286,7 +7465,7 @@
       "levelId": "sk:level:toei-oedo-shinjuku-b3f",
       "areaId": "sk:area:toei-oedo-b3f-unpaid",
       "position": {
-        "x": 52,
+        "x": 62,
         "z": 37.4
       },
       "leadsToJa": "新宿マインズタワー・ホテルサンルートプラザ新宿・JR東京総合病院・バスタ新宿",
@@ -7524,6 +7703,40 @@
       "leadsToJa": "タクシー乗車場・高速バス降車場",
       "leadsToEn": "taxi stand; expressway bus drop-off",
       "stepFree": true
+    },
+    {
+      "kind": "entrance",
+      "id": "sk:entrance:west-plaza-street-stairs",
+      "externalIds": {},
+      "names": {
+        "ja": "地上への階段（1〜18）",
+        "ja_kana": null,
+        "en": "Stairs to street level (1–18)",
+        "zh": "通往地面的楼梯（1～18）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:shinjuku-terminal-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "unknown",
+      "asOf": "2020-07",
+      "notes": "One entry for the numbered stairs drawn around the plaza; the street-level sheet prints 西口バスのりば above them. The sheet is dated 2020年7月現在, older than the operator drawings.",
+      "levelId": "sk:level:public-west-plaza-b1f",
+      "areaId": "sk:area:west-exit-underground-plaza",
+      "position": {
+        "x": -14,
+        "z": 31
+      },
+      "leadsToJa": "西口バスのりば・タクシーのりば",
+      "leadsToEn": "West Exit bus stops and taxi stand",
+      "stepFree": null
     }
   ],
   "verticals": [
@@ -12302,7 +12515,8 @@
       "provenance": {
         "sourceIds": [
           "src:keio-new-line-layer-map",
-          "src:keio-new-line-map"
+          "src:keio-new-line-map",
+          "src:keio-new-line-works-notice"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-12"
@@ -12313,7 +12527,7 @@
       "existence": "verified",
       "geometryConfidence": "schematic",
       "asOf": "2026-03",
-      "notes": "Lettered on the Keio 階層図 (Ⓕ). Stands for every staircase of this pair drawn on the floor map; how many there are was not counted.",
+      "notes": "Lettered on the Keio 階層図 (Ⓕ). A Keio works notice read on 2026-11-12 marks the escalator here \"エスカレーター更新工事中 ※階段は通行可能\"; the same notice says one staircase of platforms 4·5 is narrowed from 2026-09-04. Stands for every staircase of this pair drawn on the floor map; how many there are was not counted.",
       "verticalKind": "stairs",
       "operatorLabel": null,
       "stops": [
@@ -12351,7 +12565,8 @@
       "provenance": {
         "sourceIds": [
           "src:keio-new-line-layer-map",
-          "src:keio-new-line-map"
+          "src:keio-new-line-map",
+          "src:keio-new-line-works-notice"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-12"
@@ -12362,7 +12577,7 @@
       "existence": "verified",
       "geometryConfidence": "schematic",
       "asOf": "2026-03",
-      "notes": "Lettered on the Keio 階層図 (Ⓕ). Stands for every escalator of this pair drawn on the floor map; count and running direction were not recorded.",
+      "notes": "Lettered on the Keio 階層図 (Ⓕ). A Keio works notice read on 2026-11-12 marks the escalator here \"エスカレーター更新工事中 ※階段は通行可能\"; the same notice says one staircase of platforms 4·5 is narrowed from 2026-09-04. Stands for every escalator of this pair drawn on the floor map; count and running direction were not recorded.",
       "verticalKind": "escalator",
       "operatorLabel": null,
       "stops": [
@@ -12854,6 +13069,108 @@
     },
     {
       "kind": "vertical",
+      "id": "sk:vertical:toei-oedo-stairs-gate-b-to-b4f",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-oedo-shinjuku",
+      "existence": "verified",
+      "geometryConfidence": "unknown",
+      "asOf": "2026-11",
+      "notes": "Stairs and escalators are drawn leading down from the gate line of 大江戸線改札B, with two intermediate landings that are left out here. Stands for every staircase of this pair drawn on the floor map; how many there are was not counted.",
+      "verticalKind": "stairs",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:toei-oedo-shinjuku-b1f",
+          "areaId": "sk:area:toei-oedo-b1f-gate-b-inside",
+          "position": {
+            "x": 36.9,
+            "z": 45.45
+          }
+        },
+        {
+          "levelId": "sk:level:toei-oedo-shinjuku-b4f",
+          "areaId": "sk:area:toei-oedo-b4f-transfer-passage",
+          "position": {
+            "x": 40.6,
+            "z": 45.45
+          }
+        }
+      ],
+      "directionNote": null,
+      "hoursNote": null,
+      "aggregated": true,
+      "declaredNonAdjacent": {
+        "reason": "Drawn by the operator as one run between these floors, with no stop on the floors in between."
+      }
+    },
+    {
+      "kind": "vertical",
+      "id": "sk:vertical:toei-oedo-escalator-gate-b-to-b4f",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-oedo-shinjuku",
+      "existence": "verified",
+      "geometryConfidence": "unknown",
+      "asOf": "2026-11",
+      "notes": "Stairs and escalators are drawn leading down from the gate line of 大江戸線改札B, with two intermediate landings that are left out here. Stands for every escalator of this pair drawn on the floor map; count and running direction were not recorded.",
+      "verticalKind": "escalator",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:toei-oedo-shinjuku-b1f",
+          "areaId": "sk:area:toei-oedo-b1f-gate-b-inside",
+          "position": {
+            "x": 36.9,
+            "z": 46.55
+          }
+        },
+        {
+          "levelId": "sk:level:toei-oedo-shinjuku-b4f",
+          "areaId": "sk:area:toei-oedo-b4f-transfer-passage",
+          "position": {
+            "x": 40.6,
+            "z": 46.55
+          }
+        }
+      ],
+      "directionNote": "Running direction is not recorded on the floor map.",
+      "hoursNote": null,
+      "aggregated": true,
+      "declaredNonAdjacent": {
+        "reason": "Drawn by the operator as one run between these floors, with no stop on the floors in between."
+      }
+    },
+    {
+      "kind": "vertical",
       "id": "sk:vertical:toei-oedo-stairs-transfer-passage-to-concourse",
       "externalIds": {},
       "names": {
@@ -12875,7 +13192,7 @@
       "existence": "verified",
       "geometryConfidence": "unknown",
       "asOf": "2026-11",
-      "notes": "Whether this short flight is stairs, an escalator or both was not legible; entered as stairs. Read from the Toei 立体図 at the size it is published; the layout inside the Oedo Line gates is coarse. Stands for every staircase of this pair drawn on the floor map; how many there are was not counted.",
+      "notes": "Whether this short flight is stairs, an escalator or both was not legible; entered as stairs. Read from the Toei 立体図, which is published small; positions are schematic. Stands for every staircase of this pair drawn on the floor map; how many there are was not counted.",
       "verticalKind": "stairs",
       "operatorLabel": null,
       "stops": [
@@ -12883,22 +13200,175 @@
           "levelId": "sk:level:toei-oedo-shinjuku-b4f",
           "areaId": "sk:area:toei-oedo-b4f-transfer-passage",
           "position": {
-            "x": 40.9,
-            "z": 38
+            "x": 45.2,
+            "z": 38.6
           }
         },
         {
           "levelId": "sk:level:toei-oedo-shinjuku-b3f",
           "areaId": "sk:area:toei-oedo-b3f-concourse",
           "position": {
-            "x": 42.8,
-            "z": 38
+            "x": 47.8,
+            "z": 38.6
           }
         }
       ],
       "directionNote": null,
       "hoursNote": null,
       "aggregated": true
+    },
+    {
+      "kind": "vertical",
+      "id": "sk:vertical:toei-oedo-stairs-b4f-to-platform-north-end",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-oedo-shinjuku",
+      "existence": "verified",
+      "geometryConfidence": "unknown",
+      "asOf": "2026-11",
+      "notes": "Drawn at the 光が丘 end of the platform, by way of an intermediate landing; the のりかえ・出口案内 table under the Toei 立体図 shows an escalator and stairs at car 8. Stands for every staircase of this pair drawn on the floor map; how many there are was not counted.",
+      "verticalKind": "stairs",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:toei-oedo-shinjuku-b4f",
+          "areaId": "sk:area:toei-oedo-b4f-transfer-passage",
+          "position": {
+            "x": 41,
+            "z": 36.85
+          }
+        },
+        {
+          "levelId": "sk:level:toei-oedo-shinjuku-b7f",
+          "areaId": "sk:platform:toei-oedo-shinjuku-6-7",
+          "position": {
+            "x": 44.2,
+            "z": 36.85
+          }
+        }
+      ],
+      "directionNote": null,
+      "hoursNote": null,
+      "aggregated": true,
+      "declaredNonAdjacent": {
+        "reason": "Drawn by the operator as one run between these floors, with no stop on the floors in between."
+      }
+    },
+    {
+      "kind": "vertical",
+      "id": "sk:vertical:toei-oedo-escalator-b4f-to-platform-north-end",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-oedo-shinjuku",
+      "existence": "verified",
+      "geometryConfidence": "unknown",
+      "asOf": "2026-11",
+      "notes": "Drawn at the 光が丘 end of the platform, by way of an intermediate landing; the のりかえ・出口案内 table under the Toei 立体図 shows an escalator and stairs at car 8. Stands for every escalator of this pair drawn on the floor map; count and running direction were not recorded.",
+      "verticalKind": "escalator",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:toei-oedo-shinjuku-b4f",
+          "areaId": "sk:area:toei-oedo-b4f-transfer-passage",
+          "position": {
+            "x": 41,
+            "z": 37.949999999999996
+          }
+        },
+        {
+          "levelId": "sk:level:toei-oedo-shinjuku-b7f",
+          "areaId": "sk:platform:toei-oedo-shinjuku-6-7",
+          "position": {
+            "x": 44.2,
+            "z": 37.949999999999996
+          }
+        }
+      ],
+      "directionNote": "Running direction is not recorded on the floor map.",
+      "hoursNote": null,
+      "aggregated": true,
+      "declaredNonAdjacent": {
+        "reason": "Drawn by the operator as one run between these floors, with no stop on the floors in between."
+      }
+    },
+    {
+      "kind": "vertical",
+      "id": "sk:vertical:toei-oedo-escalator-b4f-to-platform",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-oedo-shinjuku",
+      "existence": "verified",
+      "geometryConfidence": "unknown",
+      "asOf": "2026-11",
+      "notes": "One of the two long escalator banks drawn between the concourse and the platform; the のりかえ・出口案内 table under the Toei 立体図 shows an escalator at car 3, with the Shinjuku Line as a transfer. Toei lists 16 escalators for the Oedo Line here. Stands for every escalator of this pair drawn on the floor map; count and running direction were not recorded.",
+      "verticalKind": "escalator",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:toei-oedo-shinjuku-b4f",
+          "areaId": "sk:area:toei-oedo-b4f-transfer-passage",
+          "position": {
+            "x": 44.6,
+            "z": 36.9
+          }
+        },
+        {
+          "levelId": "sk:level:toei-oedo-shinjuku-b7f",
+          "areaId": "sk:platform:toei-oedo-shinjuku-6-7",
+          "position": {
+            "x": 49,
+            "z": 36.9
+          }
+        }
+      ],
+      "directionNote": "Running direction is not recorded on the floor map.",
+      "hoursNote": null,
+      "aggregated": true,
+      "declaredNonAdjacent": {
+        "reason": "Drawn by the operator as one run between these floors, with no stop on the floors in between."
+      }
     },
     {
       "kind": "vertical",
@@ -12923,7 +13393,7 @@
       "existence": "verified",
       "geometryConfidence": "unknown",
       "asOf": "2026-11",
-      "notes": "Long escalators are drawn between the Oedo concourse and the platform; Toei lists 16 escalators for the Oedo Line here. Stands for every escalator of this pair drawn on the floor map; count and running direction were not recorded.",
+      "notes": "The other long escalator bank; the のりかえ・出口案内 table under the Toei 立体図 shows an escalator and a lift at car 1, towards exit A1. Stands for every escalator of this pair drawn on the floor map; count and running direction were not recorded.",
       "verticalKind": "escalator",
       "operatorLabel": null,
       "stops": [
@@ -12931,16 +13401,16 @@
           "levelId": "sk:level:toei-oedo-shinjuku-b3f",
           "areaId": "sk:area:toei-oedo-b3f-concourse",
           "position": {
-            "x": 46.6,
-            "z": 36.6
+            "x": 51,
+            "z": 37.9
           }
         },
         {
           "levelId": "sk:level:toei-oedo-shinjuku-b7f",
           "areaId": "sk:platform:toei-oedo-shinjuku-6-7",
           "position": {
-            "x": 51,
-            "z": 36.9
+            "x": 55.5,
+            "z": 37.9
           }
         }
       ],
@@ -12974,7 +13444,7 @@
       "existence": "verified",
       "geometryConfidence": "unknown",
       "asOf": "2026-11",
-      "notes": "Drawn as a shaft from B3F to B7F on the Toei 立体図. Toei lists two lifts for the Oedo Line; the other is at exit A1.",
+      "notes": "Drawn as a shaft from the concourse beside the gate down to the platform. Toei lists two lifts for the Oedo Line; the other is at exit A1.",
       "verticalKind": "elevator",
       "operatorLabel": null,
       "stops": [
@@ -12982,16 +13452,16 @@
           "levelId": "sk:level:toei-oedo-shinjuku-b3f",
           "areaId": "sk:area:toei-oedo-b3f-concourse",
           "position": {
-            "x": 44.4,
-            "z": 37.6
+            "x": 57,
+            "z": 37.4
           }
         },
         {
           "levelId": "sk:level:toei-oedo-shinjuku-b7f",
           "areaId": "sk:platform:toei-oedo-shinjuku-6-7",
           "position": {
-            "x": 44.4,
-            "z": 37.6
+            "x": 57,
+            "z": 37.4
           }
         }
       ],
@@ -13475,49 +13945,8 @@
       "aggregated": false
     }
   ],
-  "unverifiedBlocks": [
-    {
-      "kind": "unverified-block",
-      "id": "sk:block:toei-oedo-gate-b-inside",
-      "externalIds": {},
-      "names": {
-        "ja": "大江戸線改札B の内側",
-        "ja_kana": null,
-        "en": "Inside Oedo Line Gate B",
-        "zh": "大江户线检票口B内侧"
-      },
-      "provenance": {
-        "sourceIds": [
-          "src:senkiro-lab-schematic"
-        ],
-        "dataNature": "synthetic",
-        "lastVerifiedAt": "2026-11-11",
-        "note": "Placeholder. Not verified against any operator source."
-      },
-      "validFrom": null,
-      "validTo": null,
-      "stationId": null,
-      "existence": "unverified",
-      "geometryConfidence": "unknown",
-      "asOf": null,
-      "notes": "NOT VERIFIED. The gate is printed on the Keio 階層図; the way from it down to the Oedo Line was not read.",
-      "operatorId": "sk:operator:toei",
-      "box": {
-        "x0": 34.8,
-        "x1": 36.4,
-        "z0": 45,
-        "z1": 47
-      },
-      "elevation": -5.4,
-      "height": 1.2
-    }
-  ],
+  "unverifiedBlocks": [],
   "unconfirmedConnections": [
-    {
-      "id": "uc-2f-south-to-new-south-street",
-      "description": "南口 (outside 南改札) ⇄ 甲州街道改札 across 甲州街道 at street level.",
-      "reason": "A public road crossing, not drawn as a walkway on the JR 2F map. The two JR 2F paid areas are joined in this model only through the platforms."
-    },
     {
       "id": "uc-southeast-to-south",
       "description": "東南改札外 ⇄ 南口 (outside 南改札) on 2F.",
@@ -13544,14 +13973,19 @@
       "reason": "The Odakyu map of 2026.7.25 shows platforms 2–6 on 1F and 7–10 on B1F only; the station is being rebuilt."
     },
     {
-      "id": "uc-oedo-gate-b",
-      "description": "What lies inside 大江戸線改札B on the B1F new-line concourse.",
-      "reason": "Keio prints the gate; the way from it down to the Oedo Line could not be followed on the Toei 立体図 at the size it is published."
+      "id": "uc-oedo-floors",
+      "description": "Floor labels and landings inside the Oedo Line gates.",
+      "reason": "The Toei 立体図 prints \"B3F\" and \"B4F\" close together where the Oedo concourse meets the Shinjuku Line mezzanine, and draws the flights from 大江戸線改札B and from the north end of the platform with intermediate landings. The landings are left out and the split between B3F and B4F is this reading of a small drawing."
     },
     {
-      "id": "uc-oedo-track-sides",
-      "description": "Which edge of the Oedo Line platform tracks 6 and 7 run along.",
-      "reason": "The Toei 立体図 labels the two directions at the platform ends only. No tracks are drawn beside that platform."
+      "id": "uc-oedo-a1-surface",
+      "description": "出口 A1 of the Oedo Line: the lift and escalator from the concourse up to the street.",
+      "reason": "Drawn on the Toei 立体図 (\"地上へ\"), but the street level around it is outside the modelled area; A1 is entered as an exit on the concourse floor."
+    },
+    {
+      "id": "uc-west-plaza-interior",
+      "description": "The inside of 西口地下広場: the numbered stairs 1–18, the taxi stand, and the walking lines between them.",
+      "reason": "The plaza is entered as one area from the 新宿ターミナルマップ of 2020年7月. The west exit is being rebuilt, so the walking lines inside it today may differ; none are drawn."
     },
     {
       "id": "uc-metro-temporary-lift",

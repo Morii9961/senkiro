@@ -182,17 +182,36 @@ describe('route search behaviour', () => {
     const rinji = 'sk:gate:keio-temporary-gate';
     expect(mustFind(NODE.keioPlatforms, rinji).nodeIds.at(-1)).toBe(rinji);
     expect(findRoute(graph, rinji, NODE.keioPlatforms)).toMatchObject({ found: false, reason: 'unreachable' });
-    // a gate that faces an unverified block has nothing beyond it
-    expect(graph.edges.filter((e) => e.from === 'sk:gate:toei-oedo-gate-b' && e.kind !== 'gate-approach').map((e) => e.to)).toEqual([]);
+  });
+
+  it('大江戸線改札B leads down to the Oedo Line, and the Shinjuku Line transfer gate joins the two Toei lines', () => {
+    const viaGateB = mustFind('sk:entrance:new-line-exit-5', 'sk:platform:toei-oedo-shinjuku-6-7');
+    expect(viaGateB.legs.filter((l) => l.kind === 'gate').map((l) => l.elementId)).toEqual(['sk:gate:toei-oedo-gate-b']);
+    expect(levelLabels(model, viaGateB.levelSequence)).toEqual(['B1F', 'B1F', 'B4F', 'B7F']);
+    const transfer = mustFind('sk:platform:keio-new-line-shinjuku-4-5', 'sk:platform:toei-oedo-shinjuku-6-7');
+    expect(transfer.legs.filter((l) => l.kind === 'gate').map((l) => l.elementId)).toEqual(['sk:gate:toei-oedo-transfer-gate']);
+  });
+
+  it('the operators meet in public space: 西口地下広場, 東口地下通路 and 南口', () => {
+    // Odakyu underground gate → plaza → Marunouchi Line gates, without entering anybody's paid area on the way
+    const r = mustFind('sk:gate:odakyu-west-underground-gate', 'sk:gate:tokyo-metro-west-gates');
+    expect(r.inferredLegs).toBe(0);
+    expect(r.nodeIds).toContain('sk:area:west-exit-underground-plaza');
+    // JR South Exit → the crossing of 甲州街道 → Busta 4F
+    const bus = mustFind('sk:entrance:jr-south-exit', 'sk:entrance:busta-4f-bus-boarding');
+    expect(bus.cost.gatePasses).toBe(0);
+    expect(levelLabels(model, bus.levelSequence).at(-1)).toBe('4F');
   });
 
   it('marks legs that rest on inferred connections, and can be told to avoid them', () => {
-    const keioWestOutside = 'sk:area:keio-b1f-west-gate-unpaid';
-    const r = mustFind('sk:entrance:jr-west-exit-basement', keioWestOutside);
+    // the one link that still rests on signage only: outside JR 中央西改札 ⇄ the front of the Odakyu underground gate
+    expect(model.passages.filter((p) => p.connection === 'inferred').map((p) => p.id)).toEqual(['sk:passage:jr-central-west-outside-to-odakyu-west-underground']);
+    const odakyuFront = 'sk:area:odakyu-b1f-west-underground-gate-unpaid';
+    const r = mustFind('sk:entrance:jr-central-west-outside', odakyuFront);
     expect(r.inferredLegs).toBe(1);
     expect(r.cost.gatePasses).toBe(0);
-    // told to avoid inferred links, the search goes the long way round through both paid areas
-    const strict = findRoute(graph, 'sk:entrance:jr-west-exit-basement', keioWestOutside, { allowInferred: false });
+    // told to avoid inferred links, the search goes the long way round through the JR paid area
+    const strict = findRoute(graph, 'sk:entrance:jr-central-west-outside', odakyuFront, { allowInferred: false });
     expect(strict.found).toBe(true);
     if (strict.found) {
       expect(strict.inferredLegs).toBe(0);

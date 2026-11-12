@@ -105,7 +105,11 @@ describe('data validation', () => {
 
   it('does not let an unverified element claim better than "unknown" geometry', () => {
     const model = loadModel();
-    model.unverifiedBlocks[0]!.geometryConfidence = 'schematic';
+    // the model has no such block any more, so one is put in for the check
+    model.unverifiedBlocks.push({
+      ...model.gates[0]!, kind: 'unverified-block', id: 'sk:block:test', existence: 'unverified', geometryConfidence: 'schematic',
+      operatorId: null, box: { x0: 90, x1: 92, z0: 90, z1: 92 }, elevation: 0, height: 1,
+    } as never);
     expect(rules(model)).toContain('geometry-confidence');
   });
 

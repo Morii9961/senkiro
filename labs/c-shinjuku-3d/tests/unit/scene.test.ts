@@ -20,6 +20,7 @@ import {
   type ViewOptions,
 } from '../../src/ui/scene/build';
 import { MAX_POLAR, MIN_DISTANCE, MIN_POLAR, focusPose, homePose, mixPose, targetLimits } from '../../src/ui/scene/camera';
+import { outlineEdges, unionRects } from '../../src/ui/scene/prims';
 import { PALETTES } from '../../src/ui/theme';
 import { loadGraph, loadModel } from './helpers';
 
@@ -119,8 +120,53 @@ describe('3D primitives ⇄ model', () => {
     const only = buildPrims(model, view({ focusOrdinals: new Set([-1]), ghostOthers: false, showBlocks: false }));
     const stray = only.filter((p) => p.role === 'area' && ordinalOf.get(areaById.get(p.elementId!)!.levelId) !== -1);
     expect(stray).toEqual([]);
-    // one plate per drawn height, shared by the operators whose floors lie in that plane
-    expect(only.filter((p) => p.role === 'shell')).toHaveLength(new Set(model.levels.filter((l) => l.ordinal === -1).map((l) => l.elevation)).size);
+    // the plates lie in one plane per drawn height, shared by the operators whose floors lie in that plane
+    const plates = only.filter((p) => p.role === 'shell');
+    expect(new Set(plates.map((p) => p.a[1].toFixed(3))).size).toBe(new Set(model.levels.filter((l) => l.ordinal === -1).map((l) => l.elevation)).size);
+    // and every area of the floor stands on one
+    const plateRects = plates.map(planRect);
+    for (const a of model.areas) {
+      if (ordinalOf.get(a.levelId) !== -1) continue;
+      for (const r of a.footprint) {
+        for (const [x, z] of [[r.x0, r.z0], [r.x1, r.z0], [r.x0, r.z1], [r.x1, r.z1], [(r.x0 + r.x1) / 2, (r.z0 + r.z1) / 2]] as const) {
+          expect(plateRects.some((q) => x >= q.x0 - 1e-6 && x <= q.x1 + 1e-6 && z >= q.z0 - 1e-6 && z <= q.z1 + 1e-6), `${a.id} at ${x},${z}`).toBe(true);
+        }
+      }
+    }
+  });
+
+  it('a floor plate follows the built shape instead of boxing it in', () => {
+    // an L of two rectangles: the union keeps the area and has six outline corners, not four
+    const l = unionRects([
+      { x0: 0, x1: 10, z0: 0, z1: 2 },
+      { x0: 8, x1: 10, z0: 0, z1: 9 },
+      { x0: 1, x1: 4, z0: 1, z1: 2 }, // inside the first: adds nothing
+    ]);
+    const area = l.reduce((s, r) => s + (r.x1 - r.x0) * (r.z1 - r.z0), 0);
+    expect(area).toBeCloseTo(10 * 2 + 2 * 7, 6);
+    for (let i = 0; i < l.length; i++) {
+      for (let j = i + 1; j < l.length; j++) {
+        const a = l[i]!;
+        const b = l[j]!;
+        expect(Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0) > 1e-6 && Math.min(a.z1, b.z1) - Math.max(a.z0, b.z0) > 1e-6).toBe(false);
+      }
+    }
+    const perimeter = outlineEdges(l).reduce((s, e) => s + e.hi - e.lo, 0);
+    expect(perimeter).toBeCloseTo(2 * (10 + 9), 6);
+
+    // in the model: the plates of a floor cover far less than the box around them
+    const prims1 = buildPrims(model, view({ focusOrdinals: new Set([-1]), ghostOthers: false, showBlocks: false }));
+    const plates = prims1.filter((p) => p.role === 'shell').map(planRect);
+    const covered = plates.reduce((s, r) => s + (r.x1 - r.x0) * (r.z1 - r.z0), 0);
+    const x0 = Math.min(...plates.map((r) => r.x0));
+    const x1 = Math.max(...plates.map((r) => r.x1));
+    const z0 = Math.min(...plates.map((r) => r.z0));
+    const z1 = Math.max(...plates.map((r) => r.z1));
+    expect(covered).toBeLessThan((x1 - x0) * (z1 - z0) * 0.75);
+    // the outline is drawn as lines only
+    const edges = prims1.filter((p) => p.role === 'shell-edge');
+    expect(edges.length).toBeGreaterThan(4);
+    expect(edges.every((p) => p.alpha === 0 && p.outline && p.width === 0 && p.thickness === 0)).toBe(true);
   });
 
   it('ghosted floors are drawn faintly and without furniture', () => {

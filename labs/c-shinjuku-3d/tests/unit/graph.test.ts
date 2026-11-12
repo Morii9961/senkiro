@@ -134,17 +134,15 @@ describe('routing graph', () => {
     }
   });
 
-  it('unverified blocks are drawn but never become nodes or edge targets', () => {
+  it('unverified blocks never become nodes; every gate now has two sides that were read', () => {
     const blockIds = new Set(model.unverifiedBlocks.map((b) => b.id));
-    expect(blockIds.size).toBeGreaterThan(0);
     expect(graph.nodes.filter((n) => blockIds.has(n.elementId))).toEqual([]);
-    // gates that face a block keep exactly one modelled side
-    const facingBlock = model.gates.filter((g) => g.sides.some((s) => 'blockId' in s));
-    expect(facingBlock.map((g) => g.id)).toEqual(['sk:gate:toei-oedo-gate-b']);
-    for (const g of facingBlock) {
+    // no gate is left facing a placeholder: both sides of each are areas of the model
+    expect(model.gates.filter((g) => g.sides.some((s) => 'blockId' in s)).map((g) => g.id)).toEqual([]);
+    for (const g of model.gates) {
       const neighbours = new Set(graph.edges.filter((e) => e.from === g.id || e.to === g.id).flatMap((e) => [e.from, e.to]));
       neighbours.delete(g.id);
-      expect(neighbours.size, g.id).toBe(1);
+      expect(neighbours.size, g.id).toBe(2);
     }
   });
 });

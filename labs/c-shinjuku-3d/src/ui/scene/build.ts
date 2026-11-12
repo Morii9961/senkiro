@@ -54,6 +54,36 @@ export function modelBounds(model: StationModel): PlanRect {
 }
 
 /**
+ * The points the camera has to keep in view: the corners of every area drawn
+ * at full strength (with some headroom above it) and, when shown, of the
+ * unverified blocks. Framing these instead of one box around them matters
+ * because the station is not box-shaped — the top and bottom floors are small.
+ */
+export function scenePoints(model: StationModel, opts: Pick<ViewOptions, 'explode' | 'focusOrdinals' | 'showBlocks'>): Vec3[] {
+  const headroom = 1.6;
+  const pad = 1.4;
+  const focused = opts.focusOrdinals;
+  const levels = focused === null ? model.levels : model.levels.filter((l) => focused.has(l.ordinal));
+  const used = new Map((levels.length > 0 ? levels : model.levels).map((l) => [l.id, levelY(l, opts.explode)]));
+  const out: Vec3[] = [];
+  const corners = (r: PlanRect, y0: number, y1: number) => {
+    for (const x of [r.x0, r.x1]) for (const z of [r.z0, r.z1]) for (const y of [y0, y1]) out.push([x, y, z]);
+  };
+  for (const a of model.areas) {
+    const y = used.get(a.levelId);
+    if (y === undefined) continue;
+    for (const r of a.footprint) corners({ x0: r.x0 - pad, x1: r.x1 + pad, z0: r.z0 - pad, z1: r.z1 + pad }, y - 0.3, y + headroom);
+  }
+  if (focused === null && opts.showBlocks) {
+    for (const blk of model.unverifiedBlocks) {
+      const y = elevationY(blk.elevation, opts.explode);
+      corners(blk.box, y, y + blk.height * 0.55);
+    }
+  }
+  return out;
+}
+
+/**
  * The box the camera has to frame: everything drawn at full strength.
  * With some floors in focus it is those floors only.
  */

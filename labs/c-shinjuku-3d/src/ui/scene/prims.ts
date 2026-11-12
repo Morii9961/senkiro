@@ -14,6 +14,7 @@ export type MaterialKind = 'floor' | 'wall' | 'concrete' | 'metal' | 'dark' | 'a
 
 export type PrimRole =
   | 'shell'
+  | 'shell-edge'
   | 'area'
   | 'bridge'
   | 'wall'
@@ -140,6 +141,47 @@ export function subtractRects(rects: PlanRect[], holes: PlanRect[]): PlanRect[] 
 }
 
 /**
+ * The area covered by `rects` (which may overlap) as rectangles that do not
+ * overlap: the plane is cut along every rectangle side, the covered cells are
+ * kept and neighbouring cells are joined again, first along x, then along z.
+ */
+export function unionRects(rects: PlanRect[]): PlanRect[] {
+  const uniq = (values: number[]) => {
+    const sorted = [...values].sort((a, b) => a - b);
+    return sorted.filter((v, i) => i === 0 || v - sorted[i - 1]! > 1e-6);
+  };
+  const xs = uniq(rects.flatMap((r) => [r.x0, r.x1]));
+  const zs = uniq(rects.flatMap((r) => [r.z0, r.z1]));
+  const covered = (x: number, z: number) => rects.some((r) => x > r.x0 && x < r.x1 && z > r.z0 && z < r.z1);
+  let open: PlanRect[] = [];
+  const done: PlanRect[] = [];
+  for (let j = 0; j + 1 < zs.length; j++) {
+    const z0 = zs[j]!;
+    const z1 = zs[j + 1]!;
+    const runs: PlanRect[] = [];
+    for (let i = 0; i + 1 < xs.length; i++) {
+      if (!covered((xs[i]! + xs[i + 1]!) / 2, (z0 + z1) / 2)) continue;
+      const last = runs.at(-1);
+      if (last && Math.abs(last.x1 - xs[i]!) < 1e-6) last.x1 = xs[i + 1]!;
+      else runs.push({ x0: xs[i]!, x1: xs[i + 1]!, z0, z1 });
+    }
+    // a run that continues the same span from the band before grows that rectangle
+    const next: PlanRect[] = [];
+    for (const run of runs) {
+      const k = open.findIndex((o) => Math.abs(o.x0 - run.x0) < 1e-6 && Math.abs(o.x1 - run.x1) < 1e-6);
+      if (k >= 0) {
+        const grown = open.splice(k, 1)[0]!;
+        grown.z1 = z1;
+        next.push(grown);
+      } else next.push(run);
+    }
+    done.push(...open);
+    open = next;
+  }
+  return [...done, ...open];
+}
+
+/**
  * One straight piece of a footprint's outline.
  * `axis` is the direction the edge runs along; `at` is its fixed coordinate on
  * the other axis; `inward` points from the edge into the footprint.
@@ -234,6 +276,30 @@ export function openAt(edges: Edge[], p: PlanPoint, halfWidth: number, reach: nu
     for (const [lo, hi] of cut([[e.lo, e.hi]], b.t - halfWidth, b.t + halfWidth)) if (hi - lo > EPS) out.push({ ...e, lo, hi });
   });
   return { edges: out, hit };
+}
+
+/**
+ * Where a link between two areas is drawn: from the point of one footprint to
+ * the point of the other that are closest together. For areas that touch or
+ * overlap in plan there is no gap to bridge, and the anchors are used instead.
+ */
+export function linkEnds(a: { footprint: PlanRect[]; anchor: PlanPoint }, b: { footprint: PlanRect[]; anchor: PlanPoint }): [PlanPoint, PlanPoint] {
+  const span = (a0: number, a1: number, b0: number, b1: number): [number, number] => {
+    const lo = Math.max(a0, b0);
+    const hi = Math.min(a1, b1);
+    if (lo <= hi) return [(lo + hi) / 2, (lo + hi) / 2];
+    return a1 < b0 ? [a1, b0] : [a0, b1];
+  };
+  let best: { d: number; ends: [PlanPoint, PlanPoint] } | null = null;
+  for (const ra of a.footprint) {
+    for (const rb of b.footprint) {
+      const [ax, bx] = span(ra.x0, ra.x1, rb.x0, rb.x1);
+      const [az, bz] = span(ra.z0, ra.z1, rb.z0, rb.z1);
+      const d = Math.hypot(ax - bx, az - bz);
+      if (!best || d < best.d) best = { d, ends: [{ x: ax, z: az }, { x: bx, z: bz }] };
+    }
+  }
+  return best && best.d > 0.3 ? best.ends : [a.anchor, b.anchor];
 }
 
 export function rectsTouch(a: PlanRect, b: PlanRect, eps = 0.01): boolean {

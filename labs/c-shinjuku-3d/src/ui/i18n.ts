@@ -38,6 +38,8 @@ const dict = {
   themeDark: { ja: 'ダーク', en: 'Dark', zh: '深色' },
   language: { ja: '言語', en: 'Language', zh: '语言' },
   close: { ja: '閉じる', en: 'Close', zh: '关闭' },
+  panelHide: { ja: 'パネルを隠す', en: 'Hide the panel', zh: '收起右侧面板' },
+  panelShow: { ja: 'パネルを表示', en: 'Show the panel', zh: '展开右侧面板' },
   north: { ja: '北', en: 'N', zh: '北' },
   orientationNote: {
     ja: '左が北（池袋方面）、右が南（渋谷方面）、奥が東。方位も模式的です。',
@@ -84,7 +86,7 @@ const dict = {
   demos: { ja: 'デモ経路', en: 'Demo routes', zh: '演示路线' },
   demo1: { ja: '東口（地上）→ 山手線 13・14番線', en: 'East Exit (street) → Yamanote, tracks 13–14', zh: '东口（地面）→ 山手线 13·14 号站台' },
   demo2: { ja: '東改札 → 5・6番線（エレベーターのみ）', en: 'East Gate → tracks 5–6 (elevators only)', zh: '东检票口 → 5·6 号站台（仅电梯）' },
-  demo3: { ja: "南口 → 京王線 1〜3番線（改札 2 回）", en: "South Exit → Keio Line tracks 1–3 (two gates)", zh: "南口 → 京王线 1～3 号站台（过两次检票口）" },
+  demo3: { ja: "南口 → 京王線 1・2番線（改札 2 回）", en: "South Exit → Keio Line tracks 1–2 (two gates)", zh: "南口 → 京王线 1·2 号站台（过两次检票口）" },
   clearRoute: { ja: '経路を消す', en: 'Clear route', zh: '清除路线' },
   routeSummary: { ja: '経路の概要', en: 'Route summary', zh: '路线概要' },
   costSegments: { ja: '区間数', en: 'Segments', zh: '段数' },

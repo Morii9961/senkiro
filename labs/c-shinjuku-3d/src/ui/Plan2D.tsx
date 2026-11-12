@@ -17,7 +17,7 @@ import type { SceneHandle } from './Scene3D';
 import { gateDirection } from './scene/arch/gates';
 import { wallEdges } from './scene/arch/slabs';
 import { trackRange } from './scene/labels';
-import { LEVEL_SCALE, boundsOf, unit } from './scene/prims';
+import { LEVEL_SCALE, boundsOf, linkEnds, unit } from './scene/prims';
 import type { RoutePoint } from './scene/routeLine';
 import { inkOn, mix, zoneColor, type Palette } from './theme';
 
@@ -422,7 +422,7 @@ export function Plan2D(props: Props) {
 
         {/* floors */}
         {floor.areas.map((a) => (
-          <g key={a.id} className={a.kind === 'platform' ? 'pick' : undefined} onClick={a.kind === 'platform' ? click(a.id) : undefined}>
+          <g key={a.id} data-area={a.id} className={a.kind === 'platform' ? 'pick' : undefined} onClick={a.kind === 'platform' ? click(a.id) : undefined}>
             {a.footprint.map((r, i) => rectEl(r, String(i), { fill: areaFill(a), ...(a.kind === 'platform' ? { stroke: mix(p.platform, p.ink, 0.35), strokeWidth: px(1), ...sel(a.id) } : {}) }))}
           </g>
         ))}
@@ -458,7 +458,9 @@ export function Plan2D(props: Props) {
           const b = floor.areaById.get(l.toAreaId)!;
           const touching = a.footprint.some((ra) => b.footprint.some((rb) => Math.min(ra.x1, rb.x1) - Math.max(ra.x0, rb.x0) >= -0.01 && Math.min(ra.z1, rb.z1) - Math.max(ra.z0, rb.z0) >= -0.01));
           if (l.connection === 'verified' && touching) return null;
-          return <line key={l.id} x1={a.anchor.x} y1={a.anchor.z} x2={b.anchor.x} y2={b.anchor.z} stroke={p.link} strokeWidth={px(2)} strokeDasharray={`${px(6)} ${px(5)}`} />;
+          const [pa, pb] = linkEnds(a, b);
+          // drawn links are solid, links read from signage only are dashed
+          return <line key={l.id} x1={pa.x} y1={pa.z} x2={pb.x} y2={pb.z} stroke={p.link} strokeWidth={px(l.connection === 'inferred' ? 2 : 3.5)} strokeLinecap="round" strokeDasharray={l.connection === 'inferred' ? `${px(6)} ${px(5)}` : undefined} />;
         })}
 
         {/* gate lines: floor under the gate, then the row of machines */}
