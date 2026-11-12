@@ -1420,7 +1420,8 @@
               "towardsJa": "横浜・大船・小田原・逗子方面",
               "towardsEn": "for Yokohama, Ofuna, Odawara, Zushi"
             }
-          ]
+          ],
+          "side": "z-"
         },
         {
           "number": "2",
@@ -1435,7 +1436,8 @@
               "towardsJa": "横浜・大船・小田原・逗子方面",
               "towardsEn": "for Yokohama, Ofuna, Odawara, Zushi"
             }
-          ]
+          ],
+          "side": "z+"
         }
       ]
     },
@@ -1487,7 +1489,8 @@
               "towardsJa": "池袋・大宮・川越方面／渋谷・大崎・相鉄線方面",
               "towardsEn": "for Ikebukuro, Omiya, Kawagoe / for Shibuya, Osaki, Sotetsu Line"
             }
-          ]
+          ],
+          "side": "z-"
         },
         {
           "number": "4",
@@ -1502,7 +1505,8 @@
               "towardsJa": "大宮・宇都宮・高崎方面",
               "towardsEn": "for Omiya, Utsunomiya, Takasaki"
             }
-          ]
+          ],
+          "side": "z+"
         }
       ]
     },
@@ -1560,7 +1564,8 @@
               "towardsJa": "（特急）",
               "towardsEn": "(limited express)"
             }
-          ]
+          ],
+          "side": "z-"
         },
         {
           "number": "6",
@@ -1575,7 +1580,8 @@
               "towardsJa": "（特急）",
               "towardsEn": "(limited express)"
             }
-          ]
+          ],
+          "side": "z+"
         }
       ]
     },
@@ -1627,7 +1633,8 @@
               "towardsJa": "御茶ノ水・東京方面",
               "towardsEn": "for Ochanomizu, Tokyo"
             }
-          ]
+          ],
+          "side": "z-"
         },
         {
           "number": "8",
@@ -1637,7 +1644,8 @@
               "towardsJa": "御茶ノ水・東京方面",
               "towardsEn": "for Ochanomizu, Tokyo"
             }
-          ]
+          ],
+          "side": "z+"
         }
       ]
     },
@@ -1689,7 +1697,8 @@
               "towardsJa": "甲府・松本方面",
               "towardsEn": "for Kofu, Matsumoto"
             }
-          ]
+          ],
+          "side": "z-"
         },
         {
           "number": "10",
@@ -1699,7 +1708,8 @@
               "towardsJa": "甲府・松本方面",
               "towardsEn": "for Kofu, Matsumoto"
             }
-          ]
+          ],
+          "side": "z+"
         }
       ]
     },
@@ -1751,7 +1761,8 @@
               "towardsJa": "中野・立川・高尾方面",
               "towardsEn": "for Nakano, Tachikawa, Takao"
             }
-          ]
+          ],
+          "side": "z-"
         },
         {
           "number": "12",
@@ -1761,7 +1772,8 @@
               "towardsJa": "中野・立川・高尾方面",
               "towardsEn": "for Nakano, Tachikawa, Takao"
             }
-          ]
+          ],
+          "side": "z+"
         }
       ]
     },
@@ -1813,7 +1825,8 @@
               "towardsJa": "水道橋・秋葉原・千葉方面",
               "towardsEn": "for Suidobashi, Akihabara, Chiba"
             }
-          ]
+          ],
+          "side": "z-"
         },
         {
           "number": "14",
@@ -1823,7 +1836,8 @@
               "towardsJa": "原宿・渋谷・品川方面",
               "towardsEn": "for Harajuku, Shibuya, Shinagawa"
             }
-          ]
+          ],
+          "side": "z+"
         }
       ]
     },
@@ -1875,7 +1889,8 @@
               "towardsJa": "池袋・田端・上野方面",
               "towardsEn": "for Ikebukuro, Tabata, Ueno"
             }
-          ]
+          ],
+          "side": "z-"
         },
         {
           "number": "16",
@@ -1885,7 +1900,8 @@
               "towardsJa": "東中野・中野・三鷹方面",
               "towardsEn": "for Higashi-Nakano, Nakano, Mitaka"
             }
-          ]
+          ],
+          "side": "z+"
         }
       ]
     },

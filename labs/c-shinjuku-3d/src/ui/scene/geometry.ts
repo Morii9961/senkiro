@@ -1,12 +1,12 @@
 /**
- * Merges primitives into a handful of BufferGeometries so the whole station
- * costs a few draw calls instead of several hundred.
+ * Merges primitives into a handful of BufferGeometries — one per material —
+ * so the whole station costs a dozen draw calls instead of several thousand.
  *
  * Each beam contributes 24 vertices / 12 triangles, so triangle index ÷ 12
  * gives the primitive — and through it the model element — under the cursor.
  */
 import { BufferAttribute, BufferGeometry, Color } from 'three';
-import type { Prim, Vec3 } from './build';
+import type { Decal, MaterialKind, Prim, Vec3 } from './prims';
 
 const linearCache = new Map<string, [number, number, number]>();
 
@@ -103,6 +103,7 @@ export function mergePrims(prims: Prim[]): MergedMesh {
     pickable.push(p.pickable);
     // make the faces outward whatever the beam direction: flip if the box is mirrored
     const centre: Vec3 = [(p.a[0] + p.b[0]) / 2, (p.a[1] + p.b[1]) / 2, (p.a[2] + p.b[2]) / 2];
+    const shade = p.shade ?? [1, 1];
     FACES.forEach((face, fi) => {
       const v = face.map((i) => c[i]!);
       const e1: Vec3 = [v[1]![0] - v[0]![0], v[1]![1] - v[0]![1], v[1]![2] - v[0]![2]];
@@ -131,9 +132,11 @@ export function mergePrims(prims: Prim[]): MergedMesh {
         normals[o + 1] = ny;
         normals[o + 2] = nz;
         const co = (base + vi) * 4;
-        colors[co] = r;
-        colors[co + 1] = g;
-        colors[co + 2] = b;
+        // corner index bit 0 says bottom (0) or top (1) of the box
+        const k = shade[face[vi]! % 2]!;
+        colors[co] = r * k;
+        colors[co + 1] = g * k;
+        colors[co + 2] = b * k;
         colors[co + 3] = p.alpha;
       });
       const io = pi * 36 + fi * 6;
@@ -181,13 +184,37 @@ export function buildOutlines(prims: Prim[]): BufferGeometry {
   return geometry;
 }
 
-/** Splits primitives by how they have to be rendered. */
-export function partition(prims: Prim[]): { opaque: Prim[]; translucent: Prim[] } {
-  const opaque: Prim[] = [];
+export const OPAQUE_MATERIALS: MaterialKind[] = ['floor', 'wall', 'concrete', 'metal', 'dark', 'accent'];
+
+/** Splits primitives by how they have to be rendered: per material when opaque, one bucket for everything see-through. */
+export function partition(prims: Prim[]): { opaque: Map<MaterialKind, Prim[]>; translucent: Prim[] } {
+  const opaque = new Map<MaterialKind, Prim[]>(OPAQUE_MATERIALS.map((m) => [m, []]));
   const translucent: Prim[] = [];
   for (const p of prims) {
-    if (p.alpha >= 0.999) opaque.push(p);
-    else if (p.alpha > 0.004) translucent.push(p);
+    if (p.alpha <= 0.004) continue;
+    if (p.alpha >= 0.999 && p.material !== 'glass') opaque.get(p.material)!.push(p);
+    else translucent.push(p);
   }
   return { opaque, translucent };
+}
+
+/** Flat quads with per-corner opacity (baked contact shadows). */
+export function mergeDecals(decals: Decal[]): BufferGeometry {
+  const positions = new Float32Array(decals.length * 12);
+  const colors = new Float32Array(decals.length * 16);
+  const index = new Uint32Array(decals.length * 6);
+  decals.forEach((d, di) => {
+    const [r, g, b] = linearRgb(d.color);
+    d.corners.forEach((c, ci) => {
+      positions.set(c, (di * 4 + ci) * 3);
+      colors.set([r, g, b, d.alphas[ci]!], (di * 4 + ci) * 4);
+    });
+    index.set([di * 4, di * 4 + 1, di * 4 + 2, di * 4, di * 4 + 2, di * 4 + 3], di * 6);
+  });
+  const geometry = new BufferGeometry();
+  geometry.setAttribute('position', new BufferAttribute(positions, 3));
+  geometry.setAttribute('color', new BufferAttribute(colors, 4));
+  geometry.setIndex(new BufferAttribute(index, 1));
+  geometry.computeBoundingSphere();
+  return geometry;
 }

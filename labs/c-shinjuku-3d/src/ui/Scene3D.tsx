@@ -1,20 +1,27 @@
 import { Canvas, useFrame, useThree, type ThreeEvent } from '@react-three/fiber';
 import { useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, type Ref, type RefObject } from 'react';
-import { MOUSE, Spherical, TOUCH, Vector3, type Mesh, type PerspectiveCamera } from 'three';
+import { DoubleSide, MOUSE, PMREMGenerator, Spherical, TOUCH, Vector3, type Object3D, type PerspectiveCamera } from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import type { StationGraph } from '../domain/graph';
 import type { StationModel } from '../domain/types';
+import { buildRoutePrims, buildScene, maxTierForScale, routeBox, routePoints, type RoutePoint, type SceneLabel, type ViewOptions } from './scene/build';
 import {
-  buildPrims,
-  buildRoutePrims,
-  maxTierForScale,
-  modelBounds,
-  routePoints,
-  sceneBox,
-  type SceneLabel,
-  type ViewOptions,
-} from './scene/build';
-import { buildOutlines, elementAtFace, mergePrims, partition, type MergedMesh } from './scene/geometry';
+  FOV,
+  MAX_POLAR,
+  MIN_DISTANCE,
+  MIN_POLAR,
+  easeInOut,
+  focusPose,
+  homePose,
+  maxDistanceFor,
+  mixPose,
+  targetLimits,
+  type Pose,
+} from './scene/camera';
+import { OPAQUE_MATERIALS, buildOutlines, elementAtFace, mergeDecals, mergePrims, partition, type MergedMesh } from './scene/geometry';
+import type { MaterialKind } from './scene/prims';
+import { inkOn } from './theme';
 
 export interface SceneHandle {
   reset(): void;
@@ -32,7 +39,14 @@ export interface RenderStats {
 
 declare global {
   interface Window {
-    __SENKIRO_STATS__?: RenderStats & { frames: number; cameraDistance: number; labelsShown: number };
+    __SENKIRO_STATS__?: RenderStats & {
+      frames: number;
+      cameraDistance: number;
+      cameraPolar: number;
+      cameraTarget: [number, number, number];
+      labelsShown: number;
+      animating: boolean;
+    };
   }
 }
 
@@ -40,6 +54,8 @@ interface Props {
   model: StationModel;
   graph: StationGraph;
   view: ViewOptions;
+  /** The drawn route, shared with the labels and the 2D plan. */
+  routePts: RoutePoint[];
   labels: SceneLabel[];
   showLabels: boolean;
   ariaLabel: string;
@@ -48,68 +64,8 @@ interface Props {
   onStats(stats: RenderStats): void;
   /** Render continuously (for frame-rate measurement) instead of on demand. */
   continuous: boolean;
-}
-
-const FOV = 36;
-const MIN_DISTANCE = 14;
-const HOME_POLAR = 0.86; // from straight up
-const HOME_AZIMUTH = 0.42; // from due west, turned towards the south
-/**
- * Fraction of the half-viewport a framed box may fill. The verified station
- * gets a comfortable margin (the on-screen controls sit in it); the unverified
- * placeholder blocks only have to stay inside the picture.
- */
-const FIT_STATION = { x: 0.8, y: 0.74 };
-const FIT_EVERYTHING = { x: 0.97, y: 0.95 };
-
-/**
- * Camera distance at which every corner of `box` is inside the view when
- * looking at its centre from the home direction.
- */
-type Box = { min: [number, number, number]; max: [number, number, number] };
-
-/** How far the middle of `box`, as seen from the home direction, sits from `target` (in the view plane). */
-function screenOffset(target: Vector3, box: Box): Vector3 {
-  const dir = new Vector3().setFromSpherical(new Spherical(1, HOME_POLAR, HOME_AZIMUTH));
-  const right = new Vector3().crossVectors(new Vector3(0, 1, 0), dir).normalize();
-  const up = new Vector3().crossVectors(dir, right).normalize();
-  let u0 = Infinity;
-  let u1 = -Infinity;
-  let v0 = Infinity;
-  let v1 = -Infinity;
-  const corner = new Vector3();
-  for (const x of [box.min[0], box.max[0]]) {
-    for (const y of [box.min[1], box.max[1]]) {
-      for (const z of [box.min[2], box.max[2]]) {
-        corner.set(x, y, z).sub(target);
-        u0 = Math.min(u0, corner.dot(right));
-        u1 = Math.max(u1, corner.dot(right));
-        v0 = Math.min(v0, corner.dot(up));
-        v1 = Math.max(v1, corner.dot(up));
-      }
-    }
-  }
-  return right.multiplyScalar((u0 + u1) / 2).add(up.multiplyScalar((v0 + v1) / 2));
-}
-
-function fitView(target: Vector3, box: Box, aspect: number, fit: { x: number; y: number }): number {
-  const dir = new Vector3().setFromSpherical(new Spherical(1, HOME_POLAR, HOME_AZIMUTH));
-  const right = new Vector3().crossVectors(new Vector3(0, 1, 0), dir).normalize();
-  const up = new Vector3().crossVectors(dir, right).normalize();
-  const tanY = Math.tan((FOV * Math.PI) / 360);
-  const tanX = tanY * aspect;
-  let radius = 0;
-  const corner = new Vector3();
-  for (const x of [box.min[0], box.max[0]]) {
-    for (const y of [box.min[1], box.max[1]]) {
-      for (const z of [box.min[2], box.max[2]]) {
-        corner.set(x, y, z).sub(target);
-        const depth = corner.dot(dir);
-        radius = Math.max(radius, depth + Math.abs(corner.dot(right)) / (tanX * fit.x), depth + Math.abs(corner.dot(up)) / (tanY * fit.y));
-      }
-    }
-  }
-  return radius;
+  /** Animate camera moves; off = jump. */
+  animate: boolean;
 }
 
 /** Screen rectangle of a label that is currently shown, for click picking. */
@@ -120,6 +76,18 @@ interface LabelRect {
   y1: number;
   elementId: string | null;
 }
+
+/**
+ * Surface finish of the two reflective material kinds (PBR). Floors, walls,
+ * concrete and painted parts are matt and use a plain diffuse material.
+ * Colour always comes from the vertices.
+ */
+const FINISH: Partial<Record<MaterialKind, { roughness: number; metalness: number }>> = {
+  metal: { roughness: 0.36, metalness: 0.78 },
+  glass: { roughness: 0.12, metalness: 0.1 },
+};
+
+const FLY_MS = 650;
 
 export function Scene3D(props: Props) {
   const labelLayer = useRef<HTMLDivElement>(null);
@@ -150,12 +118,14 @@ export function Scene3D(props: Props) {
         down.current = { x: e.clientX, y: e.clientY };
       }}
       onClickCapture={onClickCapture}
+      onContextMenu={(e) => e.preventDefault()}
+      onAuxClick={(e) => e.preventDefault()}
     >
       <Canvas
         flat
         dpr={[1, 2]}
         frameloop={props.continuous ? 'always' : 'demand'}
-        camera={{ fov: FOV, near: 2, far: 1400, position: [60, 80, 90] }}
+        camera={{ fov: FOV, near: 1.5, far: 1400, position: [60, 80, 90] }}
         gl={{ antialias: true, powerPreference: 'high-performance' }}
         tabIndex={0}
         role="application"
@@ -168,7 +138,12 @@ export function Scene3D(props: Props) {
       <div className="labels" ref={labelLayer} aria-hidden={!props.showLabels} hidden={!props.showLabels}>
         {props.labels.map((l) => (
           <span key={l.key} className={`label label-${l.variant}`} data-key={l.key} data-tier={l.tier} style={HIDDEN}>
-            {l.text}
+            <span className="label-text">{l.text}</span>
+            {l.chips?.map((c, i) => (
+              <span key={i} className="label-chip" style={{ ['--c' as string]: c.color, color: inkOn(c.color) }}>
+                <span className="label-chip-text">{c.text}</span>
+              </span>
+            ))}
           </span>
         ))}
       </div>
@@ -203,8 +178,8 @@ function useKeyboard(handleRef: Ref<SceneHandle>) {
 
 function SceneContent({
   model,
-  graph,
   view,
+  routePts,
   labels,
   showLabels,
   handleRef,
@@ -212,52 +187,98 @@ function SceneContent({
   onStats,
   labelLayer,
   labelRects,
+  animate,
 }: Props & { labelLayer: RefObject<HTMLDivElement | null>; labelRects: RefObject<LabelRect[]> }) {
-  const { camera, gl, invalidate, size } = useThree();
+  const { camera, gl, scene, invalidate, size } = useThree();
   const controlsRef = useRef<OrbitControls | null>(null);
-  const opaqueRef = useRef<Mesh>(null);
-  const translucentRef = useRef<Mesh>(null);
+  const pickables = useRef(new Map<Object3D, MergedMesh>());
   const frames = useRef(0);
   const lastStats = useRef('');
   const viewRef = useRef(view);
   viewRef.current = view;
+  const animateRef = useRef(animate);
+  animateRef.current = animate;
+  const flight = useRef<{ from: Pose; to: Pose; start: number } | null>(null);
+
+  // --- environment: a procedural studio, so metal and glass have something to reflect ---
+  useEffect(() => {
+    const pmrem = new PMREMGenerator(gl);
+    const env = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    scene.environment = env;
+    scene.environmentIntensity = 0.22;
+    invalidate();
+    return () => {
+      scene.environment = null;
+      env.dispose();
+      pmrem.dispose();
+    };
+  }, [gl, scene, invalidate]);
 
   // --- geometry -------------------------------------------------------------------
-  const prims = useMemo(() => buildPrims(model, view), [model, view]);
-  const { opaque, translucent, outlines } = useMemo(() => {
-    const parts = partition(prims);
-    return { opaque: mergePrims(parts.opaque), translucent: mergePrims(parts.translucent), outlines: buildOutlines(prims) };
-  }, [prims]);
-  const routeMesh = useMemo(() => {
-    const nodes = new Map(graph.nodes.map((n) => [n.id, n]));
-    const pts = view.route ? routePoints(view.route, nodes, model) : [];
-    return mergePrims(buildRoutePrims(model, view.route, pts, view));
-  }, [model, graph, view]);
+  const parts = useMemo(() => buildScene(model, view), [model, view]);
+  const meshes = useMemo(() => {
+    const { opaque, translucent } = partition(parts.prims);
+    return {
+      opaque: OPAQUE_MATERIALS.map((kind) => ({ kind, mesh: mergePrims(opaque.get(kind) ?? []) })).filter((m) => m.mesh.triangleCount > 0),
+      translucent: mergePrims(translucent),
+      outlines: buildOutlines(parts.prims),
+      decals: mergeDecals(parts.decals),
+    };
+  }, [parts]);
+  const routeMesh = useMemo(() => mergePrims(buildRoutePrims(model, view.route, routePts, view)), [model, view, routePts]);
 
-  useEffect(() => () => opaque.geometry.dispose(), [opaque]);
-  useEffect(() => () => translucent.geometry.dispose(), [translucent]);
-  useEffect(() => () => outlines.dispose(), [outlines]);
+  useEffect(
+    () => () => {
+      for (const m of meshes.opaque) m.mesh.geometry.dispose();
+      meshes.translucent.geometry.dispose();
+      meshes.outlines.dispose();
+      meshes.decals.dispose();
+    },
+    [meshes],
+  );
   useEffect(() => () => routeMesh.geometry.dispose(), [routeMesh]);
-  useEffect(() => invalidate(), [opaque, translucent, outlines, routeMesh, labels, showLabels, invalidate]);
+  useEffect(() => invalidate(), [meshes, routeMesh, labels, showLabels, invalidate]);
 
   // --- camera ---------------------------------------------------------------------
-  const goHome = (cam: PerspectiveCamera, controls: OrbitControls | null) => {
-    const aspect = size.width / Math.max(1, size.height);
-    const v = viewRef.current;
-    const station = sceneBox(model, { ...v, showBlocks: false });
-    const everything = sceneBox(model, v);
-    const target = new Vector3((station.min[0] + station.max[0]) / 2, (station.min[1] + station.max[1]) / 2, (station.min[2] + station.max[2]) / 2);
-    target.add(screenOffset(target, everything).multiplyScalar(0.8));
-    const r = Math.max(MIN_DISTANCE, fitView(target, station, aspect, FIT_STATION), fitView(target, everything, aspect, FIT_EVERYTHING));
-    cam.position.setFromSpherical(new Spherical(r, HOME_POLAR, HOME_AZIMUTH)).add(target);
-    cam.lookAt(target);
+  const aspect = () => size.width / Math.max(1, size.height);
+
+  const currentPose = (): Pose => {
+    const controls = controlsRef.current;
+    const target = controls ? controls.target.clone() : new Vector3();
+    const s = new Spherical().setFromVector3(camera.position.clone().sub(target));
+    return { target, radius: s.radius, polar: s.phi, azimuth: s.theta };
+  };
+
+  const applyPose = (pose: Pose) => {
+    const controls = controlsRef.current;
+    camera.position.setFromSpherical(new Spherical(pose.radius, pose.polar, pose.azimuth)).add(pose.target);
+    camera.lookAt(pose.target);
     if (controls) {
-      controls.maxDistance = Math.max(330, r * 1.7);
-      controls.target.copy(target);
+      controls.target.copy(pose.target);
       controls.update();
     }
     invalidate();
   };
+
+  const flyTo = (to: Pose, instant = false) => {
+    const controls = controlsRef.current;
+    if (controls) {
+      controls.maxDistance = Math.max(controls.maxDistance, to.radius * 1.2);
+      // spend whatever inertia is left from the last drag now, so it cannot nudge the view after the move
+      controls.enableDamping = false;
+      controls.update();
+      controls.enableDamping = true;
+    }
+    if (instant || !animateRef.current) {
+      flight.current = null;
+      applyPose(to);
+      return;
+    }
+    flight.current = { from: currentPose(), to, start: performance.now() };
+    invalidate();
+  };
+
+  const home = () => homePose(model, viewRef.current, aspect());
 
   useLayoutEffect(() => {
     const controls = new OrbitControls(camera, gl.domElement);
@@ -265,15 +286,27 @@ function SceneContent({
     controls.dampingFactor = 0.12;
     controls.screenSpacePanning = false;
     controls.minDistance = MIN_DISTANCE;
-    controls.maxDistance = 330;
-    controls.maxPolarAngle = Math.PI * 0.495;
+    controls.minPolarAngle = MIN_POLAR;
+    controls.maxPolarAngle = MAX_POLAR;
     controls.zoomToCursor = true;
-    controls.mouseButtons = { LEFT: MOUSE.ROTATE, MIDDLE: MOUSE.DOLLY, RIGHT: MOUSE.PAN };
+    // left: orbit · middle and right: drag the model · wheel: zoom (Shift/Ctrl + left also drags)
+    controls.mouseButtons = { LEFT: MOUSE.ROTATE, MIDDLE: MOUSE.PAN, RIGHT: MOUSE.PAN };
     controls.touches = { ONE: TOUCH.ROTATE, TWO: TOUCH.DOLLY_PAN };
     controls.addEventListener('change', () => invalidate());
+    // any direct manipulation takes over from a camera move in progress
+    controls.addEventListener('start', () => {
+      flight.current = null;
+    });
+    const stop = () => {
+      flight.current = null;
+    };
+    gl.domElement.addEventListener('wheel', stop, { passive: true });
     controlsRef.current = controls;
-    goHome(camera as PerspectiveCamera, controls);
+    const pose = home();
+    controls.maxDistance = maxDistanceFor(pose.radius);
+    applyPose(pose);
     return () => {
+      gl.domElement.removeEventListener('wheel', stop);
       controls.dispose();
       controlsRef.current = null;
     };
@@ -281,22 +314,38 @@ function SceneContent({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [camera, gl]);
 
-  // Keep the pannable region near the model so the camera cannot wander off.
-  const bounds = useMemo(() => modelBounds(model), [model]);
+  // Choosing floors re-frames the view on them.
+  const floorsKey = view.focusLeg === null ? (view.focusOrdinals ? [...view.focusOrdinals].sort().join(',') : 'all') : null;
+  const firstFloors = useRef(true);
+  useEffect(() => {
+    if (firstFloors.current) {
+      firstFloors.current = false;
+      return;
+    }
+    if (floorsKey !== null) flyTo(home());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [floorsKey]);
+
+  // Focusing a route leg flies to it.
+  const legKey = view.route && view.focusLeg !== null ? `${view.route.nodeIds[0]}>${view.route.nodeIds.at(-1)}#${view.focusLeg}` : null;
+  useEffect(() => {
+    if (legKey === null || view.focusLeg === null) return;
+    const box = routeBox(model, routePts, view.focusLeg, view.explode);
+    if (box) flyTo(focusPose(box, aspect(), currentPose()));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [legKey]);
+
+  const limits = useMemo(() => targetLimits(model), [model]);
   const clampTarget = (controls: OrbitControls) => {
     const tgt = controls.target;
-    const pad = 12;
-    const x = Math.min(bounds.x1 + pad, Math.max(bounds.x0 - pad, tgt.x));
-    const z = Math.min(bounds.z1 + pad, Math.max(bounds.z0 - pad, tgt.z));
-    const y = Math.min(45, Math.max(-70, tgt.y));
+    const x = Math.min(limits.max[0], Math.max(limits.min[0], tgt.x));
+    const y = Math.min(limits.max[1], Math.max(limits.min[1], tgt.y));
+    const z = Math.min(limits.max[2], Math.max(limits.min[2], tgt.z));
     if (x !== tgt.x || y !== tgt.y || z !== tgt.z) {
-      const dx = x - tgt.x;
-      const dy = y - tgt.y;
-      const dz = z - tgt.z;
+      camera.position.x += x - tgt.x;
+      camera.position.y += y - tgt.y;
+      camera.position.z += z - tgt.z;
       tgt.set(x, y, z);
-      camera.position.x += dx;
-      camera.position.y += dy;
-      camera.position.z += dz;
     }
   };
 
@@ -306,10 +355,11 @@ function SceneContent({
       const orbit = (fn: (s: Spherical) => void) => {
         const controls = controlsRef.current;
         if (!controls) return;
+        flight.current = null;
         const offset = camera.position.clone().sub(controls.target);
         const s = new Spherical().setFromVector3(offset);
         fn(s);
-        s.phi = Math.min(controls.maxPolarAngle, Math.max(0.05, s.phi));
+        s.phi = Math.min(controls.maxPolarAngle, Math.max(controls.minPolarAngle, s.phi));
         s.radius = Math.min(controls.maxDistance, Math.max(controls.minDistance, s.radius));
         camera.position.setFromSpherical(s).add(controls.target);
         camera.lookAt(controls.target);
@@ -317,7 +367,7 @@ function SceneContent({
         invalidate();
       };
       return {
-        reset: () => goHome(camera as PerspectiveCamera, controlsRef.current),
+        reset: () => flyTo(home()),
         zoom: (factor) => orbit((s) => (s.radius *= factor)),
         rotate: (d) => orbit((s) => (s.theta += d)),
         tilt: (d) => orbit((s) => (s.phi += d)),
@@ -327,9 +377,10 @@ function SceneContent({
     [camera, invalidate, model, size.width, size.height],
   );
 
-  // --- labels: level of detail by distance, then greedy collision culling -----------
+  // --- labels: level of detail by scale, then greedy collision culling ----------------
   const labelIndex = useMemo(() => new Map(labels.map((l) => [l.key, l])), [labels]);
   const labelSizes = useRef(new Map<string, { w: number; h: number }>());
+  const lastTier = useRef(-1);
   useEffect(() => {
     labelSizes.current.clear();
   }, [labels]);
@@ -337,7 +388,13 @@ function SceneContent({
   const v = useMemo(() => new Vector3(), []);
   useFrame(() => {
     const controls = controlsRef.current;
-    if (controls) {
+    const fl = flight.current;
+    if (fl) {
+      const k = Math.min(1, (performance.now() - fl.start) / FLY_MS);
+      applyPose(mixPose(fl.from, fl.to, easeInOut(k)));
+      if (k >= 1) flight.current = null;
+      else invalidate();
+    } else if (controls) {
       clampTarget(controls);
       controls.update();
     }
@@ -349,6 +406,12 @@ function SceneContent({
     if (layer && showLabels) {
       const pxPerUnit = size.height / (2 * Math.tan((FOV * Math.PI) / 360) * Math.max(1, distance));
       const maxTier = maxTierForScale(pxPerUnit);
+      if (maxTier !== lastTier.current) {
+        // far away the platform labels shrink to numbers and dots (CSS), so sizes change
+        lastTier.current = maxTier;
+        layer.dataset.zoom = String(maxTier);
+        labelSizes.current.clear();
+      }
       const items: { el: HTMLElement; label: SceneLabel; x: number; y: number; w: number; h: number }[] = [];
       for (const el of Array.from(layer.children) as HTMLElement[]) {
         const label = labelIndex.get(el.dataset.key ?? '');
@@ -391,6 +454,9 @@ function SceneContent({
     // The renderer draws right after these callbacks, inside the same animation
     // frame; a microtask therefore reads the counters of the frame just drawn.
     const frame = frames.current;
+    const polar = controls ? controls.getPolarAngle() : 0;
+    const tgt: [number, number, number] = controls ? [controls.target.x, controls.target.y, controls.target.z] : [0, 0, 0];
+    const animating = flight.current !== null;
     queueMicrotask(() => {
       const info = gl.info;
       const stats: RenderStats = {
@@ -399,7 +465,7 @@ function SceneContent({
         lines: info.render.lines,
         geometries: info.memory.geometries,
       };
-      window.__SENKIRO_STATS__ = { ...stats, frames: frame, cameraDistance: distance, labelsShown: shown };
+      window.__SENKIRO_STATS__ = { ...stats, frames: frame, cameraDistance: distance, cameraPolar: polar, cameraTarget: tgt, labelsShown: shown, animating };
       const key = `${stats.triangles}/${stats.calls}/${stats.lines}`;
       if (key !== lastStats.current && stats.calls > 0) {
         lastStats.current = key;
@@ -409,11 +475,19 @@ function SceneContent({
   });
 
   // --- picking --------------------------------------------------------------------
+  const register = (mesh: MergedMesh) => (obj: Object3D | null) => {
+    if (obj) pickables.current.set(obj, mesh);
+  };
+  useEffect(() => {
+    const map = pickables.current;
+    return () => map.clear();
+  }, [meshes]);
+
   const pick = (e: ThreeEvent<MouseEvent>) => {
     if (e.delta > 6) return; // it was a drag, not a click
     e.stopPropagation();
     for (const hit of e.intersections) {
-      const mesh: MergedMesh | null = hit.object === opaqueRef.current ? opaque : hit.object === translucentRef.current ? translucent : null;
+      const mesh = pickables.current.get(hit.object);
       if (!mesh) continue;
       const id = elementAtFace(mesh, hit.faceIndex);
       if (id) {
@@ -424,22 +498,38 @@ function SceneContent({
     onSelect(null);
   };
 
+  const dark = view.palette.background < '#80';
   return (
     <>
       <color attach="background" args={[view.palette.background]} />
-      <ambientLight intensity={2.25} />
-      <directionalLight position={[-30, 100, 55]} intensity={1.15} />
-      <mesh ref={opaqueRef} geometry={opaque.geometry} onClick={pick}>
-        <meshLambertMaterial vertexColors polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+      <hemisphereLight args={[dark ? '#dfe6f2' : '#ffffff', dark ? '#3a4048' : '#a8a296', dark ? 0.85 : 0.66]} />
+      <directionalLight position={[-45, 90, 60]} intensity={dark ? 0.9 : 0.74} />
+      <directionalLight position={[60, 40, -70]} intensity={0.14} />
+      {meshes.opaque.map(({ kind, mesh }) => (
+        <mesh key={kind} ref={register(mesh)} geometry={mesh.geometry} onClick={pick}>
+          {kind === 'metal' ? (
+            <meshStandardMaterial vertexColors {...FINISH[kind]} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+          ) : (
+            // matt surfaces need no reflections: the cheaper diffuse model looks the same and costs far less per pixel
+            <meshLambertMaterial vertexColors polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+          )}
+        </mesh>
+      ))}
+      <mesh geometry={meshes.decals} renderOrder={1} raycast={() => null}>
+        <meshBasicMaterial vertexColors transparent depthWrite={false} side={DoubleSide} polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
       </mesh>
-      <lineSegments geometry={outlines} renderOrder={1}>
+      <lineSegments geometry={meshes.outlines} renderOrder={2}>
         <lineBasicMaterial vertexColors />
       </lineSegments>
-      <mesh ref={translucentRef} geometry={translucent.geometry} onClick={pick} renderOrder={2}>
-        <meshLambertMaterial vertexColors transparent depthWrite={false} />
+      <mesh ref={register(meshes.translucent)} geometry={meshes.translucent.geometry} onClick={pick} renderOrder={3}>
+        <meshStandardMaterial vertexColors transparent depthWrite={false} {...FINISH.glass} />
+      </mesh>
+      {/* the route twice: solid where it is in view, faint where something stands in front of it */}
+      <mesh geometry={routeMesh.geometry} renderOrder={4} raycast={() => null}>
+        <meshBasicMaterial vertexColors />
       </mesh>
       <mesh geometry={routeMesh.geometry} renderOrder={5} raycast={() => null}>
-        <meshBasicMaterial vertexColors transparent opacity={0.96} depthTest={false} depthWrite={false} />
+        <meshBasicMaterial vertexColors transparent opacity={0.42} depthTest={false} depthWrite={false} />
       </mesh>
     </>
   );

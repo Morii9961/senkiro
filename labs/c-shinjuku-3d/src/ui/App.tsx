@@ -1,16 +1,22 @@
 import { Component, lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { DEMO_ROUTES } from '../domain/demo';
+import { floorSequence, floorsOf, ordinalByLevel } from '../domain/floors';
 import { bindOverlay, worstStatus, type OverlayResult, type RunningStatus } from '../domain/overlay';
 import { findRoute, type RouteMode, type RouteResult } from '../domain/route';
 import { createExampleOverlayProvider } from '../providers/exampleOverlayProvider';
 import { createOdptOverlayProvider } from '../providers/odptOverlayProvider';
 import { loadStationData } from '../providers/stationDataProvider';
+import { Icon } from './atoms';
 import { LANGS, makeT, type Lang, type StrKey } from './i18n';
-import { makeNamer } from './naming';
-import { HelpDialog, InfoPanel, Inspector, LayersPanel, OpsPanel, RoutePanel, type OpsMode, type RouteChoice } from './panels';
+import { makeNamer, pickName } from './naming';
+import { FacilityCard, hasCard } from './panels/FacilityCard';
+import { OpsPanel, type OpsMode } from './panels/OpsPanel';
+import { DisplayPanel, HelpDialog, InfoPanel } from './panels/OtherPanels';
+import { RoutePanel, legGlyph, legText, type RouteChoice } from './panels/RoutePanel';
 import { Plan2D } from './Plan2D';
 import type { RenderStats, SceneHandle } from './Scene3D';
-import { buildLabels, type ViewOptions } from './scene/build';
+import { buildLabels, routePoints, type LabelChip, type ViewOptions } from './scene/build';
+import { trackRange } from './scene/labels';
 import { PALETTES, type ThemeName } from './theme';
 import { webgl2Available } from './webgl';
 
@@ -32,8 +38,10 @@ class SceneBoundary extends Component<{ onFail(): void; children: ReactNode }, {
   }
 }
 
-type Tab = 'route' | 'layers' | 'ops' | 'info';
+type Tab = 'route' | 'display' | 'ops' | 'info';
 type ViewMode = '3d' | '2d';
+/** Which floors are shown: all of them, those the route passes, or one. */
+type FloorMode = 'all' | 'route' | number;
 
 const params = new URLSearchParams(window.location.search);
 
@@ -57,11 +65,11 @@ function remember(key: string, value: string) {
   }
 }
 
-const examples = { example: createExampleOverlayProvider(), odpt: createOdptOverlayProvider() };
 const DEMO_LABELS: StrKey[] = ['demo1', 'demo2', 'demo3'];
 
 export function App() {
   const { model, graph, sources } = useMemo(loadStationData, []);
+  const providers = useMemo(() => ({ example: createExampleOverlayProvider(), odpt: createOdptOverlayProvider(model) }), [model]);
 
   const [lang, setLang] = useState<Lang>(() => stored('lang', ['ja', 'en', 'zh'] as const, navigator.language.startsWith('zh') ? 'zh' : navigator.language.startsWith('ja') ? 'ja' : 'en'));
   const [theme, setTheme] = useState<ThemeName>(() =>
@@ -71,24 +79,27 @@ export function App() {
   const [no3d, setNo3d] = useState(() => !webgl2Available());
   const viewMode: ViewMode = no3d ? '2d' : wantedView;
   const [tab, setTab] = useState<Tab>('route');
-  const [panelOpen, setPanelOpen] = useState(true);
   const [helpOpen, setHelpOpen] = useState(false);
 
-  const [activeLevelId, setActiveLevelId] = useState<string | null>(null);
-  const [explode, setExplode] = useState(0.35);
-  const [shell, setShell] = useState(0.3);
+  const [floorMode, setFloorMode] = useState<FloorMode>('all');
+  const [explode, setExplode] = useState(0.3);
+  const [shell, setShell] = useState(0.1);
   const [ghostOthers, setGhostOthers] = useState(true);
   const [showLabels, setShowLabels] = useState(true);
   const [showVerticals, setShowVerticals] = useState(true);
   const [showBlocks, setShowBlocks] = useState(true);
+  const [animate, setAnimate] = useState(() => params.get('motion') !== 'off' && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
 
   const [fromId, setFromId] = useState('');
   const [toId, setToId] = useState('');
   const [mode, setMode] = useState<RouteMode>('default');
+  const [focusLeg, setFocusLeg] = useState<number | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const [opsMode, setOpsMode] = useState<OpsMode>('off');
   const [opsResult, setOpsResult] = useState<OverlayResult | null>(null);
+  const [opsLoading, setOpsLoading] = useState(false);
+  const [opsTick, setOpsTick] = useState(0);
   const [stats, setStats] = useState<RenderStats | null>(null);
 
   const sceneRef = useRef<SceneHandle>(null);
@@ -103,32 +114,39 @@ export function App() {
     remember('theme', theme);
   }, [lang, theme]);
 
-  // Escape closes whatever floats on top: the help dialog first, then the inspector.
+  // Escape closes whatever floats on top: the help dialog, then the card, then the step focus.
   useEffect(() => {
-    if (!helpOpen && selectedId === null) return;
+    if (!helpOpen && selectedId === null && focusLeg === null) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return;
       if (helpOpen) setHelpOpen(false);
-      else setSelectedId(null);
+      else if (selectedId !== null) setSelectedId(null);
+      else setFocusLeg(null);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [helpOpen, selectedId]);
+  }, [helpOpen, selectedId, focusLeg]);
 
-  // --- levels, top floor first --------------------------------------------------------
-  const levels = useMemo(() => [...model.levels].sort((a, b) => b.elevation - a.elevation), [model]);
+  // --- floors ---------------------------------------------------------------------------
+  const floors = useMemo(() => floorsOf(model), [model]);
+  const ordinals = useMemo(() => ordinalByLevel(model), [model]);
 
-  // --- route --------------------------------------------------------------------------
+  // --- route ----------------------------------------------------------------------------
   const choices = useMemo<RouteChoice[]>(() => {
     const out: RouteChoice[] = [];
-    for (const e of model.entrances) out.push({ id: e.id, group: 'entrance', label: `${namer.name(e.id)} · ${namer.level(e.levelId)}` });
+    const sep = lang === 'en' ? ', ' : '・';
+    for (const a of model.areas) {
+      if (a.kind !== 'platform') continue;
+      const lines = namer.linesOf(a).map((l) => pickName(l.names, lang) ?? '');
+      out.push({ id: a.id, group: 'platform', label: `${t('platformTitle', { n: trackRange(a.tracks.map((x) => x.number)) })}　${lines.join(sep)}` });
+    }
     for (const g of model.gates) {
       if (g.sides.some((s) => 'blockId' in s)) continue; // the far side is outside the verified model
-      out.push({ id: g.id, group: 'gate', label: `${namer.name(g.id)} · ${namer.level(g.levelId)}${g.direction === 'exit-only' ? ` (${t('exitOnly')})` : ''}` });
+      out.push({ id: g.id, group: 'gate', label: `${namer.name(g.id)}（${namer.level(g.levelId)}）${g.direction === 'exit-only' ? ` ${t('exitOnly')}` : ''}` });
     }
-    for (const a of model.areas) if (a.kind === 'platform') out.push({ id: a.id, group: 'platform', label: `${namer.name(a.id)}` });
+    for (const e of model.entrances) out.push({ id: e.id, group: 'entrance', label: `${namer.name(e.id)}（${namer.level(e.levelId)}）` });
     return out;
-  }, [model, namer, t]);
+  }, [model, namer, t, lang]);
 
   const result = useMemo<RouteResult | null>(
     () => (fromId && toId && fromId !== toId ? findRoute(graph, fromId, toId, { mode }) : null),
@@ -136,6 +154,14 @@ export function App() {
   );
   const route = result?.found ? result : null;
   const zoneOf = useCallback((id: string) => model.areas.find((a) => a.id === id)?.fareZone, [model]);
+  const nodeById = useMemo(() => new Map(graph.nodes.map((n) => [n.id, n])), [graph]);
+  const routePts = useMemo(() => (route ? routePoints(route, nodeById, model) : []), [route, nodeById, model]);
+
+  // a new route starts unfocused; a route that disappears takes the "route floors" mode with it
+  useEffect(() => {
+    setFocusLeg(null);
+    if (!route) setFloorMode((m) => (m === 'route' ? 'all' : m));
+  }, [route]);
 
   const runDemo = (id: string) => {
     const d = DEMO_ROUTES.find((x) => x.id === id);
@@ -143,7 +169,7 @@ export function App() {
     setFromId(d.fromNodeId);
     setToId(d.toNodeId);
     setMode(d.mode);
-    setActiveLevelId(null);
+    setFloorMode('all');
     setSelectedId(null);
     setTab('route');
   };
@@ -153,18 +179,24 @@ export function App() {
     active: d.fromNodeId === fromId && d.toNodeId === toId && d.mode === mode,
   }));
 
-  // --- operations overlay ----------------------------------------------------------------
+  // --- operations overlay -----------------------------------------------------------------
   useEffect(() => {
     if (opsMode === 'off') {
       setOpsResult(null);
+      setOpsLoading(false);
       return;
     }
     let live = true;
-    void examples[opsMode].getSnapshot().then((r) => live && setOpsResult(r));
+    setOpsLoading(true);
+    void providers[opsMode].getSnapshot().then((r) => {
+      if (!live) return;
+      setOpsResult(r);
+      setOpsLoading(false);
+    });
     return () => {
       live = false;
     };
-  }, [opsMode]);
+  }, [opsMode, opsTick, providers]);
 
   const bound = useMemo(() => (opsResult?.status === 'ok' ? bindOverlay(model, opsResult.snapshot) : null), [model, opsResult]);
   const platformStatus = useMemo(() => {
@@ -179,44 +211,79 @@ export function App() {
   }, [bound, model]);
   const synthetic = bound?.snapshot.isSynthetic ?? false;
 
-  // --- view -------------------------------------------------------------------------------
-  const view = useMemo<ViewOptions>(
-    () => ({ explode, activeLevelId, ghostOthers, shellOpacity: shell, showVerticals, showBlocks, palette, route, selectedId, platformStatus }),
-    [explode, activeLevelId, ghostOthers, shell, showVerticals, showBlocks, palette, route, selectedId, platformStatus],
-  );
-  const labels = useMemo(() => buildLabels(model, view, namer.name, { unverified: t('unverified') }), [model, view, namer, t]);
+  // --- what is shown --------------------------------------------------------------------------
+  const focusOrdinals = useMemo<ReadonlySet<number> | null>(() => {
+    if (route && focusLeg !== null) {
+      const leg = route.legs[focusLeg];
+      if (leg) return new Set(floorSequence(leg.levelIds, ordinals));
+    }
+    if (floorMode === 'route') return route ? new Set(floorSequence(route.levelSequence, ordinals)) : null;
+    if (typeof floorMode === 'number') return new Set([floorMode]);
+    return null;
+  }, [route, focusLeg, floorMode, ordinals]);
 
-  const select = useCallback((id: string | null) => setSelectedId(id), []);
+  /** The one floor the 2D plan shows. */
+  const planOrdinal = useMemo(() => {
+    if (route && focusLeg !== null) {
+      const leg = route.legs[focusLeg];
+      const o = leg ? ordinals.get(leg.levelIds[0]!) : undefined;
+      if (o !== undefined) return o;
+    }
+    if (typeof floorMode === 'number') return floorMode;
+    if (route) return ordinals.get(route.levelSequence[0]!) ?? 0;
+    return floors.some((f) => f.ordinal === 0) ? 0 : (floors[0]?.ordinal ?? 0);
+  }, [route, focusLeg, floorMode, ordinals, floors]);
+
+  const view = useMemo<ViewOptions>(
+    () => ({ explode, focusOrdinals, ghostOthers, shellOpacity: shell, showVerticals, showBlocks, palette, route, focusLeg, selectedId, platformStatus }),
+    [explode, focusOrdinals, ghostOthers, shell, showVerticals, showBlocks, palette, route, focusLeg, selectedId, platformStatus],
+  );
+  const lineChip = useCallback(
+    (railLineId: string): LabelChip | null => {
+      const line = model.railLines.find((l) => l.id === railLineId);
+      return line ? { text: pickName(line.names, lang) ?? '', color: line.displayColor } : null;
+    },
+    [model, lang],
+  );
+  const labels = useMemo(
+    () => buildLabels(model, view, namer.name, lineChip, { unverified: t('unverified'), start: t('from'), goal: t('to') }, routePts),
+    [model, view, namer, lineChip, t, routePts],
+  );
+
+  // Only things a passenger asks about open a card; halls and corridors do not.
+  const select = useCallback((id: string | null) => setSelectedId(id !== null && hasCard(model, id) ? id : null), [model]);
   const canRoute = selectedId !== null && choices.some((c) => c.id === selectedId);
 
-  const levelButtons = (compact: boolean) => (
-    <div className={compact ? 'level-rail' : 'level-list'} role="group" aria-label={t('levels')}>
-      <button type="button" aria-pressed={activeLevelId === null} onClick={() => setActiveLevelId(null)} data-testid={compact ? 'level-all' : undefined}>
-        {t('allLevels')}
-      </button>
-      {levels.map((l) => (
-        <button
-          key={l.id}
-          type="button"
-          aria-pressed={activeLevelId === l.id}
-          onClick={() => setActiveLevelId(l.id)}
-          data-testid={compact ? `level-${l.label}-${l.operatorId.split(':').pop()}` : undefined}
-        >
-          {namer.level(l.id)}
-        </button>
-      ))}
-    </div>
-  );
+  const pickFloor = (m: FloorMode) => {
+    setFocusLeg(null);
+    setFloorMode(m);
+  };
+  const stepTo = (index: number | null) => {
+    setFocusLeg(index);
+    setSelectedId(null);
+  };
+
+  const is3d = viewMode === '3d';
+  const floorActive = (ordinal: number) => (is3d ? focusLeg === null && floorMode === ordinal : planOrdinal === ordinal);
+  const fareZones = useMemo(() => {
+    const zones = [...new Set(model.areas.filter((a) => a.kind !== 'platform').map((a) => a.fareZone))];
+    return zones.map((zone) => {
+      if (zone === 'unpaid') return { zone, label: t('legendUnpaid') };
+      const op = model.operators.find((o) => o.id === `sk:operator:${zone.replace('paid:', '')}`);
+      return { zone, label: `${t('paid')}（${op ? (pickName(op.names, lang) ?? '') : ''}）` };
+    });
+  }, [model, t, lang]);
 
   const tabs: { id: Tab; label: string }[] = [
     { id: 'route', label: t('tabRoute') },
-    { id: 'layers', label: t('tabLayers') },
     { id: 'ops', label: t('tabOps') },
+    { id: 'display', label: t('tabDisplay') },
     { id: 'info', label: t('tabInfo') },
   ];
+  const leg = route && focusLeg !== null ? route.legs[focusLeg] : undefined;
 
   return (
-    <div className={`app ${panelOpen ? 'panel-open' : 'panel-closed'}`}>
+    <div className="app">
       <a className="skip" href="#panel">
         {t('skipToPanel')}
       </a>
@@ -269,46 +336,49 @@ export function App() {
       </header>
 
       <main className="stage" style={{ background: palette.background }}>
-        {viewMode === '3d' ? (
+        {is3d ? (
           <SceneBoundary onFail={() => setNo3d(true)}>
-          <Suspense
-            fallback={
-              <p className="scene-loading" role="status" data-testid="scene-loading">
-                {t('sceneLoading')}
-              </p>
-            }
-          >
-            <Scene3D
-              model={model}
-              graph={graph}
-              view={view}
-              labels={labels}
-              showLabels={showLabels}
-              ariaLabel={t('canvasLabel')}
-              handleRef={sceneRef}
-              onSelect={select}
-              onStats={setStats}
-              continuous={params.get('perf') === '1'}
-            />
-          </Suspense>
+            <Suspense
+              fallback={
+                <p className="scene-loading" role="status" data-testid="scene-loading">
+                  {t('sceneLoading')}
+                </p>
+              }
+            >
+              <Scene3D
+                model={model}
+                graph={graph}
+                view={view}
+                routePts={routePts}
+                labels={labels}
+                showLabels={showLabels}
+                ariaLabel={t('canvasLabel')}
+                handleRef={sceneRef}
+                onSelect={select}
+                onStats={setStats}
+                continuous={params.get('perf') === '1'}
+                animate={animate}
+              />
+            </Suspense>
           </SceneBoundary>
         ) : (
           <Plan2D
             model={model}
-            graph={graph}
-            levelIds={activeLevelId ? [activeLevelId] : levels.map((l) => l.id)}
+            ordinal={planOrdinal}
             palette={palette}
             route={route}
+            routePts={routePts}
+            focusLeg={focusLeg}
             selectedId={selectedId}
             showLabels={showLabels}
             showVerticals={showVerticals}
             showBlocks={showBlocks}
             platformStatus={platformStatus}
             namer={namer}
+            lang={lang}
             t={t}
             handleRef={sceneRef}
             onSelect={select}
-            onFocusLevel={setActiveLevelId}
           />
         )}
 
@@ -324,21 +394,44 @@ export function App() {
           </div>
         )}
 
-        <div className="hud hud-levels">{levelButtons(true)}</div>
+        <nav className="hud floor-rail" aria-label={t('levels')}>
+          {is3d && (
+            <button type="button" aria-pressed={focusLeg === null && floorMode === 'all'} onClick={() => pickFloor('all')} data-testid="floor-all">
+              {t('allLevels')}
+            </button>
+          )}
+          {is3d && route && (
+            <button type="button" aria-pressed={focusLeg === null && floorMode === 'route'} onClick={() => pickFloor('route')} data-testid="floor-route">
+              {t('routeLevels')}
+            </button>
+          )}
+          {floors.map((f) => {
+            const onRoute = route ? floorSequence(route.levelSequence, ordinals).includes(f.ordinal) : false;
+            return (
+              <button key={f.ordinal} type="button" aria-pressed={floorActive(f.ordinal)} className={onRoute ? 'has-route' : ''} onClick={() => pickFloor(f.ordinal)} data-testid={`floor-${f.label}`}>
+                {f.label}
+              </button>
+            );
+          })}
+        </nav>
 
-        <div className="hud hud-view" role="group" aria-label={t('viewSwitch')}>
+        <div className="hud hud-view" role="group" aria-label={t('viewControls')}>
           <button type="button" onClick={() => sceneRef.current?.zoom(0.8)} aria-label={t('zoomIn')} title={t('zoomIn')}>
             ＋
           </button>
           <button type="button" onClick={() => sceneRef.current?.zoom(1.25)} aria-label={t('zoomOut')} title={t('zoomOut')}>
             －
           </button>
-          <button type="button" onClick={() => sceneRef.current?.rotate(-0.26)} aria-label={t('rotateLeft')} title={t('rotateLeft')}>
-            ↺
-          </button>
-          <button type="button" onClick={() => sceneRef.current?.rotate(0.26)} aria-label={t('rotateRight')} title={t('rotateRight')}>
-            ↻
-          </button>
+          {is3d && (
+            <>
+              <button type="button" onClick={() => sceneRef.current?.rotate(-0.26)} aria-label={t('rotateLeft')} title={t('rotateLeft')}>
+                ↺
+              </button>
+              <button type="button" onClick={() => sceneRef.current?.rotate(0.26)} aria-label={t('rotateRight')} title={t('rotateRight')}>
+                ↻
+              </button>
+            </>
+          )}
           <button type="button" className="reset" onClick={() => sceneRef.current?.reset()} data-testid="reset-view">
             {t('resetView')}
           </button>
@@ -349,15 +442,55 @@ export function App() {
           <span className="muted">{t('schematic')}</span>
         </div>
 
+        {route && (
+          <div className="hud step-nav" data-testid="step-nav">
+            <button type="button" onClick={() => stepTo(focusLeg === null ? 0 : Math.max(0, focusLeg - 1))} disabled={focusLeg === 0} aria-label={t('stepPrev')} title={t('stepPrev')}>
+              ‹
+            </button>
+            <div className="step-body" aria-live="polite">
+              {leg ? (
+                <>
+                  <span className="step-count">
+                    {focusLeg! + 1} / {route.legs.length}
+                  </span>
+                  <span className="step-icon">
+                    <Icon glyph={legGlyph(leg, zoneOf)} size={16} />
+                  </span>
+                  <span className="step-text" data-testid="step-text">
+                    {legText(leg, t, namer, zoneOf)}
+                  </span>
+                </>
+              ) : (
+                <span className="step-text muted">{t('stepWhole', { n: route.legs.length })}</span>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => stepTo(focusLeg === null ? 0 : Math.min(route.legs.length - 1, focusLeg + 1))}
+              disabled={focusLeg === route.legs.length - 1}
+              aria-label={t('stepNext')}
+              title={t('stepNext')}
+              data-testid="step-next"
+            >
+              ›
+            </button>
+            {focusLeg !== null && (
+              <button type="button" className="step-all" onClick={() => stepTo(null)} data-testid="step-all">
+                {t('stepAll')}
+              </button>
+            )}
+          </div>
+        )}
+
         {selectedId && (
-          <Inspector
+          <FacilityCard
             t={t}
             lang={lang}
             model={model}
-            sources={sources}
             namer={namer}
             elementId={selectedId}
             canRoute={canRoute}
+            bound={bound}
             onClose={() => setSelectedId(null)}
             onFrom={(id) => {
               setFromId(id);
@@ -372,32 +505,14 @@ export function App() {
       </main>
 
       <aside id="panel" className="panel" aria-label={t('skipToPanel')}>
-        <div className="panel-head">
-          <div className="tabs" role="tablist">
-            {tabs.map((x) => (
-              <button
-                key={x.id}
-                type="button"
-                role="tab"
-                id={`tab-${x.id}`}
-                aria-selected={tab === x.id}
-                aria-controls="tabpanel"
-                className={tab === x.id ? 'on' : ''}
-                onClick={() => {
-                  setTab(x.id);
-                  setPanelOpen(true);
-                }}
-                data-testid={`tab-${x.id}`}
-              >
-                {x.label}
-              </button>
-            ))}
-          </div>
-          <button type="button" className="icon-btn panel-toggle" onClick={() => setPanelOpen(!panelOpen)} aria-expanded={panelOpen} aria-label={panelOpen ? t('panelHide') : t('panelShow')}>
-            {panelOpen ? '▾' : '▴'}
-          </button>
+        <div className="tabs" role="tablist">
+          {tabs.map((x) => (
+            <button key={x.id} type="button" role="tab" id={`tab-${x.id}`} aria-selected={tab === x.id} aria-controls="tabpanel" className={tab === x.id ? 'on' : ''} onClick={() => setTab(x.id)} data-testid={`tab-${x.id}`}>
+              {x.label}
+            </button>
+          ))}
         </div>
-        <div id="tabpanel" role="tabpanel" aria-labelledby={`tab-${tab}`} className="tabpanel" hidden={!panelOpen}>
+        <div id="tabpanel" role="tabpanel" aria-labelledby={`tab-${tab}`} className="tabpanel">
           {tab === 'route' && (
             <RoutePanel
               t={t}
@@ -408,6 +523,7 @@ export function App() {
               mode={mode}
               result={result}
               demos={demos}
+              focusLeg={focusLeg}
               zoneOf={zoneOf}
               onFrom={setFromId}
               onTo={setToId}
@@ -421,27 +537,30 @@ export function App() {
                 setFromId('');
                 setToId('');
               }}
-              onSelect={select}
+              onFocusLeg={stepTo}
             />
           )}
-          {tab === 'layers' && (
-            <LayersPanel
+          {tab === 'display' && (
+            <DisplayPanel
               t={t}
               palette={palette}
-              is3d={viewMode === '3d'}
+              is3d={is3d}
               explode={explode}
               shell={shell}
               ghostOthers={ghostOthers}
               showLabels={showLabels}
               showVerticals={showVerticals}
               showBlocks={showBlocks}
+              hasBlocks={model.unverifiedBlocks.length > 0}
+              animate={animate}
+              fareZones={fareZones}
               onExplode={setExplode}
               onShell={setShell}
               onGhost={setGhostOthers}
               onLabels={setShowLabels}
               onVerticals={setShowVerticals}
               onBlocks={setShowBlocks}
-              levelButtons={levelButtons(false)}
+              onAnimate={setAnimate}
             />
           )}
           {tab === 'ops' && (
@@ -449,12 +568,13 @@ export function App() {
               t={t}
               lang={lang}
               model={model}
-              namer={namer}
               mode={opsMode}
+              loading={opsLoading}
               result={opsResult}
               bound={bound}
-              providerLabels={{ example: examples.example.label[lang], odpt: examples.odpt.label[lang] }}
+              providerLabels={{ example: providers.example.label[lang], odpt: providers.odpt.label[lang] }}
               onMode={setOpsMode}
+              onRefresh={() => setOpsTick((n) => n + 1)}
               onSelect={select}
             />
           )}

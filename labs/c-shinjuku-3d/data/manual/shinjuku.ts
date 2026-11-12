@@ -380,7 +380,9 @@ function jrPlatform(island: Island): Platform {
     fareZone: PAID_JR,
     footprint: [rect(x0, x1, z - HW, z + HW)],
     anchor: pt(island === '5-6' ? 30 : 6, z),
-    tracks: TRACKS[island],
+    // Tracks are numbered from east to west on the JR 1F map, so on every island
+    // the lower number is on the east (low-z) edge.
+    tracks: TRACKS[island].map((t, i) => ({ ...t, side: i === 0 ? ('z-' as const) : ('z+' as const) })),
   };
 }
 

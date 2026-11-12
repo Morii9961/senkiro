@@ -1,67 +1,68 @@
 /**
- * Live operations overlay from the Public Transportation Open Data Center.
+ * Live operations overlay from the Public Transportation Open Data Center —
+ * for LOCAL TESTING ONLY.
  *
- * STATUS: deliberately not wired to the network.
+ * The JR East datasets are published under the 公共交通オープンデータチャレンジ
+ * 限定ライセンス (Challenge-limited, ends 2027-03-12, with JR East specific
+ * conditions). The project owner decided on 2026-11-12 that they may be used
+ * for local testing. Nothing fetched is stored or committed.
  *
- * The dataset that would feed it — "JR東日本 鉄道関連情報 / Train information
- * of JR East" (https://ckan.odpt.org/dataset/jreast_tokyo_area) — is published
- * under the 公共交通オープンデータチャレンジ限定ライセンス with JR East specific
- * conditions: use is limited to the ODPT Challenge, the licence ends on
- * 2027-03-12, and services competing with JR East are excluded. SENKIRO has
- * not entered the Challenge and nobody has decided whether those terms are
- * acceptable, so per the shared contract (§1.8) the data is not used.
- *
- * A key would also have to stay server-side: the contract reads
- * ODPT_CONSUMER_KEY from the repository-root .env.local, and a browser bundle
- * must never contain it. This prototype has no server, so the provider only
- * ever answers "unavailable" with the reason — never with invented data.
+ * The developer key never reaches the browser: it is read from ODPT_CONSUMER_KEY
+ * in the repository-root .env.local by a proxy that exists only inside the Vite
+ * development server (see vite.config.ts). A production build has no proxy, so
+ * there this provider answers "unavailable" — it never invents data.
  */
-import type { OperationOverlayProvider, OverlayResult } from '../domain/overlay';
+import type { OperationOverlayProvider, OverlayResult, OverlayUnavailableReason } from '../domain/overlay';
+import type { StationModel } from '../domain/types';
+import { ODPT_TRAIN_SOURCE_ID, mapOdpt, type OdptPayload } from './odptMapping';
 
 export const ODPT_KEY_VARIABLE = 'ODPT_CONSUMER_KEY';
-export const ODPT_TRAIN_INFORMATION_SOURCE_ID = 'src:odpt-jreast-train-information';
+export const ODPT_PROXY_PATH = '/__odpt/snapshot';
 
-export interface OdptProviderConfig {
-  /** Present only when a server-side proxy holds the key. Never a key itself. */
-  proxyUrl?: string;
-  /** Must be set explicitly once someone has accepted the licence terms. */
-  licenseAccepted?: boolean;
-}
+const REASONS: OverlayUnavailableReason[] = ['missing-key', 'network-error', 'bad-response', 'license-restricted', 'not-implemented'];
 
-export function createOdptOverlayProvider(config: OdptProviderConfig = {}): OperationOverlayProvider {
+export function createOdptOverlayProvider(
+  model: StationModel,
+  fetchImpl: typeof fetch = (...args) => fetch(...args),
+  /** The proxy exists only in the Vite development server. */
+  hasProxy: boolean = import.meta.env.DEV,
+): OperationOverlayProvider {
+  const unavailable = (reason: OverlayUnavailableReason, detail: string): OverlayResult => ({ status: 'unavailable', reason, detail, sourceId: ODPT_TRAIN_SOURCE_ID });
   return {
     id: 'odpt-jreast',
     label: {
-      ja: 'ODPT（JR東日本 鉄道関連情報）',
-      en: 'ODPT (JR East train information)',
-      zh: 'ODPT（JR东日本列车运行信息）',
+      ja: 'ODPT 実データ（JR東日本・ローカル試験用）',
+      en: 'ODPT live data (JR East, local testing)',
+      zh: 'ODPT 真实数据（JR东日本，仅本地测试）',
     },
     live: true,
     async getSnapshot(): Promise<OverlayResult> {
-      if (!config.licenseAccepted) {
-        return {
-          status: 'unavailable',
-          reason: 'license-restricted',
-          sourceId: ODPT_TRAIN_INFORMATION_SOURCE_ID,
-          detail:
-            'The dataset is under the ODPT Challenge-limited licence (ends 2027-03-12, JR East specific conditions). Its use has not been approved for this project.',
-        };
+      const noProxy = `No development proxy at ${ODPT_PROXY_PATH}. Start with "npm run dev" and set ${ODPT_KEY_VARIABLE} in the repository-root .env.local.`;
+      if (!hasProxy) return unavailable('missing-key', noProxy);
+      let res: Response;
+      try {
+        res = await fetchImpl(ODPT_PROXY_PATH, { headers: { accept: 'application/json' }, cache: 'no-store' });
+      } catch {
+        return unavailable('network-error', 'The development proxy could not be reached.');
       }
-      if (!config.proxyUrl) {
-        return {
-          status: 'unavailable',
-          reason: 'missing-key',
-          sourceId: ODPT_TRAIN_INFORMATION_SOURCE_ID,
-          detail: `No server-side proxy is configured. ${ODPT_KEY_VARIABLE} must stay in the repository-root .env.local and never be shipped to the browser.`,
-        };
+      if (!(res.headers.get('content-type') ?? '').includes('json')) {
+        // a static build or `vite preview`: there is no proxy, hence no key
+        return unavailable('missing-key', noProxy);
       }
-      return {
-        status: 'unavailable',
-        reason: 'not-implemented',
-        sourceId: ODPT_TRAIN_INFORMATION_SOURCE_ID,
-        detail:
-          'Mapping the GTFS / GTFS-RT feed onto LineStatus and TrackDeparture is not implemented in this prototype.',
-      };
+      let body: unknown;
+      try {
+        body = await res.json();
+      } catch {
+        return unavailable('bad-response', 'The proxy did not return JSON.');
+      }
+      if (!res.ok) {
+        const code = (body as { error?: string } | null)?.error;
+        const reason = REASONS.find((r) => r === code) ?? 'network-error';
+        return unavailable(reason, reason === 'missing-key' ? `${ODPT_KEY_VARIABLE} is not set in the repository-root .env.local.` : 'The ODPT request failed.');
+      }
+      const snapshot = mapOdpt(model, body as OdptPayload);
+      if (!snapshot) return unavailable('bad-response', 'The ODPT response did not have the expected shape.');
+      return { status: 'ok', snapshot };
     },
   };
 }

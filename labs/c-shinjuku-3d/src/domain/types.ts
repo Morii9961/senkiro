@@ -222,6 +222,12 @@ export interface PlatformTrack {
   /** Track / platform number as printed, e.g. "14". */
   number: string;
   services: { railLineId: string; towardsJa: string; towardsEn: string | null }[];
+  /**
+   * Which edge of the platform footprint the track runs along, when the source
+   * shows it: 'z-' is the low-z (east) edge, 'z+' the high-z (west) edge, and
+   * likewise for x. Absent or null = not established; no track is drawn then.
+   */
+  side?: 'z-' | 'z+' | 'x-' | 'x+' | null;
 }
 
 export interface Platform extends AreaBase {

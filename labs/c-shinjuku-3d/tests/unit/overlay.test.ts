@@ -1,20 +1,92 @@
 import { describe, expect, it } from 'vitest';
 import { bindOverlay, worstStatus, type OperationSnapshot } from '../../src/domain/overlay';
 import { createExampleOverlayProvider, EXAMPLE_SNAPSHOT, EXAMPLE_TIMESTAMP } from '../../src/providers/exampleOverlayProvider';
+import { mapOdpt } from '../../src/providers/odptMapping';
 import { createOdptOverlayProvider } from '../../src/providers/odptOverlayProvider';
 import { loadModel, loadSources } from './helpers';
 
 const model = loadModel();
 
 describe('operations overlay', () => {
+  const json = (body: unknown, status = 200) => async () => new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });
+
   it('the ODPT provider reports why it is unavailable instead of returning data', async () => {
-    const r = await createOdptOverlayProvider().getSnapshot();
-    expect(r).toMatchObject({ status: 'unavailable', reason: 'license-restricted' });
-    const noKey = await createOdptOverlayProvider({ licenseAccepted: true }).getSnapshot();
-    expect(noKey).toMatchObject({ status: 'unavailable', reason: 'missing-key' });
-    if (noKey.status === 'unavailable') {
-      expect(loadSources().some((s) => s.id === noKey.sourceId)).toBe(true);
-    }
+    // a static build: the proxy path answers with the HTML page
+    const noProxy = await createOdptOverlayProvider(model, async () => new Response('<!doctype html>', { headers: { 'content-type': 'text/html' } })).getSnapshot();
+    expect(noProxy).toMatchObject({ status: 'unavailable', reason: 'missing-key' });
+    if (noProxy.status === 'unavailable') expect(loadSources().some((s) => s.id === noProxy.sourceId)).toBe(true);
+    // a production build does not even ask
+    let asked = false;
+    const prod = await createOdptOverlayProvider(model, async () => { asked = true; return new Response('{}'); }, false).getSnapshot();
+    expect(prod).toMatchObject({ status: 'unavailable', reason: 'missing-key' });
+    expect(asked).toBe(false);
+    // the proxy runs but has no key
+    expect(await createOdptOverlayProvider(model, json({ error: 'missing-key' }, 503)).getSnapshot()).toMatchObject({ status: 'unavailable', reason: 'missing-key' });
+    // the upstream request failed
+    expect(await createOdptOverlayProvider(model, json({ error: 'network-error' }, 502)).getSnapshot()).toMatchObject({ status: 'unavailable', reason: 'network-error' });
+    // the network itself failed
+    expect(await createOdptOverlayProvider(model, async () => { throw new Error('offline'); }).getSnapshot()).toMatchObject({ status: 'unavailable', reason: 'network-error' });
+    // a response of the wrong shape is refused, not interpreted
+    expect(await createOdptOverlayProvider(model, json({ fetchedAt: 'x', trains: { not: 'an array' }, stationTimetables: [] })).getSnapshot()).toMatchObject({ status: 'unavailable', reason: 'bad-response' });
+  });
+
+  describe('ODPT mapping (constructed fixture shaped like the ODPT v4 vocabulary — not a recorded response)', () => {
+    const fixture = {
+      fetchedAt: '2026-11-12T03:00:00.000Z', // 12:00 in Japan, a Thursday
+      trains: [
+        { 'odpt:railway': 'odpt.Railway:JR-East.Yamanote', 'odpt:delay': 0, 'dc:date': '2026-11-12T12:00:00+09:00' },
+        { 'odpt:railway': 'odpt.Railway:JR-East.Yamanote', 'odpt:delay': 60 },
+        { 'odpt:railway': 'odpt.Railway:JR-East.ChuoRapid', 'odpt:delay': 420 },
+        { 'odpt:railway': 'odpt.Railway:JR-East.ChuoRapid', 'odpt:delay': 0 },
+        { 'odpt:railway': 'odpt.Railway:JR-East.Tokaido', 'odpt:delay': 900 },
+      ],
+      stationTimetables: [
+        {
+          'odpt:railway': 'odpt.Railway:JR-East.Yamanote',
+          'odpt:calendar': 'odpt.Calendar:Weekday',
+          'odpt:stationTimetableObject': [
+            { 'odpt:departureTime': '11:58', 'odpt:platformNumber': '14' },
+            { 'odpt:departureTime': '12:03', 'odpt:platformNumber': '14', 'odpt:destinationStation': ['odpt.Station:JR-East.Yamanote.Shinagawa'] },
+            { 'odpt:departureTime': '12:05' },
+            { 'odpt:departureTime': '12:07', 'odpt:platformNumber': '99' },
+          ],
+        },
+        { 'odpt:railway': 'odpt.Railway:JR-East.Yamanote', 'odpt:calendar': 'odpt.Calendar:SaturdayHoliday', 'odpt:stationTimetableObject': [{ 'odpt:departureTime': '12:04', 'odpt:platformNumber': '15' }] },
+      ],
+    };
+    const now = new Date('2026-11-12T03:00:00.000Z');
+
+    it('aggregates per-train delays into a line status and says that it did', () => {
+      const snap = mapOdpt(model, fixture, now)!;
+      expect(snap.isSynthetic).toBe(false);
+      expect(snap.fetchedAt).toBe(fixture.fetchedAt);
+      const yamanote = snap.lineStatuses.find((s) => s.railLineId === 'sk:line:jr-east-yamanote')!;
+      expect(yamanote.status).toBe('normal');
+      expect(yamanote.delayMinutes).toBeNull();
+      const chuo = snap.lineStatuses.find((s) => s.railLineId === 'sk:line:jr-east-chuo-rapid')!;
+      expect(chuo.status).toBe('delayed');
+      expect(chuo.delayMinutes).toBe(7);
+      expect(chuo.messageJa).toMatch(/集計/);
+      // a railway the model does not have is not attached to anything
+      expect(snap.lineStatuses).toHaveLength(2);
+      expect(JSON.stringify(snap)).not.toMatch(/latitude|longitude|coordinates/i);
+    });
+
+    it('puts a departure on a track only when the feed names a platform the model has', () => {
+      const snap = mapOdpt(model, fixture, now)!;
+      // 11:58 is past, the row without a platform and platform 99 cannot be placed, Saturday rows do not apply
+      expect(snap.departures).toEqual([expect.objectContaining({ trackNumber: '14', scheduledTime: '12:03', destinationJa: 'Shinagawa', railLineId: 'sk:line:jr-east-yamanote' })]);
+      const bound = bindOverlay(model, snap);
+      expect(bound.unmatched).toEqual([]);
+      expect(bound.tracks.find((t) => t.track.number === '14')!.departures).toHaveLength(1);
+    });
+
+    it('the data it shows is registered as a source that is not redistributed', () => {
+      const snap = mapOdpt(model, fixture, now)!;
+      const src = loadSources().find((s) => s.id === snap.sourceId)!;
+      expect(src.redistribution).toBe('no');
+      expect(src.usedInData).toBe(false);
+    });
   });
 
   it('example data is labelled synthetic in the data itself and carries an artificial timestamp', async () => {
