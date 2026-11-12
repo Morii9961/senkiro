@@ -192,9 +192,9 @@ const dict = {
   // info
   scope: { ja: 'モデルの範囲', en: 'Scope of the model', zh: '建模范围' },
   scopeBody: {
-    ja: 'JR東日本 新宿駅（B1F・1F・2F）と京王線新宿駅（B1F・B2F）を公式構内図の読み取りにもとづいて入力しました。小田急・東京メトロ・都営・バスタ新宿は抽象ブロックのみで、内部は未確認です。',
-    en: 'JR East Shinjuku (B1F, 1F, 2F) and Keio Line Shinjuku (B1F, B2F) were entered by reading the official floor maps. Odakyu, Tokyo Metro, Toei and Busta Shinjuku are abstract blocks only; their interiors are unverified.',
-    zh: '依据官方构内图录入了 JR 东日本新宿站（B1F·1F·2F）与京王线新宿站（B1F·B2F）。小田急、东京地铁、都营、Busta 新宿仅以抽象体块表示，内部未核实。',
+    ja: "JR東日本・京王線・小田急線・京王新線／都営新宿線・都営大江戸線・丸ノ内線・バスタ新宿を、各事業者の構内図を読んで入力しました。読み取れなかった部分は省くか「未確認」と表示しています。",
+    en: "JR East, the Keio Line, Odakyu, the Keio New Line / Toei Shinjuku Line, the Toei Oedo Line, the Marunouchi Line and Busta Shinjuku were entered by reading each operator's own floor maps. Parts that could not be read are left out or marked unverified.",
+    zh: "JR东日本、京王线、小田急线、京王新线／都营新宿线、都营大江户线、丸之内线和 Busta 新宿，都是对照各运营方自己的构内图录入的。读不清的部分没有画，或者标为「未确认」。",
   },
   excluded: { ja: 'モデルに含めない駅', en: 'Stations deliberately left out', zh: '明确不纳入模型的车站' },
   precision: { ja: '形状の確度', en: 'Geometric precision', zh: '几何精度' },

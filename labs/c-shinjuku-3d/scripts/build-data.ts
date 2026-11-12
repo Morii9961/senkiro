@@ -12,7 +12,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { stationModelInput } from '../data/manual/shinjuku';
+import { stationModelInput } from '../data/manual/index';
 import { RETRIEVED_AT, sources } from '../data/manual/sources';
 import { buildGraph } from '../src/domain/graph';
 import type { SourceRecord, StationElementBase, StationModel } from '../src/domain/types';

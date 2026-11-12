@@ -40,14 +40,26 @@ export function areasTouch(a: Area, b: Area): boolean {
   return a.footprint.some((ra) => b.footprint.some((rb) => rectsTouch(ra, rb)));
 }
 
-/** Faint plate under each level: it makes the floors read as planes when they are pulled apart. */
+/**
+ * Faint plate under each floor plane: it makes the floors read as planes when
+ * they are pulled apart. Levels of different operators drawn at the same
+ * height share one plate, so that plates never overlap in one plane.
+ */
 export function buildShells(ctx: Ctx): void {
   const { p, opts } = ctx;
+  if (opts.shellOpacity <= 0.004) return;
+  const planes = new Map<number, { vis: 'full' | 'ghost'; rects: PlanRect[]; y: number }>();
   for (const level of ctx.model.levels) {
-    const vis = ctx.vis(level.id);
-    if (vis === 'hidden' || opts.shellOpacity <= 0.004) continue;
-    const b = levelBounds(ctx, level.id);
-    const y = ctx.yOf(level.id);
+    const v = ctx.vis(level.id);
+    if (v === 'hidden') continue;
+    if (!ctx.model.areas.some((a) => a.levelId === level.id)) continue;
+    const plane = planes.get(level.elevation) ?? { vis: 'ghost' as const, rects: [], y: ctx.yOf(level.id) };
+    if (v === 'full') plane.vis = 'full';
+    plane.rects.push(levelBounds(ctx, level.id));
+    planes.set(level.elevation, plane);
+  }
+  for (const { vis, rects, y } of planes.values()) {
+    const b = boundsOf(rects);
     ctx.prims.push({
       elementId: null,
       role: 'shell',
@@ -72,13 +84,17 @@ function areaBaseColor(ctx: Ctx, area: Area): string {
   return p.platform;
 }
 
-/** Areas one can walk into from `area` without a gate: joined by a passage and touching it. */
+/**
+ * Areas one can walk into from `area` without a gate: joined by a passage and touching it.
+ * Operators number their floors separately, so "the same floor" means the same ordinal.
+ */
 function walkableNeighbours(ctx: Pick<Ctx, 'model' | 'areaById'>, area: Area): Area[] {
   const out: Area[] = [];
+  const ordinal = (levelId: string) => ctx.model.levels.find((l) => l.id === levelId)?.ordinal;
   for (const link of ctx.model.passages) {
     const otherId = link.fromAreaId === area.id ? link.toAreaId : link.toAreaId === area.id ? link.fromAreaId : null;
     const other = otherId ? ctx.areaById.get(otherId) : undefined;
-    if (other && other.levelId === area.levelId && areasTouch(area, other)) out.push(other);
+    if (other && ordinal(other.levelId) === ordinal(area.levelId) && areasTouch(area, other)) out.push(other);
   }
   return out;
 }

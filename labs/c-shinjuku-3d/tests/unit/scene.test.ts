@@ -119,7 +119,8 @@ describe('3D primitives ⇄ model', () => {
     const only = buildPrims(model, view({ focusOrdinals: new Set([-1]), ghostOthers: false, showBlocks: false }));
     const stray = only.filter((p) => p.role === 'area' && ordinalOf.get(areaById.get(p.elementId!)!.levelId) !== -1);
     expect(stray).toEqual([]);
-    expect(only.filter((p) => p.role === 'shell')).toHaveLength(model.levels.filter((l) => l.ordinal === -1).length);
+    // one plate per drawn height, shared by the operators whose floors lie in that plane
+    expect(only.filter((p) => p.role === 'shell')).toHaveLength(new Set(model.levels.filter((l) => l.ordinal === -1).map((l) => l.elevation)).size);
   });
 
   it('ghosted floors are drawn faintly and without furniture', () => {

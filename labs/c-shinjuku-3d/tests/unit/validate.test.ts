@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { stationModelInput } from '../../data/manual/shinjuku';
+import { stationModelInput } from '../../data/manual/index';
 import { RETRIEVED_AT, sources as manualSources } from '../../data/manual/sources';
 import type { Passage, StationModel, VerticalFacility } from '../../src/domain/types';
 import { validateModel } from '../../src/domain/validate';

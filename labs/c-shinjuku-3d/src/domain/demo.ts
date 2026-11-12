@@ -20,7 +20,7 @@ export const NODE = {
   southExit: 'sk:entrance:jr-south-exit',
   platform13_14: 'sk:platform:jr-east-shinjuku-13-14',
   platform5_6: 'sk:platform:jr-east-shinjuku-5-6',
-  keioPlatforms: 'sk:area:keio-b2f-platforms-1-3',
+  keioPlatforms: 'sk:platform:keio-shinjuku-1-2',
 } as const;
 
 export const DEMO_ROUTES: DemoRoute[] = [
@@ -47,7 +47,7 @@ export const DEMO_ROUTES: DemoRoute[] = [
     fromNodeId: NODE.southExit,
     toNodeId: NODE.keioPlatforms,
     mode: 'default',
-    expectedLevelLabels: ['2F', '1F', 'B1F', 'B1F', 'B2F'],
+    expectedLevelLabels: ['2F', '1F', 'B1F', 'B1F', 'B1F', 'B2F'],
   },
 ];
 

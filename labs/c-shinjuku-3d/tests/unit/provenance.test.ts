@@ -50,8 +50,8 @@ describe('provenance and honesty rules', () => {
     }
   });
 
-  it('other operators appear only as blocks marked unverified, with synthetic provenance', () => {
-    expect(model.unverifiedBlocks.length).toBeGreaterThanOrEqual(5);
+  it('what could not be read stays a block marked unverified, with synthetic provenance', () => {
+    expect(model.unverifiedBlocks.map((b) => b.id)).toEqual(['sk:block:toei-oedo-gate-b-inside']);
     for (const b of model.unverifiedBlocks) {
       expect(b.existence).toBe('unverified');
       expect(b.geometryConfidence).toBe('unknown');
@@ -61,12 +61,15 @@ describe('provenance and honesty rules', () => {
   });
 
   it('does not mix up Shinjuku with similarly named stations', () => {
-    const text = JSON.stringify([model.areas, model.gates, model.entrances, model.verticals, model.levels]);
-    expect(text).not.toMatch(/西武新宿|新宿三丁目/);
+    // Neighbouring stations may be named as a direction on a sign, but never as an element of this model.
+    const text = JSON.stringify([model.areas, model.gates, model.entrances, model.verticals, model.levels, model.stations].flat().map((e) => [e.id, e.names]));
+    expect(text).not.toMatch(/西武新宿|新宿三丁目|新宿西口駅/);
+    expect(model.stations.map((s) => s.id)).not.toContain('sk:station:toei-oedo-shinjuku-nishiguchi');
     const excluded = model.complex.explicitlyExcluded.map((x) => x.name).join(' ');
     expect(excluded).toMatch(/西武新宿/);
     expect(excluded).toMatch(/新宿三丁目/);
-    expect(model.complex.stationIds).toEqual(['sk:station:jr-east-shinjuku', 'sk:station:keio-shinjuku']);
+    expect([...model.complex.stationIds].sort()).toEqual(model.stations.map((s) => s.id).sort());
+    expect(model.stations).toHaveLength(6);
   });
 
   it('JR track legend: 16 tracks on 8 islands, Yamanote on 14 and 15', () => {

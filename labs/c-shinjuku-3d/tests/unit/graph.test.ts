@@ -92,14 +92,15 @@ describe('routing graph', () => {
     }
   });
 
-  it('vertical facilities link only adjacent levels (none is declared non-adjacent)', () => {
+  it('vertical facilities link adjacent levels unless they are declared, with a reason, to skip floors', () => {
     const ordinal = new Map(model.levels.map((l) => [l.id, l.ordinal]));
     expect(model.verticals.length).toBeGreaterThan(50);
     for (const v of model.verticals) {
-      expect(v.declaredNonAdjacent, v.id).toBeUndefined();
       for (let i = 0; i + 1 < v.stops.length; i++) {
         const span = Math.abs(ordinal.get(v.stops[i]!.levelId)! - ordinal.get(v.stops[i + 1]!.levelId)!);
-        expect(span, `${v.id} stop ${i}`).toBe(1);
+        if (v.declaredNonAdjacent) expect(v.declaredNonAdjacent.reason.length, v.id).toBeGreaterThan(10);
+        else expect(span, `${v.id} stop ${i}`).toBe(1);
+        expect(span, `${v.id} stop ${i}`).toBeGreaterThanOrEqual(1);
       }
     }
   });
@@ -139,7 +140,7 @@ describe('routing graph', () => {
     expect(graph.nodes.filter((n) => blockIds.has(n.elementId))).toEqual([]);
     // gates that face a block keep exactly one modelled side
     const facingBlock = model.gates.filter((g) => g.sides.some((s) => 'blockId' in s));
-    expect(facingBlock.length).toBe(3);
+    expect(facingBlock.map((g) => g.id)).toEqual(['sk:gate:toei-oedo-gate-b']);
     for (const g of facingBlock) {
       const neighbours = new Set(graph.edges.filter((e) => e.from === g.id || e.to === g.id).flatMap((e) => [e.from, e.to]));
       neighbours.delete(g.id);

@@ -178,8 +178,12 @@ describe('route search behaviour', () => {
       const gatesUsed = into.legs.filter((l) => l.kind === 'gate' && l.toAreaId !== null && nodeById.get(l.toAreaId)!.zone !== 'unpaid');
       expect(gatesUsed.map((l) => l.elementId), from).toEqual(['sk:gate:keio-west-gate']);
     }
-    // the temporary gate leads somewhere unverified, so nothing routes out of it at all
-    expect(graph.edges.filter((e) => e.from === 'sk:gate:keio-temporary-gate')).toEqual([]);
+    // the temporary gate is exit-only too: it can be left through, never entered
+    const rinji = 'sk:gate:keio-temporary-gate';
+    expect(mustFind(NODE.keioPlatforms, rinji).nodeIds.at(-1)).toBe(rinji);
+    expect(findRoute(graph, rinji, NODE.keioPlatforms)).toMatchObject({ found: false, reason: 'unreachable' });
+    // a gate that faces an unverified block has nothing beyond it
+    expect(graph.edges.filter((e) => e.from === 'sk:gate:toei-oedo-gate-b' && e.kind !== 'gate-approach').map((e) => e.to)).toEqual([]);
   });
 
   it('marks legs that rest on inferred connections, and can be told to avoid them', () => {
