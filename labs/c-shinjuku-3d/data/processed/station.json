@@ -125,6 +125,26 @@
     },
     {
       "kind": "operator",
+      "id": "sk:operator:seibu",
+      "externalIds": {},
+      "names": {
+        "ja": "西武鉄道",
+        "ja_kana": null,
+        "en": "Seibu Railway",
+        "zh": "西武铁道"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:seibu-shinjuku-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null
+    },
+    {
+      "kind": "operator",
       "id": "sk:operator:public-space",
       "externalIds": {},
       "names": {
@@ -511,6 +531,31 @@
       "displayColor": "#e2392f",
       "displayColorNote": "Approximation of the red used for this line on the Tokyo Metro 立体図. Not an official colour value.",
       "stationNumberPrefix": "M"
+    },
+    {
+      "kind": "rail-line",
+      "id": "sk:line:seibu-shinjuku",
+      "externalIds": {},
+      "names": {
+        "ja": "西武新宿線",
+        "ja_kana": null,
+        "en": "Seibu Shinjuku Line",
+        "zh": "西武新宿线"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:seibu-shinjuku-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12",
+        "note": "Line letters as printed on the Seibu drawing (SS 01)."
+      },
+      "validFrom": null,
+      "validTo": null,
+      "operatorId": "sk:operator:seibu",
+      "displayColor": "#00a8b5",
+      "displayColorNote": "The fill of the station-number mark on the Seibu station page. Used as a display colour only; not an official colour value.",
+      "stationNumberPrefix": "SS"
     }
   ],
   "complex": {
@@ -539,13 +584,10 @@
       "sk:station:odakyu-shinjuku",
       "sk:station:keio-new-line-shinjuku",
       "sk:station:toei-oedo-shinjuku",
-      "sk:station:tokyo-metro-shinjuku"
+      "sk:station:tokyo-metro-shinjuku",
+      "sk:station:seibu-shinjuku"
     ],
     "explicitlyExcluded": [
-      {
-        "name": "西武新宿駅 (Seibu-Shinjuku)",
-        "reason": "A different station of a different operator. Not part of this model and not drawn."
-      },
       {
         "name": "新宿三丁目駅 (Shinjuku-sanchome)",
         "reason": "A different station. Not part of this model and not drawn."
@@ -691,6 +733,33 @@
       "complexId": "sk:complex:shinjuku",
       "railLineIds": [
         "sk:line:toei-oedo"
+      ]
+    },
+    {
+      "kind": "station",
+      "id": "sk:station:seibu-shinjuku",
+      "externalIds": {},
+      "names": {
+        "ja": "西武新宿駅",
+        "ja_kana": null,
+        "en": "Seibu-Shinjuku Station",
+        "zh": "西武新宿站"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:seibu-shinjuku-map",
+          "src:shinjuku-terminal-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12",
+        "note": "A separate station north of the others, reached on foot through サブナード. Included because the 新宿ターミナルマップ lists the Seibu Line among the lines of the terminal."
+      },
+      "validFrom": null,
+      "validTo": null,
+      "operatorId": "sk:operator:seibu",
+      "complexId": "sk:complex:shinjuku",
+      "railLineIds": [
+        "sk:line:seibu-shinjuku"
       ]
     },
     {
@@ -1327,7 +1396,7 @@
     },
     {
       "kind": "level",
-      "id": "sk:level:public-west-plaza-b1f",
+      "id": "sk:level:public-b1f",
       "externalIds": {},
       "names": {
         "ja": "B1F",
@@ -1353,6 +1422,66 @@
       "label": "B1F",
       "ordinal": -1,
       "elevation": -4,
+      "elevationNote": "Schematic. Floor heights were not measured; only the vertical order is taken from the source."
+    },
+    {
+      "kind": "level",
+      "id": "sk:level:seibu-shinjuku-2f",
+      "externalIds": {},
+      "names": {
+        "ja": "2F",
+        "ja_kana": null,
+        "en": "2F",
+        "zh": "2F"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:seibu-shinjuku-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:seibu-shinjuku",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2025-06",
+      "notes": "Platforms 1–3 and the concourse of 正面口.",
+      "operatorId": "sk:operator:seibu",
+      "label": "2F",
+      "ordinal": 1,
+      "elevation": 4,
+      "elevationNote": "Schematic. Floor heights were not measured; only the vertical order is taken from the source."
+    },
+    {
+      "kind": "level",
+      "id": "sk:level:seibu-shinjuku-1f",
+      "externalIds": {},
+      "names": {
+        "ja": "1F",
+        "ja_kana": null,
+        "en": "1F",
+        "zh": "1F"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:seibu-shinjuku-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:seibu-shinjuku",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2025-06",
+      "notes": "Street level in front of 正面口, and 北口.",
+      "operatorId": "sk:operator:seibu",
+      "label": "1F",
+      "ordinal": 0,
+      "elevation": 0,
       "elevationNote": "Schematic. Floor heights were not measured; only the vertical order is taken from the source."
     }
   ],
@@ -4555,7 +4684,7 @@
       "geometryConfidence": "unknown",
       "asOf": "2020-07",
       "notes": "Named \"西口地下広場 West Concourse\" on the underground sheet of the 新宿ターミナルマップ, which draws it as one walkable space between JR 西改札, the Odakyu 西口地下改札, 京王西口 and the Marunouchi Line passage. The sheet is dated 2020年7月現在, older than the operator drawings. The west exit is being rebuilt.",
-      "levelId": "sk:level:public-west-plaza-b1f",
+      "levelId": "sk:level:public-b1f",
       "fareZone": "unpaid",
       "footprint": [
         {
@@ -4575,6 +4704,367 @@
         "x": -14,
         "z": 28
       }
+    },
+    {
+      "kind": "passage",
+      "id": "sk:area:subnade-underground-mall",
+      "externalIds": {},
+      "names": {
+        "ja": "サブナード（地下街）",
+        "ja_kana": null,
+        "en": "Subnade (underground mall)",
+        "zh": "Subnade 地下街"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:shinjuku-terminal-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "unknown",
+      "asOf": "2020-07",
+      "notes": "Named \"サブナード Subnade\" on the underground sheet of the 新宿ターミナルマップ: a passage leaves メトロ通路 near exits B10 / B11, meets the mall, and the mall ends at 新宿プリンスホテル with the stairs numbered 1 and 2. Entered as one passage; the shops and the stairs 3–22 are left out. The sheet is dated 2020年7月現在, older than the operator drawings.",
+      "levelId": "sk:level:public-b1f",
+      "fareZone": "unpaid",
+      "footprint": [
+        {
+          "x0": -30,
+          "x1": -27,
+          "z0": -16,
+          "z1": -14
+        },
+        {
+          "x0": -32,
+          "x1": -30,
+          "z0": -16,
+          "z1": -4
+        },
+        {
+          "x0": -36,
+          "x1": -32,
+          "z0": -6,
+          "z1": -4
+        }
+      ],
+      "anchor": {
+        "x": -31,
+        "z": -10
+      }
+    },
+    {
+      "kind": "concourse",
+      "id": "sk:area:seibu-2f-concourse",
+      "externalIds": {},
+      "names": {
+        "ja": "正面口 改札内コンコース（2F）",
+        "ja_kana": null,
+        "en": "Concourse inside Front Gate (2F)",
+        "zh": "正面口站厅（付费区，2F）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:seibu-shinjuku-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:seibu-shinjuku",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2025-06",
+      "notes": "Unnamed on the drawing; the label is descriptive. The head of the three tracks.",
+      "levelId": "sk:level:seibu-shinjuku-2f",
+      "fareZone": "paid:seibu",
+      "footprint": [
+        {
+          "x0": -50,
+          "x1": -46.8,
+          "z0": -8,
+          "z1": -2
+        }
+      ],
+      "anchor": {
+        "x": -48.4,
+        "z": -5
+      }
+    },
+    {
+      "kind": "concourse",
+      "id": "sk:area:seibu-2f-front-gate-unpaid",
+      "externalIds": {},
+      "names": {
+        "ja": "正面口 改札外コンコース（2F）",
+        "ja_kana": null,
+        "en": "Outside Front Gate (2F)",
+        "zh": "正面口检票口外（2F）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:seibu-shinjuku-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:seibu-shinjuku",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2025-06",
+      "notes": "お客さまご案内カウンター and the ticket machines are drawn on this side.",
+      "levelId": "sk:level:seibu-shinjuku-2f",
+      "fareZone": "unpaid",
+      "footprint": [
+        {
+          "x0": -46,
+          "x1": -41,
+          "z0": -8,
+          "z1": -2
+        }
+      ],
+      "anchor": {
+        "x": -43.5,
+        "z": -5
+      }
+    },
+    {
+      "kind": "concourse",
+      "id": "sk:area:seibu-1f-front",
+      "externalIds": {},
+      "names": {
+        "ja": "正面口 1F（駅前）",
+        "ja_kana": null,
+        "en": "Front Entrance, street level (1F)",
+        "zh": "正面口 1F（站前）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:seibu-shinjuku-map",
+          "src:shinjuku-terminal-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:seibu-shinjuku",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2025-06",
+      "notes": "The 1F floor below the concourse, open to the street; the 新宿ターミナルマップ calls the place in front of it 西武新宿駅前.",
+      "levelId": "sk:level:seibu-shinjuku-1f",
+      "fareZone": "unpaid",
+      "footprint": [
+        {
+          "x0": -42,
+          "x1": -36.6,
+          "z0": -9,
+          "z1": -1
+        }
+      ],
+      "anchor": {
+        "x": -39,
+        "z": -5
+      }
+    },
+    {
+      "kind": "concourse",
+      "id": "sk:area:seibu-1f-north-gate-inside",
+      "externalIds": {},
+      "names": {
+        "ja": "北口 改札内（1F）",
+        "ja_kana": null,
+        "en": "Inside North Gate (1F)",
+        "zh": "北口检票口内（1F）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:seibu-shinjuku-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:seibu-shinjuku",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2025-06",
+      "notes": "The landing at the foot of the stairs from the north end of the platforms; toilets are drawn beside it.",
+      "levelId": "sk:level:seibu-shinjuku-1f",
+      "fareZone": "paid:seibu",
+      "footprint": [
+        {
+          "x0": -82,
+          "x1": -79,
+          "z0": -8,
+          "z1": -2.4
+        }
+      ],
+      "anchor": {
+        "x": -80.5,
+        "z": -5
+      }
+    },
+    {
+      "kind": "concourse",
+      "id": "sk:area:seibu-1f-north-gate-unpaid",
+      "externalIds": {},
+      "names": {
+        "ja": "北口 改札外（1F）",
+        "ja_kana": null,
+        "en": "Outside North Gate (1F)",
+        "zh": "北口检票口外（1F）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:seibu-shinjuku-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:seibu-shinjuku",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2025-06",
+      "levelId": "sk:level:seibu-shinjuku-1f",
+      "fareZone": "unpaid",
+      "footprint": [
+        {
+          "x0": -86,
+          "x1": -82.8,
+          "z0": -8,
+          "z1": -2.4
+        }
+      ],
+      "anchor": {
+        "x": -84.4,
+        "z": -5
+      }
+    },
+    {
+      "kind": "platform",
+      "id": "sk:platform:seibu-shinjuku-1",
+      "externalIds": {},
+      "names": {
+        "ja": "1番ホーム",
+        "ja_kana": null,
+        "en": "Platform 1",
+        "zh": "1号站台"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:seibu-shinjuku-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:seibu-shinjuku",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2025-06",
+      "notes": "The nearer of the two platform slabs on the drawing, with track 1 on its far side. Printed: \"①②③ 所沢・本川越・拝島方面のりば\".",
+      "levelId": "sk:level:seibu-shinjuku-2f",
+      "fareZone": "paid:seibu",
+      "footprint": [
+        {
+          "x0": -78,
+          "x1": -50,
+          "z0": -7.6,
+          "z1": -6
+        }
+      ],
+      "anchor": {
+        "x": -62,
+        "z": -6.8
+      },
+      "tracks": [
+        {
+          "number": "1",
+          "services": [
+            {
+              "railLineId": "sk:line:seibu-shinjuku",
+              "towardsJa": "所沢・本川越・拝島方面",
+              "towardsEn": "for Tokorozawa, Hon-Kawagoe, Haijima"
+            }
+          ],
+          "side": "z+"
+        }
+      ]
+    },
+    {
+      "kind": "platform",
+      "id": "sk:platform:seibu-shinjuku-2-3",
+      "externalIds": {},
+      "names": {
+        "ja": "2・3番ホーム",
+        "ja_kana": null,
+        "en": "Platforms 2–3",
+        "zh": "2·3号站台"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:seibu-shinjuku-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:seibu-shinjuku",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2025-06",
+      "notes": "The farther slab: track 2 on its near side, track 3 on its far side. The drawing has no compass; \"far\" is entered as west here, which is an assumption about its viewpoint.",
+      "levelId": "sk:level:seibu-shinjuku-2f",
+      "fareZone": "paid:seibu",
+      "footprint": [
+        {
+          "x0": -78,
+          "x1": -50,
+          "z0": -4.6,
+          "z1": -3
+        }
+      ],
+      "anchor": {
+        "x": -62,
+        "z": -3.8
+      },
+      "tracks": [
+        {
+          "number": "2",
+          "services": [
+            {
+              "railLineId": "sk:line:seibu-shinjuku",
+              "towardsJa": "所沢・本川越・拝島方面",
+              "towardsEn": "for Tokorozawa, Hon-Kawagoe, Haijima"
+            }
+          ],
+          "side": "z-"
+        },
+        {
+          "number": "3",
+          "services": [
+            {
+              "railLineId": "sk:line:seibu-shinjuku",
+              "towardsJa": "所沢・本川越・拝島方面",
+              "towardsEn": "for Tokorozawa, Hon-Kawagoe, Haijima"
+            }
+          ],
+          "side": "z+"
+        }
+      ]
     }
   ],
   "passages": [
@@ -5338,6 +5828,37 @@
     },
     {
       "kind": "passage-link",
+      "id": "sk:passage:marunouchi-concourse-to-subnade",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:shinjuku-terminal-map",
+          "src:tokyo-metro-shinjuku-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "unknown",
+      "asOf": "2020-07",
+      "notes": "A passage with the stairs numbered 17–22 leaves メトロ通路 beside exits B10 / B11 and runs north into サブナード; Tokyo Metro prints \"西武新宿線へ・サブナード方面\" at B10 / B11. The sheet is dated 2020年7月現在, older than the operator drawings.",
+      "fromAreaId": "sk:area:tokyo-metro-b1f-concourse",
+      "toAreaId": "sk:area:subnade-underground-mall",
+      "connection": "verified",
+      "stepFree": null,
+      "hasSteps": null
+    },
+    {
+      "kind": "passage-link",
       "id": "sk:passage:jr-central-west-outside-to-odakyu-west-underground",
       "externalIds": {},
       "names": {
@@ -5487,6 +6008,66 @@
       "toAreaId": "sk:area:jr-2f-new-south-unpaid",
       "connection": "verified",
       "stepFree": null,
+      "hasSteps": null
+    },
+    {
+      "kind": "passage-link",
+      "id": "sk:passage:seibu-2f-concourse-to-platform-1",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:seibu-shinjuku-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:seibu-shinjuku",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2025-06",
+      "notes": "On the wheelchair route (pink dotted line) of the Seibu drawing.",
+      "fromAreaId": "sk:area:seibu-2f-concourse",
+      "toAreaId": "sk:platform:seibu-shinjuku-1",
+      "connection": "verified",
+      "stepFree": true,
+      "hasSteps": null
+    },
+    {
+      "kind": "passage-link",
+      "id": "sk:passage:seibu-2f-concourse-to-platform-2-3",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:seibu-shinjuku-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:seibu-shinjuku",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2025-06",
+      "notes": "On the wheelchair route (pink dotted line) of the Seibu drawing.",
+      "fromAreaId": "sk:area:seibu-2f-concourse",
+      "toAreaId": "sk:platform:seibu-shinjuku-2-3",
+      "connection": "verified",
+      "stepFree": true,
       "hasSteps": null
     }
   ],
@@ -6749,6 +7330,92 @@
       "hoursNote": null,
       "stepFree": null,
       "aliases": []
+    },
+    {
+      "kind": "gate",
+      "id": "sk:gate:seibu-front-gate",
+      "externalIds": {},
+      "names": {
+        "ja": "正面口",
+        "ja_kana": null,
+        "en": "Front Gate",
+        "zh": "正面口"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:seibu-shinjuku-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:seibu-shinjuku",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2025-06",
+      "notes": "On the wheelchair route (pink dotted line) of the Seibu drawing.",
+      "levelId": "sk:level:seibu-shinjuku-2f",
+      "gateKind": "ticket",
+      "position": {
+        "x": -46.4,
+        "z": -5
+      },
+      "sides": [
+        {
+          "areaId": "sk:area:seibu-2f-concourse"
+        },
+        {
+          "areaId": "sk:area:seibu-2f-front-gate-unpaid"
+        }
+      ],
+      "direction": "both",
+      "hoursNote": null,
+      "stepFree": true,
+      "aliases": []
+    },
+    {
+      "kind": "gate",
+      "id": "sk:gate:seibu-north-gate",
+      "externalIds": {},
+      "names": {
+        "ja": "北口",
+        "ja_kana": null,
+        "en": "North Gate",
+        "zh": "北口"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:seibu-shinjuku-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:seibu-shinjuku",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2025-06",
+      "notes": "Printed: \"7:00〜終電 この改札口でのお問合せはインターホンをご利用ください\".",
+      "levelId": "sk:level:seibu-shinjuku-1f",
+      "gateKind": "ticket",
+      "position": {
+        "x": -82.4,
+        "z": -5
+      },
+      "sides": [
+        {
+          "areaId": "sk:area:seibu-1f-north-gate-inside"
+        },
+        {
+          "areaId": "sk:area:seibu-1f-north-gate-unpaid"
+        }
+      ],
+      "direction": "both",
+      "hoursNote": "7:00〜終電",
+      "stepFree": null,
+      "aliases": []
     }
   ],
   "entrances": [
@@ -7728,7 +8395,7 @@
       "geometryConfidence": "unknown",
       "asOf": "2020-07",
       "notes": "One entry for the numbered stairs drawn around the plaza; the street-level sheet prints 西口バスのりば above them. The sheet is dated 2020年7月現在, older than the operator drawings.",
-      "levelId": "sk:level:public-west-plaza-b1f",
+      "levelId": "sk:level:public-b1f",
       "areaId": "sk:area:west-exit-underground-plaza",
       "position": {
         "x": -14,
@@ -7736,6 +8403,75 @@
       },
       "leadsToJa": "西口バスのりば・タクシーのりば",
       "leadsToEn": "West Exit bus stops and taxi stand",
+      "stepFree": null
+    },
+    {
+      "kind": "entrance",
+      "id": "sk:entrance:seibu-front-entrance",
+      "externalIds": {},
+      "names": {
+        "ja": "正面口（地上）",
+        "ja_kana": null,
+        "en": "Front Entrance (street level)",
+        "zh": "正面口（地面）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:seibu-shinjuku-map",
+          "src:shinjuku-terminal-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:seibu-shinjuku",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2025-06",
+      "notes": "The label follows the gate name 正面口. On the wheelchair route (pink dotted line) of the Seibu drawing.",
+      "levelId": "sk:level:seibu-shinjuku-1f",
+      "areaId": "sk:area:seibu-1f-front",
+      "position": {
+        "x": -36.6,
+        "z": -3
+      },
+      "leadsToJa": "西武新宿駅前",
+      "leadsToEn": "Seibu-Shinjuku station square",
+      "stepFree": true
+    },
+    {
+      "kind": "entrance",
+      "id": "sk:entrance:seibu-north-exit",
+      "externalIds": {},
+      "names": {
+        "ja": "北口（地上）",
+        "ja_kana": null,
+        "en": "North Exit (street level)",
+        "zh": "北口（地面）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:seibu-shinjuku-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:seibu-shinjuku",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2025-06",
+      "notes": "The label follows the gate name 北口. No direction text is printed.",
+      "levelId": "sk:level:seibu-shinjuku-1f",
+      "areaId": "sk:area:seibu-1f-north-gate-unpaid",
+      "position": {
+        "x": -86,
+        "z": -5
+      },
+      "leadsToJa": null,
+      "leadsToEn": null,
       "stepFree": null
     }
   ],
@@ -13943,6 +14679,295 @@
       "directionNote": null,
       "hoursNote": null,
       "aggregated": false
+    },
+    {
+      "kind": "vertical",
+      "id": "sk:vertical:seibu-stairs-front-1f-to-2f",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:seibu-shinjuku-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:seibu-shinjuku",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2025-06",
+      "notes": "Wide stairs and an escalator are drawn between the street-level floor and the 2F concourse. Stands for every staircase of this pair drawn on the floor map; how many there are was not counted.",
+      "verticalKind": "stairs",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:seibu-shinjuku-1f",
+          "areaId": "sk:area:seibu-1f-front",
+          "position": {
+            "x": -39.6,
+            "z": -4.95
+          }
+        },
+        {
+          "levelId": "sk:level:seibu-shinjuku-2f",
+          "areaId": "sk:area:seibu-2f-front-gate-unpaid",
+          "position": {
+            "x": -42.6,
+            "z": -4.95
+          }
+        }
+      ],
+      "directionNote": null,
+      "hoursNote": null,
+      "aggregated": true
+    },
+    {
+      "kind": "vertical",
+      "id": "sk:vertical:seibu-escalator-front-1f-to-2f",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:seibu-shinjuku-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:seibu-shinjuku",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2025-06",
+      "notes": "Wide stairs and an escalator are drawn between the street-level floor and the 2F concourse. Stands for every escalator of this pair drawn on the floor map; count and running direction were not recorded.",
+      "verticalKind": "escalator",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:seibu-shinjuku-1f",
+          "areaId": "sk:area:seibu-1f-front",
+          "position": {
+            "x": -39.6,
+            "z": -3.8500000000000005
+          }
+        },
+        {
+          "levelId": "sk:level:seibu-shinjuku-2f",
+          "areaId": "sk:area:seibu-2f-front-gate-unpaid",
+          "position": {
+            "x": -42.6,
+            "z": -3.8500000000000005
+          }
+        }
+      ],
+      "directionNote": "Running direction is not recorded on the floor map.",
+      "hoursNote": null,
+      "aggregated": true
+    },
+    {
+      "kind": "vertical",
+      "id": "sk:vertical:seibu-elevator-front",
+      "externalIds": {},
+      "names": {
+        "ja": "エレベーター（1F ⇔ 2F 正面口）",
+        "ja_kana": null,
+        "en": "Elevator (1F ⇔ 2F, Front Gate)",
+        "zh": "电梯（1F ⇔ 2F 正面口）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:seibu-shinjuku-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:seibu-shinjuku",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2025-06",
+      "notes": "Drawn at the end of the 2F concourse away from the gates. On the wheelchair route (pink dotted line) of the Seibu drawing.",
+      "verticalKind": "elevator",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:seibu-shinjuku-1f",
+          "areaId": "sk:area:seibu-1f-front",
+          "position": {
+            "x": -41.5,
+            "z": -7.6
+          }
+        },
+        {
+          "levelId": "sk:level:seibu-shinjuku-2f",
+          "areaId": "sk:area:seibu-2f-front-gate-unpaid",
+          "position": {
+            "x": -41.5,
+            "z": -7.6
+          }
+        }
+      ],
+      "directionNote": null,
+      "hoursNote": null,
+      "aggregated": false
+    },
+    {
+      "kind": "vertical",
+      "id": "sk:vertical:seibu-stairs-platform-1-to-north-gate",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:seibu-shinjuku-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:seibu-shinjuku",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2025-06",
+      "notes": "Stairs are drawn from the north end of the platforms down to 北口. Stands for every staircase of this pair drawn on the floor map; how many there are was not counted.",
+      "verticalKind": "stairs",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:seibu-shinjuku-2f",
+          "areaId": "sk:platform:seibu-shinjuku-1",
+          "position": {
+            "x": -77,
+            "z": -6.8
+          }
+        },
+        {
+          "levelId": "sk:level:seibu-shinjuku-1f",
+          "areaId": "sk:area:seibu-1f-north-gate-inside",
+          "position": {
+            "x": -79.8,
+            "z": -6.8
+          }
+        }
+      ],
+      "directionNote": null,
+      "hoursNote": null,
+      "aggregated": true
+    },
+    {
+      "kind": "vertical",
+      "id": "sk:vertical:seibu-stairs-platform-2-3-to-north-gate",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:seibu-shinjuku-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:seibu-shinjuku",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2025-06",
+      "notes": "Stairs are drawn from the north end of the platforms down to 北口. Stands for every staircase of this pair drawn on the floor map; how many there are was not counted.",
+      "verticalKind": "stairs",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:seibu-shinjuku-2f",
+          "areaId": "sk:platform:seibu-shinjuku-2-3",
+          "position": {
+            "x": -77,
+            "z": -3.8
+          }
+        },
+        {
+          "levelId": "sk:level:seibu-shinjuku-1f",
+          "areaId": "sk:area:seibu-1f-north-gate-inside",
+          "position": {
+            "x": -79.8,
+            "z": -3.8
+          }
+        }
+      ],
+      "directionNote": null,
+      "hoursNote": null,
+      "aggregated": true
+    },
+    {
+      "kind": "vertical",
+      "id": "sk:vertical:subnade-stairs-to-seibu-front",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:shinjuku-terminal-map",
+          "src:seibu-shinjuku-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "unknown",
+      "asOf": "2020-07",
+      "notes": "The stairs numbered 1 and 2 at the north end of サブナード; the street-level sheet prints the same numbers at 西武新宿駅前, in front of the station. Where exactly they surface was not read, and a lift (S) drawn beside them is left out. The sheet is dated 2020年7月現在, older than the operator drawings. Stands for every staircase of this pair drawn on the floor map; how many there are was not counted.",
+      "verticalKind": "stairs",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:public-b1f",
+          "areaId": "sk:area:subnade-underground-mall",
+          "position": {
+            "x": -35.2,
+            "z": -5
+          }
+        },
+        {
+          "levelId": "sk:level:seibu-shinjuku-1f",
+          "areaId": "sk:area:seibu-1f-front",
+          "position": {
+            "x": -37.6,
+            "z": -5
+          }
+        }
+      ],
+      "directionNote": null,
+      "hoursNote": null,
+      "aggregated": true
     }
   ],
   "unverifiedBlocks": [],

@@ -17,7 +17,7 @@ import type {
   RailLine, Station, UnverifiedBlock, VerticalFacility, VerticalKind,
 } from '../../src/domain/types';
 import {
-  A, AGG, AGG_ESC, BUSTA, D2, KEIO, LV, METRO, ODAKYU, PAID_KEIO, PUBLIC, TOEI, X,
+  A, AGG, AGG_ESC, BUSTA, D2, KEIO, LV, METRO, ODAKYU, PAID_KEIO, PUBLIC, SEIBU, TOEI, X,
   a, base, concourse, entity, entrance, gate, line, link, names, passageArea, prov, pt, rect, svc, unnamed, vertical,
   type Common,
 } from './shinjuku';
@@ -525,8 +525,9 @@ const TM_DATE = 'The sheet is dated 2020年7月現在, older than the operator d
 const pubCommon: Common = { stationId: null, asOf: '2020-07', geometryConfidence: 'unknown' };
 const pubProv = p2([S_TERMINAL]);
 const PUB = {
-  lB1: 'sk:level:public-west-plaza-b1f',
+  lB1: 'sk:level:public-b1f',
   plaza: 'sk:area:west-exit-underground-plaza',
+  subnade: 'sk:area:subnade-underground-mall',
 };
 const publicLevels: Level[] = [
   level(PUB.lB1, PUBLIC, 'B1F', -1, -4, pubProv, pubCommon, 'Drawn level with the JR and Odakyu B1F. Relative heights are not from a source.'),
@@ -536,6 +537,11 @@ const publicAreas: Area[] = [
     [rect(-24.4, -4.6, 25, 31), rect(-18.5, -15, 22, 25)], pt(-14, 28), pubProv, pubCommon,
     `Named "西口地下広場 West Concourse" on the underground sheet of the 新宿ターミナルマップ, which draws it as one walkable space between JR 西改札, the Odakyu 西口地下改札, 京王西口 and the Marunouchi Line passage. ${TM_DATE} The west exit is being rebuilt.`),
 ];
+publicAreas.push(
+  passageArea(PUB.subnade, PUB.lB1, 'unpaid', names('サブナード（地下街）', 'Subnade (underground mall)', 'Subnade 地下街'),
+    [rect(-30, -27, -16, -14), rect(-32, -30, -16, -4), rect(-36, -32, -6, -4)], pt(-31, -10), pubProv, pubCommon,
+    `Named "サブナード Subnade" on the underground sheet of the 新宿ターミナルマップ: a passage leaves メトロ通路 near exits B10 / B11, meets the mall, and the mall ends at 新宿プリンスホテル with the stairs numbered 1 and 2. Entered as one passage; the shops and the stairs 3–22 are left out. ${TM_DATE}`),
+);
 const publicEntrances: Entrance[] = [
   entrance('west-plaza-street-stairs', PUB.lB1, PUB.plaza, names('地上への階段（1〜18）', 'Stairs to street level (1–18)', '通往地面的楼梯（1～18）'), pt(-14, 31),
     '西口バスのりば・タクシーのりば', 'West Exit bus stops and taxi stand', pubProv,
@@ -564,6 +570,8 @@ const crossPassages: Passage[] = [
     'The street-level sheet draws JR 南改札 and the Odakyu 南口改札 side by side on the pavement it calls 南口 (South Concourse). JR directs barrier-free transfers to the Odakyu and Keio lines to 南口.', true),
   drawn('jr-south-exit-to-koshu-kaido-gate-crossing', A.southUnpaid, A.koshuUnpaid, [S_JR_2F],
     'Outdoors: the pedestrian crossing over 甲州街道 drawn on the street-level sheet between 南口 and the side of 甲州街道改札 and バスタ新宿. A public road crossing, not a station passage.'),
+  drawn('marunouchi-concourse-to-subnade', ME.conc, PUB.subnade, [S_METRO],
+    'A passage with the stairs numbered 17–22 leaves メトロ通路 beside exits B10 / B11 and runs north into サブナード; Tokyo Metro prints "西武新宿線へ・サブナード方面" at B10 / B11.'),
   inferred('jr-central-west-outside-to-odakyu-west-underground', A.chuoWestUnpaid, OD.plazaB1, [S_JR_B1, S_OD],
     'Odakyu prints a second "JR線" arrow beside its B1F gate line, on the side where JR draws 中央西改札. JR draws only a ticket office outside that gate, and the 新宿ターミナルマップ does not settle it.'),
   link('keio-mall-to-new-line-concourse', A.keioMall, NL.conc, p2([S_NL_LAYER, S_KEIO_LAYER]), true,
@@ -577,6 +585,93 @@ const crossPassages: Passage[] = [
 ];
 
 // ===========================================================================
+// Seibu-Shinjuku — 西武新宿駅 駅構内のご案内 (SS01.png), 2025.6.26
+// A separate station north of the others; the 新宿ターミナルマップ counts the
+// Seibu Line among the lines of the terminal and draws サブナード leading to it.
+// ===========================================================================
+
+const ST_SEIBU = 'sk:station:seibu-shinjuku';
+const PAID_SEIBU: FareZone = 'paid:seibu';
+const S_SEIBU = 'src:seibu-shinjuku-map';
+const seibuCommon: Common = { stationId: ST_SEIBU, asOf: '2025-06', geometryConfidence: 'schematic' };
+const seibuProv = p2([S_SEIBU]);
+const L_SEIBU = 'sk:line:seibu-shinjuku';
+const SEIBU_TOWARDS = svc(L_SEIBU, '所沢・本川越・拝島方面', 'for Tokorozawa, Hon-Kawagoe, Haijima');
+const SEIBU_PINK = 'On the wheelchair route (pink dotted line) of the Seibu drawing.';
+
+const SB = {
+  l2: 'sk:level:seibu-shinjuku-2f',
+  l1: 'sk:level:seibu-shinjuku-1f',
+  conc: 'sk:area:seibu-2f-concourse',
+  out2: 'sk:area:seibu-2f-front-gate-unpaid',
+  front1: 'sk:area:seibu-1f-front',
+  northIn: 'sk:area:seibu-1f-north-gate-inside',
+  northOut: 'sk:area:seibu-1f-north-gate-unpaid',
+  p1: 'sk:platform:seibu-shinjuku-1',
+  p23: 'sk:platform:seibu-shinjuku-2-3',
+};
+
+const seibuLevels: Level[] = [
+  level(SB.l2, SEIBU, '2F', 1, 4, seibuProv, seibuCommon, 'Platforms 1–3 and the concourse of 正面口.'),
+  level(SB.l1, SEIBU, '1F', 0, 0, seibuProv, seibuCommon, 'Street level in front of 正面口, and 北口.'),
+];
+
+const seibuAreas: Area[] = [
+  concourse(SB.conc, SB.l2, PAID_SEIBU, names('正面口 改札内コンコース（2F）', 'Concourse inside Front Gate (2F)', '正面口站厅（付费区，2F）'),
+    [rect(-50, -46.8, -8, -2)], pt(-48.4, -5), seibuProv, seibuCommon, 'Unnamed on the drawing; the label is descriptive. The head of the three tracks.'),
+  concourse(SB.out2, SB.l2, 'unpaid', names('正面口 改札外コンコース（2F）', 'Outside Front Gate (2F)', '正面口检票口外（2F）'),
+    [rect(-46, -41, -8, -2)], pt(-43.5, -5), seibuProv, seibuCommon, 'お客さまご案内カウンター and the ticket machines are drawn on this side.'),
+  concourse(SB.front1, SB.l1, 'unpaid', names('正面口 1F（駅前）', 'Front Entrance, street level (1F)', '正面口 1F（站前）'),
+    [rect(-42, -36.6, -9, -1)], pt(-39, -5), p2([S_SEIBU, S_TERMINAL]), seibuCommon,
+    'The 1F floor below the concourse, open to the street; the 新宿ターミナルマップ calls the place in front of it 西武新宿駅前.'),
+  concourse(SB.northIn, SB.l1, PAID_SEIBU, names('北口 改札内（1F）', 'Inside North Gate (1F)', '北口检票口内（1F）'),
+    [rect(-82, -79, -8, -2.4)], pt(-80.5, -5), seibuProv, seibuCommon, 'The landing at the foot of the stairs from the north end of the platforms; toilets are drawn beside it.'),
+  concourse(SB.northOut, SB.l1, 'unpaid', names('北口 改札外（1F）', 'Outside North Gate (1F)', '北口检票口外（1F）'),
+    [rect(-86, -82.8, -8, -2.4)], pt(-84.4, -5), seibuProv, seibuCommon),
+  platform(SB.p1, SB.l2, PAID_SEIBU, names('1番ホーム', 'Platform 1', '1号站台'), rect(-78, -50, -7.6, -6), pt(-62, -6.8),
+    [{ number: '1', services: [SEIBU_TOWARDS], side: 'z+' }], seibuProv, seibuCommon,
+    'The nearer of the two platform slabs on the drawing, with track 1 on its far side. Printed: "①②③ 所沢・本川越・拝島方面のりば".'),
+  platform(SB.p23, SB.l2, PAID_SEIBU, names('2・3番ホーム', 'Platforms 2–3', '2·3号站台'), rect(-78, -50, -4.6, -3), pt(-62, -3.8),
+    [{ number: '2', services: [SEIBU_TOWARDS], side: 'z-' }, { number: '3', services: [SEIBU_TOWARDS], side: 'z+' }], seibuProv, seibuCommon,
+    'The farther slab: track 2 on its near side, track 3 on its far side. The drawing has no compass; "far" is entered as west here, which is an assumption about its viewpoint.'),
+];
+
+const seibuPassages: Passage[] = [
+  link('seibu-2f-concourse-to-platform-1', SB.conc, SB.p1, seibuProv, true, { common: seibuCommon, notes: SEIBU_PINK }),
+  link('seibu-2f-concourse-to-platform-2-3', SB.conc, SB.p23, seibuProv, true, { common: seibuCommon, notes: SEIBU_PINK }),
+];
+
+const seibuGates: Gate[] = [
+  gate('seibu-front-gate', SB.l2, names('正面口', 'Front Gate', '正面口'), pt(-46.4, -5), [a(SB.conc), a(SB.out2)], seibuProv,
+    { common: seibuCommon, stepFree: true, notes: SEIBU_PINK }),
+  gate('seibu-north-gate', SB.l1, names('北口', 'North Gate', '北口'), pt(-82.4, -5), [a(SB.northIn), a(SB.northOut)], seibuProv,
+    { common: seibuCommon, hours: '7:00〜終電', notes: 'Printed: "7:00〜終電 この改札口でのお問合せはインターホンをご利用ください".' }),
+];
+
+const seibuEntrances: Entrance[] = [
+  entrance('seibu-front-entrance', SB.l1, SB.front1, names('正面口（地上）', 'Front Entrance (street level)', '正面口（地面）'), pt(-36.6, -3),
+    '西武新宿駅前', 'Seibu-Shinjuku station square', p2([S_SEIBU, S_TERMINAL]), { common: seibuCommon, stepFree: true, notes: `The label follows the gate name 正面口. ${SEIBU_PINK}` }),
+  entrance('seibu-north-exit', SB.l1, SB.northOut, names('北口（地上）', 'North Exit (street level)', '北口（地面）'), pt(-86, -5),
+    null, null, seibuProv, { common: seibuCommon, notes: 'The label follows the gate name 北口. No direction text is printed.' }),
+];
+
+const seibuVerticals: VerticalFacility[] = [
+  ...pair('seibu-KIND-front-1f-to-2f', ['stairs', 'escalator'], { levelId: SB.l1, areaId: SB.front1, at: pt(-39.6, -4.4) }, { levelId: SB.l2, areaId: SB.out2, at: pt(-42.6, -4.4) }, seibuProv, seibuCommon,
+    'Wide stairs and an escalator are drawn between the street-level floor and the 2F concourse.'),
+  vertical('seibu-elevator-front', 'elevator', names('エレベーター（1F ⇔ 2F 正面口）', 'Elevator (1F ⇔ 2F, Front Gate)', '电梯（1F ⇔ 2F 正面口）'),
+    [{ levelId: SB.l1, areaId: SB.front1, at: pt(-41.5, -7.6) }, { levelId: SB.l2, areaId: SB.out2, at: pt(-41.5, -7.6) }],
+    seibuProv, { common: seibuCommon, notes: `Drawn at the end of the 2F concourse away from the gates. ${SEIBU_PINK}` }),
+  ...pair('seibu-KIND-platform-1-to-north-gate', ['stairs'], { levelId: SB.l2, areaId: SB.p1, at: pt(-77, -6.8) }, { levelId: SB.l1, areaId: SB.northIn, at: pt(-79.8, -6.8) }, seibuProv, seibuCommon,
+    'Stairs are drawn from the north end of the platforms down to 北口.'),
+  ...pair('seibu-KIND-platform-2-3-to-north-gate', ['stairs'], { levelId: SB.l2, areaId: SB.p23, at: pt(-77, -3.8) }, { levelId: SB.l1, areaId: SB.northIn, at: pt(-79.8, -3.8) }, seibuProv, seibuCommon,
+    'Stairs are drawn from the north end of the platforms down to 北口.'),
+  // サブナード ⇄ the street in front of the station
+  ...pair('subnade-KIND-to-seibu-front', ['stairs'], { levelId: PUB.lB1, areaId: PUB.subnade, at: pt(-35.2, -5) }, { levelId: SB.l1, areaId: SB.front1, at: pt(-37.6, -5) }, p2([S_TERMINAL, S_SEIBU]),
+    { stationId: null, asOf: '2020-07', geometryConfidence: 'unknown' },
+    `The stairs numbered 1 and 2 at the north end of サブナード; the street-level sheet prints the same numbers at 西武新宿駅前, in front of the station. Where exactly they surface was not read, and a lift (S) drawn beside them is left out. ${TM_DATE}`),
+];
+
+// ===========================================================================
 
 const railLines: RailLine[] = [
   line('odakyu-odakyu', ODAKYU, names('小田急線', 'Odakyu Line', '小田急线'), '#2f78c8', p2([S_OD, S_TERMINAL]), CONTRAST_NOTE),
@@ -587,6 +682,8 @@ const railLines: RailLine[] = [
     'Approximation of the magenta used for this line on the Toei 立体図. Not an official colour value.', 'E'),
   line('tokyo-metro-marunouchi', METRO, names('丸ノ内線', 'Marunouchi Line', '丸之内线'), '#e2392f', p2([S_METRO], 'Line letter as printed on the Tokyo Metro 立体図 (M 08).'),
     'Approximation of the red used for this line on the Tokyo Metro 立体図. Not an official colour value.', 'M'),
+  line('seibu-shinjuku', SEIBU, names('西武新宿線', 'Seibu Shinjuku Line', '西武新宿线'), '#00a8b5', p2([S_SEIBU], 'Line letters as printed on the Seibu drawing (SS 01).'),
+    'The fill of the station-number mark on the Seibu station page. Used as a display colour only; not an official colour value.', 'SS'),
 ];
 
 const stations: Station[] = [
@@ -594,6 +691,8 @@ const stations: Station[] = [
   station(ST_NL, KEIO, names('京王新線・都営新宿線 新宿駅', 'Keio New Line / Toei Shinjuku Line Shinjuku Station', '京王新线·都营新宿线新宿站'),
     p2([S_NL, S_TOEI], 'Toei: "この駅は京王電鉄の管理駅です".'), [L_NL, L_TS]),
   station(ST_OEDO, TOEI, names('都営大江戸線 新宿駅', 'Toei Oedo Line Shinjuku Station', '都营大江户线新宿站'), p2([S_TOEI]), [L_OEDO]),
+  station(ST_SEIBU, SEIBU, names('西武新宿駅', 'Seibu-Shinjuku Station', '西武新宿站'),
+    p2([S_SEIBU, S_TERMINAL], 'A separate station north of the others, reached on foot through サブナード. Included because the 新宿ターミナルマップ lists the Seibu Line among the lines of the terminal.'), [L_SEIBU]),
   station(ST_METRO, METRO, names('東京メトロ丸ノ内線 新宿駅', 'Tokyo Metro Marunouchi Line Shinjuku Station', '东京地铁丸之内线新宿站'), p2([S_METRO]), [L_MARU]),
 ];
 
@@ -603,13 +702,13 @@ const unverifiedBlocks: UnverifiedBlock[] = [];
 export const extensions = {
   railLines,
   stations,
-  levels: [...odLevels, ...nlLevels, ...oedoLevels, ...metroLevels, ...bustaLevels, ...publicLevels],
-  areas: [...odAreas, ...nlAreas, ...oedoAreas, ...metroAreas, ...bustaAreas, ...publicAreas],
-  passages: [...odPassages, ...crossPassages],
-  gates: [...odGates, ...nlGates, ...oedoGates, ...metroGates],
-  entrances: [...odEntrances, ...nlEntrances, ...oedoEntrances, ...metroEntrances, ...bustaEntrances, ...publicEntrances],
-  verticals: [...odVerticals, ...nlVerticals, ...oedoVerticals, ...metroVerticals, ...bustaVerticals],
+  levels: [...odLevels, ...nlLevels, ...oedoLevels, ...metroLevels, ...bustaLevels, ...publicLevels, ...seibuLevels],
+  areas: [...odAreas, ...nlAreas, ...oedoAreas, ...metroAreas, ...bustaAreas, ...publicAreas, ...seibuAreas],
+  passages: [...odPassages, ...crossPassages, ...seibuPassages],
+  gates: [...odGates, ...nlGates, ...oedoGates, ...metroGates, ...seibuGates],
+  entrances: [...odEntrances, ...nlEntrances, ...oedoEntrances, ...metroEntrances, ...bustaEntrances, ...publicEntrances, ...seibuEntrances],
+  verticals: [...odVerticals, ...nlVerticals, ...oedoVerticals, ...metroVerticals, ...bustaVerticals, ...seibuVerticals],
   unverifiedBlocks,
 };
 
-export const EXT_IDS = { OD, NL, OE, ME, BU, PUB } as const;
+export const EXT_IDS = { OD, NL, OE, ME, BU, PUB, SB } as const;

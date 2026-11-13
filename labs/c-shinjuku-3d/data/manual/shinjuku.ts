@@ -78,6 +78,7 @@ export const METRO = 'sk:operator:tokyo-metro';
 export const TOEI = 'sk:operator:toei';
 export const BUSTA = 'sk:operator:busta-shinjuku';
 export const PUBLIC = 'sk:operator:public-space';
+export const SEIBU = 'sk:operator:seibu';
 /** Areas of other operators that JR and Keio gates open into (defined in extensions.ts). */
 export const X = {
   odakyuB1Concourse: 'sk:area:odakyu-b1f-concourse',
@@ -154,6 +155,7 @@ const operators: Operator[] = [
   { kind: 'operator', ...entity(METRO, names('東京メトロ', 'Tokyo Metro', '东京地铁'), prov(['src:tokyo-metro-shinjuku-map'], undefined, D2)) },
   { kind: 'operator', ...entity(TOEI, names('東京都交通局（都営地下鉄）', 'Toei Subway', '都营地铁'), prov(['src:toei-shinjuku-map'], undefined, D2)) },
   { kind: 'operator', ...entity(BUSTA, names('バスタ新宿', 'Busta Shinjuku', 'Busta 新宿'), prov(['src:busta-floor-maps'], 'A bus terminal, not a railway operator; listed so that its floors have an owner.', D2)) },
+  { kind: 'operator', ...entity(SEIBU, names('西武鉄道', 'Seibu Railway', '西武铁道'), prov(['src:seibu-shinjuku-map'], undefined, D2)) },
   { kind: 'operator', ...entity(PUBLIC, names('公共地下通路（事業者の改札外）', 'Public underground space (outside every operator\'s gates)', '公共地下通道（各运营方检票口之外）'),
     prov([S_TERMINAL], 'Not an operator. 西口地下広場 belongs to no railway; listed so that its floor has an owner. Named and drawn on the 新宿ターミナルマップ.', D2)) },
 ];
@@ -208,9 +210,8 @@ const railLines: RailLine[] = [
 const complex: StationComplex = {
   kind: 'station-complex',
   ...entity('sk:complex:shinjuku', names('新宿駅', 'Shinjuku Station', '新宿站'), prov([S_PAGE, S_KEIO_PAGE])),
-  stationIds: [ST_JR, ST_KEIO, 'sk:station:odakyu-shinjuku', 'sk:station:keio-new-line-shinjuku', 'sk:station:toei-oedo-shinjuku', 'sk:station:tokyo-metro-shinjuku'],
+  stationIds: [ST_JR, ST_KEIO, 'sk:station:odakyu-shinjuku', 'sk:station:keio-new-line-shinjuku', 'sk:station:toei-oedo-shinjuku', 'sk:station:tokyo-metro-shinjuku', 'sk:station:seibu-shinjuku'],
   explicitlyExcluded: [
-    { name: '西武新宿駅 (Seibu-Shinjuku)', reason: 'A different station of a different operator. Not part of this model and not drawn.' },
     { name: '新宿三丁目駅 (Shinjuku-sanchome)', reason: 'A different station. Not part of this model and not drawn.' },
     { name: '新宿西口駅 (Shinjuku-nishiguchi, Toei Oedo Line)', reason: 'A different station. It appears on the JR and Tokyo Metro 立体図 as a neighbour and is not modelled.' },
   ],

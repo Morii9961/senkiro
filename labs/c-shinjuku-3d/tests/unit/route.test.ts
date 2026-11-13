@@ -192,6 +192,22 @@ describe('route search behaviour', () => {
     expect(transfer.legs.filter((l) => l.kind === 'gate').map((l) => l.elementId)).toEqual(['sk:gate:toei-oedo-transfer-gate']);
   });
 
+  it('西武新宿駅 is reached underground through サブナード, and on its own platforms by 正面口 or 北口', () => {
+    // JR 東改札 → メトロ通路 → サブナード → up to the front of 西武新宿駅 → 正面口 → platform, with one gate on the way and nothing inferred
+    const r = mustFind('sk:gate:jr-east-gate', 'sk:platform:seibu-shinjuku-2-3');
+    expect(r.nodeIds).toContain('sk:area:subnade-underground-mall');
+    expect(r.legs.filter((l) => l.kind === 'gate').map((l) => l.elementId)).toContain('sk:gate:seibu-front-gate');
+    expect(r.inferredLegs).toBe(0);
+    expect(levelLabels(model, r.levelSequence).at(-1)).toBe('2F');
+    // 北口 has stairs only on the drawing: lift-only travel must use 正面口
+    const lift = mustFind('sk:entrance:seibu-front-entrance', 'sk:platform:seibu-shinjuku-1', 'elevator-only');
+    expect(lift.legs.filter((l) => l.kind === 'gate').map((l) => l.elementId)).toEqual(['sk:gate:seibu-front-gate']);
+    const north = mustFind('sk:entrance:seibu-north-exit', 'sk:platform:seibu-shinjuku-1');
+    expect(north.legs.filter((l) => l.kind === 'gate').map((l) => l.elementId)).toEqual(['sk:gate:seibu-north-gate']);
+    // streets are not part of the model, so from 北口 there is no lift-only way: the search says so instead of inventing one
+    expect(findRoute(graph, 'sk:entrance:seibu-north-exit', 'sk:platform:seibu-shinjuku-1', { mode: 'elevator-only' }).found).toBe(false);
+  });
+
   it('the operators meet in public space: 西口地下広場, 東口地下通路 and 南口', () => {
     // Odakyu underground gate → plaza → Marunouchi Line gates, without entering anybody's paid area on the way
     const r = mustFind('sk:gate:odakyu-west-underground-gate', 'sk:gate:tokyo-metro-west-gates');

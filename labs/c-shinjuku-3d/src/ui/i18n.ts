@@ -194,9 +194,9 @@ const dict = {
   // info
   scope: { ja: 'モデルの範囲', en: 'Scope of the model', zh: '建模范围' },
   scopeBody: {
-    ja: "JR東日本・京王線・小田急線・京王新線／都営新宿線・都営大江戸線・丸ノ内線・バスタ新宿を、各事業者の構内図を読んで入力しました。読み取れなかった部分は省くか「未確認」と表示しています。",
-    en: "JR East, the Keio Line, Odakyu, the Keio New Line / Toei Shinjuku Line, the Toei Oedo Line, the Marunouchi Line and Busta Shinjuku were entered by reading each operator's own floor maps. Parts that could not be read are left out or marked unverified.",
-    zh: "JR东日本、京王线、小田急线、京王新线／都营新宿线、都营大江户线、丸之内线和 Busta 新宿，都是对照各运营方自己的构内图录入的。读不清的部分没有画，或者标为「未确认」。",
+    ja: "JR東日本・京王線・小田急線・京王新線／都営新宿線・都営大江戸線・丸ノ内線・西武新宿線・バスタ新宿を、各事業者の構内図を読んで入力しました。読み取れなかった部分は省くか「未確認」と表示しています。",
+    en: "JR East, the Keio Line, Odakyu, the Keio New Line / Toei Shinjuku Line, the Toei Oedo Line, the Marunouchi Line, Seibu-Shinjuku and Busta Shinjuku were entered by reading each operator's own floor maps. Parts that could not be read are left out or marked unverified.",
+    zh: "JR东日本、京王线、小田急线、京王新线／都营新宿线、都营大江户线、丸之内线、西武新宿线和 Busta 新宿，都是对照各运营方自己的构内图录入的；运营方检票口之外的公共通道（西口地下广场、Subnade）依据新宿总站协议会的总图。读不清的部分没有画，或者标为「未确认」。",
   },
   excluded: { ja: 'モデルに含めない駅', en: 'Stations deliberately left out', zh: '明确不纳入模型的车站' },
   precision: { ja: '形状の確度', en: 'Geometric precision', zh: '几何精度' },

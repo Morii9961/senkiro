@@ -12,7 +12,7 @@ import type { RunningStatus } from '../domain/overlay';
 import type { Route } from '../domain/route';
 import type { Area, PlanPoint, PlanRect, StationModel, VerticalFacility } from '../domain/types';
 import type { Lang, T } from './i18n';
-import type { Namer } from './naming';
+import { pickName, type Namer } from './naming';
 import type { SceneHandle } from './Scene3D';
 import { gateDirection } from './scene/arch/gates';
 import { wallEdges } from './scene/arch/slabs';
@@ -48,20 +48,30 @@ interface PlanLabel {
   z: number;
   text: string;
   chips?: { text: string; color: string }[];
-  variant: 'platform' | 'gate' | 'area' | 'entrance' | 'lift' | 'block' | 'route-start' | 'route-end';
+  variant: 'platform' | 'gate' | 'area' | 'entrance' | 'lift' | 'block' | 'operator' | 'route-start' | 'route-end';
   priority: number;
   /** Shown from this drawing scale (px per model unit) upwards. */
   minScale: number;
   anchor: 'centre' | 'above';
+  /** Other places the label may stand when the first is taken. */
+  alts?: PlanPoint[];
 }
 
 const PAD = 3.5;
+const PUBLIC_SPACE = 'sk:operator:public-space';
 const TRACK_W = 0.62;
 
 function textWidth(text: string, px: number): number {
   let w = 0;
   for (const ch of text) w += ch.charCodeAt(0) > 0x2e80 ? px : px * 0.58;
   return w;
+}
+
+/** Other places for a platform's label: along its length, so that neighbouring platforms need not hide one another. */
+function alongPlatform(footprint: PlanRect[], anchor: PlanPoint): PlanPoint[] {
+  const b = boundsOf(footprint);
+  const alongX = b.x1 - b.x0 >= b.z1 - b.z0;
+  return [0.22, -0.22, 0.38, -0.38].map((k) => (alongX ? { x: anchor.x + (b.x1 - b.x0) * k, z: anchor.z } : { x: anchor.x, z: anchor.z + (b.z1 - b.z0) * k }));
 }
 
 export function Plan2D(props: Props) {
@@ -244,10 +254,22 @@ export function Plan2D(props: Props) {
           priority: 60 + boost(a.id),
           minScale: 0,
           anchor: 'centre',
+          alts: alongPlatform(a.footprint, a.anchor),
         });
       } else if (a.names.ja !== null) {
         out.push({ key: a.id, elementId: null, x: a.anchor.x, z: a.anchor.z, text: namer.name(a.id), variant: 'area', priority: 20 + boost(a.id), minScale: onRoute.has(a.id) ? 0 : 9, anchor: 'centre' });
       }
+    }
+    // whose part of the floor this is: one caption per operator, above its areas (public space has names of its own)
+    for (const op of model.operators) {
+      const levels = new Set(model.levels.filter((l) => l.operatorId === op.id).map((l) => l.id));
+      const mine = floor.areas.filter((a) => levels.has(a.levelId));
+      if (mine.length === 0 || op.id === PUBLIC_SPACE) continue;
+      const b = boundsOf(mine.flatMap((a) => a.footprint));
+      out.push({
+        key: `op:${op.id}`, elementId: null, x: b.x0 + 2, z: b.z0 - 0.3, text: pickName(op.names, props.lang) ?? op.id, variant: 'operator', priority: 48, minScale: 0, anchor: 'above',
+        alts: [{ x: (b.x0 + b.x1) / 2, z: b.z0 - 0.3 }, { x: b.x1 - 2, z: b.z0 - 0.3 }, { x: b.x0 + 2, z: b.z1 + 1.6 }, { x: (b.x0 + b.x1) / 2, z: b.z1 + 1.6 }],
+      });
     }
     for (const g of floor.gates) {
       out.push({ key: g.id, elementId: g.id, x: g.position.x, z: g.position.z, text: namer.name(g.id), variant: 'gate', priority: 50 + boost(g.id), minScale: 0, anchor: 'above' });
@@ -263,25 +285,33 @@ export function Plan2D(props: Props) {
     if (routeEnds.start) out.push({ key: 'route:start', elementId: null, x: routeEnds.start.x, z: routeEnds.start.z, text: t('from'), variant: 'route-start', priority: 200, minScale: 0, anchor: 'above' });
     if (routeEnds.end) out.push({ key: 'route:end', elementId: null, x: routeEnds.end.x, z: routeEnds.end.z, text: t('to'), variant: 'route-end', priority: 200, minScale: 0, anchor: 'above' });
     return out;
-  }, [floor, namer, onRoute, props.selectedId, props.showBlocks, routeEnds, t]);
+  }, [floor, model.operators, model.levels, namer, onRoute, props.lang, props.selectedId, props.showBlocks, routeEnds, t]);
 
   const placed = useMemo(() => {
     const compact = scale < 9;
-    const boxes: { x0: number; y0: number; x1: number; y1: number }[] = [];
+    // the floor list and the title of the plan stand over the drawing: nothing is placed under them
+    const boxes: { x0: number; y0: number; x1: number; y1: number }[] = [
+      { x0: 0, x1: 112, y0: 0, y1: 340 },
+      { x0: 0, x1: 480, y0: 0, y1: 46 },
+    ];
     const out: (PlanLabel & { sx: number; sy: number; compact: boolean })[] = [];
     for (const l of [...labels].sort((a, b) => b.priority - a.priority)) {
       if (scale < l.minScale) continue;
-      const sx = (l.x - vx) * scale;
-      const sy = (l.z - vz) * scale;
-      if (sx < -40 || sy < -20 || sx > size.w + 40 || sy > size.h + 20) continue;
       const chipW = (l.chips ?? []).reduce((w, c) => w + (compact ? 12 : textWidth(c.text, 11) + 14), 0);
       const w = textWidth(l.text, 12) + 14 + chipW;
       const h = 22;
-      const y0 = l.anchor === 'above' ? sy - h - 12 : sy - h / 2;
-      const r = { x0: sx - w / 2 - 2, x1: sx + w / 2 + 2, y0: y0 - 2, y1: y0 + h + 2 };
-      if (boxes.some((q) => r.x0 < q.x1 && q.x0 < r.x1 && r.y0 < q.y1 && q.y0 < r.y1)) continue;
-      boxes.push(r);
-      out.push({ ...l, sx, sy: y0, compact });
+      for (const at of [{ x: l.x, z: l.z }, ...(l.alts ?? [])]) {
+        const sx = (at.x - vx) * scale;
+        const sy = (at.z - vz) * scale;
+        if (sx < -40 || sy < -20 || sx > size.w + 40 || sy > size.h + 20) continue;
+        const lift = l.variant === 'operator' ? 2 : 12;
+        const y0 = l.anchor === 'above' ? sy - h - lift : sy - h / 2;
+        const r = { x0: sx - w / 2 - 2, x1: sx + w / 2 + 2, y0: y0 - 2, y1: y0 + h + 2 };
+        if (boxes.some((q) => r.x0 < q.x1 && q.x0 < r.x1 && r.y0 < q.y1 && q.y0 < r.y1)) continue;
+        boxes.push(r);
+        out.push({ ...l, sx, sy: y0, compact });
+        break;
+      }
     }
     return out;
   }, [labels, scale, vx, vz, size.w, size.h]);

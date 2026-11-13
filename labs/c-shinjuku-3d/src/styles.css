@@ -619,6 +619,16 @@ a {
   text-shadow: 0 0 3px var(--paper), 0 0 3px var(--paper), 0 0 3px var(--paper);
 }
 
+.label-operator {
+  padding: 0 4px;
+  background: transparent;
+  box-shadow: none;
+  color: var(--ink-2);
+  font: 700 11px/18px var(--sans, inherit);
+  letter-spacing: 0.06em;
+  text-shadow: 0 0 3px var(--paper), 0 0 3px var(--paper), 0 0 3px var(--paper);
+}
+
 .label-entrance {
   color: #a4530a;
 }

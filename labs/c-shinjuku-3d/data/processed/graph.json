@@ -505,6 +505,78 @@
       }
     },
     {
+      "id": "sk:area:seibu-1f-front",
+      "kind": "area",
+      "elementId": "sk:area:seibu-1f-front",
+      "levelId": "sk:level:seibu-shinjuku-1f",
+      "levelOrdinal": 0,
+      "zone": "unpaid",
+      "position": {
+        "x": -39,
+        "z": -5
+      }
+    },
+    {
+      "id": "sk:area:seibu-1f-north-gate-inside",
+      "kind": "area",
+      "elementId": "sk:area:seibu-1f-north-gate-inside",
+      "levelId": "sk:level:seibu-shinjuku-1f",
+      "levelOrdinal": 0,
+      "zone": "paid:seibu",
+      "position": {
+        "x": -80.5,
+        "z": -5
+      }
+    },
+    {
+      "id": "sk:area:seibu-1f-north-gate-unpaid",
+      "kind": "area",
+      "elementId": "sk:area:seibu-1f-north-gate-unpaid",
+      "levelId": "sk:level:seibu-shinjuku-1f",
+      "levelOrdinal": 0,
+      "zone": "unpaid",
+      "position": {
+        "x": -84.4,
+        "z": -5
+      }
+    },
+    {
+      "id": "sk:area:seibu-2f-concourse",
+      "kind": "area",
+      "elementId": "sk:area:seibu-2f-concourse",
+      "levelId": "sk:level:seibu-shinjuku-2f",
+      "levelOrdinal": 1,
+      "zone": "paid:seibu",
+      "position": {
+        "x": -48.4,
+        "z": -5
+      }
+    },
+    {
+      "id": "sk:area:seibu-2f-front-gate-unpaid",
+      "kind": "area",
+      "elementId": "sk:area:seibu-2f-front-gate-unpaid",
+      "levelId": "sk:level:seibu-shinjuku-2f",
+      "levelOrdinal": 1,
+      "zone": "unpaid",
+      "position": {
+        "x": -43.5,
+        "z": -5
+      }
+    },
+    {
+      "id": "sk:area:subnade-underground-mall",
+      "kind": "area",
+      "elementId": "sk:area:subnade-underground-mall",
+      "levelId": "sk:level:public-b1f",
+      "levelOrdinal": -1,
+      "zone": "unpaid",
+      "position": {
+        "x": -31,
+        "z": -10
+      }
+    },
+    {
       "id": "sk:area:toei-oedo-b1f-gate-b-inside",
       "kind": "area",
       "elementId": "sk:area:toei-oedo-b1f-gate-b-inside",
@@ -592,7 +664,7 @@
       "id": "sk:area:west-exit-underground-plaza",
       "kind": "area",
       "elementId": "sk:area:west-exit-underground-plaza",
-      "levelId": "sk:level:public-west-plaza-b1f",
+      "levelId": "sk:level:public-b1f",
       "levelOrdinal": -1,
       "zone": "unpaid",
       "position": {
@@ -865,6 +937,30 @@
       }
     },
     {
+      "id": "sk:entrance:seibu-front-entrance",
+      "kind": "entrance",
+      "elementId": "sk:entrance:seibu-front-entrance",
+      "levelId": "sk:level:seibu-shinjuku-1f",
+      "levelOrdinal": 0,
+      "zone": "unpaid",
+      "position": {
+        "x": -36.6,
+        "z": -3
+      }
+    },
+    {
+      "id": "sk:entrance:seibu-north-exit",
+      "kind": "entrance",
+      "elementId": "sk:entrance:seibu-north-exit",
+      "levelId": "sk:level:seibu-shinjuku-1f",
+      "levelOrdinal": 0,
+      "zone": "unpaid",
+      "position": {
+        "x": -86,
+        "z": -5
+      }
+    },
+    {
       "id": "sk:entrance:toei-oedo-exit-a1",
       "kind": "entrance",
       "elementId": "sk:entrance:toei-oedo-exit-a1",
@@ -940,7 +1036,7 @@
       "id": "sk:entrance:west-plaza-street-stairs",
       "kind": "entrance",
       "elementId": "sk:entrance:west-plaza-street-stairs",
-      "levelId": "sk:level:public-west-plaza-b1f",
+      "levelId": "sk:level:public-b1f",
       "levelOrdinal": -1,
       "zone": "unpaid",
       "position": {
@@ -1225,6 +1321,30 @@
       }
     },
     {
+      "id": "sk:gate:seibu-front-gate",
+      "kind": "gate",
+      "elementId": "sk:gate:seibu-front-gate",
+      "levelId": "sk:level:seibu-shinjuku-2f",
+      "levelOrdinal": 1,
+      "zone": "gate",
+      "position": {
+        "x": -46.4,
+        "z": -5
+      }
+    },
+    {
+      "id": "sk:gate:seibu-north-gate",
+      "kind": "gate",
+      "elementId": "sk:gate:seibu-north-gate",
+      "levelId": "sk:level:seibu-shinjuku-1f",
+      "levelOrdinal": 0,
+      "zone": "gate",
+      "position": {
+        "x": -82.4,
+        "z": -5
+      }
+    },
+    {
       "id": "sk:gate:toei-oedo-gate-a1-side",
       "kind": "gate",
       "elementId": "sk:gate:toei-oedo-gate-a1-side",
@@ -1486,6 +1606,30 @@
       "position": {
         "x": 12,
         "z": 22.25
+      }
+    },
+    {
+      "id": "sk:platform:seibu-shinjuku-1",
+      "kind": "area",
+      "elementId": "sk:platform:seibu-shinjuku-1",
+      "levelId": "sk:level:seibu-shinjuku-2f",
+      "levelOrdinal": 1,
+      "zone": "paid:seibu",
+      "position": {
+        "x": -62,
+        "z": -6.8
+      }
+    },
+    {
+      "id": "sk:platform:seibu-shinjuku-2-3",
+      "kind": "area",
+      "elementId": "sk:platform:seibu-shinjuku-2-3",
+      "levelId": "sk:level:seibu-shinjuku-2f",
+      "levelOrdinal": 1,
+      "zone": "paid:seibu",
+      "position": {
+        "x": -62,
+        "z": -3.8
       }
     },
     {
@@ -4330,6 +4474,150 @@
       "position": {
         "x": -12.2,
         "z": 23.6
+      }
+    },
+    {
+      "id": "sk:vertical:seibu-elevator-front@sk:level:seibu-shinjuku-1f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:seibu-elevator-front",
+      "levelId": "sk:level:seibu-shinjuku-1f",
+      "levelOrdinal": 0,
+      "zone": "unpaid",
+      "position": {
+        "x": -41.5,
+        "z": -7.6
+      }
+    },
+    {
+      "id": "sk:vertical:seibu-elevator-front@sk:level:seibu-shinjuku-2f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:seibu-elevator-front",
+      "levelId": "sk:level:seibu-shinjuku-2f",
+      "levelOrdinal": 1,
+      "zone": "unpaid",
+      "position": {
+        "x": -41.5,
+        "z": -7.6
+      }
+    },
+    {
+      "id": "sk:vertical:seibu-escalator-front-1f-to-2f@sk:level:seibu-shinjuku-1f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:seibu-escalator-front-1f-to-2f",
+      "levelId": "sk:level:seibu-shinjuku-1f",
+      "levelOrdinal": 0,
+      "zone": "unpaid",
+      "position": {
+        "x": -39.6,
+        "z": -3.8500000000000005
+      }
+    },
+    {
+      "id": "sk:vertical:seibu-escalator-front-1f-to-2f@sk:level:seibu-shinjuku-2f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:seibu-escalator-front-1f-to-2f",
+      "levelId": "sk:level:seibu-shinjuku-2f",
+      "levelOrdinal": 1,
+      "zone": "unpaid",
+      "position": {
+        "x": -42.6,
+        "z": -3.8500000000000005
+      }
+    },
+    {
+      "id": "sk:vertical:seibu-stairs-front-1f-to-2f@sk:level:seibu-shinjuku-1f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:seibu-stairs-front-1f-to-2f",
+      "levelId": "sk:level:seibu-shinjuku-1f",
+      "levelOrdinal": 0,
+      "zone": "unpaid",
+      "position": {
+        "x": -39.6,
+        "z": -4.95
+      }
+    },
+    {
+      "id": "sk:vertical:seibu-stairs-front-1f-to-2f@sk:level:seibu-shinjuku-2f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:seibu-stairs-front-1f-to-2f",
+      "levelId": "sk:level:seibu-shinjuku-2f",
+      "levelOrdinal": 1,
+      "zone": "unpaid",
+      "position": {
+        "x": -42.6,
+        "z": -4.95
+      }
+    },
+    {
+      "id": "sk:vertical:seibu-stairs-platform-1-to-north-gate@sk:level:seibu-shinjuku-1f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:seibu-stairs-platform-1-to-north-gate",
+      "levelId": "sk:level:seibu-shinjuku-1f",
+      "levelOrdinal": 0,
+      "zone": "paid:seibu",
+      "position": {
+        "x": -79.8,
+        "z": -6.8
+      }
+    },
+    {
+      "id": "sk:vertical:seibu-stairs-platform-1-to-north-gate@sk:level:seibu-shinjuku-2f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:seibu-stairs-platform-1-to-north-gate",
+      "levelId": "sk:level:seibu-shinjuku-2f",
+      "levelOrdinal": 1,
+      "zone": "paid:seibu",
+      "position": {
+        "x": -77,
+        "z": -6.8
+      }
+    },
+    {
+      "id": "sk:vertical:seibu-stairs-platform-2-3-to-north-gate@sk:level:seibu-shinjuku-1f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:seibu-stairs-platform-2-3-to-north-gate",
+      "levelId": "sk:level:seibu-shinjuku-1f",
+      "levelOrdinal": 0,
+      "zone": "paid:seibu",
+      "position": {
+        "x": -79.8,
+        "z": -3.8
+      }
+    },
+    {
+      "id": "sk:vertical:seibu-stairs-platform-2-3-to-north-gate@sk:level:seibu-shinjuku-2f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:seibu-stairs-platform-2-3-to-north-gate",
+      "levelId": "sk:level:seibu-shinjuku-2f",
+      "levelOrdinal": 1,
+      "zone": "paid:seibu",
+      "position": {
+        "x": -77,
+        "z": -3.8
+      }
+    },
+    {
+      "id": "sk:vertical:subnade-stairs-to-seibu-front@sk:level:public-b1f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:subnade-stairs-to-seibu-front",
+      "levelId": "sk:level:public-b1f",
+      "levelOrdinal": -1,
+      "zone": "unpaid",
+      "position": {
+        "x": -35.2,
+        "z": -5
+      }
+    },
+    {
+      "id": "sk:vertical:subnade-stairs-to-seibu-front@sk:level:seibu-shinjuku-1f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:subnade-stairs-to-seibu-front",
+      "levelId": "sk:level:seibu-shinjuku-1f",
+      "levelOrdinal": 0,
+      "zone": "unpaid",
+      "position": {
+        "x": -37.6,
+        "z": -5
       }
     },
     {
@@ -7362,6 +7650,215 @@
       "id": "sk:area:odakyu-b1f-west-underground-gate-unpaid→sk:vertical:odakyu-stairs-west-exit-street-to-underground@sk:level:odakyu-shinjuku-b1f"
     },
     {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:seibu-front-entrance",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:area:seibu-1f-front",
+      "to": "sk:entrance:seibu-front-entrance",
+      "id": "sk:area:seibu-1f-front→sk:entrance:seibu-front-entrance"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:seibu-elevator-front",
+      "verticalKind": "elevator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:seibu-1f-front",
+      "to": "sk:vertical:seibu-elevator-front@sk:level:seibu-shinjuku-1f",
+      "id": "sk:area:seibu-1f-front→sk:vertical:seibu-elevator-front@sk:level:seibu-shinjuku-1f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:seibu-escalator-front-1f-to-2f",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:seibu-1f-front",
+      "to": "sk:vertical:seibu-escalator-front-1f-to-2f@sk:level:seibu-shinjuku-1f",
+      "id": "sk:area:seibu-1f-front→sk:vertical:seibu-escalator-front-1f-to-2f@sk:level:seibu-shinjuku-1f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:seibu-stairs-front-1f-to-2f",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:seibu-1f-front",
+      "to": "sk:vertical:seibu-stairs-front-1f-to-2f@sk:level:seibu-shinjuku-1f",
+      "id": "sk:area:seibu-1f-front→sk:vertical:seibu-stairs-front-1f-to-2f@sk:level:seibu-shinjuku-1f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:subnade-stairs-to-seibu-front",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:seibu-1f-front",
+      "to": "sk:vertical:subnade-stairs-to-seibu-front@sk:level:seibu-shinjuku-1f",
+      "id": "sk:area:seibu-1f-front→sk:vertical:subnade-stairs-to-seibu-front@sk:level:seibu-shinjuku-1f"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:seibu-north-gate",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:seibu-1f-north-gate-inside",
+      "to": "sk:gate:seibu-north-gate",
+      "id": "sk:area:seibu-1f-north-gate-inside→sk:gate:seibu-north-gate"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:seibu-stairs-platform-1-to-north-gate",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:seibu-1f-north-gate-inside",
+      "to": "sk:vertical:seibu-stairs-platform-1-to-north-gate@sk:level:seibu-shinjuku-1f",
+      "id": "sk:area:seibu-1f-north-gate-inside→sk:vertical:seibu-stairs-platform-1-to-north-gate@sk:level:seibu-shinjuku-1f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:seibu-stairs-platform-2-3-to-north-gate",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:seibu-1f-north-gate-inside",
+      "to": "sk:vertical:seibu-stairs-platform-2-3-to-north-gate@sk:level:seibu-shinjuku-1f",
+      "id": "sk:area:seibu-1f-north-gate-inside→sk:vertical:seibu-stairs-platform-2-3-to-north-gate@sk:level:seibu-shinjuku-1f"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:seibu-north-exit",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:seibu-1f-north-gate-unpaid",
+      "to": "sk:entrance:seibu-north-exit",
+      "id": "sk:area:seibu-1f-north-gate-unpaid→sk:entrance:seibu-north-exit"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:seibu-north-gate",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:seibu-1f-north-gate-unpaid",
+      "to": "sk:gate:seibu-north-gate",
+      "id": "sk:area:seibu-1f-north-gate-unpaid→sk:gate:seibu-north-gate"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:seibu-front-gate",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:area:seibu-2f-concourse",
+      "to": "sk:gate:seibu-front-gate",
+      "id": "sk:area:seibu-2f-concourse→sk:gate:seibu-front-gate"
+    },
+    {
+      "kind": "passage",
+      "elementId": "sk:passage:seibu-2f-concourse-to-platform-1",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:area:seibu-2f-concourse",
+      "to": "sk:platform:seibu-shinjuku-1",
+      "id": "sk:area:seibu-2f-concourse→sk:platform:seibu-shinjuku-1"
+    },
+    {
+      "kind": "passage",
+      "elementId": "sk:passage:seibu-2f-concourse-to-platform-2-3",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:area:seibu-2f-concourse",
+      "to": "sk:platform:seibu-shinjuku-2-3",
+      "id": "sk:area:seibu-2f-concourse→sk:platform:seibu-shinjuku-2-3"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:seibu-front-gate",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:area:seibu-2f-front-gate-unpaid",
+      "to": "sk:gate:seibu-front-gate",
+      "id": "sk:area:seibu-2f-front-gate-unpaid→sk:gate:seibu-front-gate"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:seibu-elevator-front",
+      "verticalKind": "elevator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:seibu-2f-front-gate-unpaid",
+      "to": "sk:vertical:seibu-elevator-front@sk:level:seibu-shinjuku-2f",
+      "id": "sk:area:seibu-2f-front-gate-unpaid→sk:vertical:seibu-elevator-front@sk:level:seibu-shinjuku-2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:seibu-escalator-front-1f-to-2f",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:seibu-2f-front-gate-unpaid",
+      "to": "sk:vertical:seibu-escalator-front-1f-to-2f@sk:level:seibu-shinjuku-2f",
+      "id": "sk:area:seibu-2f-front-gate-unpaid→sk:vertical:seibu-escalator-front-1f-to-2f@sk:level:seibu-shinjuku-2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:seibu-stairs-front-1f-to-2f",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:seibu-2f-front-gate-unpaid",
+      "to": "sk:vertical:seibu-stairs-front-1f-to-2f@sk:level:seibu-shinjuku-2f",
+      "id": "sk:area:seibu-2f-front-gate-unpaid→sk:vertical:seibu-stairs-front-1f-to-2f@sk:level:seibu-shinjuku-2f"
+    },
+    {
+      "kind": "passage",
+      "elementId": "sk:passage:marunouchi-concourse-to-subnade",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:subnade-underground-mall",
+      "to": "sk:area:tokyo-metro-b1f-concourse",
+      "id": "sk:area:subnade-underground-mall→sk:area:tokyo-metro-b1f-concourse"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:subnade-stairs-to-seibu-front",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:subnade-underground-mall",
+      "to": "sk:vertical:subnade-stairs-to-seibu-front@sk:level:public-b1f",
+      "id": "sk:area:subnade-underground-mall→sk:vertical:subnade-stairs-to-seibu-front@sk:level:public-b1f"
+    },
+    {
       "kind": "gate-approach",
       "elementId": "sk:gate:toei-oedo-gate-b",
       "verticalKind": null,
@@ -7547,6 +8044,17 @@
       "from": "sk:area:tokyo-metro-b1f-concourse",
       "to": "sk:area:jr-b1f-east-unpaid",
       "id": "sk:area:tokyo-metro-b1f-concourse→sk:area:jr-b1f-east-unpaid"
+    },
+    {
+      "kind": "passage",
+      "elementId": "sk:passage:marunouchi-concourse-to-subnade",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:tokyo-metro-b1f-concourse",
+      "to": "sk:area:subnade-underground-mall",
+      "id": "sk:area:tokyo-metro-b1f-concourse→sk:area:subnade-underground-mall"
     },
     {
       "kind": "passage",
@@ -7998,6 +8506,28 @@
       "from": "sk:entrance:odakyu-west-exit-underground",
       "to": "sk:area:odakyu-b1f-west-underground-gate-unpaid",
       "id": "sk:entrance:odakyu-west-exit-underground→sk:area:odakyu-b1f-west-underground-gate-unpaid"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:seibu-front-entrance",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:entrance:seibu-front-entrance",
+      "to": "sk:area:seibu-1f-front",
+      "id": "sk:entrance:seibu-front-entrance→sk:area:seibu-1f-front"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:seibu-north-exit",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:entrance:seibu-north-exit",
+      "to": "sk:area:seibu-1f-north-gate-unpaid",
+      "id": "sk:entrance:seibu-north-exit→sk:area:seibu-1f-north-gate-unpaid"
     },
     {
       "kind": "entrance-approach",
@@ -8559,6 +9089,50 @@
       "from": "sk:gate:odakyu-west-underground-gate",
       "to": "sk:area:odakyu-b1f-west-underground-gate-unpaid",
       "id": "sk:gate:odakyu-west-underground-gate→sk:area:odakyu-b1f-west-underground-gate-unpaid"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:seibu-front-gate",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:gate:seibu-front-gate",
+      "to": "sk:area:seibu-2f-concourse",
+      "id": "sk:gate:seibu-front-gate→sk:area:seibu-2f-concourse"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:seibu-front-gate",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:gate:seibu-front-gate",
+      "to": "sk:area:seibu-2f-front-gate-unpaid",
+      "id": "sk:gate:seibu-front-gate→sk:area:seibu-2f-front-gate-unpaid"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:seibu-north-gate",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:gate:seibu-north-gate",
+      "to": "sk:area:seibu-1f-north-gate-inside",
+      "id": "sk:gate:seibu-north-gate→sk:area:seibu-1f-north-gate-inside"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:seibu-north-gate",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:gate:seibu-north-gate",
+      "to": "sk:area:seibu-1f-north-gate-unpaid",
+      "id": "sk:gate:seibu-north-gate→sk:area:seibu-1f-north-gate-unpaid"
     },
     {
       "kind": "gate-approach",
@@ -9857,6 +10431,50 @@
       "from": "sk:platform:odakyu-shinjuku-8-9",
       "to": "sk:vertical:odakyu-stairs-platform-4-5-to-platform-8-9@sk:level:odakyu-shinjuku-b1f",
       "id": "sk:platform:odakyu-shinjuku-8-9→sk:vertical:odakyu-stairs-platform-4-5-to-platform-8-9@sk:level:odakyu-shinjuku-b1f"
+    },
+    {
+      "kind": "passage",
+      "elementId": "sk:passage:seibu-2f-concourse-to-platform-1",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:platform:seibu-shinjuku-1",
+      "to": "sk:area:seibu-2f-concourse",
+      "id": "sk:platform:seibu-shinjuku-1→sk:area:seibu-2f-concourse"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:seibu-stairs-platform-1-to-north-gate",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:platform:seibu-shinjuku-1",
+      "to": "sk:vertical:seibu-stairs-platform-1-to-north-gate@sk:level:seibu-shinjuku-2f",
+      "id": "sk:platform:seibu-shinjuku-1→sk:vertical:seibu-stairs-platform-1-to-north-gate@sk:level:seibu-shinjuku-2f"
+    },
+    {
+      "kind": "passage",
+      "elementId": "sk:passage:seibu-2f-concourse-to-platform-2-3",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:platform:seibu-shinjuku-2-3",
+      "to": "sk:area:seibu-2f-concourse",
+      "id": "sk:platform:seibu-shinjuku-2-3→sk:area:seibu-2f-concourse"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:seibu-stairs-platform-2-3-to-north-gate",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:platform:seibu-shinjuku-2-3",
+      "to": "sk:vertical:seibu-stairs-platform-2-3-to-north-gate@sk:level:seibu-shinjuku-2f",
+      "id": "sk:platform:seibu-shinjuku-2-3→sk:vertical:seibu-stairs-platform-2-3-to-north-gate@sk:level:seibu-shinjuku-2f"
     },
     {
       "kind": "vertical-approach",
@@ -15225,6 +15843,270 @@
       "from": "sk:vertical:odakyu-stairs-west-exit-street-to-underground@sk:level:odakyu-shinjuku-b1f",
       "to": "sk:vertical:odakyu-stairs-west-exit-street-to-underground@sk:level:odakyu-shinjuku-1f",
       "id": "sk:vertical:odakyu-stairs-west-exit-street-to-underground@sk:level:odakyu-shinjuku-b1f→sk:vertical:odakyu-stairs-west-exit-street-to-underground@sk:level:odakyu-shinjuku-1f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:seibu-elevator-front",
+      "verticalKind": "elevator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:seibu-elevator-front@sk:level:seibu-shinjuku-1f",
+      "to": "sk:area:seibu-1f-front",
+      "id": "sk:vertical:seibu-elevator-front@sk:level:seibu-shinjuku-1f→sk:area:seibu-1f-front"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:seibu-elevator-front",
+      "verticalKind": "elevator",
+      "levelChange": 1,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:vertical:seibu-elevator-front@sk:level:seibu-shinjuku-1f",
+      "to": "sk:vertical:seibu-elevator-front@sk:level:seibu-shinjuku-2f",
+      "id": "sk:vertical:seibu-elevator-front@sk:level:seibu-shinjuku-1f→sk:vertical:seibu-elevator-front@sk:level:seibu-shinjuku-2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:seibu-elevator-front",
+      "verticalKind": "elevator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:seibu-elevator-front@sk:level:seibu-shinjuku-2f",
+      "to": "sk:area:seibu-2f-front-gate-unpaid",
+      "id": "sk:vertical:seibu-elevator-front@sk:level:seibu-shinjuku-2f→sk:area:seibu-2f-front-gate-unpaid"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:seibu-elevator-front",
+      "verticalKind": "elevator",
+      "levelChange": 1,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:vertical:seibu-elevator-front@sk:level:seibu-shinjuku-2f",
+      "to": "sk:vertical:seibu-elevator-front@sk:level:seibu-shinjuku-1f",
+      "id": "sk:vertical:seibu-elevator-front@sk:level:seibu-shinjuku-2f→sk:vertical:seibu-elevator-front@sk:level:seibu-shinjuku-1f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:seibu-escalator-front-1f-to-2f",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:seibu-escalator-front-1f-to-2f@sk:level:seibu-shinjuku-1f",
+      "to": "sk:area:seibu-1f-front",
+      "id": "sk:vertical:seibu-escalator-front-1f-to-2f@sk:level:seibu-shinjuku-1f→sk:area:seibu-1f-front"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:seibu-escalator-front-1f-to-2f",
+      "verticalKind": "escalator",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:seibu-escalator-front-1f-to-2f@sk:level:seibu-shinjuku-1f",
+      "to": "sk:vertical:seibu-escalator-front-1f-to-2f@sk:level:seibu-shinjuku-2f",
+      "id": "sk:vertical:seibu-escalator-front-1f-to-2f@sk:level:seibu-shinjuku-1f→sk:vertical:seibu-escalator-front-1f-to-2f@sk:level:seibu-shinjuku-2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:seibu-escalator-front-1f-to-2f",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:seibu-escalator-front-1f-to-2f@sk:level:seibu-shinjuku-2f",
+      "to": "sk:area:seibu-2f-front-gate-unpaid",
+      "id": "sk:vertical:seibu-escalator-front-1f-to-2f@sk:level:seibu-shinjuku-2f→sk:area:seibu-2f-front-gate-unpaid"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:seibu-escalator-front-1f-to-2f",
+      "verticalKind": "escalator",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:seibu-escalator-front-1f-to-2f@sk:level:seibu-shinjuku-2f",
+      "to": "sk:vertical:seibu-escalator-front-1f-to-2f@sk:level:seibu-shinjuku-1f",
+      "id": "sk:vertical:seibu-escalator-front-1f-to-2f@sk:level:seibu-shinjuku-2f→sk:vertical:seibu-escalator-front-1f-to-2f@sk:level:seibu-shinjuku-1f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:seibu-stairs-front-1f-to-2f",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:seibu-stairs-front-1f-to-2f@sk:level:seibu-shinjuku-1f",
+      "to": "sk:area:seibu-1f-front",
+      "id": "sk:vertical:seibu-stairs-front-1f-to-2f@sk:level:seibu-shinjuku-1f→sk:area:seibu-1f-front"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:seibu-stairs-front-1f-to-2f",
+      "verticalKind": "stairs",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:seibu-stairs-front-1f-to-2f@sk:level:seibu-shinjuku-1f",
+      "to": "sk:vertical:seibu-stairs-front-1f-to-2f@sk:level:seibu-shinjuku-2f",
+      "id": "sk:vertical:seibu-stairs-front-1f-to-2f@sk:level:seibu-shinjuku-1f→sk:vertical:seibu-stairs-front-1f-to-2f@sk:level:seibu-shinjuku-2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:seibu-stairs-front-1f-to-2f",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:seibu-stairs-front-1f-to-2f@sk:level:seibu-shinjuku-2f",
+      "to": "sk:area:seibu-2f-front-gate-unpaid",
+      "id": "sk:vertical:seibu-stairs-front-1f-to-2f@sk:level:seibu-shinjuku-2f→sk:area:seibu-2f-front-gate-unpaid"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:seibu-stairs-front-1f-to-2f",
+      "verticalKind": "stairs",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:seibu-stairs-front-1f-to-2f@sk:level:seibu-shinjuku-2f",
+      "to": "sk:vertical:seibu-stairs-front-1f-to-2f@sk:level:seibu-shinjuku-1f",
+      "id": "sk:vertical:seibu-stairs-front-1f-to-2f@sk:level:seibu-shinjuku-2f→sk:vertical:seibu-stairs-front-1f-to-2f@sk:level:seibu-shinjuku-1f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:seibu-stairs-platform-1-to-north-gate",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:seibu-stairs-platform-1-to-north-gate@sk:level:seibu-shinjuku-1f",
+      "to": "sk:area:seibu-1f-north-gate-inside",
+      "id": "sk:vertical:seibu-stairs-platform-1-to-north-gate@sk:level:seibu-shinjuku-1f→sk:area:seibu-1f-north-gate-inside"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:seibu-stairs-platform-1-to-north-gate",
+      "verticalKind": "stairs",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:seibu-stairs-platform-1-to-north-gate@sk:level:seibu-shinjuku-1f",
+      "to": "sk:vertical:seibu-stairs-platform-1-to-north-gate@sk:level:seibu-shinjuku-2f",
+      "id": "sk:vertical:seibu-stairs-platform-1-to-north-gate@sk:level:seibu-shinjuku-1f→sk:vertical:seibu-stairs-platform-1-to-north-gate@sk:level:seibu-shinjuku-2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:seibu-stairs-platform-1-to-north-gate",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:seibu-stairs-platform-1-to-north-gate@sk:level:seibu-shinjuku-2f",
+      "to": "sk:platform:seibu-shinjuku-1",
+      "id": "sk:vertical:seibu-stairs-platform-1-to-north-gate@sk:level:seibu-shinjuku-2f→sk:platform:seibu-shinjuku-1"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:seibu-stairs-platform-1-to-north-gate",
+      "verticalKind": "stairs",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:seibu-stairs-platform-1-to-north-gate@sk:level:seibu-shinjuku-2f",
+      "to": "sk:vertical:seibu-stairs-platform-1-to-north-gate@sk:level:seibu-shinjuku-1f",
+      "id": "sk:vertical:seibu-stairs-platform-1-to-north-gate@sk:level:seibu-shinjuku-2f→sk:vertical:seibu-stairs-platform-1-to-north-gate@sk:level:seibu-shinjuku-1f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:seibu-stairs-platform-2-3-to-north-gate",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:seibu-stairs-platform-2-3-to-north-gate@sk:level:seibu-shinjuku-1f",
+      "to": "sk:area:seibu-1f-north-gate-inside",
+      "id": "sk:vertical:seibu-stairs-platform-2-3-to-north-gate@sk:level:seibu-shinjuku-1f→sk:area:seibu-1f-north-gate-inside"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:seibu-stairs-platform-2-3-to-north-gate",
+      "verticalKind": "stairs",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:seibu-stairs-platform-2-3-to-north-gate@sk:level:seibu-shinjuku-1f",
+      "to": "sk:vertical:seibu-stairs-platform-2-3-to-north-gate@sk:level:seibu-shinjuku-2f",
+      "id": "sk:vertical:seibu-stairs-platform-2-3-to-north-gate@sk:level:seibu-shinjuku-1f→sk:vertical:seibu-stairs-platform-2-3-to-north-gate@sk:level:seibu-shinjuku-2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:seibu-stairs-platform-2-3-to-north-gate",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:seibu-stairs-platform-2-3-to-north-gate@sk:level:seibu-shinjuku-2f",
+      "to": "sk:platform:seibu-shinjuku-2-3",
+      "id": "sk:vertical:seibu-stairs-platform-2-3-to-north-gate@sk:level:seibu-shinjuku-2f→sk:platform:seibu-shinjuku-2-3"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:seibu-stairs-platform-2-3-to-north-gate",
+      "verticalKind": "stairs",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:seibu-stairs-platform-2-3-to-north-gate@sk:level:seibu-shinjuku-2f",
+      "to": "sk:vertical:seibu-stairs-platform-2-3-to-north-gate@sk:level:seibu-shinjuku-1f",
+      "id": "sk:vertical:seibu-stairs-platform-2-3-to-north-gate@sk:level:seibu-shinjuku-2f→sk:vertical:seibu-stairs-platform-2-3-to-north-gate@sk:level:seibu-shinjuku-1f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:subnade-stairs-to-seibu-front",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:subnade-stairs-to-seibu-front@sk:level:public-b1f",
+      "to": "sk:area:subnade-underground-mall",
+      "id": "sk:vertical:subnade-stairs-to-seibu-front@sk:level:public-b1f→sk:area:subnade-underground-mall"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:subnade-stairs-to-seibu-front",
+      "verticalKind": "stairs",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:subnade-stairs-to-seibu-front@sk:level:public-b1f",
+      "to": "sk:vertical:subnade-stairs-to-seibu-front@sk:level:seibu-shinjuku-1f",
+      "id": "sk:vertical:subnade-stairs-to-seibu-front@sk:level:public-b1f→sk:vertical:subnade-stairs-to-seibu-front@sk:level:seibu-shinjuku-1f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:subnade-stairs-to-seibu-front",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:subnade-stairs-to-seibu-front@sk:level:seibu-shinjuku-1f",
+      "to": "sk:area:seibu-1f-front",
+      "id": "sk:vertical:subnade-stairs-to-seibu-front@sk:level:seibu-shinjuku-1f→sk:area:seibu-1f-front"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:subnade-stairs-to-seibu-front",
+      "verticalKind": "stairs",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:subnade-stairs-to-seibu-front@sk:level:seibu-shinjuku-1f",
+      "to": "sk:vertical:subnade-stairs-to-seibu-front@sk:level:public-b1f",
+      "id": "sk:vertical:subnade-stairs-to-seibu-front@sk:level:seibu-shinjuku-1f→sk:vertical:subnade-stairs-to-seibu-front@sk:level:public-b1f"
     },
     {
       "kind": "vertical-approach",

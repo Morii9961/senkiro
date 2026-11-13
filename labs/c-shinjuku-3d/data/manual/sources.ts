@@ -256,6 +256,16 @@ export const sources: SourceRecord[] = [
       sourceDate: '2026-09',
     },
     {
+      id: 'src:seibu-shinjuku-map',
+      title: '西武新宿駅 駅構内のご案内 (SS01.png) | 西武鉄道',
+      publisher: 'Seibu Railway (西武鉄道)',
+      url: 'https://www.seiburailway.jp/railway/station/seibu-shinjuku/',
+      attributionText: 'Facts read from the 西武鉄道 西武新宿駅 駅構内のご案内 (2025.6.26).',
+      notes:
+        'Printed on the drawing: "2025.6.26", "SS 01", "①②③ 所沢・本川越・拝島方面のりば", "正面口", "北口", "7:00〜終電 この改札口でのお問合せはインターホンをご利用ください", "お客さまご案内カウンター". Source of the two floors (1F, 2F), the two platform slabs with tracks 1–3, the two gates, the stairs / escalator / lift in front of 正面口, the stairs down to 北口 and the wheelchair route (pink dotted line). The drawing has no compass. The same page links a copy of the 新宿ターミナルマップ (shinjuku_terminalmap.pdf), which was read for サブナード.',
+      sourceDate: '2025-06',
+    },
+    {
       id: 'src:toei-shinjuku-map',
       title: '新宿駅構内立体図（都営新宿線・大江戸線） (shinjuku/i/solid.png) | 東京都交通局',
       publisher: 'Bureau of Transportation, Tokyo Metropolitan Government (東京都交通局)',
