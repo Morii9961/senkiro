@@ -3,7 +3,21 @@
 全部 SourceRecord 的机器可读版本在 [data/sources.json](data/sources.json)，由 `data/manual/sources.ts` 生成。
 下面第 1、2 节是给人读的摘要，第 3 节的元素核对表由 `npm run data:build` 自动生成。
 
-所有资料的取得日期（`retrievedAt`）都是 **2026-11-11**。
+所有资料的取得日期（`retrievedAt`）都是 **2026-11-11**（第 1、2 节表格里的那些；下面这段列的是之后取得的）。
+
+> **2026-11-13 说明**：第 1、2 节的两张表写于 V1，没有重写。此后又读了下面这些资料并用于建模，完整记录以 [data/sources.json](data/sources.json) 为准；第 2 节里「小田急内容没有读取」已不成立。
+>
+> - `src:odakyu-shinjuku-map`：小田急电铁 新宿駅 ホーム図・駅構内図（平面图与立体图，2026-07）
+> - `src:keio-layer-map`、`src:keio-new-line-map`、`src:keio-new-line-layer-map`：京王电铁 京王線／京王新線新宿駅的阶层图与构内图（2026-03）
+> - `src:keio-new-line-works-notice`：京王新線・都営新宿線 4・5 番线站台楼梯施工通知
+> - `src:shinjuku-terminal-map`：新宿ターミナルマップ（地上图、地下图，2020-07），各家之间的连接和公共地下空间以它为准
+> - `src:toei-shinjuku-map`：东京都交通局 新宿駅構内立体図（都营新宿线、大江户线）
+> - `src:tokyo-metro-shinjuku-map`：东京地铁 新宿駅構内立体図（丸之内线，2025-11）
+> - `src:busta-floor-maps`：バスタ新宿 フロアマップ（2F／3F／4F）
+> - `src:seibu-shinjuku-map`：西武铁道 西武新宿駅 駅構内のご案内（2025.6.26）
+>
+> 这些资料同样只被打开阅读，没有任何一张图、PDF 进仓库；许可同样记为「未声明开放许可」。
+> 用户另外提供了一份来源和许可不明的参考时刻表（CSV），只在本地用于核对番线，没有进仓库，也不是任何元素的来源。
 
 ## 怎么读这份文件
 

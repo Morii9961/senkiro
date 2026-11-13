@@ -52,7 +52,10 @@ export function buildLabels(
   const onRoute = routeElementIds(opts.route);
   const visible = (levelId: string) => levelVisibility(levelById.get(levelId), opts) === 'full';
   const boost = (id: string) => (onRoute.has(id) || id === opts.selectedId ? 100 : 0);
-  const tierOf = (id: string, tier: SceneLabel['tier']): SceneLabel['tier'] => (onRoute.has(id) || id === opts.selectedId ? 0 : tier);
+  // With a single floor in view far fewer names compete for room, so each kind of label appears one step earlier.
+  const single = opts.focusOrdinals !== null && opts.focusOrdinals.size === 1 && !opts.route;
+  const tierOf = (id: string, tier: SceneLabel['tier']): SceneLabel['tier'] =>
+    onRoute.has(id) || id === opts.selectedId ? 0 : single ? (Math.max(1, tier - 1) as SceneLabel['tier']) : tier;
 
   // one label per floor, not per operator level
   for (const floor of floorsOf(model)) {
