@@ -28,7 +28,8 @@ async function open(page: Page, query = 'lang=ja&theme=light') {
     if (m.type() === 'error') errors.push(m.text());
   });
   page.on('pageerror', (e) => errors.push(String(e)));
-  await page.goto(`/?${query}`);
+  // Trains keep the scene drawing; the tests that wait for it to come to rest switch them off.
+  await page.goto(`/?${/(^|&)trains=/.test(query) ? query : `${query}&trains=off`}`);
   return errors;
 }
 
@@ -551,6 +552,83 @@ test.describe('honesty about data', () => {
     await page.getByTestId('demo-1').click();
     await expect(page.getByTestId('route-legs').locator('li')).toHaveCount(4);
     expect(errors).toEqual([]);
+  });
+});
+
+test.describe('train simulation', () => {
+  const trains = (page: Page) =>
+    page.evaluate(() => (window as unknown as { __SENKIRO_TRAINS__?: { shown: number; instances: number; moving: number; seconds: number } }).__SENKIRO_TRAINS__ ?? null);
+
+  test('says what it is: a timetable simulation on demo data, never a live position', async ({ page }) => {
+    const errors = await open(page, 'lang=zh&theme=light&trains=on&simtime=12:01:40');
+    await waitForScene(page);
+    await expect(page.getByTestId('sim-badge')).toHaveText('时刻表模拟 · 非实时列车位置');
+    await expect(page.getByTestId('demo-badge')).toBeVisible();
+    await expect(page.getByTestId('sim-time')).toContainText('12:01:40');
+    await page.getByTestId('tab-ops').click();
+    await expect(page.getByTestId('train-data-note')).toContainText('Demo Fixture');
+    await expect.poll(async () => (await trains(page))?.shown ?? 0).toBeGreaterThan(3);
+    // one instanced mesh for every train: a single extra draw call
+    const withTrains = (await stats(page))!.calls;
+    await page.getByTestId('trains-toggle').click();
+    await expect.poll(async () => (await stats(page))!.calls).toBe(withTrains - 1);
+    expect(errors).toEqual([]);
+  });
+
+  test('a train card shows schedule, vehicle status and source — and no invented train number or destination', async ({ page }) => {
+    await open(page, 'lang=zh&theme=light&trains=on&simtime=12:01:40');
+    await waitForScene(page);
+    await page.getByTestId('tab-ops').click();
+    await page.getByTestId('train-filter-line').selectOption('sk:line:jr-east-yamanote');
+    await expect(page.getByTestId('train-row')).toHaveCount(1);
+    await page.getByTestId('train-row').first().click();
+    const card = page.getByTestId('train-card');
+    await expect(card).toBeVisible();
+    await expect(card).toContainText('山手线');
+    await expect(card).toContainText('E235系');
+    await expect(page.getByTestId('train-vehicle-status')).toHaveText('已核实');
+    await expect(page.getByTestId('train-live-state')).toHaveText('时刻表模拟');
+    await expect(page.getByTestId('train-phase')).toHaveText('停靠（门开）');
+    await expect(card).toContainText('12:02'); // the scheduled departure of the demo record
+    await expect(card).toContainText('无来源'); // no train number
+    await expect(card).toContainText('未知（长度为示意）'); // no car count is assumed
+    await expect(card).toContainText('Demo Fixture');
+    // hiding the train takes it off the display without touching the rest
+    await page.getByTestId('train-hide').click();
+    await expect(card).toBeHidden();
+    await expect(page.getByTestId('train-row')).toHaveCount(0);
+    await page.getByTestId('train-unhide').click();
+    await expect(page.getByTestId('train-row')).toHaveCount(1);
+  });
+
+  test('the clock can be played, paused and scrubbed; nothing is shown when nothing is scheduled', async ({ page }) => {
+    await open(page, 'lang=en&theme=light&trains=on&simtime=03:30:00');
+    await waitForScene(page);
+    await expect.poll(async () => (await trains(page))?.shown).toBe(0);
+    await page.getByTestId('tab-ops').click();
+    await expect(page.getByTestId('train-count')).toHaveText('0');
+
+    await page.getByTestId('sim-scrub').fill(String(8 * 3600));
+    await expect(page.getByTestId('sim-time')).toContainText('08:00:00');
+    await expect.poll(async () => (await trains(page))?.shown ?? 0).toBeGreaterThan(3);
+
+    await page.getByTestId('sim-rate-60').click();
+    await expect.poll(async () => (await trains(page))?.seconds ?? 0, { timeout: 6_000 }).toBeGreaterThan(8 * 3600 + 60);
+    await page.getByTestId('sim-play').click();
+    const paused = (await trains(page))!.seconds;
+    await page.waitForTimeout(600);
+    expect((await trains(page))!.seconds).toBe(paused);
+
+    await page.getByTestId('sim-now').click();
+    await expect(page.getByTestId('sim-now')).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  test('a route can still be planned while trains run', async ({ page }) => {
+    await open(page, 'lang=ja&theme=light&trains=on&simtime=12:01:40&simplay=1');
+    await waitForScene(page);
+    await page.getByTestId('demo-1').click();
+    await expect(page.getByTestId('step-nav')).toBeVisible();
+    await expect.poll(async () => (await trains(page))?.shown ?? 0).toBeGreaterThan(3);
   });
 });
 

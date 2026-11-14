@@ -22,6 +22,9 @@ import {
 import { OPAQUE_MATERIALS, buildOutlines, elementAtFace, mergeDecals, mergePrims, partition, type MergedMesh } from './scene/geometry';
 import type { MaterialKind } from './scene/prims';
 import type { SceneTheme } from './sceneTheme';
+import { TrainLayer } from './trains/TrainLayer';
+import type { SimClock } from '../trains/clock';
+import type { TrainPlan } from '../trains/simulate';
 import { inkOn } from './theme';
 
 export interface SceneHandle {
@@ -29,6 +32,18 @@ export interface SceneHandle {
   zoom(factor: number): void;
   rotate(deltaAzimuth: number): void;
   tilt(deltaPolar: number): void;
+  /** Fly to a box of the scene (world coordinates). */
+  focusBox(box: { min: [number, number, number]; max: [number, number, number] }): void;
+}
+
+/** The trains of the timetable simulation; null = not shown. */
+export interface SceneTrains {
+  plans: TrainPlan[];
+  clock: RefObject<SimClock>;
+  lineColor: Map<string, string>;
+  shown(plan: TrainPlan): boolean;
+  selectedId: string | null;
+  onSelect(planId: string): void;
 }
 
 export interface RenderStats {
@@ -60,6 +75,7 @@ interface Props {
   /** The drawn route, shared with the labels and the 2D plan. */
   routePts: RoutePoint[];
   labels: SceneLabel[];
+  trains: SceneTrains | null;
   showLabels: boolean;
   ariaLabel: string;
   handleRef: Ref<SceneHandle>;
@@ -185,6 +201,7 @@ function SceneContent({
   sceneTheme,
   routePts,
   labels,
+  trains,
   showLabels,
   handleRef,
   onSelect,
@@ -382,6 +399,7 @@ function SceneContent({
         zoom: (factor) => orbit((s) => (s.radius *= factor)),
         rotate: (d) => orbit((s) => (s.theta += d)),
         tilt: (d) => orbit((s) => (s.phi += d)),
+        focusBox: (box) => flyTo(focusPose(box, aspect(), currentPose())),
       };
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -534,6 +552,7 @@ function SceneContent({
       <mesh ref={register(meshes.translucent)} geometry={meshes.translucent.geometry} onClick={pick} renderOrder={3}>
         <meshStandardMaterial vertexColors transparent depthWrite={false} {...FINISH.glass} />
       </mesh>
+      {trains && <TrainLayer model={model} view={view} {...trains} />}
       {/* the route twice: solid where it is in view, faint where something stands in front of it */}
       <mesh geometry={routeMesh.geometry} renderOrder={4} raycast={() => null}>
         <meshBasicMaterial vertexColors toneMapped={false} />

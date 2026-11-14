@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { BoundOverlay, OverlayResult, OverlayUnavailableReason } from '../../domain/overlay';
 import type { StationModel } from '../../domain/types';
 import { LineBadge } from '../atoms';
@@ -33,6 +34,8 @@ export function OpsPanel(props: {
   onMode(m: OpsMode): void;
   onRefresh(): void;
   onSelect(id: string): void;
+  /** The train simulation block, shown above the operations overlay. */
+  trains?: ReactNode;
 }) {
   const { t, lang, model, bound } = props;
   const lineOf = (id: string) => model.railLines.find((x) => x.id === id);
@@ -42,6 +45,7 @@ export function OpsPanel(props: {
 
   return (
     <div className="panel-body">
+      {props.trains}
       <fieldset className="stack-radio">
         <legend>{t('opsSource')}</legend>
         {(['off', 'example', 'odpt'] as const).map((m) => (

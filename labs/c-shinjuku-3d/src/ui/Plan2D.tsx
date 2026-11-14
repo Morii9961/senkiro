@@ -138,6 +138,7 @@ export function Plan2D(props: Props) {
       zoom: (factor) => setCam((c) => ({ ...c, zoom: Math.min(12, Math.max(0.6, c.zoom / factor)) })),
       rotate: () => undefined,
       tilt: () => undefined,
+      focusBox: () => undefined,
     }),
     [fit],
   );

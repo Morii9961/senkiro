@@ -3,7 +3,7 @@
 //
 //   node scripts/shots.mjs <name> [query] [WxH] [steps]
 //   steps: comma-separated  click:<testid> | select:<testid>=<value> | wait:<ms> | key:<Key>
-//          | drag:<dx>x<dy> | wheel:<deltaY> | set:<testid>=<value> | hover:<testid>
+//          | drag:<dx>x<dy> | wheel:<deltaY> | wheelat:<fx>x<fy>:<deltaY> | set:<testid>=<value> | hover:<testid>
 //
 // Needs a server: BASE_URL (default http://localhost:5183).
 import { mkdirSync } from 'node:fs';
@@ -52,6 +52,13 @@ for (const step of steps.split(',').filter(Boolean)) {
     const box = await page.locator('canvas').boundingBox();
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
     await page.mouse.wheel(0, Number(arg));
+  } else if (op === 'wheelat') {
+    // wheelat:<fx>x<fy>:<deltaY> — wheel at a fractional position of the canvas
+    const [pos, delta] = arg.split(':');
+    const [fx, fy] = pos.split('x').map(Number);
+    const box = await page.locator('canvas').boundingBox();
+    await page.mouse.move(box.x + box.width * fx, box.y + box.height * fy);
+    await page.mouse.wheel(0, Number(delta));
   } else throw new Error(`unknown step ${step}`);
   await page.waitForTimeout(250);
 }
@@ -59,5 +66,6 @@ await page.waitForTimeout(500);
 const file = resolve(outDir, `${name}.png`);
 await page.screenshot({ path: file });
 const stats = await page.evaluate(() => window.__SENKIRO_STATS__ ?? null);
-console.log(JSON.stringify({ file, stats, errors }));
+const trains = await page.evaluate(() => window.__SENKIRO_TRAINS__ ?? null);
+console.log(JSON.stringify({ file, stats, trains: trains && { shown: trains.shown, instances: trains.instances, moving: trains.moving }, errors }));
 await browser.close();

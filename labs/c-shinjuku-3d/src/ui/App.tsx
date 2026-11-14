@@ -19,6 +19,12 @@ import type { RenderStats, SceneHandle } from './Scene3D';
 import { buildLabels, routePoints, type LabelChip, type ViewOptions } from './scene/build';
 import { trackRange } from './scene/labels';
 import { SCENE_THEMES } from './sceneTheme';
+import { loadTimetableData } from '../providers/timetableProvider';
+import { parseServiceTime, serviceClockAt, type CalendarDayType } from '../timetable/time';
+import { demoClock, nowClock, rebase, type SimClock } from '../trains/clock';
+import { buildTrainPlans, type TrainPlan } from '../trains/simulate';
+import { NO_FILTER, TrainBar, TrainCard, TrainSection, trainPasses, type TrainFilter } from './trains/TrainUi';
+import { levelY } from './scene/prims';
 import type { ThemeName } from './theme';
 import { webgl2Available } from './webgl';
 
@@ -109,6 +115,27 @@ export function App() {
   const [opsTick, setOpsTick] = useState(0);
   const [stats, setStats] = useState<RenderStats | null>(null);
 
+  // --- train simulation: a timetable (or, until one is handed over, the demo fixture) and a clock ---
+  const timetable = useMemo(loadTimetableData, []);
+  const [trainsOn, setTrainsOn] = useState(() => params.get('trains') !== 'off');
+  const [dayType, setDayType] = useState<CalendarDayType>(() => serviceClockAt(new Date()).dayType);
+  const [clock, setClockState] = useState<SimClock>(() => {
+    const at = parseServiceTime(params.get('simtime'));
+    return at == null ? nowClock() : demoClock(at, params.get('simplay') === '1', Number(params.get('simrate')) || 1);
+  });
+  const clockRef = useRef(clock);
+  const setClock = useCallback((c: SimClock) => {
+    clockRef.current = c;
+    setClockState(c);
+  }, []);
+  const [trainFilter, setTrainFilter] = useState<TrainFilter>(NO_FILTER);
+  const [hiddenTrains, setHiddenTrains] = useState<ReadonlySet<string>>(() => new Set());
+  const [selectedTrain, setSelectedTrain] = useState<string | null>(null);
+  const trainPlans = useMemo(() => buildTrainPlans(model, timetable.records, { dayType }), [model, timetable, dayType]);
+  const lineColor = useMemo(() => new Map(model.railLines.map((l) => [l.id, l.displayColor])), [model]);
+  const trainShown = useCallback((p: TrainPlan) => !hiddenTrains.has(p.id) && trainPasses(p, trainFilter), [hiddenTrains, trainFilter]);
+  const selectedPlan = selectedTrain ? (trainPlans.plans.find((p) => p.id === selectedTrain) ?? null) : null;
+
   const sceneRef = useRef<SceneHandle>(null);
   const t = useMemo(() => makeT(lang), [lang]);
   const namer = useMemo(() => makeNamer(model, lang, t), [model, lang, t]);
@@ -125,10 +152,11 @@ export function App() {
 
   // Escape closes whatever floats on top: the help dialog, then the card, then the step focus.
   useEffect(() => {
-    if (!helpOpen && selectedId === null && focusLeg === null) return;
+    if (!helpOpen && selectedId === null && selectedTrain === null && focusLeg === null) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return;
       if (helpOpen) setHelpOpen(false);
+      else if (selectedTrain !== null) setSelectedTrain(null);
       else if (selectedId !== null) setSelectedId(null);
       else setFocusLeg(null);
     };
@@ -260,7 +288,29 @@ export function App() {
   );
 
   // Only things a passenger asks about open a card; halls and corridors do not.
-  const select = useCallback((id: string | null) => setSelectedId(id !== null && hasCard(model, id) ? id : null), [model]);
+  const select = useCallback(
+    (id: string | null) => {
+      setSelectedTrain(null);
+      setSelectedId(id !== null && hasCard(model, id) ? id : null);
+    },
+    [model],
+  );
+  const selectTrain = useCallback((planId: string) => {
+    setSelectedId(null);
+    setSelectedTrain(planId);
+  }, []);
+  const sceneTrains = useMemo(
+    () => (trainsOn ? { plans: trainPlans.plans, clock: clockRef, lineColor, shown: trainShown, selectedId: selectedTrain, onSelect: selectTrain } : null),
+    [trainsOn, trainPlans, lineColor, trainShown, selectedTrain, selectTrain],
+  );
+  const focusTrain = (p: TrainPlan) => {
+    const level = model.levels.find((l) => l.id === p.line.levelId);
+    if (!level) return;
+    const y = levelY(level, explode);
+    const [a0, a1] = [p.stopAt - p.length / 2, p.stopAt + p.length / 2];
+    const c = p.line.centre;
+    sceneRef.current?.focusBox(p.line.axis === 'x' ? { min: [a0, y, c - 2], max: [a1, y + 1, c + 2] } : { min: [c - 2, y, a0], max: [c + 2, y + 1, a1] });
+  };
   const canRoute = selectedId !== null && choices.some((c) => c.id === selectedId);
 
   const pickFloor = (m: FloorMode) => {
@@ -388,6 +438,7 @@ export function App() {
                 sceneTheme={sceneTheme}
                 routePts={routePts}
                 labels={labels}
+                trains={sceneTrains}
                 showLabels={showLabels}
                 ariaLabel={t('canvasLabel')}
                 handleRef={sceneRef}
@@ -513,6 +564,42 @@ export function App() {
           </div>
         )}
 
+        {is3d && (
+          <TrainBar
+            t={t}
+            clock={clock}
+            clockRef={clockRef}
+            demoData={timetable.dataset.kind === 'demo-fixture'}
+            trainsOn={trainsOn}
+            dayType={dayType}
+            onClock={setClock}
+            onToggle={(on) => {
+              setTrainsOn(on);
+              if (!on) setSelectedTrain(null);
+            }}
+            onDayType={setDayType}
+          />
+        )}
+
+        {is3d && trainsOn && selectedPlan && (
+          <TrainCard
+            t={t}
+            lang={lang}
+            model={model}
+            plan={selectedPlan}
+            data={timetable}
+            clock={clock}
+            clockRef={clockRef}
+            onClose={() => setSelectedTrain(null)}
+            onFocus={() => focusTrain(selectedPlan)}
+            onHide={() => {
+              setHiddenTrains(new Set([...hiddenTrains, selectedPlan.id]));
+              setSelectedTrain(null);
+            }}
+            onPause={() => setClock({ ...rebase(clock), playing: clock.mode === 'now' ? false : !clock.playing })}
+          />
+        )}
+
         {selectedId && (
           <FacilityCard
             t={t}
@@ -609,6 +696,24 @@ export function App() {
               onMode={setOpsMode}
               onRefresh={() => setOpsTick((n) => n + 1)}
               onSelect={select}
+              trains={
+                <TrainSection
+                  t={t}
+                  lang={lang}
+                  model={model}
+                  data={timetable}
+                  plans={trainPlans.plans}
+                  unplaced={trainPlans.unplaced.length}
+                  filter={trainFilter}
+                  hiddenCount={hiddenTrains.size}
+                  clockRef={clockRef}
+                  shown={trainShown}
+                  selectedId={selectedTrain}
+                  onSelect={selectTrain}
+                  onFilter={setTrainFilter}
+                  onUnhide={() => setHiddenTrains(new Set())}
+                />
+              }
             />
           )}
           {tab === 'info' && <InfoPanel t={t} model={model} sources={sources} stats={stats} />}
