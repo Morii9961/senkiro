@@ -126,18 +126,106 @@ export const VEHICLES: readonly VehicleSpec[] = [
     sourceIds: ['src:tetsudoch-toei-shinjuku-10cars'],
     note: `The Toei trainsets of the Shinjuku Line, all 10 cars long since 2022. ${SCHEMATIC}`,
   },
+  {
+    id: 'toei:12-600',
+    series: '12-600形',
+    operatorId: 'toei',
+    names: { ja: '12-600形', en: 'Type 12-600', zh: '12-600 形' },
+    aliases: ['12-600','12-000','toei12-600','toei12-000'],
+    body: '#dcdfe3',
+    roof: '#7a8189',
+    accent: 'belt',
+    front: 'flat',
+    doorsPerSide: 3,
+    sourceIds: ['src:toei-oedo-12-600'],
+    note: `The newer of the two types of the Oedo Line; the 12-000形 is drawn with this model too. ${SCHEMATIC}`,
+  },
+  {
+    id: 'jr-east:E353',
+    series: 'E353系',
+    operatorId: 'jr-east',
+    names: { ja: 'E353系', en: 'E353 series', zh: 'E353 系' },
+    aliases: ['e353'],
+    body: '#eceef0',
+    roof: '#727982',
+    accent: 'belt',
+    front: 'slant',
+    doorsPerSide: 2,
+    sourceIds: ['src:trafficnews-e353-azusa-kaiji'],
+    note: `The limited express train of the Chuo Line (あずさ・かいじ) since March 2019. ${SCHEMATIC}`,
+  },
+  {
+    id: 'odakyu:3000',
+    series: '3000形',
+    operatorId: 'odakyu',
+    names: { ja: '3000形', en: 'Type 3000', zh: '3000 形' },
+    aliases: ['3000','odakyu3000'],
+    body: '#dadde1',
+    roof: '#7a8189',
+    accent: 'belt',
+    front: 'flat',
+    doorsPerSide: 4,
+    sourceIds: ['src:trafficnews-odakyu-5000-8car'],
+    note: `Reported as the most numerous commuter type of Odakyu, in 6-, 8- and 10-car sets. ${SCHEMATIC}`,
+  },
+  {
+    id: 'keio:9000',
+    series: '9000系',
+    operatorId: 'keio',
+    names: { ja: '9000系', en: '9000 series', zh: '9000 系' },
+    aliases: ['9000','keio9000'],
+    body: '#dadde1',
+    roof: '#7a8189',
+    accent: 'belt',
+    front: 'flat',
+    doorsPerSide: 4,
+    sourceIds: ['src:tsukinzukan-keio'],
+    note: `A Keio commuter type with 10-car and 8-car sets. ${SCHEMATIC}`,
+  },
+  {
+    id: 'seibu:30000',
+    series: '30000系',
+    operatorId: 'seibu',
+    names: { ja: '30000系', en: '30000 series', zh: '30000 系' },
+    aliases: ['30000','seibu30000'],
+    body: '#e2e5e9',
+    roof: '#7a8189',
+    accent: 'belt',
+    front: 'flat',
+    doorsPerSide: 4,
+    sourceIds: ['src:tsukinzukan-seibu'],
+    note: `A Seibu commuter type (スマイルトレイン) with 10-, 8- and 2-car sets. ${SCHEMATIC}`,
+  },
+  {
+    id: 'tokyo-metro:10000',
+    series: '10000系',
+    operatorId: 'tokyo-metro',
+    names: { ja: '10000系', en: '10000 series', zh: '10000 系' },
+    aliases: ['10000','metro10000','tokyometro10000'],
+    body: '#d9dce0',
+    roof: '#7a8189',
+    accent: 'belt',
+    front: 'flat',
+    doorsPerSide: 4,
+    sourceIds: ['src:response-metro-17000'],
+    note: `Described in 2020 as the main fleet of the Yurakucho and Fukutoshin lines, in 10-car sets. ${SCHEMATIC}`,
+  },
 ];
 
 function normaliseSeries(s: string): string {
   return s.toLowerCase().replace(/系|series|形/g, '').replace(/\s+/g, '').trim();
 }
 
-const BY_ALIAS = new Map<string, VehicleSpec>();
-for (const v of VEHICLES) for (const a of v.aliases) BY_ALIAS.set(a, v);
-
-export function vehicleBySeries(series: string): VehicleSpec | null {
+/**
+ * The library's model for a series name. Series numbers repeat between
+ * companies (a 2000系 exists at Tokyo Metro and at Seibu), so with an operator
+ * given only that operator's vehicles are considered.
+ */
+export function vehicleBySeries(series: string, operatorId?: string | null): VehicleSpec | null {
   const key = normaliseSeries(series);
-  return BY_ALIAS.get(key) ?? BY_ALIAS.get(key.replace(/-\d+$/, '')) ?? null;
+  const short = key.replace(/-\d+$/, '');
+  const pool = operatorId ? VEHICLES.filter((v) => v.operatorId === operatorId) : VEHICLES;
+  return pool.find((v) => v.aliases.includes(key)) ?? pool.find((v) => v.aliases.includes(short)) ?? null;
 }
 
 export interface LineVehicleRule {
@@ -151,9 +239,9 @@ export interface LineVehicleRule {
 
 /**
  * Rules per line. Only lines whose type was read from a source are listed;
- * the others fall through to the generic train. Lines with several types in
- * service (Odakyu, Keio, the subway lines with through-running, limited
- * expresses…) are deliberately absent until each type has a source.
+ * the others fall through to the generic train. Where several types share a
+ * line the rule names one of them as `representative` and its note says so;
+ * a trip that names its own type always wins.
  */
 export const LINE_VEHICLE_RULES: readonly LineVehicleRule[] = [
   {
@@ -165,12 +253,12 @@ export const LINE_VEHICLE_RULES: readonly LineVehicleRule[] = [
     note: 'JR East lists 中央線快速 under the E233系, which carries the green cars introduced in March 2025. Whether every trip uses it was not checked.',
   },
   {
-    line_id: 'jr-east:saikyo', vehicleId: 'jr-east:E233', status: 'representative', sourceIds: ['src:jreast-train-e233'],
+    line_id: 'jr-east:saikyo', vehicleId: 'jr-east:E233', status: 'representative', sourceIds: ['src:jreast-train-e233', 'src:wadattsu-saikyo-cars'],
     note: 'JR East lists 埼京線 under the E233系. Trains of other companies run through on this line; the type of a given trip was not checked.',
   },
   {
-    line_id: 'jr-east:chuo-sobu-local', vehicleId: 'jr-east:E231', status: 'representative', sourceIds: ['src:jreast-train-e231'],
-    note: 'JR East lists 中央線・総武線各駅停車 under the E231系. Other types run on the line as well.',
+    line_id: 'jr-east:chuo-sobu-local', vehicleId: 'jr-east:E231', status: 'representative', sourceIds: ['src:jreast-train-e231', 'src:trafficnews-chuosobu-e231-500'],
+    note: 'JR East lists 中央線・総武線各駅停車 under the E231系; the 500番台 sets came from the Yamanote Line. E235系 sets were reported on trial runs here in 2026.',
   },
   {
     line_id: 'tokyo-metro:marunouchi', vehicleId: 'tokyo-metro:2000', status: 'representative', sourceIds: ['src:tokyometro-marunouchi-2000'],
@@ -179,6 +267,38 @@ export const LINE_VEHICLE_RULES: readonly LineVehicleRule[] = [
   {
     line_id: 'toei:shinjuku', vehicleId: 'toei:10-300', status: 'representative', sourceIds: ['src:tetsudoch-toei-shinjuku-10cars'],
     note: 'The Toei-owned trains of the line. Keio trains run through as well; the type of a given trip was not checked.',
+  },
+  {
+    line_id: 'jr-east:shonan-shinjuku', vehicleId: 'jr-east:E231', status: 'representative', sourceIds: ['src:jreast-train-e231','src:jreast-train-e233'],
+    note: 'JR East lists 湘南新宿ライン under both the E231系 and the E233系; the type and the length (10 or 15 cars) of a given trip were not checked.',
+  },
+  {
+    line_id: 'jr-east:chuo-limited-express', vehicleId: 'jr-east:E353', status: 'verified', sourceIds: ['src:trafficnews-e353-azusa-kaiji'],
+    note: 'The regular あずさ・かいじ trains have all been E353系 since March 2019. Seasonal extra trains may differ. 9 or 12 cars depending on the train, so no length is assumed.',
+  },
+  {
+    line_id: 'toei:oedo', vehicleId: 'toei:12-600', status: 'representative', sourceIds: ['src:toei-oedo-12-600'],
+    note: 'The Oedo Line is run by the 12-000形 and the 12-600形; which of the two a trip uses was not checked.',
+  },
+  {
+    line_id: 'odakyu:odawara', vehicleId: 'odakyu:3000', status: 'representative', sourceIds: ['src:trafficnews-odakyu-5000-8car'],
+    note: 'The 3000形 is reported as the most numerous Odakyu commuter type. The 4000形, 5000形 and other types and the Romancecar limited expresses run from 新宿 as well; sets are 6, 8 or 10 cars, so no length is assumed.',
+  },
+  {
+    line_id: 'keio:keio', vehicleId: 'keio:9000', status: 'representative', sourceIds: ['src:tsukinzukan-keio'],
+    note: 'One of the Keio commuter types. The 5000系, 8000系 and others run as well; sets are 8 or 10 cars, so no length is assumed.',
+  },
+  {
+    line_id: 'keio:keio-new', vehicleId: 'keio:9000', status: 'representative', sourceIds: ['src:tsukinzukan-keio','src:tetsudoch-toei-shinjuku-10cars'],
+    note: 'The 10-car 9000系 is the Keio type that can run through to the Toei Shinjuku Line; Toei 10-300形 trains use these platforms too.',
+  },
+  {
+    line_id: 'seibu:shinjuku', vehicleId: 'seibu:30000', status: 'representative', sourceIds: ['src:tsukinzukan-seibu'],
+    note: 'One of the Seibu commuter types. The 2000系, 40000系 and the limited express 小江戸 (10000系) run as well; sets are 8 or 10 cars, so no length is assumed.',
+  },
+  {
+    line_id: 'tokyo-metro:fukutoshin', vehicleId: 'tokyo-metro:10000', status: 'representative', sourceIds: ['src:response-metro-17000'],
+    note: 'Described as the main fleet of the line in 2020. The 17000系 and the trains of five other companies run through as well; trains are 8 or 10 cars, so no length is assumed.',
   },
 ];
 
@@ -199,6 +319,14 @@ export const FORMATION_FACTS: readonly FormationFact[] = [
   {
     station_id: 'jr-east:shinjuku', line_id: 'jr-east:chuo-rapid', cars: 12, sourceIds: ['src:tetsudoch-chuo-green-car'],
     note: '10-car E233系 sets plus two green cars since March 2025. 10-car trains were still reported in the mix around the start of the service; a trip that says otherwise in the timetable wins.',
+  },
+  {
+    station_id: 'jr-east:shinjuku', line_id: 'jr-east:saikyo', cars: 10, sourceIds: ['src:wadattsu-saikyo-cars'],
+    note: 'Every train on the line is 10 cars, the through trains of りんかい線 and 相鉄 included.',
+  },
+  {
+    station_id: 'jr-east:shinjuku', line_id: 'jr-east:chuo-sobu-local', cars: 10, sourceIds: ['src:trafficnews-chuosobu-e231-500'],
+    note: 'The E231系500番台 sets of the line are 10 cars. That every other set is 10 cars as well was not read from a source.',
   },
   {
     station_id: 'tokyo-metro:shinjuku:M08', line_id: 'tokyo-metro:marunouchi', cars: 6, sourceIds: ['src:tokyometro-marunouchi-2000'],
@@ -227,7 +355,7 @@ export interface ResolvedVehicle {
   note: string;
 }
 
-export function resolveVehicle(r: Pick<TimetableRecord, 'station_id' | 'line_id' | 'vehicle_series' | 'formation_length' | 'vehicle_assignment_status' | 'source_id'>): ResolvedVehicle {
+export function resolveVehicle(r: Pick<TimetableRecord, 'station_id' | 'operator_id' | 'line_id' | 'vehicle_series' | 'formation_length' | 'vehicle_assignment_status' | 'source_id'>): ResolvedVehicle {
   const lineId = lineEntry(r.line_id)?.line_id ?? r.line_id;
   const fact = FORMATION_FACTS.find((f) => f.station_id === r.station_id && f.line_id === lineId) ?? null;
   const cars = r.formation_length ?? fact?.cars ?? null;
@@ -235,7 +363,7 @@ export function resolveVehicle(r: Pick<TimetableRecord, 'station_id' | 'line_id'
   const carSources = r.formation_length != null ? [] : (fact?.sourceIds ?? []);
 
   if (r.vehicle_series && r.vehicle_assignment_status !== 'unknown') {
-    const spec = vehicleBySeries(r.vehicle_series);
+    const spec = vehicleBySeries(r.vehicle_series, r.operator_id);
     if (spec) {
       return { spec, status: r.vehicle_assignment_status, basis: 'trip', seriesLabel: r.vehicle_series, cars, carsBasis, sourceIds: [r.source_id, ...spec.sourceIds, ...carSources], note: spec.note };
     }

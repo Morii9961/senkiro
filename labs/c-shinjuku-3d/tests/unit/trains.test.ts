@@ -89,7 +89,11 @@ describe('vehicle rules', () => {
 
     expect(resolveVehicle(rec({ line_id: 'jr-east:chuo-rapid' })).status).toBe('representative');
 
-    const none = resolveVehicle(rec({ station_id: 'odakyu:shinjuku', line_id: 'odakyu:odawara' }));
+    // several types share the line: one of them, marked representative, and no car count
+    const odakyu = resolveVehicle(rec({ station_id: 'odakyu:shinjuku', operator_id: 'odakyu', line_id: 'odakyu:odawara' }));
+    expect(odakyu).toMatchObject({ basis: 'line-rule', status: 'representative', seriesLabel: '3000形', cars: null });
+
+    const none = resolveVehicle(rec({ line_id: 'jr-east:narita-express' }));
     expect(none).toMatchObject({ basis: 'none', status: 'unknown', cars: null });
     expect(none.spec).toBe(GENERIC_VEHICLE);
 
@@ -100,11 +104,13 @@ describe('vehicle rules', () => {
 
   it('never assumes a number of cars: only the trip or a sourced fact gives one', () => {
     expect(resolveVehicle(rec({ station_id: 'odakyu:shinjuku', line_id: 'odakyu:odawara' })).cars).toBeNull();
-    expect(resolveVehicle(rec({ line_id: 'jr-east:chuo-sobu-local' })).cars).toBeNull();
+    expect(resolveVehicle(rec({ line_id: 'jr-east:shonan-shinjuku' })).cars).toBeNull();
+    expect(resolveVehicle(rec({ line_id: 'jr-east:chuo-limited-express' }))).toMatchObject({ status: 'verified', seriesLabel: 'E353系', cars: null });
+    expect(resolveVehicle(rec({ line_id: 'jr-east:saikyo' }))).toMatchObject({ cars: 10, carsBasis: 'line-fact' });
     // the trip's own figure wins over a fact about the line
     expect(resolveVehicle(rec({ formation_length: 10 }))).toMatchObject({ cars: 10, carsBasis: 'trip' });
     const oedo = resolveVehicle(rec({ station_id: 'toei:shinjuku:E27', line_id: 'toei:oedo' }));
-    expect(oedo).toMatchObject({ cars: 8, carsBasis: 'line-fact', status: 'unknown' });
+    expect(oedo).toMatchObject({ cars: 8, carsBasis: 'line-fact', status: 'representative', seriesLabel: '12-600形' });
     expect(oedo.sourceIds).toContain('src:toei-shinjuku-map');
   });
 
@@ -112,7 +118,11 @@ describe('vehicle rules', () => {
     expect(vehicleBySeries('E235系')?.id).toBe('jr-east:E235');
     expect(vehicleBySeries('e235 series')?.id).toBe('jr-east:E235');
     expect(vehicleBySeries('E233-0')?.id).toBe('jr-east:E233');
-    expect(vehicleBySeries('E353')).toBeNull();
+    expect(vehicleBySeries('E657')).toBeNull();
+    // the same number at two companies: the operator decides, and a type the library lacks stays unresolved
+    expect(vehicleBySeries('2000系', 'tokyo-metro')?.id).toBe('tokyo-metro:2000');
+    expect(vehicleBySeries('2000系', 'seibu')).toBeNull();
+    expect(resolveVehicle(rec({ station_id: 'seibu:seibu-shinjuku', operator_id: 'seibu', line_id: 'seibu:shinjuku', vehicle_series: '2000系', vehicle_assignment_status: 'verified' }))).toMatchObject({ basis: 'trip-series-not-in-library', seriesLabel: '2000系' });
   });
 });
 
@@ -189,7 +199,7 @@ describe('train simulation', () => {
     const eleven = plansOf([rec({ formation_length: 11 })]).plans[0]!;
     expect(eleven.carLength).toBeCloseTo(NOMINAL_CAR_LENGTH);
     expect(eleven.length).toBeCloseTo(11 * NOMINAL_CAR_LENGTH);
-    const unknown = plansOf([rec({ line_id: 'jr-east:chuo-sobu-local', platform_id: 'jr-east:shinjuku:13' })]).plans[0]!;
+    const unknown = plansOf([rec({ line_id: 'jr-east:shonan-shinjuku', platform_id: 'jr-east:shinjuku:13' })]).plans[0]!;
     expect(unknown.carLength).toBeNull();
     const oedo = plansOf([rec({ station_id: 'toei:shinjuku:E27', operator_id: 'toei', line_id: 'toei:oedo', platform_id: 'toei:shinjuku:E27:6' })]).plans[0]!;
     expect(oedo.vehicle.cars).toBe(8);
