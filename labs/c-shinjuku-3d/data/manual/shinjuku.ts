@@ -210,9 +210,9 @@ const railLines: RailLine[] = [
 const complex: StationComplex = {
   kind: 'station-complex',
   ...entity('sk:complex:shinjuku', names('新宿駅', 'Shinjuku Station', '新宿站'), prov([S_PAGE, S_KEIO_PAGE])),
-  stationIds: [ST_JR, ST_KEIO, 'sk:station:odakyu-shinjuku', 'sk:station:keio-new-line-shinjuku', 'sk:station:toei-oedo-shinjuku', 'sk:station:tokyo-metro-shinjuku', 'sk:station:seibu-shinjuku'],
+  stationIds: [ST_JR, ST_KEIO, 'sk:station:odakyu-shinjuku', 'sk:station:keio-new-line-shinjuku', 'sk:station:toei-oedo-shinjuku', 'sk:station:tokyo-metro-shinjuku', 'sk:station:seibu-shinjuku',
+    'sk:station:tokyo-metro-shinjuku-sanchome', 'sk:station:toei-shinjuku-sanchome'],
   explicitlyExcluded: [
-    { name: '新宿三丁目駅 (Shinjuku-sanchome)', reason: 'A different station. Not part of this model and not drawn.' },
     { name: '新宿西口駅 (Shinjuku-nishiguchi, Toei Oedo Line)', reason: 'A different station. It appears on the JR and Tokyo Metro 立体図 as a neighbour and is not modelled.' },
   ],
 };

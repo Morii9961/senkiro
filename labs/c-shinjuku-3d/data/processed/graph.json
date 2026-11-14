@@ -505,6 +505,126 @@
       }
     },
     {
+      "id": "sk:area:sanchome-b2f-link-passage",
+      "kind": "area",
+      "elementId": "sk:area:sanchome-b2f-link-passage",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "levelOrdinal": -2,
+      "zone": "unpaid",
+      "position": {
+        "x": -25.7,
+        "z": -74
+      }
+    },
+    {
+      "id": "sk:area:sanchome-fukutoshin-b2f-concourse",
+      "kind": "area",
+      "elementId": "sk:area:sanchome-fukutoshin-b2f-concourse",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "levelOrdinal": -2,
+      "zone": "unpaid",
+      "position": {
+        "x": -2,
+        "z": -62.9
+      }
+    },
+    {
+      "id": "sk:area:sanchome-fukutoshin-b2f-paid-north",
+      "kind": "area",
+      "elementId": "sk:area:sanchome-fukutoshin-b2f-paid-north",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "levelOrdinal": -2,
+      "zone": "paid:tokyo-metro",
+      "position": {
+        "x": -11,
+        "z": -66
+      }
+    },
+    {
+      "id": "sk:area:sanchome-fukutoshin-b2f-paid-south",
+      "kind": "area",
+      "elementId": "sk:area:sanchome-fukutoshin-b2f-paid-south",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "levelOrdinal": -2,
+      "zone": "paid:tokyo-metro",
+      "position": {
+        "x": 2.5,
+        "z": -66
+      }
+    },
+    {
+      "id": "sk:area:sanchome-marunouchi-b1f-concourse",
+      "kind": "area",
+      "elementId": "sk:area:sanchome-marunouchi-b1f-concourse",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "levelOrdinal": -1,
+      "zone": "unpaid",
+      "position": {
+        "x": -25.7,
+        "z": -47
+      }
+    },
+    {
+      "id": "sk:area:sanchome-marunouchi-b1f-paid-east",
+      "kind": "area",
+      "elementId": "sk:area:sanchome-marunouchi-b1f-paid-east",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "levelOrdinal": -1,
+      "zone": "paid:tokyo-metro",
+      "position": {
+        "x": -22.5,
+        "z": -59
+      }
+    },
+    {
+      "id": "sk:area:sanchome-marunouchi-b1f-paid-mid",
+      "kind": "area",
+      "elementId": "sk:area:sanchome-marunouchi-b1f-paid-mid",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "levelOrdinal": -1,
+      "zone": "paid:tokyo-metro",
+      "position": {
+        "x": -22.5,
+        "z": -47
+      }
+    },
+    {
+      "id": "sk:area:sanchome-marunouchi-b1f-paid-west",
+      "kind": "area",
+      "elementId": "sk:area:sanchome-marunouchi-b1f-paid-west",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "levelOrdinal": -1,
+      "zone": "paid:tokyo-metro",
+      "position": {
+        "x": -22.5,
+        "z": -35
+      }
+    },
+    {
+      "id": "sk:area:sanchome-toei-b1f-concourse",
+      "kind": "area",
+      "elementId": "sk:area:sanchome-toei-b1f-concourse",
+      "levelId": "sk:level:toei-shinjuku-sanchome-b1f",
+      "levelOrdinal": -1,
+      "zone": "unpaid",
+      "position": {
+        "x": -18.4,
+        "z": -88
+      }
+    },
+    {
+      "id": "sk:area:sanchome-toei-b1f-paid",
+      "kind": "area",
+      "elementId": "sk:area:sanchome-toei-b1f-paid",
+      "levelId": "sk:level:toei-shinjuku-sanchome-b1f",
+      "levelOrdinal": -1,
+      "zone": "paid:toei",
+      "position": {
+        "x": -15.5,
+        "z": -87
+      }
+    },
+    {
       "id": "sk:area:seibu-1f-front",
       "kind": "area",
       "elementId": "sk:area:seibu-1f-front",
@@ -937,6 +1057,222 @@
       }
     },
     {
+      "id": "sk:entrance:sanchome-exit-a1",
+      "kind": "entrance",
+      "elementId": "sk:entrance:sanchome-exit-a1",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "levelOrdinal": -1,
+      "zone": "unpaid",
+      "position": {
+        "x": -24.4,
+        "z": -61
+      }
+    },
+    {
+      "id": "sk:entrance:sanchome-exit-a2-a4",
+      "kind": "entrance",
+      "elementId": "sk:entrance:sanchome-exit-a2-a4",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "levelOrdinal": -1,
+      "zone": "unpaid",
+      "position": {
+        "x": -24.4,
+        "z": -47
+      }
+    },
+    {
+      "id": "sk:entrance:sanchome-exit-a5",
+      "kind": "entrance",
+      "elementId": "sk:entrance:sanchome-exit-a5",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "levelOrdinal": -1,
+      "zone": "unpaid",
+      "position": {
+        "x": -24.4,
+        "z": -33
+      }
+    },
+    {
+      "id": "sk:entrance:sanchome-exit-a6-b6-b7",
+      "kind": "entrance",
+      "elementId": "sk:entrance:sanchome-exit-a6-b6-b7",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "levelOrdinal": -1,
+      "zone": "unpaid",
+      "position": {
+        "x": -25.7,
+        "z": -30
+      }
+    },
+    {
+      "id": "sk:entrance:sanchome-exit-b2",
+      "kind": "entrance",
+      "elementId": "sk:entrance:sanchome-exit-b2",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "levelOrdinal": -1,
+      "zone": "unpaid",
+      "position": {
+        "x": -27,
+        "z": -62
+      }
+    },
+    {
+      "id": "sk:entrance:sanchome-exit-b3-b4-b5",
+      "kind": "entrance",
+      "elementId": "sk:entrance:sanchome-exit-b3-b4-b5",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "levelOrdinal": -1,
+      "zone": "unpaid",
+      "position": {
+        "x": -27,
+        "z": -50
+      }
+    },
+    {
+      "id": "sk:entrance:sanchome-exit-c1-c4",
+      "kind": "entrance",
+      "elementId": "sk:entrance:sanchome-exit-c1-c4",
+      "levelId": "sk:level:toei-shinjuku-sanchome-b1f",
+      "levelOrdinal": -1,
+      "zone": "unpaid",
+      "position": {
+        "x": -14.4,
+        "z": -73
+      }
+    },
+    {
+      "id": "sk:entrance:sanchome-exit-c5",
+      "kind": "entrance",
+      "elementId": "sk:entrance:sanchome-exit-c5",
+      "levelId": "sk:level:toei-shinjuku-sanchome-b1f",
+      "levelOrdinal": -1,
+      "zone": "unpaid",
+      "position": {
+        "x": -14.4,
+        "z": -101
+      }
+    },
+    {
+      "id": "sk:entrance:sanchome-exit-c6",
+      "kind": "entrance",
+      "elementId": "sk:entrance:sanchome-exit-c6",
+      "levelId": "sk:level:toei-shinjuku-sanchome-b1f",
+      "levelOrdinal": -1,
+      "zone": "unpaid",
+      "position": {
+        "x": -19.6,
+        "z": -98
+      }
+    },
+    {
+      "id": "sk:entrance:sanchome-exit-c7-c8",
+      "kind": "entrance",
+      "elementId": "sk:entrance:sanchome-exit-c7-c8",
+      "levelId": "sk:level:toei-shinjuku-sanchome-b1f",
+      "levelOrdinal": -1,
+      "zone": "unpaid",
+      "position": {
+        "x": -19.6,
+        "z": -103
+      }
+    },
+    {
+      "id": "sk:entrance:sanchome-exit-e1",
+      "kind": "entrance",
+      "elementId": "sk:entrance:sanchome-exit-e1",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "levelOrdinal": -2,
+      "zone": "unpaid",
+      "position": {
+        "x": -27,
+        "z": -78
+      }
+    },
+    {
+      "id": "sk:entrance:sanchome-exit-e10",
+      "kind": "entrance",
+      "elementId": "sk:entrance:sanchome-exit-e10",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "levelOrdinal": -2,
+      "zone": "unpaid",
+      "position": {
+        "x": 7.7,
+        "z": -42
+      }
+    },
+    {
+      "id": "sk:entrance:sanchome-exit-e2",
+      "kind": "entrance",
+      "elementId": "sk:entrance:sanchome-exit-e2",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "levelOrdinal": -2,
+      "zone": "unpaid",
+      "position": {
+        "x": -27,
+        "z": -73
+      }
+    },
+    {
+      "id": "sk:entrance:sanchome-exit-e3-e4",
+      "kind": "entrance",
+      "elementId": "sk:entrance:sanchome-exit-e3-e4",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "levelOrdinal": -2,
+      "zone": "unpaid",
+      "position": {
+        "x": -24.4,
+        "z": -70
+      }
+    },
+    {
+      "id": "sk:entrance:sanchome-exit-e5",
+      "kind": "entrance",
+      "elementId": "sk:entrance:sanchome-exit-e5",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "levelOrdinal": -2,
+      "zone": "unpaid",
+      "position": {
+        "x": -4,
+        "z": -61.6
+      }
+    },
+    {
+      "id": "sk:entrance:sanchome-exit-e6-e7",
+      "kind": "entrance",
+      "elementId": "sk:entrance:sanchome-exit-e6-e7",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "levelOrdinal": -2,
+      "zone": "unpaid",
+      "position": {
+        "x": 12,
+        "z": -63.6
+      }
+    },
+    {
+      "id": "sk:entrance:sanchome-exit-e8",
+      "kind": "entrance",
+      "elementId": "sk:entrance:sanchome-exit-e8",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "levelOrdinal": -2,
+      "zone": "unpaid",
+      "position": {
+        "x": 12,
+        "z": -62.2
+      }
+    },
+    {
+      "id": "sk:entrance:sanchome-exit-e9",
+      "kind": "entrance",
+      "elementId": "sk:entrance:sanchome-exit-e9",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "levelOrdinal": -2,
+      "zone": "unpaid",
+      "position": {
+        "x": 6.5,
+        "z": -52
+      }
+    },
+    {
       "id": "sk:entrance:seibu-front-entrance",
       "kind": "entrance",
       "elementId": "sk:entrance:seibu-front-entrance",
@@ -1321,6 +1657,90 @@
       }
     },
     {
+      "id": "sk:gate:sanchome-fukutoshin-gates-north",
+      "kind": "gate",
+      "elementId": "sk:gate:sanchome-fukutoshin-gates-north",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "levelOrdinal": -2,
+      "zone": "gate",
+      "position": {
+        "x": -11,
+        "z": -64.55
+      }
+    },
+    {
+      "id": "sk:gate:sanchome-fukutoshin-gates-south",
+      "kind": "gate",
+      "elementId": "sk:gate:sanchome-fukutoshin-gates-south",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "levelOrdinal": -2,
+      "zone": "gate",
+      "position": {
+        "x": 2.5,
+        "z": -64.55
+      }
+    },
+    {
+      "id": "sk:gate:sanchome-marunouchi-gates-east",
+      "kind": "gate",
+      "elementId": "sk:gate:sanchome-marunouchi-gates-east",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "levelOrdinal": -1,
+      "zone": "gate",
+      "position": {
+        "x": -24,
+        "z": -59
+      }
+    },
+    {
+      "id": "sk:gate:sanchome-marunouchi-gates-mid",
+      "kind": "gate",
+      "elementId": "sk:gate:sanchome-marunouchi-gates-mid",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "levelOrdinal": -1,
+      "zone": "gate",
+      "position": {
+        "x": -24,
+        "z": -47
+      }
+    },
+    {
+      "id": "sk:gate:sanchome-marunouchi-gates-west",
+      "kind": "gate",
+      "elementId": "sk:gate:sanchome-marunouchi-gates-west",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "levelOrdinal": -1,
+      "zone": "gate",
+      "position": {
+        "x": -24,
+        "z": -35
+      }
+    },
+    {
+      "id": "sk:gate:sanchome-toei-gates-east",
+      "kind": "gate",
+      "elementId": "sk:gate:sanchome-toei-gates-east",
+      "levelId": "sk:level:toei-shinjuku-sanchome-b1f",
+      "levelOrdinal": -1,
+      "zone": "gate",
+      "position": {
+        "x": -15.5,
+        "z": -97.3
+      }
+    },
+    {
+      "id": "sk:gate:sanchome-toei-gates-west",
+      "kind": "gate",
+      "elementId": "sk:gate:sanchome-toei-gates-west",
+      "levelId": "sk:level:toei-shinjuku-sanchome-b1f",
+      "levelOrdinal": -1,
+      "zone": "gate",
+      "position": {
+        "x": -15.5,
+        "z": -76.7
+      }
+    },
+    {
       "id": "sk:gate:seibu-front-gate",
       "kind": "gate",
       "elementId": "sk:gate:seibu-front-gate",
@@ -1645,6 +2065,18 @@
       }
     },
     {
+      "id": "sk:platform:toei-shinjuku-sanchome-1-2",
+      "kind": "area",
+      "elementId": "sk:platform:toei-shinjuku-sanchome-1-2",
+      "levelId": "sk:level:toei-shinjuku-sanchome-b2f",
+      "levelOrdinal": -2,
+      "zone": "paid:toei",
+      "position": {
+        "x": -15.5,
+        "z": -88
+      }
+    },
+    {
       "id": "sk:platform:tokyo-metro-shinjuku-1-2",
       "kind": "area",
       "elementId": "sk:platform:tokyo-metro-shinjuku-1-2",
@@ -1654,6 +2086,30 @@
       "position": {
         "x": -22.5,
         "z": 0
+      }
+    },
+    {
+      "id": "sk:platform:tokyo-metro-shinjuku-sanchome-1-2",
+      "kind": "area",
+      "elementId": "sk:platform:tokyo-metro-shinjuku-sanchome-1-2",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "levelOrdinal": -2,
+      "zone": "paid:tokyo-metro",
+      "position": {
+        "x": -22.5,
+        "z": -47
+      }
+    },
+    {
+      "id": "sk:platform:tokyo-metro-shinjuku-sanchome-3-4",
+      "kind": "area",
+      "elementId": "sk:platform:tokyo-metro-shinjuku-sanchome-3-4",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b3f",
+      "levelOrdinal": -3,
+      "zone": "paid:tokyo-metro",
+      "position": {
+        "x": -5,
+        "z": -66
       }
     },
     {
@@ -4474,6 +4930,462 @@
       "position": {
         "x": -12.2,
         "z": 23.6
+      }
+    },
+    {
+      "id": "sk:vertical:sanchome-elevator-marunouchi-concourse-to-fukutoshin-concourse@sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:sanchome-elevator-marunouchi-concourse-to-fukutoshin-concourse",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "levelOrdinal": -1,
+      "zone": "unpaid",
+      "position": {
+        "x": -25,
+        "z": -65.2
+      }
+    },
+    {
+      "id": "sk:vertical:sanchome-elevator-marunouchi-concourse-to-fukutoshin-concourse@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:sanchome-elevator-marunouchi-concourse-to-fukutoshin-concourse",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "levelOrdinal": -2,
+      "zone": "unpaid",
+      "position": {
+        "x": -25,
+        "z": -65.2
+      }
+    },
+    {
+      "id": "sk:vertical:sanchome-fukutoshin-elevator@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:sanchome-fukutoshin-elevator",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "levelOrdinal": -2,
+      "zone": "paid:tokyo-metro",
+      "position": {
+        "x": -12.6,
+        "z": -66
+      }
+    },
+    {
+      "id": "sk:vertical:sanchome-fukutoshin-elevator@sk:level:tokyo-metro-shinjuku-sanchome-b3f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:sanchome-fukutoshin-elevator",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b3f",
+      "levelOrdinal": -3,
+      "zone": "paid:tokyo-metro",
+      "position": {
+        "x": -12.6,
+        "z": -66
+      }
+    },
+    {
+      "id": "sk:vertical:sanchome-fukutoshin-stairs-north-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:sanchome-fukutoshin-stairs-north-gates-to-platform",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "levelOrdinal": -2,
+      "zone": "paid:tokyo-metro",
+      "position": {
+        "x": -9,
+        "z": -66
+      }
+    },
+    {
+      "id": "sk:vertical:sanchome-fukutoshin-stairs-north-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b3f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:sanchome-fukutoshin-stairs-north-gates-to-platform",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b3f",
+      "levelOrdinal": -3,
+      "zone": "paid:tokyo-metro",
+      "position": {
+        "x": -6.4,
+        "z": -66
+      }
+    },
+    {
+      "id": "sk:vertical:sanchome-fukutoshin-stairs-south-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:sanchome-fukutoshin-stairs-south-gates-to-platform",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "levelOrdinal": -2,
+      "zone": "paid:tokyo-metro",
+      "position": {
+        "x": 4,
+        "z": -66
+      }
+    },
+    {
+      "id": "sk:vertical:sanchome-fukutoshin-stairs-south-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b3f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:sanchome-fukutoshin-stairs-south-gates-to-platform",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b3f",
+      "levelOrdinal": -3,
+      "zone": "paid:tokyo-metro",
+      "position": {
+        "x": 6.6,
+        "z": -66
+      }
+    },
+    {
+      "id": "sk:vertical:sanchome-marunouchi-elevator-west@sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:sanchome-marunouchi-elevator-west",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "levelOrdinal": -1,
+      "zone": "paid:tokyo-metro",
+      "position": {
+        "x": -22.5,
+        "z": -34
+      }
+    },
+    {
+      "id": "sk:vertical:sanchome-marunouchi-elevator-west@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:sanchome-marunouchi-elevator-west",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "levelOrdinal": -2,
+      "zone": "paid:tokyo-metro",
+      "position": {
+        "x": -22.5,
+        "z": -34
+      }
+    },
+    {
+      "id": "sk:vertical:sanchome-marunouchi-stairs-east-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:sanchome-marunouchi-stairs-east-gates-to-platform",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "levelOrdinal": -1,
+      "zone": "paid:tokyo-metro",
+      "position": {
+        "x": -22.5,
+        "z": -57.8
+      }
+    },
+    {
+      "id": "sk:vertical:sanchome-marunouchi-stairs-east-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:sanchome-marunouchi-stairs-east-gates-to-platform",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "levelOrdinal": -2,
+      "zone": "paid:tokyo-metro",
+      "position": {
+        "x": -22.5,
+        "z": -55.2
+      }
+    },
+    {
+      "id": "sk:vertical:sanchome-marunouchi-stairs-mid-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:sanchome-marunouchi-stairs-mid-gates-to-platform",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "levelOrdinal": -1,
+      "zone": "paid:tokyo-metro",
+      "position": {
+        "x": -22.5,
+        "z": -48.2
+      }
+    },
+    {
+      "id": "sk:vertical:sanchome-marunouchi-stairs-mid-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:sanchome-marunouchi-stairs-mid-gates-to-platform",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "levelOrdinal": -2,
+      "zone": "paid:tokyo-metro",
+      "position": {
+        "x": -22.5,
+        "z": -50.8
+      }
+    },
+    {
+      "id": "sk:vertical:sanchome-marunouchi-stairs-west-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:sanchome-marunouchi-stairs-west-gates-to-platform",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "levelOrdinal": -1,
+      "zone": "paid:tokyo-metro",
+      "position": {
+        "x": -22.5,
+        "z": -36.2
+      }
+    },
+    {
+      "id": "sk:vertical:sanchome-marunouchi-stairs-west-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:sanchome-marunouchi-stairs-west-gates-to-platform",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "levelOrdinal": -2,
+      "zone": "paid:tokyo-metro",
+      "position": {
+        "x": -22.5,
+        "z": -38.8
+      }
+    },
+    {
+      "id": "sk:vertical:sanchome-stairs-b2f-passage-to-toei-concourse@sk:level:toei-shinjuku-sanchome-b1f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:sanchome-stairs-b2f-passage-to-toei-concourse",
+      "levelId": "sk:level:toei-shinjuku-sanchome-b1f",
+      "levelOrdinal": -1,
+      "zone": "unpaid",
+      "position": {
+        "x": -19.2,
+        "z": -76
+      }
+    },
+    {
+      "id": "sk:vertical:sanchome-stairs-b2f-passage-to-toei-concourse@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:sanchome-stairs-b2f-passage-to-toei-concourse",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "levelOrdinal": -2,
+      "zone": "unpaid",
+      "position": {
+        "x": -24.8,
+        "z": -76
+      }
+    },
+    {
+      "id": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-b2f-passage@sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-b2f-passage",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "levelOrdinal": -1,
+      "zone": "unpaid",
+      "position": {
+        "x": -26.4,
+        "z": -64.8
+      }
+    },
+    {
+      "id": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-b2f-passage@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-b2f-passage",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "levelOrdinal": -2,
+      "zone": "unpaid",
+      "position": {
+        "x": -26.4,
+        "z": -67.8
+      }
+    },
+    {
+      "id": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-fukutoshin-concourse@sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-fukutoshin-concourse",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "levelOrdinal": -1,
+      "zone": "unpaid",
+      "position": {
+        "x": -24.8,
+        "z": -63
+      }
+    },
+    {
+      "id": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-fukutoshin-concourse@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-fukutoshin-concourse",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "levelOrdinal": -2,
+      "zone": "unpaid",
+      "position": {
+        "x": -15.4,
+        "z": -62.9
+      }
+    },
+    {
+      "id": "sk:vertical:sanchome-stairs-marunouchi-platform-to-fukutoshin-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:sanchome-stairs-marunouchi-platform-to-fukutoshin-platform",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "levelOrdinal": -2,
+      "zone": "paid:tokyo-metro",
+      "position": {
+        "x": -22.5,
+        "z": -61
+      }
+    },
+    {
+      "id": "sk:vertical:sanchome-stairs-marunouchi-platform-to-fukutoshin-platform@sk:level:tokyo-metro-shinjuku-sanchome-b3f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:sanchome-stairs-marunouchi-platform-to-fukutoshin-platform",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b3f",
+      "levelOrdinal": -3,
+      "zone": "paid:tokyo-metro",
+      "position": {
+        "x": -18,
+        "z": -66
+      }
+    },
+    {
+      "id": "sk:vertical:sanchome-toei-elevator@sk:level:toei-shinjuku-sanchome-b1f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:sanchome-toei-elevator",
+      "levelId": "sk:level:toei-shinjuku-sanchome-b1f",
+      "levelOrdinal": -1,
+      "zone": "paid:toei",
+      "position": {
+        "x": -15.5,
+        "z": -84.4
+      }
+    },
+    {
+      "id": "sk:vertical:sanchome-toei-elevator@sk:level:toei-shinjuku-sanchome-b2f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:sanchome-toei-elevator",
+      "levelId": "sk:level:toei-shinjuku-sanchome-b2f",
+      "levelOrdinal": -2,
+      "zone": "paid:toei",
+      "position": {
+        "x": -15.5,
+        "z": -84.4
+      }
+    },
+    {
+      "id": "sk:vertical:sanchome-toei-escalator-car-2@sk:level:toei-shinjuku-sanchome-b1f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:sanchome-toei-escalator-car-2",
+      "levelId": "sk:level:toei-shinjuku-sanchome-b1f",
+      "levelOrdinal": -1,
+      "zone": "paid:toei",
+      "position": {
+        "x": -14.95,
+        "z": -77.8
+      }
+    },
+    {
+      "id": "sk:vertical:sanchome-toei-escalator-car-2@sk:level:toei-shinjuku-sanchome-b2f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:sanchome-toei-escalator-car-2",
+      "levelId": "sk:level:toei-shinjuku-sanchome-b2f",
+      "levelOrdinal": -2,
+      "zone": "paid:toei",
+      "position": {
+        "x": -14.95,
+        "z": -80.4
+      }
+    },
+    {
+      "id": "sk:vertical:sanchome-toei-escalator-car-6@sk:level:toei-shinjuku-sanchome-b1f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:sanchome-toei-escalator-car-6",
+      "levelId": "sk:level:toei-shinjuku-sanchome-b1f",
+      "levelOrdinal": -1,
+      "zone": "paid:toei",
+      "position": {
+        "x": -14.95,
+        "z": -87.6
+      }
+    },
+    {
+      "id": "sk:vertical:sanchome-toei-escalator-car-6@sk:level:toei-shinjuku-sanchome-b2f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:sanchome-toei-escalator-car-6",
+      "levelId": "sk:level:toei-shinjuku-sanchome-b2f",
+      "levelOrdinal": -2,
+      "zone": "paid:toei",
+      "position": {
+        "x": -14.95,
+        "z": -90.2
+      }
+    },
+    {
+      "id": "sk:vertical:sanchome-toei-escalator-car-8@sk:level:toei-shinjuku-sanchome-b1f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:sanchome-toei-escalator-car-8",
+      "levelId": "sk:level:toei-shinjuku-sanchome-b1f",
+      "levelOrdinal": -1,
+      "zone": "paid:toei",
+      "position": {
+        "x": -14.95,
+        "z": -93.6
+      }
+    },
+    {
+      "id": "sk:vertical:sanchome-toei-escalator-car-8@sk:level:toei-shinjuku-sanchome-b2f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:sanchome-toei-escalator-car-8",
+      "levelId": "sk:level:toei-shinjuku-sanchome-b2f",
+      "levelOrdinal": -2,
+      "zone": "paid:toei",
+      "position": {
+        "x": -14.95,
+        "z": -96.2
+      }
+    },
+    {
+      "id": "sk:vertical:sanchome-toei-stairs-car-2@sk:level:toei-shinjuku-sanchome-b1f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:sanchome-toei-stairs-car-2",
+      "levelId": "sk:level:toei-shinjuku-sanchome-b1f",
+      "levelOrdinal": -1,
+      "zone": "paid:toei",
+      "position": {
+        "x": -16.05,
+        "z": -77.8
+      }
+    },
+    {
+      "id": "sk:vertical:sanchome-toei-stairs-car-2@sk:level:toei-shinjuku-sanchome-b2f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:sanchome-toei-stairs-car-2",
+      "levelId": "sk:level:toei-shinjuku-sanchome-b2f",
+      "levelOrdinal": -2,
+      "zone": "paid:toei",
+      "position": {
+        "x": -16.05,
+        "z": -80.4
+      }
+    },
+    {
+      "id": "sk:vertical:sanchome-toei-stairs-car-6@sk:level:toei-shinjuku-sanchome-b1f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:sanchome-toei-stairs-car-6",
+      "levelId": "sk:level:toei-shinjuku-sanchome-b1f",
+      "levelOrdinal": -1,
+      "zone": "paid:toei",
+      "position": {
+        "x": -16.05,
+        "z": -87.6
+      }
+    },
+    {
+      "id": "sk:vertical:sanchome-toei-stairs-car-6@sk:level:toei-shinjuku-sanchome-b2f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:sanchome-toei-stairs-car-6",
+      "levelId": "sk:level:toei-shinjuku-sanchome-b2f",
+      "levelOrdinal": -2,
+      "zone": "paid:toei",
+      "position": {
+        "x": -16.05,
+        "z": -90.2
+      }
+    },
+    {
+      "id": "sk:vertical:sanchome-toei-stairs-car-8@sk:level:toei-shinjuku-sanchome-b1f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:sanchome-toei-stairs-car-8",
+      "levelId": "sk:level:toei-shinjuku-sanchome-b1f",
+      "levelOrdinal": -1,
+      "zone": "paid:toei",
+      "position": {
+        "x": -16.05,
+        "z": -93.6
+      }
+    },
+    {
+      "id": "sk:vertical:sanchome-toei-stairs-car-8@sk:level:toei-shinjuku-sanchome-b2f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:sanchome-toei-stairs-car-8",
+      "levelId": "sk:level:toei-shinjuku-sanchome-b2f",
+      "levelOrdinal": -2,
+      "zone": "paid:toei",
+      "position": {
+        "x": -16.05,
+        "z": -96.2
       }
     },
     {
@@ -7651,6 +8563,611 @@
     },
     {
       "kind": "entrance-approach",
+      "elementId": "sk:entrance:sanchome-exit-e1",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:area:sanchome-b2f-link-passage",
+      "to": "sk:entrance:sanchome-exit-e1",
+      "id": "sk:area:sanchome-b2f-link-passage→sk:entrance:sanchome-exit-e1"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:sanchome-exit-e2",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:sanchome-b2f-link-passage",
+      "to": "sk:entrance:sanchome-exit-e2",
+      "id": "sk:area:sanchome-b2f-link-passage→sk:entrance:sanchome-exit-e2"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:sanchome-exit-e3-e4",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:sanchome-b2f-link-passage",
+      "to": "sk:entrance:sanchome-exit-e3-e4",
+      "id": "sk:area:sanchome-b2f-link-passage→sk:entrance:sanchome-exit-e3-e4"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-stairs-b2f-passage-to-toei-concourse",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:sanchome-b2f-link-passage",
+      "to": "sk:vertical:sanchome-stairs-b2f-passage-to-toei-concourse@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "id": "sk:area:sanchome-b2f-link-passage→sk:vertical:sanchome-stairs-b2f-passage-to-toei-concourse@sk:level:tokyo-metro-shinjuku-sanchome-b2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-b2f-passage",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:sanchome-b2f-link-passage",
+      "to": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-b2f-passage@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "id": "sk:area:sanchome-b2f-link-passage→sk:vertical:sanchome-stairs-marunouchi-concourse-to-b2f-passage@sk:level:tokyo-metro-shinjuku-sanchome-b2f"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:sanchome-exit-e10",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:area:sanchome-fukutoshin-b2f-concourse",
+      "to": "sk:entrance:sanchome-exit-e10",
+      "id": "sk:area:sanchome-fukutoshin-b2f-concourse→sk:entrance:sanchome-exit-e10"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:sanchome-exit-e5",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:area:sanchome-fukutoshin-b2f-concourse",
+      "to": "sk:entrance:sanchome-exit-e5",
+      "id": "sk:area:sanchome-fukutoshin-b2f-concourse→sk:entrance:sanchome-exit-e5"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:sanchome-exit-e6-e7",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:sanchome-fukutoshin-b2f-concourse",
+      "to": "sk:entrance:sanchome-exit-e6-e7",
+      "id": "sk:area:sanchome-fukutoshin-b2f-concourse→sk:entrance:sanchome-exit-e6-e7"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:sanchome-exit-e8",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:area:sanchome-fukutoshin-b2f-concourse",
+      "to": "sk:entrance:sanchome-exit-e8",
+      "id": "sk:area:sanchome-fukutoshin-b2f-concourse→sk:entrance:sanchome-exit-e8"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:sanchome-exit-e9",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:area:sanchome-fukutoshin-b2f-concourse",
+      "to": "sk:entrance:sanchome-exit-e9",
+      "id": "sk:area:sanchome-fukutoshin-b2f-concourse→sk:entrance:sanchome-exit-e9"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:sanchome-fukutoshin-gates-north",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:area:sanchome-fukutoshin-b2f-concourse",
+      "to": "sk:gate:sanchome-fukutoshin-gates-north",
+      "id": "sk:area:sanchome-fukutoshin-b2f-concourse→sk:gate:sanchome-fukutoshin-gates-north"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:sanchome-fukutoshin-gates-south",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:sanchome-fukutoshin-b2f-concourse",
+      "to": "sk:gate:sanchome-fukutoshin-gates-south",
+      "id": "sk:area:sanchome-fukutoshin-b2f-concourse→sk:gate:sanchome-fukutoshin-gates-south"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-elevator-marunouchi-concourse-to-fukutoshin-concourse",
+      "verticalKind": "elevator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:sanchome-fukutoshin-b2f-concourse",
+      "to": "sk:vertical:sanchome-elevator-marunouchi-concourse-to-fukutoshin-concourse@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "id": "sk:area:sanchome-fukutoshin-b2f-concourse→sk:vertical:sanchome-elevator-marunouchi-concourse-to-fukutoshin-concourse@sk:level:tokyo-metro-shinjuku-sanchome-b2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-fukutoshin-concourse",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:sanchome-fukutoshin-b2f-concourse",
+      "to": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-fukutoshin-concourse@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "id": "sk:area:sanchome-fukutoshin-b2f-concourse→sk:vertical:sanchome-stairs-marunouchi-concourse-to-fukutoshin-concourse@sk:level:tokyo-metro-shinjuku-sanchome-b2f"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:sanchome-fukutoshin-gates-north",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:area:sanchome-fukutoshin-b2f-paid-north",
+      "to": "sk:gate:sanchome-fukutoshin-gates-north",
+      "id": "sk:area:sanchome-fukutoshin-b2f-paid-north→sk:gate:sanchome-fukutoshin-gates-north"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-fukutoshin-elevator",
+      "verticalKind": "elevator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:sanchome-fukutoshin-b2f-paid-north",
+      "to": "sk:vertical:sanchome-fukutoshin-elevator@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "id": "sk:area:sanchome-fukutoshin-b2f-paid-north→sk:vertical:sanchome-fukutoshin-elevator@sk:level:tokyo-metro-shinjuku-sanchome-b2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-fukutoshin-stairs-north-gates-to-platform",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:sanchome-fukutoshin-b2f-paid-north",
+      "to": "sk:vertical:sanchome-fukutoshin-stairs-north-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "id": "sk:area:sanchome-fukutoshin-b2f-paid-north→sk:vertical:sanchome-fukutoshin-stairs-north-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:sanchome-fukutoshin-gates-south",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:sanchome-fukutoshin-b2f-paid-south",
+      "to": "sk:gate:sanchome-fukutoshin-gates-south",
+      "id": "sk:area:sanchome-fukutoshin-b2f-paid-south→sk:gate:sanchome-fukutoshin-gates-south"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-fukutoshin-stairs-south-gates-to-platform",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:sanchome-fukutoshin-b2f-paid-south",
+      "to": "sk:vertical:sanchome-fukutoshin-stairs-south-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "id": "sk:area:sanchome-fukutoshin-b2f-paid-south→sk:vertical:sanchome-fukutoshin-stairs-south-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f"
+    },
+    {
+      "kind": "passage",
+      "elementId": "sk:passage:marunouchi-shinjuku-concourse-to-sanchome-concourse",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "inferred",
+      "from": "sk:area:sanchome-marunouchi-b1f-concourse",
+      "to": "sk:area:tokyo-metro-b1f-concourse",
+      "id": "sk:area:sanchome-marunouchi-b1f-concourse→sk:area:tokyo-metro-b1f-concourse"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:sanchome-exit-a1",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:sanchome-marunouchi-b1f-concourse",
+      "to": "sk:entrance:sanchome-exit-a1",
+      "id": "sk:area:sanchome-marunouchi-b1f-concourse→sk:entrance:sanchome-exit-a1"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:sanchome-exit-a2-a4",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:sanchome-marunouchi-b1f-concourse",
+      "to": "sk:entrance:sanchome-exit-a2-a4",
+      "id": "sk:area:sanchome-marunouchi-b1f-concourse→sk:entrance:sanchome-exit-a2-a4"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:sanchome-exit-a5",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:sanchome-marunouchi-b1f-concourse",
+      "to": "sk:entrance:sanchome-exit-a5",
+      "id": "sk:area:sanchome-marunouchi-b1f-concourse→sk:entrance:sanchome-exit-a5"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:sanchome-exit-a6-b6-b7",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:sanchome-marunouchi-b1f-concourse",
+      "to": "sk:entrance:sanchome-exit-a6-b6-b7",
+      "id": "sk:area:sanchome-marunouchi-b1f-concourse→sk:entrance:sanchome-exit-a6-b6-b7"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:sanchome-exit-b2",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:sanchome-marunouchi-b1f-concourse",
+      "to": "sk:entrance:sanchome-exit-b2",
+      "id": "sk:area:sanchome-marunouchi-b1f-concourse→sk:entrance:sanchome-exit-b2"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:sanchome-exit-b3-b4-b5",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:area:sanchome-marunouchi-b1f-concourse",
+      "to": "sk:entrance:sanchome-exit-b3-b4-b5",
+      "id": "sk:area:sanchome-marunouchi-b1f-concourse→sk:entrance:sanchome-exit-b3-b4-b5"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:sanchome-marunouchi-gates-east",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:sanchome-marunouchi-b1f-concourse",
+      "to": "sk:gate:sanchome-marunouchi-gates-east",
+      "id": "sk:area:sanchome-marunouchi-b1f-concourse→sk:gate:sanchome-marunouchi-gates-east"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:sanchome-marunouchi-gates-mid",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:sanchome-marunouchi-b1f-concourse",
+      "to": "sk:gate:sanchome-marunouchi-gates-mid",
+      "id": "sk:area:sanchome-marunouchi-b1f-concourse→sk:gate:sanchome-marunouchi-gates-mid"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:sanchome-marunouchi-gates-west",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:area:sanchome-marunouchi-b1f-concourse",
+      "to": "sk:gate:sanchome-marunouchi-gates-west",
+      "id": "sk:area:sanchome-marunouchi-b1f-concourse→sk:gate:sanchome-marunouchi-gates-west"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-elevator-marunouchi-concourse-to-fukutoshin-concourse",
+      "verticalKind": "elevator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:sanchome-marunouchi-b1f-concourse",
+      "to": "sk:vertical:sanchome-elevator-marunouchi-concourse-to-fukutoshin-concourse@sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "id": "sk:area:sanchome-marunouchi-b1f-concourse→sk:vertical:sanchome-elevator-marunouchi-concourse-to-fukutoshin-concourse@sk:level:tokyo-metro-shinjuku-sanchome-b1f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-b2f-passage",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:sanchome-marunouchi-b1f-concourse",
+      "to": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-b2f-passage@sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "id": "sk:area:sanchome-marunouchi-b1f-concourse→sk:vertical:sanchome-stairs-marunouchi-concourse-to-b2f-passage@sk:level:tokyo-metro-shinjuku-sanchome-b1f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-fukutoshin-concourse",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:sanchome-marunouchi-b1f-concourse",
+      "to": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-fukutoshin-concourse@sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "id": "sk:area:sanchome-marunouchi-b1f-concourse→sk:vertical:sanchome-stairs-marunouchi-concourse-to-fukutoshin-concourse@sk:level:tokyo-metro-shinjuku-sanchome-b1f"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:sanchome-marunouchi-gates-east",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:sanchome-marunouchi-b1f-paid-east",
+      "to": "sk:gate:sanchome-marunouchi-gates-east",
+      "id": "sk:area:sanchome-marunouchi-b1f-paid-east→sk:gate:sanchome-marunouchi-gates-east"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-marunouchi-stairs-east-gates-to-platform",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:sanchome-marunouchi-b1f-paid-east",
+      "to": "sk:vertical:sanchome-marunouchi-stairs-east-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "id": "sk:area:sanchome-marunouchi-b1f-paid-east→sk:vertical:sanchome-marunouchi-stairs-east-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b1f"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:sanchome-marunouchi-gates-mid",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:sanchome-marunouchi-b1f-paid-mid",
+      "to": "sk:gate:sanchome-marunouchi-gates-mid",
+      "id": "sk:area:sanchome-marunouchi-b1f-paid-mid→sk:gate:sanchome-marunouchi-gates-mid"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-marunouchi-stairs-mid-gates-to-platform",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:sanchome-marunouchi-b1f-paid-mid",
+      "to": "sk:vertical:sanchome-marunouchi-stairs-mid-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "id": "sk:area:sanchome-marunouchi-b1f-paid-mid→sk:vertical:sanchome-marunouchi-stairs-mid-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b1f"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:sanchome-marunouchi-gates-west",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:area:sanchome-marunouchi-b1f-paid-west",
+      "to": "sk:gate:sanchome-marunouchi-gates-west",
+      "id": "sk:area:sanchome-marunouchi-b1f-paid-west→sk:gate:sanchome-marunouchi-gates-west"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-marunouchi-elevator-west",
+      "verticalKind": "elevator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:sanchome-marunouchi-b1f-paid-west",
+      "to": "sk:vertical:sanchome-marunouchi-elevator-west@sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "id": "sk:area:sanchome-marunouchi-b1f-paid-west→sk:vertical:sanchome-marunouchi-elevator-west@sk:level:tokyo-metro-shinjuku-sanchome-b1f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-marunouchi-stairs-west-gates-to-platform",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:sanchome-marunouchi-b1f-paid-west",
+      "to": "sk:vertical:sanchome-marunouchi-stairs-west-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "id": "sk:area:sanchome-marunouchi-b1f-paid-west→sk:vertical:sanchome-marunouchi-stairs-west-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b1f"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:sanchome-exit-c1-c4",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:sanchome-toei-b1f-concourse",
+      "to": "sk:entrance:sanchome-exit-c1-c4",
+      "id": "sk:area:sanchome-toei-b1f-concourse→sk:entrance:sanchome-exit-c1-c4"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:sanchome-exit-c5",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:sanchome-toei-b1f-concourse",
+      "to": "sk:entrance:sanchome-exit-c5",
+      "id": "sk:area:sanchome-toei-b1f-concourse→sk:entrance:sanchome-exit-c5"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:sanchome-exit-c6",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:area:sanchome-toei-b1f-concourse",
+      "to": "sk:entrance:sanchome-exit-c6",
+      "id": "sk:area:sanchome-toei-b1f-concourse→sk:entrance:sanchome-exit-c6"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:sanchome-exit-c7-c8",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:sanchome-toei-b1f-concourse",
+      "to": "sk:entrance:sanchome-exit-c7-c8",
+      "id": "sk:area:sanchome-toei-b1f-concourse→sk:entrance:sanchome-exit-c7-c8"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:sanchome-toei-gates-east",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:area:sanchome-toei-b1f-concourse",
+      "to": "sk:gate:sanchome-toei-gates-east",
+      "id": "sk:area:sanchome-toei-b1f-concourse→sk:gate:sanchome-toei-gates-east"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:sanchome-toei-gates-west",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:sanchome-toei-b1f-concourse",
+      "to": "sk:gate:sanchome-toei-gates-west",
+      "id": "sk:area:sanchome-toei-b1f-concourse→sk:gate:sanchome-toei-gates-west"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-stairs-b2f-passage-to-toei-concourse",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:sanchome-toei-b1f-concourse",
+      "to": "sk:vertical:sanchome-stairs-b2f-passage-to-toei-concourse@sk:level:toei-shinjuku-sanchome-b1f",
+      "id": "sk:area:sanchome-toei-b1f-concourse→sk:vertical:sanchome-stairs-b2f-passage-to-toei-concourse@sk:level:toei-shinjuku-sanchome-b1f"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:sanchome-toei-gates-east",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:area:sanchome-toei-b1f-paid",
+      "to": "sk:gate:sanchome-toei-gates-east",
+      "id": "sk:area:sanchome-toei-b1f-paid→sk:gate:sanchome-toei-gates-east"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:sanchome-toei-gates-west",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:sanchome-toei-b1f-paid",
+      "to": "sk:gate:sanchome-toei-gates-west",
+      "id": "sk:area:sanchome-toei-b1f-paid→sk:gate:sanchome-toei-gates-west"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-toei-elevator",
+      "verticalKind": "elevator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:sanchome-toei-b1f-paid",
+      "to": "sk:vertical:sanchome-toei-elevator@sk:level:toei-shinjuku-sanchome-b1f",
+      "id": "sk:area:sanchome-toei-b1f-paid→sk:vertical:sanchome-toei-elevator@sk:level:toei-shinjuku-sanchome-b1f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-toei-escalator-car-2",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:sanchome-toei-b1f-paid",
+      "to": "sk:vertical:sanchome-toei-escalator-car-2@sk:level:toei-shinjuku-sanchome-b1f",
+      "id": "sk:area:sanchome-toei-b1f-paid→sk:vertical:sanchome-toei-escalator-car-2@sk:level:toei-shinjuku-sanchome-b1f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-toei-escalator-car-6",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:sanchome-toei-b1f-paid",
+      "to": "sk:vertical:sanchome-toei-escalator-car-6@sk:level:toei-shinjuku-sanchome-b1f",
+      "id": "sk:area:sanchome-toei-b1f-paid→sk:vertical:sanchome-toei-escalator-car-6@sk:level:toei-shinjuku-sanchome-b1f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-toei-escalator-car-8",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:sanchome-toei-b1f-paid",
+      "to": "sk:vertical:sanchome-toei-escalator-car-8@sk:level:toei-shinjuku-sanchome-b1f",
+      "id": "sk:area:sanchome-toei-b1f-paid→sk:vertical:sanchome-toei-escalator-car-8@sk:level:toei-shinjuku-sanchome-b1f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-toei-stairs-car-2",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:sanchome-toei-b1f-paid",
+      "to": "sk:vertical:sanchome-toei-stairs-car-2@sk:level:toei-shinjuku-sanchome-b1f",
+      "id": "sk:area:sanchome-toei-b1f-paid→sk:vertical:sanchome-toei-stairs-car-2@sk:level:toei-shinjuku-sanchome-b1f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-toei-stairs-car-6",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:sanchome-toei-b1f-paid",
+      "to": "sk:vertical:sanchome-toei-stairs-car-6@sk:level:toei-shinjuku-sanchome-b1f",
+      "id": "sk:area:sanchome-toei-b1f-paid→sk:vertical:sanchome-toei-stairs-car-6@sk:level:toei-shinjuku-sanchome-b1f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-toei-stairs-car-8",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:sanchome-toei-b1f-paid",
+      "to": "sk:vertical:sanchome-toei-stairs-car-8@sk:level:toei-shinjuku-sanchome-b1f",
+      "id": "sk:area:sanchome-toei-b1f-paid→sk:vertical:sanchome-toei-stairs-car-8@sk:level:toei-shinjuku-sanchome-b1f"
+    },
+    {
+      "kind": "entrance-approach",
       "elementId": "sk:entrance:seibu-front-entrance",
       "verticalKind": null,
       "levelChange": 0,
@@ -8044,6 +9561,17 @@
       "from": "sk:area:tokyo-metro-b1f-concourse",
       "to": "sk:area:jr-b1f-east-unpaid",
       "id": "sk:area:tokyo-metro-b1f-concourse→sk:area:jr-b1f-east-unpaid"
+    },
+    {
+      "kind": "passage",
+      "elementId": "sk:passage:marunouchi-shinjuku-concourse-to-sanchome-concourse",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "inferred",
+      "from": "sk:area:tokyo-metro-b1f-concourse",
+      "to": "sk:area:sanchome-marunouchi-b1f-concourse",
+      "id": "sk:area:tokyo-metro-b1f-concourse→sk:area:sanchome-marunouchi-b1f-concourse"
     },
     {
       "kind": "passage",
@@ -8506,6 +10034,204 @@
       "from": "sk:entrance:odakyu-west-exit-underground",
       "to": "sk:area:odakyu-b1f-west-underground-gate-unpaid",
       "id": "sk:entrance:odakyu-west-exit-underground→sk:area:odakyu-b1f-west-underground-gate-unpaid"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:sanchome-exit-a1",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:entrance:sanchome-exit-a1",
+      "to": "sk:area:sanchome-marunouchi-b1f-concourse",
+      "id": "sk:entrance:sanchome-exit-a1→sk:area:sanchome-marunouchi-b1f-concourse"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:sanchome-exit-a2-a4",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:entrance:sanchome-exit-a2-a4",
+      "to": "sk:area:sanchome-marunouchi-b1f-concourse",
+      "id": "sk:entrance:sanchome-exit-a2-a4→sk:area:sanchome-marunouchi-b1f-concourse"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:sanchome-exit-a5",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:entrance:sanchome-exit-a5",
+      "to": "sk:area:sanchome-marunouchi-b1f-concourse",
+      "id": "sk:entrance:sanchome-exit-a5→sk:area:sanchome-marunouchi-b1f-concourse"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:sanchome-exit-a6-b6-b7",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:entrance:sanchome-exit-a6-b6-b7",
+      "to": "sk:area:sanchome-marunouchi-b1f-concourse",
+      "id": "sk:entrance:sanchome-exit-a6-b6-b7→sk:area:sanchome-marunouchi-b1f-concourse"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:sanchome-exit-b2",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:entrance:sanchome-exit-b2",
+      "to": "sk:area:sanchome-marunouchi-b1f-concourse",
+      "id": "sk:entrance:sanchome-exit-b2→sk:area:sanchome-marunouchi-b1f-concourse"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:sanchome-exit-b3-b4-b5",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:entrance:sanchome-exit-b3-b4-b5",
+      "to": "sk:area:sanchome-marunouchi-b1f-concourse",
+      "id": "sk:entrance:sanchome-exit-b3-b4-b5→sk:area:sanchome-marunouchi-b1f-concourse"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:sanchome-exit-c1-c4",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:entrance:sanchome-exit-c1-c4",
+      "to": "sk:area:sanchome-toei-b1f-concourse",
+      "id": "sk:entrance:sanchome-exit-c1-c4→sk:area:sanchome-toei-b1f-concourse"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:sanchome-exit-c5",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:entrance:sanchome-exit-c5",
+      "to": "sk:area:sanchome-toei-b1f-concourse",
+      "id": "sk:entrance:sanchome-exit-c5→sk:area:sanchome-toei-b1f-concourse"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:sanchome-exit-c6",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:entrance:sanchome-exit-c6",
+      "to": "sk:area:sanchome-toei-b1f-concourse",
+      "id": "sk:entrance:sanchome-exit-c6→sk:area:sanchome-toei-b1f-concourse"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:sanchome-exit-c7-c8",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:entrance:sanchome-exit-c7-c8",
+      "to": "sk:area:sanchome-toei-b1f-concourse",
+      "id": "sk:entrance:sanchome-exit-c7-c8→sk:area:sanchome-toei-b1f-concourse"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:sanchome-exit-e10",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:entrance:sanchome-exit-e10",
+      "to": "sk:area:sanchome-fukutoshin-b2f-concourse",
+      "id": "sk:entrance:sanchome-exit-e10→sk:area:sanchome-fukutoshin-b2f-concourse"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:sanchome-exit-e1",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:entrance:sanchome-exit-e1",
+      "to": "sk:area:sanchome-b2f-link-passage",
+      "id": "sk:entrance:sanchome-exit-e1→sk:area:sanchome-b2f-link-passage"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:sanchome-exit-e2",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:entrance:sanchome-exit-e2",
+      "to": "sk:area:sanchome-b2f-link-passage",
+      "id": "sk:entrance:sanchome-exit-e2→sk:area:sanchome-b2f-link-passage"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:sanchome-exit-e3-e4",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:entrance:sanchome-exit-e3-e4",
+      "to": "sk:area:sanchome-b2f-link-passage",
+      "id": "sk:entrance:sanchome-exit-e3-e4→sk:area:sanchome-b2f-link-passage"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:sanchome-exit-e5",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:entrance:sanchome-exit-e5",
+      "to": "sk:area:sanchome-fukutoshin-b2f-concourse",
+      "id": "sk:entrance:sanchome-exit-e5→sk:area:sanchome-fukutoshin-b2f-concourse"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:sanchome-exit-e6-e7",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:entrance:sanchome-exit-e6-e7",
+      "to": "sk:area:sanchome-fukutoshin-b2f-concourse",
+      "id": "sk:entrance:sanchome-exit-e6-e7→sk:area:sanchome-fukutoshin-b2f-concourse"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:sanchome-exit-e8",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:entrance:sanchome-exit-e8",
+      "to": "sk:area:sanchome-fukutoshin-b2f-concourse",
+      "id": "sk:entrance:sanchome-exit-e8→sk:area:sanchome-fukutoshin-b2f-concourse"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:sanchome-exit-e9",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:entrance:sanchome-exit-e9",
+      "to": "sk:area:sanchome-fukutoshin-b2f-concourse",
+      "id": "sk:entrance:sanchome-exit-e9→sk:area:sanchome-fukutoshin-b2f-concourse"
     },
     {
       "kind": "entrance-approach",
@@ -9089,6 +10815,160 @@
       "from": "sk:gate:odakyu-west-underground-gate",
       "to": "sk:area:odakyu-b1f-west-underground-gate-unpaid",
       "id": "sk:gate:odakyu-west-underground-gate→sk:area:odakyu-b1f-west-underground-gate-unpaid"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:sanchome-fukutoshin-gates-north",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:gate:sanchome-fukutoshin-gates-north",
+      "to": "sk:area:sanchome-fukutoshin-b2f-concourse",
+      "id": "sk:gate:sanchome-fukutoshin-gates-north→sk:area:sanchome-fukutoshin-b2f-concourse"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:sanchome-fukutoshin-gates-north",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:gate:sanchome-fukutoshin-gates-north",
+      "to": "sk:area:sanchome-fukutoshin-b2f-paid-north",
+      "id": "sk:gate:sanchome-fukutoshin-gates-north→sk:area:sanchome-fukutoshin-b2f-paid-north"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:sanchome-fukutoshin-gates-south",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:gate:sanchome-fukutoshin-gates-south",
+      "to": "sk:area:sanchome-fukutoshin-b2f-concourse",
+      "id": "sk:gate:sanchome-fukutoshin-gates-south→sk:area:sanchome-fukutoshin-b2f-concourse"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:sanchome-fukutoshin-gates-south",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:gate:sanchome-fukutoshin-gates-south",
+      "to": "sk:area:sanchome-fukutoshin-b2f-paid-south",
+      "id": "sk:gate:sanchome-fukutoshin-gates-south→sk:area:sanchome-fukutoshin-b2f-paid-south"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:sanchome-marunouchi-gates-east",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:gate:sanchome-marunouchi-gates-east",
+      "to": "sk:area:sanchome-marunouchi-b1f-concourse",
+      "id": "sk:gate:sanchome-marunouchi-gates-east→sk:area:sanchome-marunouchi-b1f-concourse"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:sanchome-marunouchi-gates-east",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:gate:sanchome-marunouchi-gates-east",
+      "to": "sk:area:sanchome-marunouchi-b1f-paid-east",
+      "id": "sk:gate:sanchome-marunouchi-gates-east→sk:area:sanchome-marunouchi-b1f-paid-east"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:sanchome-marunouchi-gates-mid",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:gate:sanchome-marunouchi-gates-mid",
+      "to": "sk:area:sanchome-marunouchi-b1f-concourse",
+      "id": "sk:gate:sanchome-marunouchi-gates-mid→sk:area:sanchome-marunouchi-b1f-concourse"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:sanchome-marunouchi-gates-mid",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:gate:sanchome-marunouchi-gates-mid",
+      "to": "sk:area:sanchome-marunouchi-b1f-paid-mid",
+      "id": "sk:gate:sanchome-marunouchi-gates-mid→sk:area:sanchome-marunouchi-b1f-paid-mid"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:sanchome-marunouchi-gates-west",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:gate:sanchome-marunouchi-gates-west",
+      "to": "sk:area:sanchome-marunouchi-b1f-concourse",
+      "id": "sk:gate:sanchome-marunouchi-gates-west→sk:area:sanchome-marunouchi-b1f-concourse"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:sanchome-marunouchi-gates-west",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:gate:sanchome-marunouchi-gates-west",
+      "to": "sk:area:sanchome-marunouchi-b1f-paid-west",
+      "id": "sk:gate:sanchome-marunouchi-gates-west→sk:area:sanchome-marunouchi-b1f-paid-west"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:sanchome-toei-gates-east",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:gate:sanchome-toei-gates-east",
+      "to": "sk:area:sanchome-toei-b1f-concourse",
+      "id": "sk:gate:sanchome-toei-gates-east→sk:area:sanchome-toei-b1f-concourse"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:sanchome-toei-gates-east",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:gate:sanchome-toei-gates-east",
+      "to": "sk:area:sanchome-toei-b1f-paid",
+      "id": "sk:gate:sanchome-toei-gates-east→sk:area:sanchome-toei-b1f-paid"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:sanchome-toei-gates-west",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:gate:sanchome-toei-gates-west",
+      "to": "sk:area:sanchome-toei-b1f-concourse",
+      "id": "sk:gate:sanchome-toei-gates-west→sk:area:sanchome-toei-b1f-concourse"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:sanchome-toei-gates-west",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:gate:sanchome-toei-gates-west",
+      "to": "sk:area:sanchome-toei-b1f-paid",
+      "id": "sk:gate:sanchome-toei-gates-west→sk:area:sanchome-toei-b1f-paid"
     },
     {
       "kind": "gate-approach",
@@ -10533,6 +12413,83 @@
     },
     {
       "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-toei-elevator",
+      "verticalKind": "elevator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:platform:toei-shinjuku-sanchome-1-2",
+      "to": "sk:vertical:sanchome-toei-elevator@sk:level:toei-shinjuku-sanchome-b2f",
+      "id": "sk:platform:toei-shinjuku-sanchome-1-2→sk:vertical:sanchome-toei-elevator@sk:level:toei-shinjuku-sanchome-b2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-toei-escalator-car-2",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:platform:toei-shinjuku-sanchome-1-2",
+      "to": "sk:vertical:sanchome-toei-escalator-car-2@sk:level:toei-shinjuku-sanchome-b2f",
+      "id": "sk:platform:toei-shinjuku-sanchome-1-2→sk:vertical:sanchome-toei-escalator-car-2@sk:level:toei-shinjuku-sanchome-b2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-toei-escalator-car-6",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:platform:toei-shinjuku-sanchome-1-2",
+      "to": "sk:vertical:sanchome-toei-escalator-car-6@sk:level:toei-shinjuku-sanchome-b2f",
+      "id": "sk:platform:toei-shinjuku-sanchome-1-2→sk:vertical:sanchome-toei-escalator-car-6@sk:level:toei-shinjuku-sanchome-b2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-toei-escalator-car-8",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:platform:toei-shinjuku-sanchome-1-2",
+      "to": "sk:vertical:sanchome-toei-escalator-car-8@sk:level:toei-shinjuku-sanchome-b2f",
+      "id": "sk:platform:toei-shinjuku-sanchome-1-2→sk:vertical:sanchome-toei-escalator-car-8@sk:level:toei-shinjuku-sanchome-b2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-toei-stairs-car-2",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:platform:toei-shinjuku-sanchome-1-2",
+      "to": "sk:vertical:sanchome-toei-stairs-car-2@sk:level:toei-shinjuku-sanchome-b2f",
+      "id": "sk:platform:toei-shinjuku-sanchome-1-2→sk:vertical:sanchome-toei-stairs-car-2@sk:level:toei-shinjuku-sanchome-b2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-toei-stairs-car-6",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:platform:toei-shinjuku-sanchome-1-2",
+      "to": "sk:vertical:sanchome-toei-stairs-car-6@sk:level:toei-shinjuku-sanchome-b2f",
+      "id": "sk:platform:toei-shinjuku-sanchome-1-2→sk:vertical:sanchome-toei-stairs-car-6@sk:level:toei-shinjuku-sanchome-b2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-toei-stairs-car-8",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:platform:toei-shinjuku-sanchome-1-2",
+      "to": "sk:vertical:sanchome-toei-stairs-car-8@sk:level:toei-shinjuku-sanchome-b2f",
+      "id": "sk:platform:toei-shinjuku-sanchome-1-2→sk:vertical:sanchome-toei-stairs-car-8@sk:level:toei-shinjuku-sanchome-b2f"
+    },
+    {
+      "kind": "vertical-approach",
       "elementId": "sk:vertical:tokyo-metro-elevator-east",
       "verticalKind": "elevator",
       "levelChange": 0,
@@ -10574,6 +12531,105 @@
       "from": "sk:platform:tokyo-metro-shinjuku-1-2",
       "to": "sk:vertical:tokyo-metro-stairs-west-gates-to-platform@sk:level:tokyo-metro-shinjuku-b2f",
       "id": "sk:platform:tokyo-metro-shinjuku-1-2→sk:vertical:tokyo-metro-stairs-west-gates-to-platform@sk:level:tokyo-metro-shinjuku-b2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-marunouchi-elevator-west",
+      "verticalKind": "elevator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:platform:tokyo-metro-shinjuku-sanchome-1-2",
+      "to": "sk:vertical:sanchome-marunouchi-elevator-west@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "id": "sk:platform:tokyo-metro-shinjuku-sanchome-1-2→sk:vertical:sanchome-marunouchi-elevator-west@sk:level:tokyo-metro-shinjuku-sanchome-b2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-marunouchi-stairs-east-gates-to-platform",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:platform:tokyo-metro-shinjuku-sanchome-1-2",
+      "to": "sk:vertical:sanchome-marunouchi-stairs-east-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "id": "sk:platform:tokyo-metro-shinjuku-sanchome-1-2→sk:vertical:sanchome-marunouchi-stairs-east-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-marunouchi-stairs-mid-gates-to-platform",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:platform:tokyo-metro-shinjuku-sanchome-1-2",
+      "to": "sk:vertical:sanchome-marunouchi-stairs-mid-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "id": "sk:platform:tokyo-metro-shinjuku-sanchome-1-2→sk:vertical:sanchome-marunouchi-stairs-mid-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-marunouchi-stairs-west-gates-to-platform",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:platform:tokyo-metro-shinjuku-sanchome-1-2",
+      "to": "sk:vertical:sanchome-marunouchi-stairs-west-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "id": "sk:platform:tokyo-metro-shinjuku-sanchome-1-2→sk:vertical:sanchome-marunouchi-stairs-west-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-stairs-marunouchi-platform-to-fukutoshin-platform",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:platform:tokyo-metro-shinjuku-sanchome-1-2",
+      "to": "sk:vertical:sanchome-stairs-marunouchi-platform-to-fukutoshin-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "id": "sk:platform:tokyo-metro-shinjuku-sanchome-1-2→sk:vertical:sanchome-stairs-marunouchi-platform-to-fukutoshin-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-fukutoshin-elevator",
+      "verticalKind": "elevator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:platform:tokyo-metro-shinjuku-sanchome-3-4",
+      "to": "sk:vertical:sanchome-fukutoshin-elevator@sk:level:tokyo-metro-shinjuku-sanchome-b3f",
+      "id": "sk:platform:tokyo-metro-shinjuku-sanchome-3-4→sk:vertical:sanchome-fukutoshin-elevator@sk:level:tokyo-metro-shinjuku-sanchome-b3f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-fukutoshin-stairs-north-gates-to-platform",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:platform:tokyo-metro-shinjuku-sanchome-3-4",
+      "to": "sk:vertical:sanchome-fukutoshin-stairs-north-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b3f",
+      "id": "sk:platform:tokyo-metro-shinjuku-sanchome-3-4→sk:vertical:sanchome-fukutoshin-stairs-north-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b3f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-fukutoshin-stairs-south-gates-to-platform",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:platform:tokyo-metro-shinjuku-sanchome-3-4",
+      "to": "sk:vertical:sanchome-fukutoshin-stairs-south-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b3f",
+      "id": "sk:platform:tokyo-metro-shinjuku-sanchome-3-4→sk:vertical:sanchome-fukutoshin-stairs-south-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b3f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-stairs-marunouchi-platform-to-fukutoshin-platform",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:platform:tokyo-metro-shinjuku-sanchome-3-4",
+      "to": "sk:vertical:sanchome-stairs-marunouchi-platform-to-fukutoshin-platform@sk:level:tokyo-metro-shinjuku-sanchome-b3f",
+      "id": "sk:platform:tokyo-metro-shinjuku-sanchome-3-4→sk:vertical:sanchome-stairs-marunouchi-platform-to-fukutoshin-platform@sk:level:tokyo-metro-shinjuku-sanchome-b3f"
     },
     {
       "kind": "vertical-approach",
@@ -15843,6 +17899,842 @@
       "from": "sk:vertical:odakyu-stairs-west-exit-street-to-underground@sk:level:odakyu-shinjuku-b1f",
       "to": "sk:vertical:odakyu-stairs-west-exit-street-to-underground@sk:level:odakyu-shinjuku-1f",
       "id": "sk:vertical:odakyu-stairs-west-exit-street-to-underground@sk:level:odakyu-shinjuku-b1f→sk:vertical:odakyu-stairs-west-exit-street-to-underground@sk:level:odakyu-shinjuku-1f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-elevator-marunouchi-concourse-to-fukutoshin-concourse",
+      "verticalKind": "elevator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-elevator-marunouchi-concourse-to-fukutoshin-concourse@sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "to": "sk:area:sanchome-marunouchi-b1f-concourse",
+      "id": "sk:vertical:sanchome-elevator-marunouchi-concourse-to-fukutoshin-concourse@sk:level:tokyo-metro-shinjuku-sanchome-b1f→sk:area:sanchome-marunouchi-b1f-concourse"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:sanchome-elevator-marunouchi-concourse-to-fukutoshin-concourse",
+      "verticalKind": "elevator",
+      "levelChange": 1,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-elevator-marunouchi-concourse-to-fukutoshin-concourse@sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "to": "sk:vertical:sanchome-elevator-marunouchi-concourse-to-fukutoshin-concourse@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "id": "sk:vertical:sanchome-elevator-marunouchi-concourse-to-fukutoshin-concourse@sk:level:tokyo-metro-shinjuku-sanchome-b1f→sk:vertical:sanchome-elevator-marunouchi-concourse-to-fukutoshin-concourse@sk:level:tokyo-metro-shinjuku-sanchome-b2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-elevator-marunouchi-concourse-to-fukutoshin-concourse",
+      "verticalKind": "elevator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-elevator-marunouchi-concourse-to-fukutoshin-concourse@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "to": "sk:area:sanchome-fukutoshin-b2f-concourse",
+      "id": "sk:vertical:sanchome-elevator-marunouchi-concourse-to-fukutoshin-concourse@sk:level:tokyo-metro-shinjuku-sanchome-b2f→sk:area:sanchome-fukutoshin-b2f-concourse"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:sanchome-elevator-marunouchi-concourse-to-fukutoshin-concourse",
+      "verticalKind": "elevator",
+      "levelChange": 1,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-elevator-marunouchi-concourse-to-fukutoshin-concourse@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "to": "sk:vertical:sanchome-elevator-marunouchi-concourse-to-fukutoshin-concourse@sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "id": "sk:vertical:sanchome-elevator-marunouchi-concourse-to-fukutoshin-concourse@sk:level:tokyo-metro-shinjuku-sanchome-b2f→sk:vertical:sanchome-elevator-marunouchi-concourse-to-fukutoshin-concourse@sk:level:tokyo-metro-shinjuku-sanchome-b1f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-fukutoshin-elevator",
+      "verticalKind": "elevator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-fukutoshin-elevator@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "to": "sk:area:sanchome-fukutoshin-b2f-paid-north",
+      "id": "sk:vertical:sanchome-fukutoshin-elevator@sk:level:tokyo-metro-shinjuku-sanchome-b2f→sk:area:sanchome-fukutoshin-b2f-paid-north"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:sanchome-fukutoshin-elevator",
+      "verticalKind": "elevator",
+      "levelChange": 1,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-fukutoshin-elevator@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "to": "sk:vertical:sanchome-fukutoshin-elevator@sk:level:tokyo-metro-shinjuku-sanchome-b3f",
+      "id": "sk:vertical:sanchome-fukutoshin-elevator@sk:level:tokyo-metro-shinjuku-sanchome-b2f→sk:vertical:sanchome-fukutoshin-elevator@sk:level:tokyo-metro-shinjuku-sanchome-b3f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-fukutoshin-elevator",
+      "verticalKind": "elevator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-fukutoshin-elevator@sk:level:tokyo-metro-shinjuku-sanchome-b3f",
+      "to": "sk:platform:tokyo-metro-shinjuku-sanchome-3-4",
+      "id": "sk:vertical:sanchome-fukutoshin-elevator@sk:level:tokyo-metro-shinjuku-sanchome-b3f→sk:platform:tokyo-metro-shinjuku-sanchome-3-4"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:sanchome-fukutoshin-elevator",
+      "verticalKind": "elevator",
+      "levelChange": 1,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-fukutoshin-elevator@sk:level:tokyo-metro-shinjuku-sanchome-b3f",
+      "to": "sk:vertical:sanchome-fukutoshin-elevator@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "id": "sk:vertical:sanchome-fukutoshin-elevator@sk:level:tokyo-metro-shinjuku-sanchome-b3f→sk:vertical:sanchome-fukutoshin-elevator@sk:level:tokyo-metro-shinjuku-sanchome-b2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-fukutoshin-stairs-north-gates-to-platform",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-fukutoshin-stairs-north-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "to": "sk:area:sanchome-fukutoshin-b2f-paid-north",
+      "id": "sk:vertical:sanchome-fukutoshin-stairs-north-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f→sk:area:sanchome-fukutoshin-b2f-paid-north"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:sanchome-fukutoshin-stairs-north-gates-to-platform",
+      "verticalKind": "stairs",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-fukutoshin-stairs-north-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "to": "sk:vertical:sanchome-fukutoshin-stairs-north-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b3f",
+      "id": "sk:vertical:sanchome-fukutoshin-stairs-north-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f→sk:vertical:sanchome-fukutoshin-stairs-north-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b3f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-fukutoshin-stairs-north-gates-to-platform",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-fukutoshin-stairs-north-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b3f",
+      "to": "sk:platform:tokyo-metro-shinjuku-sanchome-3-4",
+      "id": "sk:vertical:sanchome-fukutoshin-stairs-north-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b3f→sk:platform:tokyo-metro-shinjuku-sanchome-3-4"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:sanchome-fukutoshin-stairs-north-gates-to-platform",
+      "verticalKind": "stairs",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-fukutoshin-stairs-north-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b3f",
+      "to": "sk:vertical:sanchome-fukutoshin-stairs-north-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "id": "sk:vertical:sanchome-fukutoshin-stairs-north-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b3f→sk:vertical:sanchome-fukutoshin-stairs-north-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-fukutoshin-stairs-south-gates-to-platform",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-fukutoshin-stairs-south-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "to": "sk:area:sanchome-fukutoshin-b2f-paid-south",
+      "id": "sk:vertical:sanchome-fukutoshin-stairs-south-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f→sk:area:sanchome-fukutoshin-b2f-paid-south"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:sanchome-fukutoshin-stairs-south-gates-to-platform",
+      "verticalKind": "stairs",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-fukutoshin-stairs-south-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "to": "sk:vertical:sanchome-fukutoshin-stairs-south-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b3f",
+      "id": "sk:vertical:sanchome-fukutoshin-stairs-south-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f→sk:vertical:sanchome-fukutoshin-stairs-south-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b3f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-fukutoshin-stairs-south-gates-to-platform",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-fukutoshin-stairs-south-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b3f",
+      "to": "sk:platform:tokyo-metro-shinjuku-sanchome-3-4",
+      "id": "sk:vertical:sanchome-fukutoshin-stairs-south-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b3f→sk:platform:tokyo-metro-shinjuku-sanchome-3-4"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:sanchome-fukutoshin-stairs-south-gates-to-platform",
+      "verticalKind": "stairs",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-fukutoshin-stairs-south-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b3f",
+      "to": "sk:vertical:sanchome-fukutoshin-stairs-south-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "id": "sk:vertical:sanchome-fukutoshin-stairs-south-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b3f→sk:vertical:sanchome-fukutoshin-stairs-south-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-marunouchi-elevator-west",
+      "verticalKind": "elevator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-marunouchi-elevator-west@sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "to": "sk:area:sanchome-marunouchi-b1f-paid-west",
+      "id": "sk:vertical:sanchome-marunouchi-elevator-west@sk:level:tokyo-metro-shinjuku-sanchome-b1f→sk:area:sanchome-marunouchi-b1f-paid-west"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:sanchome-marunouchi-elevator-west",
+      "verticalKind": "elevator",
+      "levelChange": 1,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-marunouchi-elevator-west@sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "to": "sk:vertical:sanchome-marunouchi-elevator-west@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "id": "sk:vertical:sanchome-marunouchi-elevator-west@sk:level:tokyo-metro-shinjuku-sanchome-b1f→sk:vertical:sanchome-marunouchi-elevator-west@sk:level:tokyo-metro-shinjuku-sanchome-b2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-marunouchi-elevator-west",
+      "verticalKind": "elevator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-marunouchi-elevator-west@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "to": "sk:platform:tokyo-metro-shinjuku-sanchome-1-2",
+      "id": "sk:vertical:sanchome-marunouchi-elevator-west@sk:level:tokyo-metro-shinjuku-sanchome-b2f→sk:platform:tokyo-metro-shinjuku-sanchome-1-2"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:sanchome-marunouchi-elevator-west",
+      "verticalKind": "elevator",
+      "levelChange": 1,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-marunouchi-elevator-west@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "to": "sk:vertical:sanchome-marunouchi-elevator-west@sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "id": "sk:vertical:sanchome-marunouchi-elevator-west@sk:level:tokyo-metro-shinjuku-sanchome-b2f→sk:vertical:sanchome-marunouchi-elevator-west@sk:level:tokyo-metro-shinjuku-sanchome-b1f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-marunouchi-stairs-east-gates-to-platform",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-marunouchi-stairs-east-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "to": "sk:area:sanchome-marunouchi-b1f-paid-east",
+      "id": "sk:vertical:sanchome-marunouchi-stairs-east-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b1f→sk:area:sanchome-marunouchi-b1f-paid-east"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:sanchome-marunouchi-stairs-east-gates-to-platform",
+      "verticalKind": "stairs",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-marunouchi-stairs-east-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "to": "sk:vertical:sanchome-marunouchi-stairs-east-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "id": "sk:vertical:sanchome-marunouchi-stairs-east-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b1f→sk:vertical:sanchome-marunouchi-stairs-east-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-marunouchi-stairs-east-gates-to-platform",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-marunouchi-stairs-east-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "to": "sk:platform:tokyo-metro-shinjuku-sanchome-1-2",
+      "id": "sk:vertical:sanchome-marunouchi-stairs-east-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f→sk:platform:tokyo-metro-shinjuku-sanchome-1-2"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:sanchome-marunouchi-stairs-east-gates-to-platform",
+      "verticalKind": "stairs",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-marunouchi-stairs-east-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "to": "sk:vertical:sanchome-marunouchi-stairs-east-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "id": "sk:vertical:sanchome-marunouchi-stairs-east-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f→sk:vertical:sanchome-marunouchi-stairs-east-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b1f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-marunouchi-stairs-mid-gates-to-platform",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-marunouchi-stairs-mid-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "to": "sk:area:sanchome-marunouchi-b1f-paid-mid",
+      "id": "sk:vertical:sanchome-marunouchi-stairs-mid-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b1f→sk:area:sanchome-marunouchi-b1f-paid-mid"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:sanchome-marunouchi-stairs-mid-gates-to-platform",
+      "verticalKind": "stairs",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-marunouchi-stairs-mid-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "to": "sk:vertical:sanchome-marunouchi-stairs-mid-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "id": "sk:vertical:sanchome-marunouchi-stairs-mid-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b1f→sk:vertical:sanchome-marunouchi-stairs-mid-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-marunouchi-stairs-mid-gates-to-platform",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-marunouchi-stairs-mid-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "to": "sk:platform:tokyo-metro-shinjuku-sanchome-1-2",
+      "id": "sk:vertical:sanchome-marunouchi-stairs-mid-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f→sk:platform:tokyo-metro-shinjuku-sanchome-1-2"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:sanchome-marunouchi-stairs-mid-gates-to-platform",
+      "verticalKind": "stairs",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-marunouchi-stairs-mid-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "to": "sk:vertical:sanchome-marunouchi-stairs-mid-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "id": "sk:vertical:sanchome-marunouchi-stairs-mid-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f→sk:vertical:sanchome-marunouchi-stairs-mid-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b1f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-marunouchi-stairs-west-gates-to-platform",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-marunouchi-stairs-west-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "to": "sk:area:sanchome-marunouchi-b1f-paid-west",
+      "id": "sk:vertical:sanchome-marunouchi-stairs-west-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b1f→sk:area:sanchome-marunouchi-b1f-paid-west"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:sanchome-marunouchi-stairs-west-gates-to-platform",
+      "verticalKind": "stairs",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-marunouchi-stairs-west-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "to": "sk:vertical:sanchome-marunouchi-stairs-west-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "id": "sk:vertical:sanchome-marunouchi-stairs-west-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b1f→sk:vertical:sanchome-marunouchi-stairs-west-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-marunouchi-stairs-west-gates-to-platform",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-marunouchi-stairs-west-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "to": "sk:platform:tokyo-metro-shinjuku-sanchome-1-2",
+      "id": "sk:vertical:sanchome-marunouchi-stairs-west-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f→sk:platform:tokyo-metro-shinjuku-sanchome-1-2"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:sanchome-marunouchi-stairs-west-gates-to-platform",
+      "verticalKind": "stairs",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-marunouchi-stairs-west-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "to": "sk:vertical:sanchome-marunouchi-stairs-west-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "id": "sk:vertical:sanchome-marunouchi-stairs-west-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f→sk:vertical:sanchome-marunouchi-stairs-west-gates-to-platform@sk:level:tokyo-metro-shinjuku-sanchome-b1f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-stairs-b2f-passage-to-toei-concourse",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-stairs-b2f-passage-to-toei-concourse@sk:level:toei-shinjuku-sanchome-b1f",
+      "to": "sk:area:sanchome-toei-b1f-concourse",
+      "id": "sk:vertical:sanchome-stairs-b2f-passage-to-toei-concourse@sk:level:toei-shinjuku-sanchome-b1f→sk:area:sanchome-toei-b1f-concourse"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:sanchome-stairs-b2f-passage-to-toei-concourse",
+      "verticalKind": "stairs",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-stairs-b2f-passage-to-toei-concourse@sk:level:toei-shinjuku-sanchome-b1f",
+      "to": "sk:vertical:sanchome-stairs-b2f-passage-to-toei-concourse@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "id": "sk:vertical:sanchome-stairs-b2f-passage-to-toei-concourse@sk:level:toei-shinjuku-sanchome-b1f→sk:vertical:sanchome-stairs-b2f-passage-to-toei-concourse@sk:level:tokyo-metro-shinjuku-sanchome-b2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-stairs-b2f-passage-to-toei-concourse",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-stairs-b2f-passage-to-toei-concourse@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "to": "sk:area:sanchome-b2f-link-passage",
+      "id": "sk:vertical:sanchome-stairs-b2f-passage-to-toei-concourse@sk:level:tokyo-metro-shinjuku-sanchome-b2f→sk:area:sanchome-b2f-link-passage"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:sanchome-stairs-b2f-passage-to-toei-concourse",
+      "verticalKind": "stairs",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-stairs-b2f-passage-to-toei-concourse@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "to": "sk:vertical:sanchome-stairs-b2f-passage-to-toei-concourse@sk:level:toei-shinjuku-sanchome-b1f",
+      "id": "sk:vertical:sanchome-stairs-b2f-passage-to-toei-concourse@sk:level:tokyo-metro-shinjuku-sanchome-b2f→sk:vertical:sanchome-stairs-b2f-passage-to-toei-concourse@sk:level:toei-shinjuku-sanchome-b1f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-b2f-passage",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-b2f-passage@sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "to": "sk:area:sanchome-marunouchi-b1f-concourse",
+      "id": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-b2f-passage@sk:level:tokyo-metro-shinjuku-sanchome-b1f→sk:area:sanchome-marunouchi-b1f-concourse"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-b2f-passage",
+      "verticalKind": "stairs",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-b2f-passage@sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "to": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-b2f-passage@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "id": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-b2f-passage@sk:level:tokyo-metro-shinjuku-sanchome-b1f→sk:vertical:sanchome-stairs-marunouchi-concourse-to-b2f-passage@sk:level:tokyo-metro-shinjuku-sanchome-b2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-b2f-passage",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-b2f-passage@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "to": "sk:area:sanchome-b2f-link-passage",
+      "id": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-b2f-passage@sk:level:tokyo-metro-shinjuku-sanchome-b2f→sk:area:sanchome-b2f-link-passage"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-b2f-passage",
+      "verticalKind": "stairs",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-b2f-passage@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "to": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-b2f-passage@sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "id": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-b2f-passage@sk:level:tokyo-metro-shinjuku-sanchome-b2f→sk:vertical:sanchome-stairs-marunouchi-concourse-to-b2f-passage@sk:level:tokyo-metro-shinjuku-sanchome-b1f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-fukutoshin-concourse",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-fukutoshin-concourse@sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "to": "sk:area:sanchome-marunouchi-b1f-concourse",
+      "id": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-fukutoshin-concourse@sk:level:tokyo-metro-shinjuku-sanchome-b1f→sk:area:sanchome-marunouchi-b1f-concourse"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-fukutoshin-concourse",
+      "verticalKind": "stairs",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-fukutoshin-concourse@sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "to": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-fukutoshin-concourse@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "id": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-fukutoshin-concourse@sk:level:tokyo-metro-shinjuku-sanchome-b1f→sk:vertical:sanchome-stairs-marunouchi-concourse-to-fukutoshin-concourse@sk:level:tokyo-metro-shinjuku-sanchome-b2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-fukutoshin-concourse",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-fukutoshin-concourse@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "to": "sk:area:sanchome-fukutoshin-b2f-concourse",
+      "id": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-fukutoshin-concourse@sk:level:tokyo-metro-shinjuku-sanchome-b2f→sk:area:sanchome-fukutoshin-b2f-concourse"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-fukutoshin-concourse",
+      "verticalKind": "stairs",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-fukutoshin-concourse@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "to": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-fukutoshin-concourse@sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "id": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-fukutoshin-concourse@sk:level:tokyo-metro-shinjuku-sanchome-b2f→sk:vertical:sanchome-stairs-marunouchi-concourse-to-fukutoshin-concourse@sk:level:tokyo-metro-shinjuku-sanchome-b1f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-stairs-marunouchi-platform-to-fukutoshin-platform",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-stairs-marunouchi-platform-to-fukutoshin-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "to": "sk:platform:tokyo-metro-shinjuku-sanchome-1-2",
+      "id": "sk:vertical:sanchome-stairs-marunouchi-platform-to-fukutoshin-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f→sk:platform:tokyo-metro-shinjuku-sanchome-1-2"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:sanchome-stairs-marunouchi-platform-to-fukutoshin-platform",
+      "verticalKind": "stairs",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-stairs-marunouchi-platform-to-fukutoshin-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "to": "sk:vertical:sanchome-stairs-marunouchi-platform-to-fukutoshin-platform@sk:level:tokyo-metro-shinjuku-sanchome-b3f",
+      "id": "sk:vertical:sanchome-stairs-marunouchi-platform-to-fukutoshin-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f→sk:vertical:sanchome-stairs-marunouchi-platform-to-fukutoshin-platform@sk:level:tokyo-metro-shinjuku-sanchome-b3f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-stairs-marunouchi-platform-to-fukutoshin-platform",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-stairs-marunouchi-platform-to-fukutoshin-platform@sk:level:tokyo-metro-shinjuku-sanchome-b3f",
+      "to": "sk:platform:tokyo-metro-shinjuku-sanchome-3-4",
+      "id": "sk:vertical:sanchome-stairs-marunouchi-platform-to-fukutoshin-platform@sk:level:tokyo-metro-shinjuku-sanchome-b3f→sk:platform:tokyo-metro-shinjuku-sanchome-3-4"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:sanchome-stairs-marunouchi-platform-to-fukutoshin-platform",
+      "verticalKind": "stairs",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-stairs-marunouchi-platform-to-fukutoshin-platform@sk:level:tokyo-metro-shinjuku-sanchome-b3f",
+      "to": "sk:vertical:sanchome-stairs-marunouchi-platform-to-fukutoshin-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "id": "sk:vertical:sanchome-stairs-marunouchi-platform-to-fukutoshin-platform@sk:level:tokyo-metro-shinjuku-sanchome-b3f→sk:vertical:sanchome-stairs-marunouchi-platform-to-fukutoshin-platform@sk:level:tokyo-metro-shinjuku-sanchome-b2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-toei-elevator",
+      "verticalKind": "elevator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-toei-elevator@sk:level:toei-shinjuku-sanchome-b1f",
+      "to": "sk:area:sanchome-toei-b1f-paid",
+      "id": "sk:vertical:sanchome-toei-elevator@sk:level:toei-shinjuku-sanchome-b1f→sk:area:sanchome-toei-b1f-paid"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:sanchome-toei-elevator",
+      "verticalKind": "elevator",
+      "levelChange": 1,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-toei-elevator@sk:level:toei-shinjuku-sanchome-b1f",
+      "to": "sk:vertical:sanchome-toei-elevator@sk:level:toei-shinjuku-sanchome-b2f",
+      "id": "sk:vertical:sanchome-toei-elevator@sk:level:toei-shinjuku-sanchome-b1f→sk:vertical:sanchome-toei-elevator@sk:level:toei-shinjuku-sanchome-b2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-toei-elevator",
+      "verticalKind": "elevator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-toei-elevator@sk:level:toei-shinjuku-sanchome-b2f",
+      "to": "sk:platform:toei-shinjuku-sanchome-1-2",
+      "id": "sk:vertical:sanchome-toei-elevator@sk:level:toei-shinjuku-sanchome-b2f→sk:platform:toei-shinjuku-sanchome-1-2"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:sanchome-toei-elevator",
+      "verticalKind": "elevator",
+      "levelChange": 1,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-toei-elevator@sk:level:toei-shinjuku-sanchome-b2f",
+      "to": "sk:vertical:sanchome-toei-elevator@sk:level:toei-shinjuku-sanchome-b1f",
+      "id": "sk:vertical:sanchome-toei-elevator@sk:level:toei-shinjuku-sanchome-b2f→sk:vertical:sanchome-toei-elevator@sk:level:toei-shinjuku-sanchome-b1f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-toei-escalator-car-2",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-toei-escalator-car-2@sk:level:toei-shinjuku-sanchome-b1f",
+      "to": "sk:area:sanchome-toei-b1f-paid",
+      "id": "sk:vertical:sanchome-toei-escalator-car-2@sk:level:toei-shinjuku-sanchome-b1f→sk:area:sanchome-toei-b1f-paid"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:sanchome-toei-escalator-car-2",
+      "verticalKind": "escalator",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-toei-escalator-car-2@sk:level:toei-shinjuku-sanchome-b1f",
+      "to": "sk:vertical:sanchome-toei-escalator-car-2@sk:level:toei-shinjuku-sanchome-b2f",
+      "id": "sk:vertical:sanchome-toei-escalator-car-2@sk:level:toei-shinjuku-sanchome-b1f→sk:vertical:sanchome-toei-escalator-car-2@sk:level:toei-shinjuku-sanchome-b2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-toei-escalator-car-2",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-toei-escalator-car-2@sk:level:toei-shinjuku-sanchome-b2f",
+      "to": "sk:platform:toei-shinjuku-sanchome-1-2",
+      "id": "sk:vertical:sanchome-toei-escalator-car-2@sk:level:toei-shinjuku-sanchome-b2f→sk:platform:toei-shinjuku-sanchome-1-2"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:sanchome-toei-escalator-car-2",
+      "verticalKind": "escalator",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-toei-escalator-car-2@sk:level:toei-shinjuku-sanchome-b2f",
+      "to": "sk:vertical:sanchome-toei-escalator-car-2@sk:level:toei-shinjuku-sanchome-b1f",
+      "id": "sk:vertical:sanchome-toei-escalator-car-2@sk:level:toei-shinjuku-sanchome-b2f→sk:vertical:sanchome-toei-escalator-car-2@sk:level:toei-shinjuku-sanchome-b1f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-toei-escalator-car-6",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-toei-escalator-car-6@sk:level:toei-shinjuku-sanchome-b1f",
+      "to": "sk:area:sanchome-toei-b1f-paid",
+      "id": "sk:vertical:sanchome-toei-escalator-car-6@sk:level:toei-shinjuku-sanchome-b1f→sk:area:sanchome-toei-b1f-paid"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:sanchome-toei-escalator-car-6",
+      "verticalKind": "escalator",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-toei-escalator-car-6@sk:level:toei-shinjuku-sanchome-b1f",
+      "to": "sk:vertical:sanchome-toei-escalator-car-6@sk:level:toei-shinjuku-sanchome-b2f",
+      "id": "sk:vertical:sanchome-toei-escalator-car-6@sk:level:toei-shinjuku-sanchome-b1f→sk:vertical:sanchome-toei-escalator-car-6@sk:level:toei-shinjuku-sanchome-b2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-toei-escalator-car-6",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-toei-escalator-car-6@sk:level:toei-shinjuku-sanchome-b2f",
+      "to": "sk:platform:toei-shinjuku-sanchome-1-2",
+      "id": "sk:vertical:sanchome-toei-escalator-car-6@sk:level:toei-shinjuku-sanchome-b2f→sk:platform:toei-shinjuku-sanchome-1-2"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:sanchome-toei-escalator-car-6",
+      "verticalKind": "escalator",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-toei-escalator-car-6@sk:level:toei-shinjuku-sanchome-b2f",
+      "to": "sk:vertical:sanchome-toei-escalator-car-6@sk:level:toei-shinjuku-sanchome-b1f",
+      "id": "sk:vertical:sanchome-toei-escalator-car-6@sk:level:toei-shinjuku-sanchome-b2f→sk:vertical:sanchome-toei-escalator-car-6@sk:level:toei-shinjuku-sanchome-b1f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-toei-escalator-car-8",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-toei-escalator-car-8@sk:level:toei-shinjuku-sanchome-b1f",
+      "to": "sk:area:sanchome-toei-b1f-paid",
+      "id": "sk:vertical:sanchome-toei-escalator-car-8@sk:level:toei-shinjuku-sanchome-b1f→sk:area:sanchome-toei-b1f-paid"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:sanchome-toei-escalator-car-8",
+      "verticalKind": "escalator",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-toei-escalator-car-8@sk:level:toei-shinjuku-sanchome-b1f",
+      "to": "sk:vertical:sanchome-toei-escalator-car-8@sk:level:toei-shinjuku-sanchome-b2f",
+      "id": "sk:vertical:sanchome-toei-escalator-car-8@sk:level:toei-shinjuku-sanchome-b1f→sk:vertical:sanchome-toei-escalator-car-8@sk:level:toei-shinjuku-sanchome-b2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-toei-escalator-car-8",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-toei-escalator-car-8@sk:level:toei-shinjuku-sanchome-b2f",
+      "to": "sk:platform:toei-shinjuku-sanchome-1-2",
+      "id": "sk:vertical:sanchome-toei-escalator-car-8@sk:level:toei-shinjuku-sanchome-b2f→sk:platform:toei-shinjuku-sanchome-1-2"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:sanchome-toei-escalator-car-8",
+      "verticalKind": "escalator",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-toei-escalator-car-8@sk:level:toei-shinjuku-sanchome-b2f",
+      "to": "sk:vertical:sanchome-toei-escalator-car-8@sk:level:toei-shinjuku-sanchome-b1f",
+      "id": "sk:vertical:sanchome-toei-escalator-car-8@sk:level:toei-shinjuku-sanchome-b2f→sk:vertical:sanchome-toei-escalator-car-8@sk:level:toei-shinjuku-sanchome-b1f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-toei-stairs-car-2",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-toei-stairs-car-2@sk:level:toei-shinjuku-sanchome-b1f",
+      "to": "sk:area:sanchome-toei-b1f-paid",
+      "id": "sk:vertical:sanchome-toei-stairs-car-2@sk:level:toei-shinjuku-sanchome-b1f→sk:area:sanchome-toei-b1f-paid"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:sanchome-toei-stairs-car-2",
+      "verticalKind": "stairs",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-toei-stairs-car-2@sk:level:toei-shinjuku-sanchome-b1f",
+      "to": "sk:vertical:sanchome-toei-stairs-car-2@sk:level:toei-shinjuku-sanchome-b2f",
+      "id": "sk:vertical:sanchome-toei-stairs-car-2@sk:level:toei-shinjuku-sanchome-b1f→sk:vertical:sanchome-toei-stairs-car-2@sk:level:toei-shinjuku-sanchome-b2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-toei-stairs-car-2",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-toei-stairs-car-2@sk:level:toei-shinjuku-sanchome-b2f",
+      "to": "sk:platform:toei-shinjuku-sanchome-1-2",
+      "id": "sk:vertical:sanchome-toei-stairs-car-2@sk:level:toei-shinjuku-sanchome-b2f→sk:platform:toei-shinjuku-sanchome-1-2"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:sanchome-toei-stairs-car-2",
+      "verticalKind": "stairs",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-toei-stairs-car-2@sk:level:toei-shinjuku-sanchome-b2f",
+      "to": "sk:vertical:sanchome-toei-stairs-car-2@sk:level:toei-shinjuku-sanchome-b1f",
+      "id": "sk:vertical:sanchome-toei-stairs-car-2@sk:level:toei-shinjuku-sanchome-b2f→sk:vertical:sanchome-toei-stairs-car-2@sk:level:toei-shinjuku-sanchome-b1f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-toei-stairs-car-6",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-toei-stairs-car-6@sk:level:toei-shinjuku-sanchome-b1f",
+      "to": "sk:area:sanchome-toei-b1f-paid",
+      "id": "sk:vertical:sanchome-toei-stairs-car-6@sk:level:toei-shinjuku-sanchome-b1f→sk:area:sanchome-toei-b1f-paid"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:sanchome-toei-stairs-car-6",
+      "verticalKind": "stairs",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-toei-stairs-car-6@sk:level:toei-shinjuku-sanchome-b1f",
+      "to": "sk:vertical:sanchome-toei-stairs-car-6@sk:level:toei-shinjuku-sanchome-b2f",
+      "id": "sk:vertical:sanchome-toei-stairs-car-6@sk:level:toei-shinjuku-sanchome-b1f→sk:vertical:sanchome-toei-stairs-car-6@sk:level:toei-shinjuku-sanchome-b2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-toei-stairs-car-6",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-toei-stairs-car-6@sk:level:toei-shinjuku-sanchome-b2f",
+      "to": "sk:platform:toei-shinjuku-sanchome-1-2",
+      "id": "sk:vertical:sanchome-toei-stairs-car-6@sk:level:toei-shinjuku-sanchome-b2f→sk:platform:toei-shinjuku-sanchome-1-2"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:sanchome-toei-stairs-car-6",
+      "verticalKind": "stairs",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-toei-stairs-car-6@sk:level:toei-shinjuku-sanchome-b2f",
+      "to": "sk:vertical:sanchome-toei-stairs-car-6@sk:level:toei-shinjuku-sanchome-b1f",
+      "id": "sk:vertical:sanchome-toei-stairs-car-6@sk:level:toei-shinjuku-sanchome-b2f→sk:vertical:sanchome-toei-stairs-car-6@sk:level:toei-shinjuku-sanchome-b1f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-toei-stairs-car-8",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-toei-stairs-car-8@sk:level:toei-shinjuku-sanchome-b1f",
+      "to": "sk:area:sanchome-toei-b1f-paid",
+      "id": "sk:vertical:sanchome-toei-stairs-car-8@sk:level:toei-shinjuku-sanchome-b1f→sk:area:sanchome-toei-b1f-paid"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:sanchome-toei-stairs-car-8",
+      "verticalKind": "stairs",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-toei-stairs-car-8@sk:level:toei-shinjuku-sanchome-b1f",
+      "to": "sk:vertical:sanchome-toei-stairs-car-8@sk:level:toei-shinjuku-sanchome-b2f",
+      "id": "sk:vertical:sanchome-toei-stairs-car-8@sk:level:toei-shinjuku-sanchome-b1f→sk:vertical:sanchome-toei-stairs-car-8@sk:level:toei-shinjuku-sanchome-b2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:sanchome-toei-stairs-car-8",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-toei-stairs-car-8@sk:level:toei-shinjuku-sanchome-b2f",
+      "to": "sk:platform:toei-shinjuku-sanchome-1-2",
+      "id": "sk:vertical:sanchome-toei-stairs-car-8@sk:level:toei-shinjuku-sanchome-b2f→sk:platform:toei-shinjuku-sanchome-1-2"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:sanchome-toei-stairs-car-8",
+      "verticalKind": "stairs",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:sanchome-toei-stairs-car-8@sk:level:toei-shinjuku-sanchome-b2f",
+      "to": "sk:vertical:sanchome-toei-stairs-car-8@sk:level:toei-shinjuku-sanchome-b1f",
+      "id": "sk:vertical:sanchome-toei-stairs-car-8@sk:level:toei-shinjuku-sanchome-b2f→sk:vertical:sanchome-toei-stairs-car-8@sk:level:toei-shinjuku-sanchome-b1f"
     },
     {
       "kind": "vertical-approach",

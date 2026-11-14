@@ -288,6 +288,28 @@ export const sources: SourceRecord[] = [
       sourceDate: '2025-11',
     },
     {
+      id: 'src:tokyo-metro-shinjuku-sanchome-map',
+      title: '新宿三丁目駅構内立体図 (figure_yardmap_shinjuku-sanchome_all.jpg) と 出口案内 | 東京メトロ',
+      publisher: 'Tokyo Metro (東京地下鉄)',
+      url: 'https://www.tokyometro.jp/station/shinjuku-sanchome/index.html',
+      attributionText: 'Facts read from the 東京メトロ 新宿三丁目駅構内立体図 ([2024.6現在]) and its 出口案内 table (改定日 2023年3月).',
+      notes:
+        'Read in a browser on 2026-11-14: the drawing in enlarged sections, the table as page text. A request from a headless browser was refused (403) and was not retried. Printed on the drawing: "[2024.6現在]". Source of the Marunouchi Line B1F concourse and B2F island platform ("1 荻窪", "2 池袋"), the Fukutoshin Line B2F concourse and B3F island platform ("3 渋谷", "4 和光市"), the gate lines (unnamed), the exit numbers, the lifts and the barrier-free route, the stairs between the two platforms and between the two concourses, and the passage printed "B2F" with exits E1–E4. The 出口案内 table gives the facilities near each exit and which exits have a lift to street level. The drawing also shows the Toei Shinjuku Line part of the station.',
+      accessedVia: 'https://www.tokyometro.jp/station/yardmap_img/figure_yardmap_shinjuku-sanchome_all.jpg',
+      sourceDate: '2024-06',
+    },
+    {
+      id: 'src:toei-shinjuku-sanchome-map',
+      title: '新宿三丁目駅構内立体図 (solid.png) | 東京都交通局',
+      publisher: 'Bureau of Transportation, Tokyo Metropolitan Government (東京都交通局)',
+      url: 'https://www.kotsu.metro.tokyo.jp/subway/stations/shinjuku-sanchome.html',
+      attributionText: 'Facts read from the 東京都交通局 新宿三丁目駅構内立体図 and the station page.',
+      notes:
+        'Read in a browser on 2026-11-14, in enlarged sections; no date is printed on the drawing as far as could be read. Source of the Toei Shinjuku Line B1F concourse and B2F island platform ("1 新宿方面 (新宿)", "2 本八幡方面 (曙橋)"), the exits C1–C8 with their facilities, the のりかえ・出口案内 table (cars 1–10; escalators and stairs at cars 2, 6 and 8, a lift at car 4), and the next stations printed for the Tokyo Metro platforms. The station page lists 12 escalators and 2 lifts. The drawing also shows the Tokyo Metro part of the station, including exits A6, B6, B7 and a closed B9 at the west end.',
+      accessedVia: 'https://www.kotsu.metro.tokyo.jp/subway/stations/shinjuku-sanchome/i/solid.png',
+      sourceDate: null,
+    },
+    {
       id: 'src:busta-floor-maps',
       title: 'バスタ新宿 フロアマップ（2F / 3F / 4F）',
       publisher: '新宿高速バスターミナル株式会社 (Shinjuku Expressway Bus Terminal)',

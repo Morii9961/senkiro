@@ -73,16 +73,29 @@ export function makeNamer(model: StationModel, lang: Lang, t: T): Namer {
     return pickName(a.names, lang) ?? id;
   };
 
+  // track numbers repeat between operators, so a platform is always named with its lines
+  const platformWithLines = (a: Platform, tail: string): string => {
+    const ls = linesOf(a).map((l) => lineName(l.id));
+    const shown = ls.length > 2 ? `${ls.slice(0, 2).join(lang === 'en' ? ', ' : '・')}${lang === 'en' ? ' …' : ' ほか'}` : ls.join(lang === 'en' ? ', ' : '・');
+    const more = lang === 'zh' ? shown.replace(' ほか', ' 等') : shown;
+    return more ? `${more} ${tail}` : tail;
+  };
+  // One line has the same track numbers at two stations (丸ノ内線 1・2番線 at 新宿 and at 新宿三丁目).
+  // The first platform in the model keeps the plain name; a later one shows its own name, which carries its station.
+  const platformNames = new Map<string, string>();
+  const plainSeen = new Set<string>();
+  for (const a of model.areas) {
+    if (a.kind !== 'platform') continue;
+    const plain = platformWithLines(a, platformNumbers(a));
+    const own = pickName(a.names, lang);
+    platformNames.set(a.id, plainSeen.has(plain) && own ? platformWithLines(a, own) : plain);
+    plainSeen.add(plain);
+  }
+
   const name = (id: string): string => {
     const a = areas.get(id);
     if (a) {
-      if (a.kind === 'platform') {
-        // track numbers repeat between operators, so a platform is always named with its lines
-        const ls = linesOf(a).map((l) => lineName(l.id));
-        const shown = ls.length > 2 ? `${ls.slice(0, 2).join(lang === 'en' ? ', ' : '・')}${lang === 'en' ? ' …' : ' ほか'}` : ls.join(lang === 'en' ? ', ' : '・');
-        const more = lang === 'zh' ? shown.replace(' ほか', ' 等') : shown;
-        return more ? `${more} ${platformNumbers(a)}` : platformNumbers(a);
-      }
+      if (a.kind === 'platform') return platformNames.get(a.id) ?? platformWithLines(a, platformNumbers(a));
       return pickName(a.names, lang) ?? areaShort(id);
     }
     const g = gates.get(id);

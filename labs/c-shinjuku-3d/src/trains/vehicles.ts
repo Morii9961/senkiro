@@ -333,6 +333,14 @@ export const FORMATION_FACTS: readonly FormationFact[] = [
     note: 'Tokyo Metro speaks of 53 six-car trainsets for the line.',
   },
   {
+    station_id: 'tokyo-metro:shinjuku-sanchome:M09', line_id: 'tokyo-metro:marunouchi', cars: 6, sourceIds: ['src:tokyometro-marunouchi-2000'],
+    note: 'Tokyo Metro speaks of 53 six-car trainsets for the line.',
+  },
+  {
+    station_id: 'toei:shinjuku-sanchome:S02', line_id: 'toei:shinjuku', cars: 10, sourceIds: ['src:tetsudoch-toei-shinjuku-10cars', 'src:toei-shinjuku-sanchome-map'],
+    note: 'The Toei Shinjuku Line has been all 10-car since August 2022; the car table under the Toei 立体図 of this station numbers the cars 1 to 10.',
+  },
+  {
     station_id: 'toei:shinjuku:S01', line_id: 'toei:shinjuku', cars: 10, sourceIds: ['src:tetsudoch-toei-shinjuku-10cars'],
     note: 'The Toei Shinjuku Line has been all 10-car since August 2022.',
   },

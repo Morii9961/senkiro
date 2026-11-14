@@ -556,6 +556,31 @@
       "displayColor": "#00a8b5",
       "displayColorNote": "The fill of the station-number mark on the Seibu station page. Used as a display colour only; not an official colour value.",
       "stationNumberPrefix": "SS"
+    },
+    {
+      "kind": "rail-line",
+      "id": "sk:line:tokyo-metro-fukutoshin",
+      "externalIds": {},
+      "names": {
+        "ja": "副都心線",
+        "ja_kana": null,
+        "en": "Fukutoshin Line",
+        "zh": "副都心线"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12",
+        "note": "Line letter as printed on the Tokyo Metro 立体図 (F 13)."
+      },
+      "validFrom": null,
+      "validTo": null,
+      "operatorId": "sk:operator:tokyo-metro",
+      "displayColor": "#a8662b",
+      "displayColorNote": "Approximation of the brown used for this line on the Tokyo Metro 立体図. Not an official colour value.",
+      "stationNumberPrefix": "F"
     }
   ],
   "complex": {
@@ -585,13 +610,11 @@
       "sk:station:keio-new-line-shinjuku",
       "sk:station:toei-oedo-shinjuku",
       "sk:station:tokyo-metro-shinjuku",
-      "sk:station:seibu-shinjuku"
+      "sk:station:seibu-shinjuku",
+      "sk:station:tokyo-metro-shinjuku-sanchome",
+      "sk:station:toei-shinjuku-sanchome"
     ],
     "explicitlyExcluded": [
-      {
-        "name": "新宿三丁目駅 (Shinjuku-sanchome)",
-        "reason": "A different station. Not part of this model and not drawn."
-      },
       {
         "name": "新宿西口駅 (Shinjuku-nishiguchi, Toei Oedo Line)",
         "reason": "A different station. It appears on the JR and Tokyo Metro 立体図 as a neighbour and is not modelled."
@@ -785,6 +808,59 @@
       "complexId": "sk:complex:shinjuku",
       "railLineIds": [
         "sk:line:tokyo-metro-marunouchi"
+      ]
+    },
+    {
+      "kind": "station",
+      "id": "sk:station:tokyo-metro-shinjuku-sanchome",
+      "externalIds": {},
+      "names": {
+        "ja": "東京メトロ 新宿三丁目駅（丸ノ内線・副都心線）",
+        "ja_kana": null,
+        "en": "Tokyo Metro Shinjuku-sanchome Station (Marunouchi and Fukutoshin lines)",
+        "zh": "东京地铁新宿三丁目站（丸之内线·副都心线）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12",
+        "note": "M 09 and F 13 on the Tokyo Metro drawing. A different station from 新宿 (M 08), one stop to the east on the Marunouchi Line."
+      },
+      "validFrom": null,
+      "validTo": null,
+      "operatorId": "sk:operator:tokyo-metro",
+      "complexId": "sk:complex:shinjuku",
+      "railLineIds": [
+        "sk:line:tokyo-metro-marunouchi",
+        "sk:line:tokyo-metro-fukutoshin"
+      ]
+    },
+    {
+      "kind": "station",
+      "id": "sk:station:toei-shinjuku-sanchome",
+      "externalIds": {},
+      "names": {
+        "ja": "都営新宿線 新宿三丁目駅",
+        "ja_kana": null,
+        "en": "Toei Shinjuku Line Shinjuku-sanchome Station",
+        "zh": "都营新宿线新宿三丁目站"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12",
+        "note": "S 02 on the Toei drawing. A different station from 新宿 (S 01)."
+      },
+      "validFrom": null,
+      "validTo": null,
+      "operatorId": "sk:operator:toei",
+      "complexId": "sk:complex:shinjuku",
+      "railLineIds": [
+        "sk:line:toei-shinjuku"
       ]
     }
   ],
@@ -1482,6 +1558,158 @@
       "label": "1F",
       "ordinal": 0,
       "elevation": 0,
+      "elevationNote": "Schematic. Floor heights were not measured; only the vertical order is taken from the source."
+    },
+    {
+      "kind": "level",
+      "id": "sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "externalIds": {},
+      "names": {
+        "ja": "B1F",
+        "ja_kana": null,
+        "en": "B1F",
+        "zh": "B1F"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:tokyo-metro-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2024-06",
+      "notes": "The Marunouchi Line concourse. Drawn level with the B1F passage of 丸ノ内線 新宿駅; relative heights are not from a source.",
+      "operatorId": "sk:operator:tokyo-metro",
+      "label": "B1F",
+      "ordinal": -1,
+      "elevation": -4,
+      "elevationNote": "Schematic. Floor heights were not measured; only the vertical order is taken from the source."
+    },
+    {
+      "kind": "level",
+      "id": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "externalIds": {},
+      "names": {
+        "ja": "B2F",
+        "ja_kana": null,
+        "en": "B2F",
+        "zh": "B2F"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:tokyo-metro-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2024-06",
+      "notes": "The Marunouchi Line platform, the Fukutoshin Line concourse and the passage with exits E1–E4, all printed \"B2F\".",
+      "operatorId": "sk:operator:tokyo-metro",
+      "label": "B2F",
+      "ordinal": -2,
+      "elevation": -8,
+      "elevationNote": "Schematic. Floor heights were not measured; only the vertical order is taken from the source."
+    },
+    {
+      "kind": "level",
+      "id": "sk:level:tokyo-metro-shinjuku-sanchome-b3f",
+      "externalIds": {},
+      "names": {
+        "ja": "B3F",
+        "ja_kana": null,
+        "en": "B3F",
+        "zh": "B3F"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:tokyo-metro-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2024-06",
+      "notes": "The Fukutoshin Line platform.",
+      "operatorId": "sk:operator:tokyo-metro",
+      "label": "B3F",
+      "ordinal": -3,
+      "elevation": -12,
+      "elevationNote": "Schematic. Floor heights were not measured; only the vertical order is taken from the source."
+    },
+    {
+      "kind": "level",
+      "id": "sk:level:toei-shinjuku-sanchome-b1f",
+      "externalIds": {},
+      "names": {
+        "ja": "B1F",
+        "ja_kana": null,
+        "en": "B1F",
+        "zh": "B1F"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-sanchome-map",
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "The Toei Shinjuku Line concourse.",
+      "operatorId": "sk:operator:toei",
+      "label": "B1F",
+      "ordinal": -1,
+      "elevation": -4,
+      "elevationNote": "Schematic. Floor heights were not measured; only the vertical order is taken from the source."
+    },
+    {
+      "kind": "level",
+      "id": "sk:level:toei-shinjuku-sanchome-b2f",
+      "externalIds": {},
+      "names": {
+        "ja": "B2F",
+        "ja_kana": null,
+        "en": "B2F",
+        "zh": "B2F"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-sanchome-map",
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "The Toei Shinjuku Line platform.",
+      "operatorId": "sk:operator:toei",
+      "label": "B2F",
+      "ordinal": -2,
+      "elevation": -8,
       "elevationNote": "Schematic. Floor heights were not measured; only the vertical order is taken from the source."
     }
   ],
@@ -5065,6 +5293,616 @@
           "side": "z+"
         }
       ]
+    },
+    {
+      "kind": "passage",
+      "id": "sk:area:sanchome-marunouchi-b1f-concourse",
+      "externalIds": {},
+      "names": {
+        "ja": "新宿三丁目駅 丸ノ内線 改札外コンコース（B1F）",
+        "ja_kana": null,
+        "en": "Shinjuku-sanchome: Marunouchi Line concourse (outside gates, B1F)",
+        "zh": "新宿三丁目站 丸之内线站厅（检票口外，B1F）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-sanchome-map",
+          "src:toei-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:tokyo-metro-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2024-06",
+      "notes": "Unnamed on the drawings; the label is descriptive. The B1F floor above the platform, with the exits A1–A6 on one side and B2–B9 on the other and three groups of gates. Its west end is printed \"新宿駅方面\". The 立体図 is an oblique view; the position is schematic.",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "fareZone": "unpaid",
+      "footprint": [
+        {
+          "x0": -27,
+          "x1": -24.4,
+          "z0": -66,
+          "z1": -30
+        }
+      ],
+      "anchor": {
+        "x": -25.7,
+        "z": -47
+      }
+    },
+    {
+      "kind": "concourse",
+      "id": "sk:area:sanchome-marunouchi-b1f-paid-west",
+      "externalIds": {},
+      "names": {
+        "ja": "丸ノ内線 改札内（新宿駅方面側・B1F）",
+        "ja_kana": null,
+        "en": "Inside the gates at the west end (B1F)",
+        "zh": "丸之内线检票口内（新宿站方向侧，B1F）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:tokyo-metro-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2024-06",
+      "notes": "Descriptive label. The paid floor beside exits A5 and B6.",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "fareZone": "paid:tokyo-metro",
+      "footprint": [
+        {
+          "x0": -23.6,
+          "x1": -21.4,
+          "z0": -37,
+          "z1": -33
+        }
+      ],
+      "anchor": {
+        "x": -22.5,
+        "z": -35
+      }
+    },
+    {
+      "kind": "concourse",
+      "id": "sk:area:sanchome-marunouchi-b1f-paid-mid",
+      "externalIds": {},
+      "names": {
+        "ja": "丸ノ内線 改札内（中央・B1F）",
+        "ja_kana": null,
+        "en": "Inside the middle gates (B1F)",
+        "zh": "丸之内线检票口内（中央，B1F）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:tokyo-metro-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2024-06",
+      "notes": "Descriptive label. The paid floor beside exits A4 and B4.",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "fareZone": "paid:tokyo-metro",
+      "footprint": [
+        {
+          "x0": -23.6,
+          "x1": -21.4,
+          "z0": -49,
+          "z1": -45
+        }
+      ],
+      "anchor": {
+        "x": -22.5,
+        "z": -47
+      }
+    },
+    {
+      "kind": "concourse",
+      "id": "sk:area:sanchome-marunouchi-b1f-paid-east",
+      "externalIds": {},
+      "names": {
+        "ja": "丸ノ内線 改札内（池袋方面側・B1F）",
+        "ja_kana": null,
+        "en": "Inside the gates at the east end (B1F)",
+        "zh": "丸之内线检票口内（池袋方向侧，B1F）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:tokyo-metro-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2024-06",
+      "notes": "Descriptive label. The paid floor beside exits A1 and B3.",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "fareZone": "paid:tokyo-metro",
+      "footprint": [
+        {
+          "x0": -23.6,
+          "x1": -21.4,
+          "z0": -61,
+          "z1": -57
+        }
+      ],
+      "anchor": {
+        "x": -22.5,
+        "z": -59
+      }
+    },
+    {
+      "kind": "platform",
+      "id": "sk:platform:tokyo-metro-shinjuku-sanchome-1-2",
+      "externalIds": {},
+      "names": {
+        "ja": "新宿三丁目駅 1・2番線ホーム",
+        "ja_kana": null,
+        "en": "Shinjuku-sanchome platforms 1–2",
+        "zh": "新宿三丁目站 1·2号站台"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-sanchome-map",
+          "src:toei-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:tokyo-metro-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2024-06",
+      "notes": "An island platform. Printed: \"荻窪方面 ① (新宿)\" at the end towards 新宿 and \"② 池袋方面 (新宿御苑前)\" at the other end. Which side each track lies on was not legible; the sides follow the neighbouring 新宿 station, which the same two tracks run through.",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "fareZone": "paid:tokyo-metro",
+      "footprint": [
+        {
+          "x0": -23.5,
+          "x1": -21.5,
+          "z0": -62,
+          "z1": -32
+        }
+      ],
+      "anchor": {
+        "x": -22.5,
+        "z": -47
+      },
+      "tracks": [
+        {
+          "number": "1",
+          "services": [
+            {
+              "railLineId": "sk:line:tokyo-metro-marunouchi",
+              "towardsJa": "荻窪方面（新宿）",
+              "towardsEn": "for Ogikubo (next: Shinjuku)"
+            }
+          ],
+          "side": "x+"
+        },
+        {
+          "number": "2",
+          "services": [
+            {
+              "railLineId": "sk:line:tokyo-metro-marunouchi",
+              "towardsJa": "池袋方面（新宿御苑前）",
+              "towardsEn": "for Ikebukuro (next: Shinjuku-gyoemmae)"
+            }
+          ],
+          "side": "x-"
+        }
+      ]
+    },
+    {
+      "kind": "passage",
+      "id": "sk:area:sanchome-fukutoshin-b2f-concourse",
+      "externalIds": {},
+      "names": {
+        "ja": "新宿三丁目駅 副都心線 改札外コンコース（B2F）",
+        "ja_kana": null,
+        "en": "Shinjuku-sanchome: Fukutoshin Line concourse (outside gates, B2F)",
+        "zh": "新宿三丁目站 副都心线站厅（检票口外，B2F）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:tokyo-metro-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2024-06",
+      "notes": "Unnamed on the drawing; the label is descriptive. The B2F floor above the Fukutoshin Line platform with exits E5–E8, and a long arm with exits E9 and E10 at its end. Its head runs under the east end of the Marunouchi Line concourse, where the lift between the two is drawn. The 立体図 is an oblique view; the position is schematic.",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "fareZone": "unpaid",
+      "footprint": [
+        {
+          "x0": -16,
+          "x1": 12,
+          "z0": -64.2,
+          "z1": -61.6
+        },
+        {
+          "x0": -27,
+          "x1": -16,
+          "z0": -66,
+          "z1": -64.2
+        },
+        {
+          "x0": 6.5,
+          "x1": 9,
+          "z0": -61.6,
+          "z1": -42
+        }
+      ],
+      "anchor": {
+        "x": -2,
+        "z": -62.9
+      }
+    },
+    {
+      "kind": "concourse",
+      "id": "sk:area:sanchome-fukutoshin-b2f-paid-north",
+      "externalIds": {},
+      "names": {
+        "ja": "副都心線 改札内（丸ノ内線側・B2F）",
+        "ja_kana": null,
+        "en": "Inside the Fukutoshin Line gates on the Marunouchi Line side (B2F)",
+        "zh": "副都心线检票口内（丸之内线侧，B2F）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:tokyo-metro-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2024-06",
+      "notes": "Descriptive label. Toilets and the lift to the platform are drawn on this part.",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "fareZone": "paid:tokyo-metro",
+      "footprint": [
+        {
+          "x0": -14,
+          "x1": -8,
+          "z0": -67.1,
+          "z1": -64.9
+        }
+      ],
+      "anchor": {
+        "x": -11,
+        "z": -66
+      }
+    },
+    {
+      "kind": "concourse",
+      "id": "sk:area:sanchome-fukutoshin-b2f-paid-south",
+      "externalIds": {},
+      "names": {
+        "ja": "副都心線 改札内（E7出口側・B2F）",
+        "ja_kana": null,
+        "en": "Inside the Fukutoshin Line gates on the exit E7 side (B2F)",
+        "zh": "副都心线检票口内（E7出口侧，B2F）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:tokyo-metro-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2024-06",
+      "notes": "Descriptive label.",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "fareZone": "paid:tokyo-metro",
+      "footprint": [
+        {
+          "x0": 0,
+          "x1": 5,
+          "z0": -67.1,
+          "z1": -64.9
+        }
+      ],
+      "anchor": {
+        "x": 2.5,
+        "z": -66
+      }
+    },
+    {
+      "kind": "platform",
+      "id": "sk:platform:tokyo-metro-shinjuku-sanchome-3-4",
+      "externalIds": {},
+      "names": {
+        "ja": "新宿三丁目駅 3・4番線ホーム",
+        "ja_kana": null,
+        "en": "Shinjuku-sanchome platforms 3–4",
+        "zh": "新宿三丁目站 3·4号站台"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-sanchome-map",
+          "src:toei-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:tokyo-metro-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2024-06",
+      "notes": "An island platform. On the Tokyo Metro drawing the arrow \"③ 渋谷\" leaves the nearer track line at the end with exits E6–E10 and \"④ 和光市\" stands at the other end of the farther track line; Toei prints \"(北参道)\" and \"(東新宿)\" as the next stations. The drawings have the Marunouchi Line platform meet the 和光市 end. \"Nearer\" is entered as east here, which is an assumption about the viewpoint.",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b3f",
+      "fareZone": "paid:tokyo-metro",
+      "footprint": [
+        {
+          "x0": -19,
+          "x1": 9,
+          "z0": -67,
+          "z1": -65
+        }
+      ],
+      "anchor": {
+        "x": -5,
+        "z": -66
+      },
+      "tracks": [
+        {
+          "number": "3",
+          "services": [
+            {
+              "railLineId": "sk:line:tokyo-metro-fukutoshin",
+              "towardsJa": "渋谷方面（北参道）",
+              "towardsEn": "for Shibuya (next: Kita-sando)"
+            }
+          ],
+          "side": "z-"
+        },
+        {
+          "number": "4",
+          "services": [
+            {
+              "railLineId": "sk:line:tokyo-metro-fukutoshin",
+              "towardsJa": "和光市方面（東新宿）",
+              "towardsEn": "for Wakoshi (next: Higashi-shinjuku)"
+            }
+          ],
+          "side": "z+"
+        }
+      ]
+    },
+    {
+      "kind": "passage",
+      "id": "sk:area:sanchome-b2f-link-passage",
+      "externalIds": {},
+      "names": {
+        "ja": "連絡通路（B2F・出口 E1〜E4）",
+        "ja_kana": null,
+        "en": "Connecting passage (B2F, exits E1–E4)",
+        "zh": "连接通道（B2F，E1～E4出口）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-sanchome-map",
+          "src:toei-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "unknown",
+      "asOf": "2024-06",
+      "notes": "Unnamed on the drawings; the label is descriptive. Both drawings print \"B2F\" on a passage outside the gates that leaves the east end of the Marunouchi Line concourse, carries the exits E1–E4 and reaches the Toei concourse. Entered as one passage with stairs at both ends: where exactly its floor changes could not be read, and the exits C2–C4 drawn along the way are entered at the Toei concourse.",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "fareZone": "unpaid",
+      "footprint": [
+        {
+          "x0": -27,
+          "x1": -24.4,
+          "z0": -81,
+          "z1": -67
+        }
+      ],
+      "anchor": {
+        "x": -25.7,
+        "z": -74
+      }
+    },
+    {
+      "kind": "passage",
+      "id": "sk:area:sanchome-toei-b1f-concourse",
+      "externalIds": {},
+      "names": {
+        "ja": "新宿三丁目駅 都営新宿線 改札外コンコース（B1F）",
+        "ja_kana": null,
+        "en": "Shinjuku-sanchome: Toei Shinjuku Line concourse (outside gates, B1F)",
+        "zh": "新宿三丁目站 都营新宿线站厅（检票口外，B1F）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-sanchome-map",
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "Unnamed on the drawings; the label is descriptive. The B1F floor outside the gate lines at both ends of the paid concourse, with exits C1–C4 at the 新宿 end and C5–C8 at the 本八幡 end. The 立体図 is an oblique view; the position is schematic.",
+      "levelId": "sk:level:toei-shinjuku-sanchome-b1f",
+      "fareZone": "unpaid",
+      "footprint": [
+        {
+          "x0": -19.6,
+          "x1": -17.2,
+          "z0": -104,
+          "z1": -72
+        },
+        {
+          "x0": -17.2,
+          "x1": -14.4,
+          "z0": -76.4,
+          "z1": -72
+        },
+        {
+          "x0": -17.2,
+          "x1": -14.4,
+          "z0": -104,
+          "z1": -97.6
+        }
+      ],
+      "anchor": {
+        "x": -18.4,
+        "z": -88
+      }
+    },
+    {
+      "kind": "concourse",
+      "id": "sk:area:sanchome-toei-b1f-paid",
+      "externalIds": {},
+      "names": {
+        "ja": "都営新宿線 改札内コンコース（B1F）",
+        "ja_kana": null,
+        "en": "Toei Shinjuku Line concourse (inside gates, B1F)",
+        "zh": "都营新宿线站厅（付费区，B1F）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-sanchome-map",
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "Descriptive label. Drawn as one paid floor above the platform between the two gate lines.",
+      "levelId": "sk:level:toei-shinjuku-sanchome-b1f",
+      "fareZone": "paid:toei",
+      "footprint": [
+        {
+          "x0": -16.6,
+          "x1": -14.4,
+          "z0": -97,
+          "z1": -77
+        }
+      ],
+      "anchor": {
+        "x": -15.5,
+        "z": -87
+      }
+    },
+    {
+      "kind": "platform",
+      "id": "sk:platform:toei-shinjuku-sanchome-1-2",
+      "externalIds": {},
+      "names": {
+        "ja": "新宿三丁目駅 1・2番線ホーム",
+        "ja_kana": null,
+        "en": "Shinjuku-sanchome platforms 1–2",
+        "zh": "新宿三丁目站 1·2号站台"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-sanchome-map",
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "An island platform. Toei prints \"① 新宿方面 (新宿)\" at one end on the nearer track line and \"② 本八幡方面 (曙橋)\" at the other end on the farther one. Car numbers on the Toei table run from 1 (新宿 end) to 10 (本八幡 end). \"Nearer\" is entered as south here, which is an assumption about the viewpoint.",
+      "levelId": "sk:level:toei-shinjuku-sanchome-b2f",
+      "fareZone": "paid:toei",
+      "footprint": [
+        {
+          "x0": -16.5,
+          "x1": -14.5,
+          "z0": -102,
+          "z1": -74
+        }
+      ],
+      "anchor": {
+        "x": -15.5,
+        "z": -88
+      },
+      "tracks": [
+        {
+          "number": "1",
+          "services": [
+            {
+              "railLineId": "sk:line:toei-shinjuku",
+              "towardsJa": "新宿方面（新宿）",
+              "towardsEn": "for Shinjuku (next: Shinjuku)"
+            }
+          ],
+          "side": "x+"
+        },
+        {
+          "number": "2",
+          "services": [
+            {
+              "railLineId": "sk:line:toei-shinjuku",
+              "towardsJa": "本八幡方面（曙橋）",
+              "towardsEn": "for Motoyawata (next: Akebonobashi)"
+            }
+          ],
+          "side": "x-"
+        }
+      ]
     }
   ],
   "passages": [
@@ -6068,6 +6906,38 @@
       "toAreaId": "sk:platform:seibu-shinjuku-2-3",
       "connection": "verified",
       "stepFree": true,
+      "hasSteps": null
+    },
+    {
+      "kind": "passage-link",
+      "id": "sk:passage:marunouchi-shinjuku-concourse-to-sanchome-concourse",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-map",
+          "src:tokyo-metro-shinjuku-sanchome-map",
+          "src:toei-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "unknown",
+      "asOf": "2025-11",
+      "notes": "INFERRED from signage text only: the 新宿 drawing prints \"新宿三丁目方面\" at the east end of its B1F passage (exits A6 / B6), and the 新宿三丁目 drawings print \"新宿駅方面\" at the west end of the Marunouchi Line concourse, where exits with the same numbers A6 and B6 are drawn. Neither drawing shows the passage between the two in one piece; its length and any steps on the way are unknown.",
+      "fromAreaId": "sk:area:tokyo-metro-b1f-concourse",
+      "toAreaId": "sk:area:sanchome-marunouchi-b1f-concourse",
+      "connection": "inferred",
+      "stepFree": null,
       "hasSteps": null
     }
   ],
@@ -7416,6 +8286,309 @@
       "hoursNote": "7:00〜終電",
       "stepFree": null,
       "aliases": []
+    },
+    {
+      "kind": "gate",
+      "id": "sk:gate:sanchome-marunouchi-gates-west",
+      "externalIds": {},
+      "names": {
+        "ja": "丸ノ内線 改札（新宿駅方面側）",
+        "ja_kana": null,
+        "en": "Marunouchi Line gates (west end)",
+        "zh": "丸之内线检票口（新宿站方向侧）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:tokyo-metro-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2024-06",
+      "notes": "The gate line is drawn on the 立体図 without a name; the label is descriptive. The barrier-free route (red line) of the Tokyo Metro drawing passes through it to a lift.",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "gateKind": "ticket",
+      "position": {
+        "x": -24,
+        "z": -35
+      },
+      "sides": [
+        {
+          "areaId": "sk:area:sanchome-marunouchi-b1f-paid-west"
+        },
+        {
+          "areaId": "sk:area:sanchome-marunouchi-b1f-concourse"
+        }
+      ],
+      "direction": "both",
+      "hoursNote": null,
+      "stepFree": true,
+      "aliases": []
+    },
+    {
+      "kind": "gate",
+      "id": "sk:gate:sanchome-marunouchi-gates-mid",
+      "externalIds": {},
+      "names": {
+        "ja": "丸ノ内線 改札（中央）",
+        "ja_kana": null,
+        "en": "Marunouchi Line gates (middle)",
+        "zh": "丸之内线检票口（中央）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:tokyo-metro-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2024-06",
+      "notes": "The gate line is drawn on the 立体図 without a name; the label is descriptive.",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "gateKind": "ticket",
+      "position": {
+        "x": -24,
+        "z": -47
+      },
+      "sides": [
+        {
+          "areaId": "sk:area:sanchome-marunouchi-b1f-paid-mid"
+        },
+        {
+          "areaId": "sk:area:sanchome-marunouchi-b1f-concourse"
+        }
+      ],
+      "direction": "both",
+      "hoursNote": null,
+      "stepFree": null,
+      "aliases": []
+    },
+    {
+      "kind": "gate",
+      "id": "sk:gate:sanchome-marunouchi-gates-east",
+      "externalIds": {},
+      "names": {
+        "ja": "丸ノ内線 改札（池袋方面側）",
+        "ja_kana": null,
+        "en": "Marunouchi Line gates (east end)",
+        "zh": "丸之内线检票口（池袋方向侧）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:tokyo-metro-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2024-06",
+      "notes": "The gate line is drawn on the 立体図 without a name; the label is descriptive.",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "gateKind": "ticket",
+      "position": {
+        "x": -24,
+        "z": -59
+      },
+      "sides": [
+        {
+          "areaId": "sk:area:sanchome-marunouchi-b1f-paid-east"
+        },
+        {
+          "areaId": "sk:area:sanchome-marunouchi-b1f-concourse"
+        }
+      ],
+      "direction": "both",
+      "hoursNote": null,
+      "stepFree": null,
+      "aliases": []
+    },
+    {
+      "kind": "gate",
+      "id": "sk:gate:sanchome-fukutoshin-gates-north",
+      "externalIds": {},
+      "names": {
+        "ja": "副都心線 改札（丸ノ内線側）",
+        "ja_kana": null,
+        "en": "Fukutoshin Line gates (Marunouchi Line side)",
+        "zh": "副都心线检票口（丸之内线侧）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:tokyo-metro-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2024-06",
+      "notes": "The gate line is drawn on the 立体図 without a name; the label is descriptive. The barrier-free route (red line) passes through it to the lift.",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "gateKind": "ticket",
+      "position": {
+        "x": -11,
+        "z": -64.55
+      },
+      "sides": [
+        {
+          "areaId": "sk:area:sanchome-fukutoshin-b2f-paid-north"
+        },
+        {
+          "areaId": "sk:area:sanchome-fukutoshin-b2f-concourse"
+        }
+      ],
+      "direction": "both",
+      "hoursNote": null,
+      "stepFree": true,
+      "aliases": []
+    },
+    {
+      "kind": "gate",
+      "id": "sk:gate:sanchome-fukutoshin-gates-south",
+      "externalIds": {},
+      "names": {
+        "ja": "副都心線 改札（E7出口側）",
+        "ja_kana": null,
+        "en": "Fukutoshin Line gates (exit E7 side)",
+        "zh": "副都心线检票口（E7出口侧）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:tokyo-metro-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2024-06",
+      "notes": "The gate line is drawn on the 立体図 without a name; the label is descriptive.",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "gateKind": "ticket",
+      "position": {
+        "x": 2.5,
+        "z": -64.55
+      },
+      "sides": [
+        {
+          "areaId": "sk:area:sanchome-fukutoshin-b2f-paid-south"
+        },
+        {
+          "areaId": "sk:area:sanchome-fukutoshin-b2f-concourse"
+        }
+      ],
+      "direction": "both",
+      "hoursNote": null,
+      "stepFree": null,
+      "aliases": []
+    },
+    {
+      "kind": "gate",
+      "id": "sk:gate:sanchome-toei-gates-west",
+      "externalIds": {},
+      "names": {
+        "ja": "都営新宿線 改札（新宿方面側）",
+        "ja_kana": null,
+        "en": "Toei Shinjuku Line gates (Shinjuku end)",
+        "zh": "都营新宿线检票口（新宿方向侧）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-sanchome-map",
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "The gate line is drawn on the 立体図 without a name; the label is descriptive.",
+      "levelId": "sk:level:toei-shinjuku-sanchome-b1f",
+      "gateKind": "ticket",
+      "position": {
+        "x": -15.5,
+        "z": -76.7
+      },
+      "sides": [
+        {
+          "areaId": "sk:area:sanchome-toei-b1f-paid"
+        },
+        {
+          "areaId": "sk:area:sanchome-toei-b1f-concourse"
+        }
+      ],
+      "direction": "both",
+      "hoursNote": null,
+      "stepFree": null,
+      "aliases": []
+    },
+    {
+      "kind": "gate",
+      "id": "sk:gate:sanchome-toei-gates-east",
+      "externalIds": {},
+      "names": {
+        "ja": "都営新宿線 改札（本八幡方面側）",
+        "ja_kana": null,
+        "en": "Toei Shinjuku Line gates (Motoyawata end)",
+        "zh": "都营新宿线检票口（本八幡方向侧）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-sanchome-map",
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "The gate line is drawn on the 立体図 without a name; the label is descriptive. Toei marks the lift route from exit C6 through it to the platform lift.",
+      "levelId": "sk:level:toei-shinjuku-sanchome-b1f",
+      "gateKind": "ticket",
+      "position": {
+        "x": -15.5,
+        "z": -97.3
+      },
+      "sides": [
+        {
+          "areaId": "sk:area:sanchome-toei-b1f-paid"
+        },
+        {
+          "areaId": "sk:area:sanchome-toei-b1f-concourse"
+        }
+      ],
+      "direction": "both",
+      "hoursNote": null,
+      "stepFree": true,
+      "aliases": []
     }
   ],
   "entrances": [
@@ -8472,6 +9645,631 @@
       },
       "leadsToJa": null,
       "leadsToEn": null,
+      "stepFree": null
+    },
+    {
+      "kind": "entrance",
+      "id": "sk:entrance:sanchome-exit-a5",
+      "externalIds": {},
+      "names": {
+        "ja": "出口 A5",
+        "ja_kana": null,
+        "en": "Exit A5",
+        "zh": "A5出口"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-sanchome-map",
+          "src:toei-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:tokyo-metro-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2024-06",
+      "notes": "Nearby facilities as listed in Tokyo Metro's 出口案内 table (改定日 2023年3月).",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "areaId": "sk:area:sanchome-marunouchi-b1f-concourse",
+      "position": {
+        "x": -24.4,
+        "z": -33
+      },
+      "leadsToJa": "ビックロ",
+      "leadsToEn": "Bicqlo",
+      "stepFree": null
+    },
+    {
+      "kind": "entrance",
+      "id": "sk:entrance:sanchome-exit-a6-b6-b7",
+      "externalIds": {},
+      "names": {
+        "ja": "出口 A6・B6・B7（新宿駅方面）",
+        "ja_kana": null,
+        "en": "Exits A6 / B6 / B7 (towards Shinjuku Station)",
+        "zh": "A6·B6·B7出口（新宿站方向）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-sanchome-map",
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:tokyo-metro-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2024-06",
+      "notes": "Drawn at the west end of the concourse on the Toei drawing, beyond the west gates; one entry for the three. A B9 beside them is marked 閉鎖中 there, while Tokyo Metro's table still lists B9 (新宿区役所). Exits marked * on the drawing have restricted hours (\"*利用に時間制限のある出入口\").",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "areaId": "sk:area:sanchome-marunouchi-b1f-concourse",
+      "position": {
+        "x": -25.7,
+        "z": -30
+      },
+      "leadsToJa": "新宿駅方面",
+      "leadsToEn": "towards Shinjuku Station",
+      "stepFree": null
+    },
+    {
+      "kind": "entrance",
+      "id": "sk:entrance:sanchome-exit-a2-a4",
+      "externalIds": {},
+      "names": {
+        "ja": "出口 A2・A4",
+        "ja_kana": null,
+        "en": "Exits A2 / A4",
+        "zh": "A2·A4出口"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-sanchome-map",
+          "src:toei-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:tokyo-metro-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2024-06",
+      "notes": "Nearby facilities as listed in Tokyo Metro's 出口案内 table (改定日 2023年3月). Exits marked * on the drawing have restricted hours (\"*利用に時間制限のある出入口\"). Both are marked *.",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "areaId": "sk:area:sanchome-marunouchi-b1f-concourse",
+      "position": {
+        "x": -24.4,
+        "z": -47
+      },
+      "leadsToJa": "新宿マルイ 本館",
+      "leadsToEn": "Shinjuku Marui Main Building",
+      "stepFree": null
+    },
+    {
+      "kind": "entrance",
+      "id": "sk:entrance:sanchome-exit-b3-b4-b5",
+      "externalIds": {},
+      "names": {
+        "ja": "出口 B3・B4・B5（伊勢丹方面）",
+        "ja_kana": null,
+        "en": "Exits B3 / B4 / B5 (towards Isetan)",
+        "zh": "B3·B4·B5出口（伊势丹方向）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-sanchome-map",
+          "src:toei-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:tokyo-metro-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2024-06",
+      "notes": "Nearby facilities as listed in Tokyo Metro's 出口案内 table (改定日 2023年3月). B4 has a lift to street level (\"地上行エレベーターあり\"); B5 is marked *. One entry for the three.",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "areaId": "sk:area:sanchome-marunouchi-b1f-concourse",
+      "position": {
+        "x": -27,
+        "z": -50
+      },
+      "leadsToJa": "伊勢丹",
+      "leadsToEn": "Isetan",
+      "stepFree": true
+    },
+    {
+      "kind": "entrance",
+      "id": "sk:entrance:sanchome-exit-a1",
+      "externalIds": {},
+      "names": {
+        "ja": "出口 A1",
+        "ja_kana": null,
+        "en": "Exit A1",
+        "zh": "A1出口"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-sanchome-map",
+          "src:toei-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:tokyo-metro-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2024-06",
+      "notes": "Nearby facilities as listed in Tokyo Metro's 出口案内 table (改定日 2023年3月).",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "areaId": "sk:area:sanchome-marunouchi-b1f-concourse",
+      "position": {
+        "x": -24.4,
+        "z": -61
+      },
+      "leadsToJa": "新宿御苑（新宿門）・新宿マルイ アネックス",
+      "leadsToEn": "Shinjuku Gyoen (Shinjuku Gate), Shinjuku Marui Annex",
+      "stepFree": null
+    },
+    {
+      "kind": "entrance",
+      "id": "sk:entrance:sanchome-exit-b2",
+      "externalIds": {},
+      "names": {
+        "ja": "出口 B2",
+        "ja_kana": null,
+        "en": "Exit B2",
+        "zh": "B2出口"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-sanchome-map",
+          "src:toei-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:tokyo-metro-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2024-06",
+      "notes": "Nearby facilities as listed in Tokyo Metro's 出口案内 table (改定日 2023年3月).",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "areaId": "sk:area:sanchome-marunouchi-b1f-concourse",
+      "position": {
+        "x": -27,
+        "z": -62
+      },
+      "leadsToJa": "新宿末廣亭・映画街",
+      "leadsToEn": "Shinjuku Suehirotei, cinema district",
+      "stepFree": null
+    },
+    {
+      "kind": "entrance",
+      "id": "sk:entrance:sanchome-exit-e1",
+      "externalIds": {},
+      "names": {
+        "ja": "出口 E1",
+        "ja_kana": null,
+        "en": "Exit E1",
+        "zh": "E1出口"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-sanchome-map",
+          "src:toei-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "unknown",
+      "asOf": "2024-06",
+      "notes": "Nearby facilities as listed in Tokyo Metro's 出口案内 table (改定日 2023年3月). Listed with a lift to street level.",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "areaId": "sk:area:sanchome-b2f-link-passage",
+      "position": {
+        "x": -27,
+        "z": -78
+      },
+      "leadsToJa": "新宿文化センター・新宿ゴールデン街・東京医科大学",
+      "leadsToEn": "Shinjuku Bunka Center, Golden Gai, Tokyo Medical University",
+      "stepFree": true
+    },
+    {
+      "kind": "entrance",
+      "id": "sk:entrance:sanchome-exit-e2",
+      "externalIds": {},
+      "names": {
+        "ja": "出口 E2",
+        "ja_kana": null,
+        "en": "Exit E2",
+        "zh": "E2出口"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-sanchome-map",
+          "src:toei-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "unknown",
+      "asOf": "2024-06",
+      "notes": "Nearby facilities as listed in Tokyo Metro's 出口案内 table (改定日 2023年3月).",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "areaId": "sk:area:sanchome-b2f-link-passage",
+      "position": {
+        "x": -27,
+        "z": -73
+      },
+      "leadsToJa": "花園神社・新宿マルイ メン",
+      "leadsToEn": "Hanazono Shrine, Shinjuku Marui Men",
+      "stepFree": null
+    },
+    {
+      "kind": "entrance",
+      "id": "sk:entrance:sanchome-exit-e3-e4",
+      "externalIds": {},
+      "names": {
+        "ja": "出口 E3・E4",
+        "ja_kana": null,
+        "en": "Exits E3 / E4",
+        "zh": "E3·E4出口"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-sanchome-map",
+          "src:toei-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "unknown",
+      "asOf": "2024-06",
+      "notes": "Nearby facilities as listed in Tokyo Metro's 出口案内 table (改定日 2023年3月). Exits marked * on the drawing have restricted hours (\"*利用に時間制限のある出入口\"). Both are marked *.",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "areaId": "sk:area:sanchome-b2f-link-passage",
+      "position": {
+        "x": -24.4,
+        "z": -70
+      },
+      "leadsToJa": "キュープラザ新宿三丁目",
+      "leadsToEn": "Q Plaza Shinjuku-sanchome",
+      "stepFree": null
+    },
+    {
+      "kind": "entrance",
+      "id": "sk:entrance:sanchome-exit-e5",
+      "externalIds": {},
+      "names": {
+        "ja": "出口 E5",
+        "ja_kana": null,
+        "en": "Exit E5",
+        "zh": "E5出口"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:tokyo-metro-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2024-06",
+      "notes": "Nearby facilities as listed in Tokyo Metro's 出口案内 table (改定日 2023年3月). Listed with a lift to street level.",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "areaId": "sk:area:sanchome-fukutoshin-b2f-concourse",
+      "position": {
+        "x": -4,
+        "z": -61.6
+      },
+      "leadsToJa": "新宿御苑（新宿門）・新宿高等学校",
+      "leadsToEn": "Shinjuku Gyoen (Shinjuku Gate), Shinjuku High School",
+      "stepFree": true
+    },
+    {
+      "kind": "entrance",
+      "id": "sk:entrance:sanchome-exit-e6-e7",
+      "externalIds": {},
+      "names": {
+        "ja": "出口 E6・E7",
+        "ja_kana": null,
+        "en": "Exits E6 / E7",
+        "zh": "E6·E7出口"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:tokyo-metro-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2024-06",
+      "notes": "Nearby facilities as listed in Tokyo Metro's 出口案内 table (改定日 2023年3月). E7 is drawn but is not in the table.",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "areaId": "sk:area:sanchome-fukutoshin-b2f-concourse",
+      "position": {
+        "x": 12,
+        "z": -63.6
+      },
+      "leadsToJa": "ウインズ新宿",
+      "leadsToEn": "WINS Shinjuku",
+      "stepFree": null
+    },
+    {
+      "kind": "entrance",
+      "id": "sk:entrance:sanchome-exit-e8",
+      "externalIds": {},
+      "names": {
+        "ja": "出口 E8",
+        "ja_kana": null,
+        "en": "Exit E8",
+        "zh": "E8出口"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:tokyo-metro-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2024-06",
+      "notes": "Nearby facilities as listed in Tokyo Metro's 出口案内 table (改定日 2023年3月). Listed with a lift to street level.",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "areaId": "sk:area:sanchome-fukutoshin-b2f-concourse",
+      "position": {
+        "x": 12,
+        "z": -62.2
+      },
+      "leadsToJa": "高島屋タイムズスクエア",
+      "leadsToEn": "Takashimaya Times Square",
+      "stepFree": true
+    },
+    {
+      "kind": "entrance",
+      "id": "sk:entrance:sanchome-exit-e9",
+      "externalIds": {},
+      "names": {
+        "ja": "出口 E9",
+        "ja_kana": null,
+        "en": "Exit E9",
+        "zh": "E9出口"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:tokyo-metro-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2024-06",
+      "notes": "Nearby facilities as listed in Tokyo Metro's 出口案内 table (改定日 2023年3月). Listed with a lift to street level.",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "areaId": "sk:area:sanchome-fukutoshin-b2f-concourse",
+      "position": {
+        "x": 6.5,
+        "z": -52
+      },
+      "leadsToJa": "ウインズ新宿・大塚家具",
+      "leadsToEn": "WINS Shinjuku, Otsuka Kagu",
+      "stepFree": true
+    },
+    {
+      "kind": "entrance",
+      "id": "sk:entrance:sanchome-exit-e10",
+      "externalIds": {},
+      "names": {
+        "ja": "出口 E10（JR新宿駅 新南改札・ミライナタワー改札方面）",
+        "ja_kana": null,
+        "en": "Exit E10 (towards JR Shinjuku New South / Miraina Tower gates)",
+        "zh": "E10出口（JR新宿站新南检票口·Miraina Tower检票口方向）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:tokyo-metro-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2024-06",
+      "notes": "Nearby facilities as listed in Tokyo Metro's 出口案内 table (改定日 2023年3月). Listed with a lift to street level. The way from the exit to the JR gates is outdoors and is on no drawing that was read, so no walking link to JR is entered from here.",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+      "areaId": "sk:area:sanchome-fukutoshin-b2f-concourse",
+      "position": {
+        "x": 7.7,
+        "z": -42
+      },
+      "leadsToJa": "JR新宿ミライナタワー・新宿駅（JR線）甲州街道改札・ミライナタワー改札・新南改札・バスタ新宿",
+      "leadsToEn": "JR Shinjuku Miraina Tower; JR Shinjuku Koshu-kaido, Miraina Tower and New South gates; Busta Shinjuku",
+      "stepFree": true
+    },
+    {
+      "kind": "entrance",
+      "id": "sk:entrance:sanchome-exit-c1-c4",
+      "externalIds": {},
+      "names": {
+        "ja": "出口 C1〜C4",
+        "ja_kana": null,
+        "en": "Exits C1–C4",
+        "zh": "C1～C4出口"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-sanchome-map",
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "One entry for the four, drawn around the 新宿 end of the concourse and along the passage towards the Marunouchi Line. Facilities as listed in the 出口案内（都営） box of the Toei drawing. Exits marked * on the drawing have restricted hours (\"*利用に時間制限のある出入口\"). C1, C2 and C3 are marked *.",
+      "levelId": "sk:level:toei-shinjuku-sanchome-b1f",
+      "areaId": "sk:area:sanchome-toei-b1f-concourse",
+      "position": {
+        "x": -14.4,
+        "z": -73
+      },
+      "leadsToJa": "マルイアネックス・新宿3丁目交差点・新宿末廣亭",
+      "leadsToEn": "Marui Annex, Shinjuku 3-chome crossing, Shinjuku Suehirotei",
+      "stepFree": null
+    },
+    {
+      "kind": "entrance",
+      "id": "sk:entrance:sanchome-exit-c5",
+      "externalIds": {},
+      "names": {
+        "ja": "出口 C5",
+        "ja_kana": null,
+        "en": "Exit C5",
+        "zh": "C5出口"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-sanchome-map",
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "Facility as listed on the Toei drawing.",
+      "levelId": "sk:level:toei-shinjuku-sanchome-b1f",
+      "areaId": "sk:area:sanchome-toei-b1f-concourse",
+      "position": {
+        "x": -14.4,
+        "z": -101
+      },
+      "leadsToJa": "新宿御苑",
+      "leadsToEn": "Shinjuku Gyoen",
+      "stepFree": null
+    },
+    {
+      "kind": "entrance",
+      "id": "sk:entrance:sanchome-exit-c6",
+      "externalIds": {},
+      "names": {
+        "ja": "出口 C6",
+        "ja_kana": null,
+        "en": "Exit C6",
+        "zh": "C6出口"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-sanchome-map",
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "Toei marks C6 with EV and draws a lift to street level (\"地上へ\").",
+      "levelId": "sk:level:toei-shinjuku-sanchome-b1f",
+      "areaId": "sk:area:sanchome-toei-b1f-concourse",
+      "position": {
+        "x": -19.6,
+        "z": -98
+      },
+      "leadsToJa": "御苑大通り",
+      "leadsToEn": "Gyoen-odori avenue",
+      "stepFree": true
+    },
+    {
+      "kind": "entrance",
+      "id": "sk:entrance:sanchome-exit-c7-c8",
+      "externalIds": {},
+      "names": {
+        "ja": "出口 C7・C8",
+        "ja_kana": null,
+        "en": "Exits C7 / C8",
+        "zh": "C7·C8出口"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-sanchome-map",
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "Facilities as listed on the Toei drawing and in Tokyo Metro's table. Exits marked * on the drawing have restricted hours (\"*利用に時間制限のある出入口\"). C8 is marked *.",
+      "levelId": "sk:level:toei-shinjuku-sanchome-b1f",
+      "areaId": "sk:area:sanchome-toei-b1f-concourse",
+      "position": {
+        "x": -19.6,
+        "z": -103
+      },
+      "leadsToJa": "新宿文化センター・東京医科大学",
+      "leadsToEn": "Shinjuku Bunka Center, Tokyo Medical University",
       "stepFree": null
     }
   ],
@@ -14968,6 +16766,927 @@
       "directionNote": null,
       "hoursNote": null,
       "aggregated": true
+    },
+    {
+      "kind": "vertical",
+      "id": "sk:vertical:sanchome-marunouchi-stairs-west-gates-to-platform",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:tokyo-metro-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2024-06",
+      "notes": "Drawn below the west gates. Whether an escalator runs beside these stairs was not told apart on the drawing; entered as stairs. Stands for every staircase of this pair drawn on the floor map; how many there are was not counted.",
+      "verticalKind": "stairs",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+          "areaId": "sk:area:sanchome-marunouchi-b1f-paid-west",
+          "position": {
+            "x": -22.5,
+            "z": -36.2
+          }
+        },
+        {
+          "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+          "areaId": "sk:platform:tokyo-metro-shinjuku-sanchome-1-2",
+          "position": {
+            "x": -22.5,
+            "z": -38.8
+          }
+        }
+      ],
+      "directionNote": null,
+      "hoursNote": null,
+      "aggregated": true
+    },
+    {
+      "kind": "vertical",
+      "id": "sk:vertical:sanchome-marunouchi-stairs-mid-gates-to-platform",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:tokyo-metro-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2024-06",
+      "notes": "Drawn below the middle gates. Whether an escalator runs beside these stairs was not told apart on the drawing; entered as stairs. Stands for every staircase of this pair drawn on the floor map; how many there are was not counted.",
+      "verticalKind": "stairs",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+          "areaId": "sk:area:sanchome-marunouchi-b1f-paid-mid",
+          "position": {
+            "x": -22.5,
+            "z": -48.2
+          }
+        },
+        {
+          "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+          "areaId": "sk:platform:tokyo-metro-shinjuku-sanchome-1-2",
+          "position": {
+            "x": -22.5,
+            "z": -50.8
+          }
+        }
+      ],
+      "directionNote": null,
+      "hoursNote": null,
+      "aggregated": true
+    },
+    {
+      "kind": "vertical",
+      "id": "sk:vertical:sanchome-marunouchi-stairs-east-gates-to-platform",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:tokyo-metro-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2024-06",
+      "notes": "Drawn below the east gates. Whether an escalator runs beside these stairs was not told apart on the drawing; entered as stairs. Stands for every staircase of this pair drawn on the floor map; how many there are was not counted.",
+      "verticalKind": "stairs",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+          "areaId": "sk:area:sanchome-marunouchi-b1f-paid-east",
+          "position": {
+            "x": -22.5,
+            "z": -57.8
+          }
+        },
+        {
+          "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+          "areaId": "sk:platform:tokyo-metro-shinjuku-sanchome-1-2",
+          "position": {
+            "x": -22.5,
+            "z": -55.2
+          }
+        }
+      ],
+      "directionNote": null,
+      "hoursNote": null,
+      "aggregated": true
+    },
+    {
+      "kind": "vertical",
+      "id": "sk:vertical:sanchome-marunouchi-elevator-west",
+      "externalIds": {},
+      "names": {
+        "ja": "エレベーター（丸ノ内線 改札内 B1F ⇔ ホーム B2F）",
+        "ja_kana": null,
+        "en": "Elevator (Marunouchi Line concourse B1F ⇔ platform B2F)",
+        "zh": "电梯（丸之内线站厅 B1F ⇔ 站台 B2F）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:tokyo-metro-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2024-06",
+      "notes": "A lift shaft is drawn beside the west gates down to the platform, on the barrier-free route (red line). Its exact place among the gate groups was not legible.",
+      "verticalKind": "elevator",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+          "areaId": "sk:area:sanchome-marunouchi-b1f-paid-west",
+          "position": {
+            "x": -22.5,
+            "z": -34
+          }
+        },
+        {
+          "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+          "areaId": "sk:platform:tokyo-metro-shinjuku-sanchome-1-2",
+          "position": {
+            "x": -22.5,
+            "z": -34
+          }
+        }
+      ],
+      "directionNote": null,
+      "hoursNote": null,
+      "aggregated": false
+    },
+    {
+      "kind": "vertical",
+      "id": "sk:vertical:sanchome-stairs-marunouchi-platform-to-fukutoshin-platform",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:tokyo-metro-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2024-06",
+      "notes": "Stairs in the colour of \"改札内の階段\" are drawn from the 池袋 end of the Marunouchi Line platform down to the 和光市 end of the Fukutoshin Line platform: a transfer inside the gates. Whether an escalator runs beside these stairs was not told apart on the drawing; entered as stairs. Stands for every staircase of this pair drawn on the floor map; how many there are was not counted.",
+      "verticalKind": "stairs",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+          "areaId": "sk:platform:tokyo-metro-shinjuku-sanchome-1-2",
+          "position": {
+            "x": -22.5,
+            "z": -61
+          }
+        },
+        {
+          "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b3f",
+          "areaId": "sk:platform:tokyo-metro-shinjuku-sanchome-3-4",
+          "position": {
+            "x": -18,
+            "z": -66
+          }
+        }
+      ],
+      "directionNote": null,
+      "hoursNote": null,
+      "aggregated": true
+    },
+    {
+      "kind": "vertical",
+      "id": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-fukutoshin-concourse",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:tokyo-metro-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2024-06",
+      "notes": "A long flight in the colour of \"改札外の階段\" is drawn from the Marunouchi Line concourse beside exit A1 down to the Fukutoshin Line concourse. Whether an escalator runs beside these stairs was not told apart on the drawing; entered as stairs. Stands for every staircase of this pair drawn on the floor map; how many there are was not counted.",
+      "verticalKind": "stairs",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+          "areaId": "sk:area:sanchome-marunouchi-b1f-concourse",
+          "position": {
+            "x": -24.8,
+            "z": -63
+          }
+        },
+        {
+          "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+          "areaId": "sk:area:sanchome-fukutoshin-b2f-concourse",
+          "position": {
+            "x": -15.4,
+            "z": -62.9
+          }
+        }
+      ],
+      "directionNote": null,
+      "hoursNote": null,
+      "aggregated": true
+    },
+    {
+      "kind": "vertical",
+      "id": "sk:vertical:sanchome-elevator-marunouchi-concourse-to-fukutoshin-concourse",
+      "externalIds": {},
+      "names": {
+        "ja": "エレベーター（丸ノ内線 B1F ⇔ 副都心線 B2F）",
+        "ja_kana": null,
+        "en": "Elevator (Marunouchi Line B1F ⇔ Fukutoshin Line B2F)",
+        "zh": "电梯（丸之内线 B1F ⇔ 副都心线 B2F）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:tokyo-metro-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "unknown",
+      "asOf": "2024-06",
+      "notes": "A lift shaft is drawn beside exit A1 from the Marunouchi Line concourse down to the level of the Fukutoshin Line concourse, with the barrier-free route (red line) continuing to the Fukutoshin Line gates. Whether it stands inside or outside the gates was not legible; entered outside.",
+      "verticalKind": "elevator",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+          "areaId": "sk:area:sanchome-marunouchi-b1f-concourse",
+          "position": {
+            "x": -25,
+            "z": -65.2
+          }
+        },
+        {
+          "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+          "areaId": "sk:area:sanchome-fukutoshin-b2f-concourse",
+          "position": {
+            "x": -25,
+            "z": -65.2
+          }
+        }
+      ],
+      "directionNote": null,
+      "hoursNote": null,
+      "aggregated": false
+    },
+    {
+      "kind": "vertical",
+      "id": "sk:vertical:sanchome-fukutoshin-stairs-north-gates-to-platform",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:tokyo-metro-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2024-06",
+      "notes": "Drawn below the gates on the Marunouchi Line side. Whether an escalator runs beside these stairs was not told apart on the drawing; entered as stairs. Stands for every staircase of this pair drawn on the floor map; how many there are was not counted.",
+      "verticalKind": "stairs",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+          "areaId": "sk:area:sanchome-fukutoshin-b2f-paid-north",
+          "position": {
+            "x": -9,
+            "z": -66
+          }
+        },
+        {
+          "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b3f",
+          "areaId": "sk:platform:tokyo-metro-shinjuku-sanchome-3-4",
+          "position": {
+            "x": -6.4,
+            "z": -66
+          }
+        }
+      ],
+      "directionNote": null,
+      "hoursNote": null,
+      "aggregated": true
+    },
+    {
+      "kind": "vertical",
+      "id": "sk:vertical:sanchome-fukutoshin-stairs-south-gates-to-platform",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:tokyo-metro-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2024-06",
+      "notes": "Drawn below the gates on the exit E7 side. Whether an escalator runs beside these stairs was not told apart on the drawing; entered as stairs. Stands for every staircase of this pair drawn on the floor map; how many there are was not counted.",
+      "verticalKind": "stairs",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+          "areaId": "sk:area:sanchome-fukutoshin-b2f-paid-south",
+          "position": {
+            "x": 4,
+            "z": -66
+          }
+        },
+        {
+          "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b3f",
+          "areaId": "sk:platform:tokyo-metro-shinjuku-sanchome-3-4",
+          "position": {
+            "x": 6.6,
+            "z": -66
+          }
+        }
+      ],
+      "directionNote": null,
+      "hoursNote": null,
+      "aggregated": true
+    },
+    {
+      "kind": "vertical",
+      "id": "sk:vertical:sanchome-fukutoshin-elevator",
+      "externalIds": {},
+      "names": {
+        "ja": "エレベーター（副都心線 改札内 B2F ⇔ ホーム B3F）",
+        "ja_kana": null,
+        "en": "Elevator (Fukutoshin Line concourse B2F ⇔ platform B3F)",
+        "zh": "电梯（副都心线站厅 B2F ⇔ 站台 B3F）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:tokyo-metro-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2024-06",
+      "notes": "The shaft drawn from the paid concourse beside the toilets down to the platform, on the barrier-free route (red line).",
+      "verticalKind": "elevator",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+          "areaId": "sk:area:sanchome-fukutoshin-b2f-paid-north",
+          "position": {
+            "x": -12.6,
+            "z": -66
+          }
+        },
+        {
+          "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b3f",
+          "areaId": "sk:platform:tokyo-metro-shinjuku-sanchome-3-4",
+          "position": {
+            "x": -12.6,
+            "z": -66
+          }
+        }
+      ],
+      "directionNote": null,
+      "hoursNote": null,
+      "aggregated": false
+    },
+    {
+      "kind": "vertical",
+      "id": "sk:vertical:sanchome-stairs-marunouchi-concourse-to-b2f-passage",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-sanchome-map",
+          "src:toei-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "unknown",
+      "asOf": "2024-06",
+      "notes": "Stairs are drawn leaving the east end of the Marunouchi Line concourse, by exits B2 and C2, towards the passage printed \"B2F\". Whether an escalator runs beside these stairs was not told apart on the drawing; entered as stairs. Stands for every staircase of this pair drawn on the floor map; how many there are was not counted.",
+      "verticalKind": "stairs",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+          "areaId": "sk:area:sanchome-marunouchi-b1f-concourse",
+          "position": {
+            "x": -26.4,
+            "z": -64.8
+          }
+        },
+        {
+          "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+          "areaId": "sk:area:sanchome-b2f-link-passage",
+          "position": {
+            "x": -26.4,
+            "z": -67.8
+          }
+        }
+      ],
+      "directionNote": null,
+      "hoursNote": null,
+      "aggregated": true
+    },
+    {
+      "kind": "vertical",
+      "id": "sk:vertical:sanchome-stairs-b2f-passage-to-toei-concourse",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:tokyo-metro-shinjuku-sanchome-map",
+          "src:toei-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "unknown",
+      "asOf": "2024-06",
+      "notes": "The passage reaches the Toei concourse, printed \"B1F\", by the exits C3 and C4 and E3 and E4. That stairs join the two floors here is read from the two floor labels; the flight itself was not told apart. Whether an escalator runs beside these stairs was not told apart on the drawing; entered as stairs. Stands for every staircase of this pair drawn on the floor map; how many there are was not counted.",
+      "verticalKind": "stairs",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b2f",
+          "areaId": "sk:area:sanchome-b2f-link-passage",
+          "position": {
+            "x": -24.8,
+            "z": -76
+          }
+        },
+        {
+          "levelId": "sk:level:toei-shinjuku-sanchome-b1f",
+          "areaId": "sk:area:sanchome-toei-b1f-concourse",
+          "position": {
+            "x": -19.2,
+            "z": -76
+          }
+        }
+      ],
+      "directionNote": null,
+      "hoursNote": null,
+      "aggregated": true
+    },
+    {
+      "kind": "vertical",
+      "id": "sk:vertical:sanchome-toei-stairs-car-2",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-sanchome-map",
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "the のりかえ・出口案内 table under the Toei 立体図 shows an escalator and stairs at car 2. Stands for every staircase of this pair drawn on the floor map; how many there are was not counted.",
+      "verticalKind": "stairs",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:toei-shinjuku-sanchome-b1f",
+          "areaId": "sk:area:sanchome-toei-b1f-paid",
+          "position": {
+            "x": -16.05,
+            "z": -77.8
+          }
+        },
+        {
+          "levelId": "sk:level:toei-shinjuku-sanchome-b2f",
+          "areaId": "sk:platform:toei-shinjuku-sanchome-1-2",
+          "position": {
+            "x": -16.05,
+            "z": -80.4
+          }
+        }
+      ],
+      "directionNote": null,
+      "hoursNote": null,
+      "aggregated": true
+    },
+    {
+      "kind": "vertical",
+      "id": "sk:vertical:sanchome-toei-escalator-car-2",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-sanchome-map",
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "the のりかえ・出口案内 table under the Toei 立体図 shows an escalator and stairs at car 2. Stands for every escalator of this pair drawn on the floor map; count and running direction were not recorded.",
+      "verticalKind": "escalator",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:toei-shinjuku-sanchome-b1f",
+          "areaId": "sk:area:sanchome-toei-b1f-paid",
+          "position": {
+            "x": -14.95,
+            "z": -77.8
+          }
+        },
+        {
+          "levelId": "sk:level:toei-shinjuku-sanchome-b2f",
+          "areaId": "sk:platform:toei-shinjuku-sanchome-1-2",
+          "position": {
+            "x": -14.95,
+            "z": -80.4
+          }
+        }
+      ],
+      "directionNote": "Running direction is not recorded on the floor map.",
+      "hoursNote": null,
+      "aggregated": true
+    },
+    {
+      "kind": "vertical",
+      "id": "sk:vertical:sanchome-toei-stairs-car-6",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-sanchome-map",
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "the のりかえ・出口案内 table under the Toei 立体図 shows an escalator and stairs at car 6. Stands for every staircase of this pair drawn on the floor map; how many there are was not counted.",
+      "verticalKind": "stairs",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:toei-shinjuku-sanchome-b1f",
+          "areaId": "sk:area:sanchome-toei-b1f-paid",
+          "position": {
+            "x": -16.05,
+            "z": -87.6
+          }
+        },
+        {
+          "levelId": "sk:level:toei-shinjuku-sanchome-b2f",
+          "areaId": "sk:platform:toei-shinjuku-sanchome-1-2",
+          "position": {
+            "x": -16.05,
+            "z": -90.2
+          }
+        }
+      ],
+      "directionNote": null,
+      "hoursNote": null,
+      "aggregated": true
+    },
+    {
+      "kind": "vertical",
+      "id": "sk:vertical:sanchome-toei-escalator-car-6",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-sanchome-map",
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "the のりかえ・出口案内 table under the Toei 立体図 shows an escalator and stairs at car 6. Stands for every escalator of this pair drawn on the floor map; count and running direction were not recorded.",
+      "verticalKind": "escalator",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:toei-shinjuku-sanchome-b1f",
+          "areaId": "sk:area:sanchome-toei-b1f-paid",
+          "position": {
+            "x": -14.95,
+            "z": -87.6
+          }
+        },
+        {
+          "levelId": "sk:level:toei-shinjuku-sanchome-b2f",
+          "areaId": "sk:platform:toei-shinjuku-sanchome-1-2",
+          "position": {
+            "x": -14.95,
+            "z": -90.2
+          }
+        }
+      ],
+      "directionNote": "Running direction is not recorded on the floor map.",
+      "hoursNote": null,
+      "aggregated": true
+    },
+    {
+      "kind": "vertical",
+      "id": "sk:vertical:sanchome-toei-stairs-car-8",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-sanchome-map",
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "the のりかえ・出口案内 table under the Toei 立体図 shows an escalator and stairs at car 8. Toei lists 12 escalators for the station. Stands for every staircase of this pair drawn on the floor map; how many there are was not counted.",
+      "verticalKind": "stairs",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:toei-shinjuku-sanchome-b1f",
+          "areaId": "sk:area:sanchome-toei-b1f-paid",
+          "position": {
+            "x": -16.05,
+            "z": -93.6
+          }
+        },
+        {
+          "levelId": "sk:level:toei-shinjuku-sanchome-b2f",
+          "areaId": "sk:platform:toei-shinjuku-sanchome-1-2",
+          "position": {
+            "x": -16.05,
+            "z": -96.2
+          }
+        }
+      ],
+      "directionNote": null,
+      "hoursNote": null,
+      "aggregated": true
+    },
+    {
+      "kind": "vertical",
+      "id": "sk:vertical:sanchome-toei-escalator-car-8",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-sanchome-map",
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "the のりかえ・出口案内 table under the Toei 立体図 shows an escalator and stairs at car 8. Toei lists 12 escalators for the station. Stands for every escalator of this pair drawn on the floor map; count and running direction were not recorded.",
+      "verticalKind": "escalator",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:toei-shinjuku-sanchome-b1f",
+          "areaId": "sk:area:sanchome-toei-b1f-paid",
+          "position": {
+            "x": -14.95,
+            "z": -93.6
+          }
+        },
+        {
+          "levelId": "sk:level:toei-shinjuku-sanchome-b2f",
+          "areaId": "sk:platform:toei-shinjuku-sanchome-1-2",
+          "position": {
+            "x": -14.95,
+            "z": -96.2
+          }
+        }
+      ],
+      "directionNote": "Running direction is not recorded on the floor map.",
+      "hoursNote": null,
+      "aggregated": true
+    },
+    {
+      "kind": "vertical",
+      "id": "sk:vertical:sanchome-toei-elevator",
+      "externalIds": {},
+      "names": {
+        "ja": "エレベーター（都営新宿線 改札内 B1F ⇔ ホーム B2F）",
+        "ja_kana": null,
+        "en": "Elevator (Toei Shinjuku Line concourse B1F ⇔ platform B2F)",
+        "zh": "电梯（都营新宿线站厅 B1F ⇔ 站台 B2F）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-sanchome-map",
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-shinjuku-sanchome",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "the のりかえ・出口案内 table under the Toei 立体図 shows a lift at car 4. Toei lists two lifts for the station; the other is at exit C6.",
+      "verticalKind": "elevator",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:toei-shinjuku-sanchome-b1f",
+          "areaId": "sk:area:sanchome-toei-b1f-paid",
+          "position": {
+            "x": -15.5,
+            "z": -84.4
+          }
+        },
+        {
+          "levelId": "sk:level:toei-shinjuku-sanchome-b2f",
+          "areaId": "sk:platform:toei-shinjuku-sanchome-1-2",
+          "position": {
+            "x": -15.5,
+            "z": -84.4
+          }
+        }
+      ],
+      "directionNote": null,
+      "hoursNote": null,
+      "aggregated": false
     }
   ],
   "unverifiedBlocks": [],

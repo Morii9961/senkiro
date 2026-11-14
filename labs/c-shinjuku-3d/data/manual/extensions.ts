@@ -39,20 +39,20 @@ const S_JR_2F = 'src:jreast-floormap-2f';
 
 const ELEV = 'Schematic. Floor heights were not measured; only the vertical order is taken from the source.';
 
-function level(id: string, operatorId: string, label: string, ordinal: number, elevation: number, p: Provenance, c: Common, notes?: string): Level {
+export function level(id: string, operatorId: string, label: string, ordinal: number, elevation: number, p: Provenance, c: Common, notes?: string): Level {
   return { kind: 'level', ...base(id, names(label, label, label), p, c, notes), operatorId, label, ordinal, elevation, elevationNote: ELEV };
 }
-function platform(
+export function platform(
   id: string, levelId: string, fareZone: FareZone, n: Names, footprint: PlanRect, anchor: PlanPoint, tracks: PlatformTrack[],
   p: Provenance, c: Common, notes?: string,
 ): Platform {
   return { kind: 'platform', ...base(id, n, p, c, notes), levelId, fareZone, footprint: [footprint], anchor, tracks };
 }
-function station(id: string, operatorId: string, n: Names, p: Provenance, railLineIds: string[]): Station {
+export function station(id: string, operatorId: string, n: Names, p: Provenance, railLineIds: string[]): Station {
   return { kind: 'station', ...entity(id, n, p), operatorId, complexId: COMPLEX, railLineIds };
 }
 /** A staircase and an escalator bank side by side between the same two areas. */
-function pair(
+export function pair(
   slug: string, kinds: VerticalKind[], from: { levelId: string; areaId: string; at: PlanPoint }, to: { levelId: string; areaId: string; at: PlanPoint },
   p: Provenance, c: Common, notes: string, nonAdjacent = false,
 ): VerticalFacility[] {

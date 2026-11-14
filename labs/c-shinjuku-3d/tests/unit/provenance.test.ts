@@ -66,14 +66,21 @@ describe('provenance and honesty rules', () => {
   it('does not mix up Shinjuku with similarly named stations', () => {
     // Neighbouring stations may be named as a direction on a sign, but never as an element of this model.
     const text = JSON.stringify([model.areas, model.gates, model.entrances, model.verticals, model.levels, model.stations].flat().map((e) => [e.id, e.names]));
-    expect(text).not.toMatch(/新宿三丁目|新宿西口駅/);
+    expect(text).not.toMatch(/新宿西口駅/);
+    // 新宿三丁目 is in the model as stations of its own, never merged into a 新宿 station
+    expect(model.stations.filter((s) => /新宿三丁目/.test(s.names.ja ?? '')).map((s) => s.id).sort()).toEqual(['sk:station:toei-shinjuku-sanchome', 'sk:station:tokyo-metro-shinjuku-sanchome']);
+    for (const e of [...model.areas, ...model.gates, ...model.entrances, ...model.verticals]) {
+      if (/sanchome/.test(e.id)) expect(e.stationId === null || /sanchome/.test(e.stationId), e.id).toBe(true);
+      else expect(e.stationId ?? '', e.id).not.toMatch(/sanchome/);
+    }
     // 西武新宿駅 is a station of its own in the model — never merged into another operator's station
     expect(model.stations.filter((s) => /西武新宿/.test(s.names.ja ?? '')).map((s) => s.id)).toEqual(['sk:station:seibu-shinjuku']);
     expect(model.stations.map((s) => s.id)).not.toContain('sk:station:toei-oedo-shinjuku-nishiguchi');
     const excluded = model.complex.explicitlyExcluded.map((x) => x.name).join(' ');
-    expect(excluded).toMatch(/新宿三丁目/);
+    expect(excluded).toMatch(/新宿西口駅/);
+    expect(excluded).not.toMatch(/新宿三丁目/);
     expect([...model.complex.stationIds].sort()).toEqual(model.stations.map((s) => s.id).sort());
-    expect(model.stations).toHaveLength(7);
+    expect(model.stations).toHaveLength(9);
   });
 
   it('JR track legend: 16 tracks on 8 islands, Yamanote on 14 and 15', () => {
