@@ -637,9 +637,10 @@ test.describe('performance', () => {
     { width: 1920, height: 1080 },
     { width: 1366, height: 768 },
   ]) {
-    test(`@perf frame rate, triangles and draw calls at ${viewport.width}×${viewport.height}`, async ({ page, browser }) => {
+    for (const withTrains of [false, true])
+    test(`@perf frame rate, triangles and draw calls at ${viewport.width}×${viewport.height}${withTrains ? ', trains running' : ''}`, async ({ page, browser }) => {
       await page.setViewportSize(viewport);
-      const errors = await open(page, 'lang=ja&theme=light&perf=1&motion=off');
+      const errors = await open(page, `lang=ja&theme=light&perf=1&motion=off${withTrains ? '&trains=on&simtime=12:00:00&simplay=1' : ''}`);
       await waitForScene(page);
       await page.getByTestId('demo-3').click();
       await page.waitForTimeout(500);
@@ -705,7 +706,8 @@ test.describe('performance', () => {
         webglRenderer: info.renderer,
         viewport,
         canvasPixels: { ...info.canvas, dpr: info.dpr },
-        scene: 'all floors, demo route 3 highlighted, labels on, orbiting by keyboard, rendering every frame',
+        scene: `all floors, demo route 3 highlighted, labels on, orbiting by keyboard, rendering every frame${withTrains ? ', demo-fixture trains running from 12:00:00' : ', trains off'}`,
+        trains: withTrains ? await page.evaluate(() => (window as unknown as { __SENKIRO_TRAINS__?: { shown: number; instances: number } }).__SENKIRO_TRAINS__ ?? null) : null,
         seconds,
         fps: Math.round((m.frames / seconds) * 10) / 10,
         p95FrameMs: Math.round(m.p95 * 10) / 10,
@@ -716,7 +718,7 @@ test.describe('performance', () => {
         jsHeapMB: m.heapStart !== null && m.heapEnd !== null ? { start: Math.round(m.heapStart / 1e5) / 10, end: Math.round(m.heapEnd / 1e5) / 10 } : null,
       };
       mkdirSync('test-results', { recursive: true });
-      writeFileSync(`test-results/perf-${viewport.width}x${viewport.height}.json`, `${JSON.stringify(result, null, 2)}\n`);
+      writeFileSync(`test-results/perf-${viewport.width}x${viewport.height}${withTrains ? '-trains' : ''}.json`, `${JSON.stringify(result, null, 2)}\n`);
       console.log(`[perf] ${JSON.stringify(result)}`);
 
       expect(s.calls).toBeLessThan(40);

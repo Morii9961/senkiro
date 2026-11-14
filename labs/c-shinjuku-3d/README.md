@@ -91,6 +91,7 @@ tests/unit/, tests/e2e/
 - [V2-PLAN.md](V2-PLAN.md)：V2 的现状分析、改造方案和进度
 - [DECISIONS.md](DECISIONS.md)：做过的选择、备选方案和理由（V1 与 V2）
 - [SOURCES.md](SOURCES.md)：来源与许可、元素来源核对表
+- [V3-REPORT.md](V3-REPORT.md)：V3（进行中）的完成情况：深色场景主题、共享时刻表接口、列车模拟；以及尚未开始的部分
 - [REPORT.md](REPORT.md)：范围完成情况、真实运行记录、已知缺陷
 - [PLAN.md](PLAN.md)：V1 动手前写的一页计划
 
