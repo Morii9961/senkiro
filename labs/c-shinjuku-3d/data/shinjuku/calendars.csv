@@ -1,0 +1,15 @@
+service_calendar_id,operator_id,service_date_type,source_calendar,rule,special_dates_status,source_id,remarks
+cal:toei:weekday,toei,weekday,odpt.Calendar:Weekday,Mon–Fri that are not national holidays,unverified,src:odpt-toei-train-timetable,Year-end/New-Year special operation (e.g. 12/30–1/3) is announced separately by Toei and is NOT modelled; resolver flags those dates.
+cal:toei:saturday-holiday,toei,saturday_holiday,odpt.Calendar:SaturdayHoliday,"Sat, Sun and national holidays (内閣府 list)",unverified,src:odpt-toei-train-timetable,
+cal:jr-east:weekday:legacy,jr-east,weekday,平日,Mon–Fri that are not national holidays (assumed; legacy file gives only the label 平日),unknown,src:legacy-shinjuku-csv,Validity period of the legacy file is unknown.
+cal:jr-east:saturday-holiday:legacy,jr-east,saturday_holiday,土休日,"Sat, Sun and national holidays (assumed; legacy file gives only the label 土休日)",unknown,src:legacy-shinjuku-csv,Saturday vs Sunday/holiday split is NOT made because the source does not make it.
+cal:odakyu:weekday:legacy,odakyu,weekday,平日,Mon–Fri that are not national holidays (assumed; legacy file gives only the label 平日),unknown,src:legacy-shinjuku-csv,Validity period of the legacy file is unknown.
+cal:odakyu:saturday-holiday:legacy,odakyu,saturday_holiday,土休日,"Sat, Sun and national holidays (assumed; legacy file gives only the label 土休日)",unknown,src:legacy-shinjuku-csv,Saturday vs Sunday/holiday split is NOT made because the source does not make it.
+cal:keio:weekday:legacy,keio,weekday,平日,Mon–Fri that are not national holidays (assumed; legacy file gives only the label 平日),unknown,src:legacy-shinjuku-csv,Validity period of the legacy file is unknown.
+cal:keio:saturday-holiday:legacy,keio,saturday_holiday,土休日,"Sat, Sun and national holidays (assumed; legacy file gives only the label 土休日)",unknown,src:legacy-shinjuku-csv,Saturday vs Sunday/holiday split is NOT made because the source does not make it.
+cal:tokyo-metro:weekday:legacy,tokyo-metro,weekday,平日,Mon–Fri that are not national holidays (assumed; legacy file gives only the label 平日),unknown,src:legacy-shinjuku-csv,Validity period of the legacy file is unknown.
+cal:tokyo-metro:saturday-holiday:legacy,tokyo-metro,saturday_holiday,土休日,"Sat, Sun and national holidays (assumed; legacy file gives only the label 土休日)",unknown,src:legacy-shinjuku-csv,Saturday vs Sunday/holiday split is NOT made because the source does not make it.
+cal:seibu:weekday:legacy,seibu,weekday,平日,Mon–Fri that are not national holidays (assumed; legacy file gives only the label 平日),unknown,src:legacy-shinjuku-csv,Validity period of the legacy file is unknown.
+cal:seibu:saturday-holiday:legacy,seibu,saturday_holiday,土休日,"Sat, Sun and national holidays (assumed; legacy file gives only the label 土休日)",unknown,src:legacy-shinjuku-csv,Saturday vs Sunday/holiday split is NOT made because the source does not make it.
+cal:toei:weekday:legacy,toei,weekday,平日,as legacy,unknown,src:legacy-shinjuku-csv,Legacy layer only.
+cal:toei:saturday-holiday:legacy,toei,saturday_holiday,土休日,as legacy,unknown,src:legacy-shinjuku-csv,Legacy layer only.

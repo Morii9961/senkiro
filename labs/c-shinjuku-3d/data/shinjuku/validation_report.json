@@ -1,0 +1,355 @@
+{
+  "generated_at": "2026-11-14T04:07:10.480Z",
+  "sources_manifest": {
+    "toei": {
+      "retrievedAt": "2026-11-14T03:51:44.703Z",
+      "files": {
+        "railway.json": {
+          "records": 6,
+          "dcDate": {
+            "2024-06-27T08:00:00+09:00": 6
+          },
+          "dctIssued": {}
+        },
+        "station.json": {
+          "records": 149,
+          "dcDate": {
+            "2021-08-17T10:00:00+09:00": 75,
+            "2024-03-27T09:00:00+09:00": 65,
+            "2024-06-27T08:00:00+09:00": 9
+          },
+          "dctIssued": {}
+        },
+        "train_type.json": {
+          "records": 8,
+          "dcDate": {
+            "2019-04-25T16:00:00+09:00": 8
+          },
+          "dctIssued": {}
+        },
+        "rail_direction.json": {
+          "records": 12,
+          "dcDate": {
+            "2019-04-25T14:00:00+09:00": 12
+          },
+          "dctIssued": {}
+        },
+        "train_timetable_shinjuku.json": {
+          "records": 755,
+          "dcDate": {
+            "2025-03-17T12:00:00+09:00": 754,
+            "2026-06-15T09:00:00+09:00": 1
+          },
+          "dctIssued": {
+            "2025-03-15": 359,
+            "2025-03-17": 396
+          }
+        },
+        "train_timetable_oedo.json": {
+          "records": 839,
+          "dcDate": {
+            "2025-03-17T12:00:00+09:00": 839
+          },
+          "dctIssued": {
+            "2025-03-15": 387,
+            "2025-03-17": 452
+          }
+        },
+        "station_timetable_S01.json": {
+          "records": 2,
+          "dcDate": {
+            "2025-03-17T12:00:00+09:00": 2
+          },
+          "dctIssued": {
+            "2025-03-15": 1,
+            "2025-03-17": 1
+          }
+        },
+        "station_timetable_S02.json": {
+          "records": 4,
+          "dcDate": {
+            "2025-03-17T12:00:00+09:00": 4
+          },
+          "dctIssued": {
+            "2025-03-15": 2,
+            "2025-03-17": 2
+          }
+        },
+        "station_timetable_E27.json": {
+          "records": 4,
+          "dcDate": {
+            "2025-03-17T12:00:00+09:00": 4
+          },
+          "dctIssued": {
+            "2025-03-15": 2,
+            "2025-03-17": 2
+          }
+        },
+        "station_timetable_E01.json": {
+          "records": 4,
+          "dcDate": {
+            "2025-03-17T12:00:00+09:00": 4
+          },
+          "dctIssued": {
+            "2025-03-15": 2,
+            "2025-03-17": 2
+          }
+        }
+      }
+    }
+  },
+  "as_of_resolution": {
+    "date": "2026-11-14",
+    "weekday_ja": "土",
+    "national_holiday_name": null,
+    "resolved_service_date_type": "saturday_holiday",
+    "special_operation_flag": null,
+    "remarks": null,
+    "source_id": "src:cao-holidays"
+  },
+  "layers": [
+    {
+      "layer": "official-open",
+      "events": 3018,
+      "checks": {
+        "invalid_time": {
+          "failures": 0,
+          "detail": "event without any parseable time"
+        },
+        "arrival_after_departure": {
+          "failures": 0,
+          "detail": "arrival later than departure at the same stop"
+        },
+        "duplicate_stop_event_id": {
+          "failures": 0,
+          "detail": "stop_event_id must be unique"
+        },
+        "same_platform_same_minute": {
+          "failures": 0,
+          "detail": "two departures from one track in the same minute (coupled multi-destination trains excluded and reported separately)"
+        },
+        "platform_station_mismatch": {
+          "failures": 0,
+          "detail": "platform belongs to another station / operator"
+        },
+        "station_operator_mismatch": {
+          "failures": 0,
+          "detail": "station not run by the event operator"
+        },
+        "line_not_at_station": {
+          "failures": 0,
+          "detail": "line does not serve the station"
+        },
+        "direction_line_mismatch": {
+          "failures": 0,
+          "detail": "direction id of another line"
+        },
+        "missing_direction": {
+          "failures": 0,
+          "detail": "direction unknown"
+        },
+        "missing_calendar": {
+          "failures": 0,
+          "detail": "service_calendar_id not defined"
+        },
+        "missing_source": {
+          "failures": 0,
+          "detail": "source_id not in sources.csv"
+        },
+        "origin_with_arrival": {
+          "failures": 0,
+          "detail": "origin event must not have an arrival time"
+        },
+        "terminal_with_departure": {
+          "failures": 0,
+          "detail": "terminating event must not have a departure time"
+        },
+        "synthetic_id_as_train_number": {
+          "failures": 0,
+          "detail": "internal ids must not appear as train numbers"
+        },
+        "trip_with_several_train_numbers": {
+          "failures": 0,
+          "detail": "one trip_id linked to different train numbers"
+        },
+        "formation_vs_series": {
+          "failures": 0,
+          "detail": "series/formation pair not in vehicle_catalog"
+        },
+        "validity_conflict": {
+          "failures": 0,
+          "detail": "valid_from after valid_until"
+        },
+        "verified_vehicle_without_source": {
+          "failures": 0,
+          "detail": "vehicle claim without source"
+        },
+        "e27_e01_merged": {
+          "failures": 0,
+          "detail": "E27 / E01 confusion"
+        }
+      },
+      "info": {
+        "coupled_multi_destination_records": 0,
+        "coupled_groups": 0
+      }
+    },
+    {
+      "layer": "official-open + legacy-unverified (local)",
+      "events": 10369,
+      "checks": {
+        "invalid_time": {
+          "failures": 0,
+          "detail": "event without any parseable time"
+        },
+        "arrival_after_departure": {
+          "failures": 0,
+          "detail": "arrival later than departure at the same stop"
+        },
+        "duplicate_stop_event_id": {
+          "failures": 0,
+          "detail": "stop_event_id must be unique"
+        },
+        "same_platform_same_minute": {
+          "failures": 0,
+          "detail": "two departures from one track in the same minute (coupled multi-destination trains excluded and reported separately)"
+        },
+        "platform_station_mismatch": {
+          "failures": 0,
+          "detail": "platform belongs to another station / operator"
+        },
+        "station_operator_mismatch": {
+          "failures": 0,
+          "detail": "station not run by the event operator"
+        },
+        "line_not_at_station": {
+          "failures": 0,
+          "detail": "line does not serve the station"
+        },
+        "direction_line_mismatch": {
+          "failures": 0,
+          "detail": "direction id of another line"
+        },
+        "missing_direction": {
+          "failures": 0,
+          "detail": "direction unknown"
+        },
+        "missing_calendar": {
+          "failures": 0,
+          "detail": "service_calendar_id not defined"
+        },
+        "missing_source": {
+          "failures": 0,
+          "detail": "source_id not in sources.csv"
+        },
+        "origin_with_arrival": {
+          "failures": 0,
+          "detail": "origin event must not have an arrival time"
+        },
+        "terminal_with_departure": {
+          "failures": 0,
+          "detail": "terminating event must not have a departure time"
+        },
+        "synthetic_id_as_train_number": {
+          "failures": 0,
+          "detail": "internal ids must not appear as train numbers"
+        },
+        "trip_with_several_train_numbers": {
+          "failures": 0,
+          "detail": "one trip_id linked to different train numbers"
+        },
+        "formation_vs_series": {
+          "failures": 0,
+          "detail": "series/formation pair not in vehicle_catalog"
+        },
+        "validity_conflict": {
+          "failures": 0,
+          "detail": "valid_from after valid_until"
+        },
+        "verified_vehicle_without_source": {
+          "failures": 0,
+          "detail": "vehicle claim without source"
+        },
+        "e27_e01_merged": {
+          "failures": 0,
+          "detail": "E27 / E01 confusion"
+        }
+      },
+      "info": {
+        "coupled_multi_destination_records": 30,
+        "coupled_groups": 15
+      }
+    }
+  ],
+  "toei_station_vs_train_timetable": {
+    "compared": 2645,
+    "matched": 2645,
+    "only_in_station_timetable": [],
+    "only_in_train_timetable": 0,
+    "origin_flag_mismatch": [
+      "toei:shinjuku:S01|saturday_holiday|508T|05:00",
+      "toei:shinjuku:S01|saturday_holiday|506T|05:22",
+      "toei:shinjuku:S01|saturday_holiday|704T|07:43",
+      "toei:shinjuku:S01|saturday_holiday|824T|08:29",
+      "toei:shinjuku:S01|saturday_holiday|960K|09:12",
+      "toei:shinjuku:S01|saturday_holiday|920T|09:38",
+      "toei:shinjuku:S01|saturday_holiday|1182K|11:49",
+      "toei:shinjuku:S01|saturday_holiday|1274K|12:22",
+      "toei:shinjuku:S01|saturday_holiday|1210T|12:49",
+      "toei:shinjuku:S01|saturday_holiday|1302T|13:22",
+      "toei:shinjuku:S01|saturday_holiday|1364K|13:49",
+      "toei:shinjuku:S01|saturday_holiday|1460K|14:22",
+      "toei:shinjuku:S01|saturday_holiday|1466K|14:49",
+      "toei:shinjuku:S01|saturday_holiday|1502T|15:11",
+      "toei:shinjuku:S01|saturday_holiday|1580K|15:27",
+      "toei:shinjuku:S01|saturday_holiday|1530T|15:50",
+      "toei:shinjuku:S01|saturday_holiday|1660K|16:13",
+      "toei:shinjuku:S01|saturday_holiday|1620T|16:42",
+      "toei:shinjuku:S01|saturday_holiday|1778K|17:06",
+      "toei:shinjuku:S01|saturday_holiday|1894K|18:51",
+      "toei:shinjuku:S01|weekday|508T|05:00",
+      "toei:shinjuku:S01|weekday|506T|05:22",
+      "toei:shinjuku:S01|weekday|1770K|17:00",
+      "toei:shinjuku:S01|weekday|1702T|17:41"
+    ],
+    "origin_flag_reverse_mismatch": [
+      "toei:shinjuku:S01|saturday_holiday|1950T|20:12",
+      "toei:shinjuku:S01|weekday|688K|07:13"
+    ]
+  },
+  "cross_station_links": {
+    "links": 1437,
+    "by_pair": {
+      "toei:shinjuku-sanchome:S02 → toei:shinjuku:S01": 364,
+      "toei:shinjuku:S01 → toei:shinjuku-sanchome:S02": 364,
+      "toei:shinjuku:E27 → toei:shinjuku-nishiguchi:E01": 349,
+      "toei:shinjuku-nishiguchi:E01 → toei:shinjuku:E27": 360
+    }
+  },
+  "legacy_vs_official": {
+    "toei_rows": 1161,
+    "toei_matched": 1161,
+    "toei_unmatched": [],
+    "keio_new_rows": 357,
+    "keio_new_candidates": 317,
+    "toei_unmatched_count": 0,
+    "oedo_direction_mapping": {
+      "六本木・大門": "toei:oedo:inner-loop",
+      "都庁前・光が丘": "toei:oedo:outer-loop"
+    }
+  },
+  "issues": [
+    {
+      "check": "origin_flag",
+      "severity": "warning",
+      "detail": "24 departures: station timetable isOrigin=true but train timetable origin is a Keio station; is_origin_at_station set to null",
+      "ref": null
+    },
+    {
+      "check": "origin_flag",
+      "severity": "warning",
+      "detail": "2 departures: train starts here per train timetable but station timetable has no isOrigin flag",
+      "ref": null
+    }
+  ]
+}

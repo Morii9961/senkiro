@@ -1,0 +1,560 @@
+{
+  "generated_at": "2026-11-14T04:07:10.480Z",
+  "file": "data/raw/legacy/新宿駅_全列車時刻表.csv",
+  "sha256": "075a0a51e52f7fa6d020be1487d0bab76b170e3be3d780720d238c3a1af94e57",
+  "records": 8567,
+  "fields": [
+    "公司",
+    "线路",
+    "方向",
+    "日种",
+    "时",
+    "分",
+    "时刻",
+    "种别",
+    "行先",
+    "番线",
+    "当站始发"
+  ],
+  "by_operator": {
+    "JR東日本": 4005,
+    "京王電鉄": 1017,
+    "小田急電鉄": 674,
+    "東京メトロ": 1144,
+    "東京都交通局": 1161,
+    "西武鉄道": 566
+  },
+  "by_line": {
+    "JR東日本 / 中央総武線(各停)": 874,
+    "JR東日本 / 中央線(快速)[東京～高尾]": 1166,
+    "JR東日本 / 埼京川越線[羽沢横浜国大～川越]": 616,
+    "JR東日本 / 山手線": 1020,
+    "JR東日本 / 湘南新宿ライン": 329,
+    "京王電鉄 / 京王新線": 357,
+    "京王電鉄 / 京王線": 660,
+    "小田急電鉄 / 小田急小田原線": 674,
+    "東京メトロ / 東京メトロ丸ノ内線": 1144,
+    "東京都交通局 / 都営大江戸線": 788,
+    "東京都交通局 / 都営新宿線": 373,
+    "西武鉄道 / 西武新宿線": 566
+  },
+  "by_day_type": {
+    "平日": 4517,
+    "土休日": 4050
+  },
+  "origin_flag_values": {
+    "1": 8567
+  },
+  "hour_range": [
+    4,
+    24
+  ],
+  "times_over_24h": 126,
+  "time_field_inconsistent": 0,
+  "invalid_times": 0,
+  "exact_duplicates": {
+    "groups": 54,
+    "extra_rows": 55,
+    "resolution": "Rows identical in every field (same line, direction, day type, minute, type, destination AND platform) are one physical departure: a single track cannot dispatch two trains in the same minute. Each group is kept as ONE event with legacy_duplicate_count = n and a remark; the extra rows are not deleted from the raw file.",
+    "examples": [
+      {
+        "line": "中央線(快速)[東京～高尾]",
+        "day_type": "平日",
+        "count": 2,
+        "csv_lines": [
+          1443,
+          1444
+        ]
+      },
+      {
+        "line": "中央線(快速)[東京～高尾]",
+        "day_type": "土休日",
+        "count": 2,
+        "csv_lines": [
+          1765,
+          1766
+        ]
+      },
+      {
+        "line": "湘南新宿ライン",
+        "day_type": "平日",
+        "count": 2,
+        "csv_lines": [
+          3687,
+          3688
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "平日",
+        "count": 2,
+        "csv_lines": [
+          4527,
+          4528
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "平日",
+        "count": 2,
+        "csv_lines": [
+          4533,
+          4534
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "平日",
+        "count": 2,
+        "csv_lines": [
+          4539,
+          4540
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "平日",
+        "count": 2,
+        "csv_lines": [
+          4545,
+          4546
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "平日",
+        "count": 2,
+        "csv_lines": [
+          4551,
+          4552
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "平日",
+        "count": 2,
+        "csv_lines": [
+          4558,
+          4559
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "平日",
+        "count": 2,
+        "csv_lines": [
+          4565,
+          4566
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "土休日",
+        "count": 2,
+        "csv_lines": [
+          4733,
+          4734
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "土休日",
+        "count": 2,
+        "csv_lines": [
+          4736,
+          4737
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "土休日",
+        "count": 2,
+        "csv_lines": [
+          4739,
+          4740
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "土休日",
+        "count": 2,
+        "csv_lines": [
+          4743,
+          4744
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "土休日",
+        "count": 2,
+        "csv_lines": [
+          4746,
+          4747
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "土休日",
+        "count": 2,
+        "csv_lines": [
+          4749,
+          4750
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "土休日",
+        "count": 2,
+        "csv_lines": [
+          4754,
+          4755
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "土休日",
+        "count": 2,
+        "csv_lines": [
+          4757,
+          4758
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "土休日",
+        "count": 2,
+        "csv_lines": [
+          4761,
+          4762
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "土休日",
+        "count": 2,
+        "csv_lines": [
+          4765,
+          4766
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "土休日",
+        "count": 2,
+        "csv_lines": [
+          4768,
+          4769
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "土休日",
+        "count": 2,
+        "csv_lines": [
+          4771,
+          4772
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "土休日",
+        "count": 2,
+        "csv_lines": [
+          4775,
+          4776
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "土休日",
+        "count": 2,
+        "csv_lines": [
+          4778,
+          4779
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "土休日",
+        "count": 2,
+        "csv_lines": [
+          4781,
+          4782
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "土休日",
+        "count": 2,
+        "csv_lines": [
+          4785,
+          4786
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "土休日",
+        "count": 2,
+        "csv_lines": [
+          4788,
+          4789
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "土休日",
+        "count": 2,
+        "csv_lines": [
+          4792,
+          4793
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "土休日",
+        "count": 2,
+        "csv_lines": [
+          4795,
+          4796
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "土休日",
+        "count": 2,
+        "csv_lines": [
+          4799,
+          4800
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "土休日",
+        "count": 2,
+        "csv_lines": [
+          4802,
+          4803
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "土休日",
+        "count": 2,
+        "csv_lines": [
+          4806,
+          4807
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "土休日",
+        "count": 2,
+        "csv_lines": [
+          4809,
+          4810
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "土休日",
+        "count": 2,
+        "csv_lines": [
+          4813,
+          4814
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "土休日",
+        "count": 2,
+        "csv_lines": [
+          4816,
+          4817
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "土休日",
+        "count": 2,
+        "csv_lines": [
+          4820,
+          4821
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "土休日",
+        "count": 2,
+        "csv_lines": [
+          4823,
+          4824
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "土休日",
+        "count": 2,
+        "csv_lines": [
+          4827,
+          4828
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "土休日",
+        "count": 2,
+        "csv_lines": [
+          4830,
+          4831
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "土休日",
+        "count": 2,
+        "csv_lines": [
+          4834,
+          4835
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "土休日",
+        "count": 2,
+        "csv_lines": [
+          4837,
+          4838
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "土休日",
+        "count": 2,
+        "csv_lines": [
+          4841,
+          4842
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "土休日",
+        "count": 2,
+        "csv_lines": [
+          4844,
+          4845
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "土休日",
+        "count": 2,
+        "csv_lines": [
+          4848,
+          4849
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "土休日",
+        "count": 2,
+        "csv_lines": [
+          4851,
+          4852
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "土休日",
+        "count": 2,
+        "csv_lines": [
+          4855,
+          4856
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "土休日",
+        "count": 2,
+        "csv_lines": [
+          4860,
+          4861
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "土休日",
+        "count": 2,
+        "csv_lines": [
+          4869,
+          4870
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "土休日",
+        "count": 2,
+        "csv_lines": [
+          4875,
+          4876
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "土休日",
+        "count": 2,
+        "csv_lines": [
+          4883,
+          4884
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "土休日",
+        "count": 3,
+        "csv_lines": [
+          4892,
+          4893,
+          4894
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "土休日",
+        "count": 2,
+        "csv_lines": [
+          4898,
+          4899
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "土休日",
+        "count": 2,
+        "csv_lines": [
+          4906,
+          4907
+        ]
+      },
+      {
+        "line": "京王線",
+        "day_type": "土休日",
+        "count": 2,
+        "csv_lines": [
+          4915,
+          4916
+        ]
+      }
+    ]
+  },
+  "same_minute_different_rows": 17,
+  "unknown_line_names": [],
+  "verification_against_toei_open_data": {
+    "rows_checked": 1161,
+    "rows_matched": 1161,
+    "unmatched_groups": 0
+  },
+  "keio_new_line_candidate_matches": {
+    "rows": 357,
+    "candidates": 317
+  }
+}

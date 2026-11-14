@@ -1,0 +1,8 @@
+vehicle_id,operator_id,vehicle_series,formation_length,service_lines,valid_from,valid_until,model_asset_id,source_id,verification_status,remarks
+toei-10-300-10,toei,10-300,10,toei:shinjuku;keio:keio;keio:keio-new,2023-03-31,,,src:tetsudo-ch-10-300-10car,representative,All Toei Shinjuku Line sets 10 cars from end of FY2022 (secondary source).
+keio-9000-10,keio,9000,10,keio:keio;keio:keio-new;toei:shinjuku,,,,src:tetsudo-ch-10-300-10car,representative,Runs through to Toei Shinjuku Line (secondary source). Keio also runs 8-car 9000 sets that do not enter the Toei line — not catalogued here.
+keio-5000-10,keio,5000,10,keio:keio;keio:keio-new;toei:shinjuku,,,,src:tetsudo-ch-10-300-10car,representative,Also used for 京王ライナー. Through running to Toei per secondary source.
+toei-12-000-8,toei,12-000,8,toei:oedo,2025-04-01,,,src:toei-overview-fleet,representative,8 cars × 29 sets as of 2025-04-01 (excerpt of the Toei overview page).
+toei-12-600-8,toei,12-600,8,toei:oedo,2025-04-01,,,src:toei-overview-fleet,representative,8 cars × 30 sets as of 2025-04-01 (excerpt of the Toei overview page).
+jr-east-e233-0-12,jr-east,E233-0,12,jr-east:chuo-rapid,2025-03-15,,,src:jreast-chuo-green-2025,representative,With two bilevel Green cars (cars 4–5 from the Tokyo end). Secondary source.
+jr-east-e233-0-10,jr-east,E233-0,10,jr-east:chuo-rapid,2025-03-15,,,src:jreast-chuo-green-2025,representative,A few sets without Green cars reported to remain after 2025-03-15; which trains they work is not published. Secondary source.

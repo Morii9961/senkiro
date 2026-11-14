@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://senkiro.invalid/schema/senkiro_timetable/1.0.0",
+  "title": "SENKIRO Greater Shinjuku timetable package",
+  "type": "object",
+  "required": ["schema", "schema_version", "as_of_date", "timezone", "layers", "stations", "platforms", "calendar_dates", "sources", "vehicle_catalog", "trips", "events", "trip_links", "trip_vehicle_assignments"],
+  "properties": {
+    "schema": { "const": "senkiro-timetable" },
+    "schema_version": { "type": "string" },
+    "generated_at": { "type": "string" },
+    "as_of_date": { "type": "string", "format": "date" },
+    "timezone": { "const": "Asia/Tokyo" },
+    "layers": { "type": "array", "items": { "enum": ["official-open", "legacy-unverified", "official-local"] } },
+    "events": { "type": "array", "items": { "$ref": "#/$defs/event" } }
+  },
+  "$defs": {
+    "hhmm": { "type": ["string", "null"], "pattern": "^([0-3][0-9]|4[0-7]):[0-5][0-9](:[0-5][0-9])?$" },
+    "event": {
+      "type": "object",
+      "required": ["station_id", "operator_id", "line_id", "platform_id", "direction_id", "service_date_type", "trip_id", "train_number",
+        "arrival_time_local", "departure_time_local", "destination_text", "service_class", "vehicle_series", "formation_length",
+        "vehicle_assignment_status", "source_id", "valid_from", "valid_until", "remarks",
+        "stop_event_id", "trip_id_is_synthetic", "arrival_seconds", "departure_seconds", "arrival_departure_type", "data_status"],
+      "properties": {
+        "station_id": { "enum": ["jr-east:shinjuku", "odakyu:shinjuku", "keio:shinjuku", "keio:shinjuku-newline", "tokyo-metro:shinjuku:M08", "toei:shinjuku:S01", "toei:shinjuku:E27", "seibu:seibu-shinjuku", "tokyo-metro:shinjuku-sanchome:M09", "tokyo-metro:shinjuku-sanchome:F13", "toei:shinjuku-sanchome:S02", "toei:shinjuku-nishiguchi:E01"] },
+        "operator_id": { "enum": ["jr-east", "odakyu", "keio", "tokyo-metro", "toei", "seibu"] },
+        "line_id": { "type": "string", "pattern": "^[a-z-]+:[a-z-]+$" },
+        "platform_id": { "type": ["string", "null"], "description": "Namespaced by station_id: <station_id>:track-<label>. null = unknown; never defaulted." },
+        "direction_id": { "type": ["string", "null"] },
+        "service_date_type": { "enum": ["weekday", "saturday_holiday"] },
+        "trip_id": { "type": "string" },
+        "trip_id_is_synthetic": { "type": "boolean" },
+        "train_number": { "type": ["string", "null"], "description": "Operator train number. Never a synthetic id." },
+        "arrival_time_local": { "$ref": "#/$defs/hhmm" },
+        "departure_time_local": { "$ref": "#/$defs/hhmm" },
+        "arrival_seconds": { "type": ["integer", "null"], "minimum": 0, "maximum": 172799 },
+        "departure_seconds": { "type": ["integer", "null"], "minimum": 0, "maximum": 172799 },
+        "arrival_departure_type": { "enum": ["arrival_departure", "departure_only", "arrival_only"] },
+        "destination_text": { "type": "string" },
+        "destination_text_zh": { "type": ["string", "null"] },
+        "service_class": { "type": ["string", "null"] },
+        "service_class_unified": { "enum": ["local", "rapid", "express", "limited_express", "liner", "other"] },
+        "vehicle_series": { "type": ["string", "null"] },
+        "formation_length": { "type": ["integer", "null"], "minimum": 1, "maximum": 16 },
+        "vehicle_assignment_status": { "enum": ["verified", "representative", "unknown"] },
+        "platform_verification_status": { "enum": ["verified", "legacy_unverified", "unknown"] },
+        "is_origin_at_station": { "type": ["boolean", "null"] },
+        "is_terminal_at_station": { "type": ["boolean", "null"] },
+        "source_id": { "type": "string" },
+        "source_confidence": { "enum": ["high", "medium", "low"] },
+        "data_status": { "enum": ["official", "legacy_unverified"] },
+        "valid_from": { "type": ["string", "null"], "format": "date" },
+        "valid_until": { "type": ["string", "null"], "format": "date" },
+        "remarks": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

@@ -1,0 +1,23 @@
+direction_id,line_id,label_ja,odpt_direction,odpt_direction_title,legacy_label
+jr-east:yamanote:for-ikebukuro-ueno,jr-east:yamanote,池袋・上野方面,,,池袋・上野
+jr-east:yamanote:for-shibuya-shinagawa,jr-east:yamanote,渋谷・品川方面,,,渋谷・品川
+jr-east:chuo-rapid:for-tokyo,jr-east:chuo-rapid,東京方面,,,東京
+jr-east:chuo-rapid:for-takao-ome,jr-east:chuo-rapid,高尾・青梅方面,,,高尾・青梅
+jr-east:chuo-sobu-local:for-nakano-mitaka,jr-east:chuo-sobu-local,三鷹・中野方面,,,三鷹・中野
+jr-east:chuo-sobu-local:for-tsudanuma-chiba,jr-east:chuo-sobu-local,千葉・津田沼方面,,,千葉・津田沼
+jr-east:saikyo-kawagoe:for-omiya-kawagoe,jr-east:saikyo-kawagoe,大宮・川越方面,,,大宮・川越
+jr-east:saikyo-kawagoe:for-shinkiba-ebina,jr-east:saikyo-kawagoe,新木場・海老名方面,,,新木場・海老名
+jr-east:shonan-shinjuku:for-omiya-takasaki-utsunomiya,jr-east:shonan-shinjuku,大宮・高崎・宇都宮方面,,,大宮・高崎・宇都宮
+jr-east:shonan-shinjuku:for-yokohama-ofuna,jr-east:shonan-shinjuku,横浜・大船方面,,,横浜・大船
+odakyu:odawara:outbound,odakyu:odawara,本厚木・小田原方面,,,本厚木・小田原
+keio:keio:outbound,keio:keio,京王八王子・高尾山口・橋本方面,,,京王八王子・高尾山口・橋本
+keio:keio-new:outbound,keio:keio-new,笹塚・橋本方面,,,笹塚・橋本
+tokyo-metro:marunouchi:for-ikebukuro,tokyo-metro:marunouchi,池袋・茗荷谷方面,,,池袋・茗荷谷
+tokyo-metro:marunouchi:for-ogikubo-honancho,tokyo-metro:marunouchi,荻窪・方南町方面,,,荻窪・方南町
+tokyo-metro:fukutoshin:for-ikebukuro,tokyo-metro:fukutoshin,池袋・和光市方面,,,
+tokyo-metro:fukutoshin:for-shibuya,tokyo-metro:fukutoshin,渋谷・横浜方面,,,
+toei:shinjuku:eastbound,toei:shinjuku,本八幡方面 (東行),odpt.RailDirection:Eastbound,東行,本八幡・大島
+toei:shinjuku:westbound,toei:shinjuku,新宿・京王線方面 (西行),odpt.RailDirection:Westbound,西行,
+toei:oedo:inner-loop,toei:oedo,内回り,odpt.RailDirection:InnerLoop,内回り,六本木・大門
+toei:oedo:outer-loop,toei:oedo,外回り,odpt.RailDirection:OuterLoop,外回り,都庁前・光が丘
+seibu:shinjuku:outbound,seibu:shinjuku,本川越・拝島方面,,,本川越・拝島

@@ -1,0 +1,14 @@
+line_id,operator_id,name_ja,name_en,name_zh,line_code,odpt_railway,legacy_names,remarks
+jr-east:yamanote,jr-east,山手線,Yamanote Line,山手线,JY,odpt.Railway:JR-East.Yamanote,山手線,
+jr-east:chuo-rapid,jr-east,中央線(快速),Chuo Line (Rapid),中央线（快速）,JC,odpt.Railway:JR-East.ChuoRapid,中央線(快速)[東京～高尾],Legacy grouping also carries Chuo Main Line limited expresses (あずさ/かいじ/富士回遊 etc.) departing from the same tracks.
+jr-east:chuo-sobu-local,jr-east,中央・総武線(各駅停車),Chuo-Sobu Line (Local),中央·总武线（各站停车）,JB,odpt.Railway:JR-East.ChuoSobuLocal,中央総武線(各停),
+jr-east:saikyo-kawagoe,jr-east,埼京線・川越線,Saikyo / Kawagoe Line,埼京线·川越线,JA,odpt.Railway:JR-East.SaikyoKawagoe,埼京川越線[羽沢横浜国大～川越],
+jr-east:shonan-shinjuku,jr-east,湘南新宿ライン,Shonan-Shinjuku Line,湘南新宿线,JS,odpt.Railway:JR-East.ShonanShinjuku,湘南新宿ライン,Legacy grouping also carries 成田エクスプレス and other limited expresses using these tracks.
+odakyu:odawara,odakyu,小田急小田原線,Odakyu Odawara Line,小田急小田原线,OH,odpt.Railway:Odakyu.Odawara,小田急小田原線,
+keio:keio,keio,京王線,Keio Line,京王线,KO,odpt.Railway:Keio.Keio,京王線,
+keio:keio-new,keio,京王新線,Keio New Line,京王新线,KO,odpt.Railway:Keio.KeioNew,京王新線,
+tokyo-metro:marunouchi,tokyo-metro,丸ノ内線,Marunouchi Line,丸之内线,M,odpt.Railway:TokyoMetro.Marunouchi,東京メトロ丸ノ内線,
+tokyo-metro:fukutoshin,tokyo-metro,副都心線,Fukutoshin Line,副都心线,F,odpt.Railway:TokyoMetro.Fukutoshin,,
+toei:shinjuku,toei,都営新宿線,Toei Shinjuku Line,都营新宿线,S,odpt.Railway:Toei.Shinjuku,都営新宿線,
+toei:oedo,toei,都営大江戸線,Toei Oedo Line,都营大江户线,E,odpt.Railway:Toei.Oedo,都営大江戸線,
+seibu:shinjuku,seibu,西武新宿線,Seibu Shinjuku Line,西武新宿线,SS,odpt.Railway:Seibu.Shinjuku,西武新宿線,

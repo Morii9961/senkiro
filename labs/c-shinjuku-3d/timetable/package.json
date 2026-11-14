@@ -1,0 +1,18 @@
+{
+  "name": "senkiro-shinjuku-timetable",
+  "private": true,
+  "version": "1.0.0",
+  "description": "SENKIRO Lab C · Greater Shinjuku railway timetable database (build pipeline, adapter, tests). No dependencies.",
+  "type": "module",
+  "license": "AGPL-3.0-only",
+  "engines": { "node": ">=23.6" },
+  "scripts": {
+    "fetch:toei": "node scripts/fetch-odpt-public.mjs",
+    "fetch:holidays": "node scripts/fetch-holidays.mjs",
+    "fetch:tokyometro": "node scripts/fetch-odpt-tokyometro.mjs",
+    "fetch": "npm run fetch:toei && npm run fetch:holidays",
+    "build": "node scripts/build.mjs",
+    "scenarios": "node scripts/v3-scenarios.ts",
+    "test": "node --test \"tests/*.test.*\""
+  }
+}

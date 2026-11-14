@@ -37,3 +37,6 @@ Desktop.ini
 .idea/
 **/.vscode/*
 !**/.vscode/extensions.json
+
+# SENKIRO Lab C timetable: local-only layer (legacy file of unknown licence, ODPT Basic-License data)
+labs/c-shinjuku-3d/data/shinjuku/local/

@@ -1,0 +1,7 @@
+operator_id,name_ja,name_en,name_zh,odpt_operator,legacy_name
+jr-east,東日本旅客鉄道,East Japan Railway Company,JR东日本,odpt.Operator:JR-East,JR東日本
+odakyu,小田急電鉄,Odakyu Electric Railway,小田急电铁,odpt.Operator:Odakyu,小田急電鉄
+keio,京王電鉄,Keio Corporation,京王电铁,odpt.Operator:Keio,京王電鉄
+tokyo-metro,東京地下鉄,Tokyo Metro,东京地铁,odpt.Operator:TokyoMetro,東京メトロ
+toei,東京都交通局,"Bureau of Transportation, Tokyo Metropolitan Government (Toei)",东京都交通局（都营）,odpt.Operator:Toei,東京都交通局
+seibu,西武鉄道,Seibu Railway,西武铁道,odpt.Operator:Seibu,西武鉄道
