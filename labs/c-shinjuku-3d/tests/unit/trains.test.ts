@@ -84,7 +84,8 @@ describe('vehicle rules', () => {
     expect(trip.spec.id).toBe('jr-east:E233');
 
     const rule = resolveVehicle(base);
-    expect(rule).toMatchObject({ basis: 'line-rule', status: 'verified', seriesLabel: 'E235系', cars: null });
+    expect(rule).toMatchObject({ basis: 'line-rule', status: 'verified', seriesLabel: 'E235系', cars: 11, carsBasis: 'line-fact' });
+    expect(rule.sourceIds).toContain('src:trafficnews-yamanote-e235');
 
     expect(resolveVehicle(rec({ line_id: 'jr-east:chuo-rapid' })).status).toBe('representative');
 
@@ -98,7 +99,10 @@ describe('vehicle rules', () => {
   });
 
   it('never assumes a number of cars: only the trip or a sourced fact gives one', () => {
-    expect(resolveVehicle(base).cars).toBeNull();
+    expect(resolveVehicle(rec({ station_id: 'odakyu:shinjuku', line_id: 'odakyu:odawara' })).cars).toBeNull();
+    expect(resolveVehicle(rec({ line_id: 'jr-east:chuo-sobu-local' })).cars).toBeNull();
+    // the trip's own figure wins over a fact about the line
+    expect(resolveVehicle(rec({ formation_length: 10 }))).toMatchObject({ cars: 10, carsBasis: 'trip' });
     const oedo = resolveVehicle(rec({ station_id: 'toei:shinjuku:E27', line_id: 'toei:oedo' }));
     expect(oedo).toMatchObject({ cars: 8, carsBasis: 'line-fact', status: 'unknown' });
     expect(oedo.sourceIds).toContain('src:toei-shinjuku-map');
@@ -185,7 +189,7 @@ describe('train simulation', () => {
     const eleven = plansOf([rec({ formation_length: 11 })]).plans[0]!;
     expect(eleven.carLength).toBeCloseTo(NOMINAL_CAR_LENGTH);
     expect(eleven.length).toBeCloseTo(11 * NOMINAL_CAR_LENGTH);
-    const unknown = plansOf([base]).plans[0]!;
+    const unknown = plansOf([rec({ line_id: 'jr-east:chuo-sobu-local', platform_id: 'jr-east:shinjuku:13' })]).plans[0]!;
     expect(unknown.carLength).toBeNull();
     const oedo = plansOf([rec({ station_id: 'toei:shinjuku:E27', operator_id: 'toei', line_id: 'toei:oedo', platform_id: 'toei:shinjuku:E27:6' })]).plans[0]!;
     expect(oedo.vehicle.cars).toBe(8);

@@ -30,7 +30,7 @@ export interface VehicleSpec {
   body: string;
   roof: string;
   /** Where the accent colour — the display colour of the trip's line — is applied. */
-  accent: 'doors-and-front' | 'belt' | 'none';
+  accent: 'doors-and-front' | 'belt' | 'body' | 'none';
   front: FrontShape;
   doorsPerSide: number;
   sourceIds: string[];
@@ -98,6 +98,34 @@ export const VEHICLES: readonly VehicleSpec[] = [
     sourceIds: ['src:jreast-train-e231'],
     note: `JR East lists 中央線・総武線各駅停車 and 湘南新宿ライン among the lines of the E231系. ${SCHEMATIC}`,
   },
+  {
+    id: 'tokyo-metro:2000',
+    series: '2000系',
+    operatorId: 'tokyo-metro',
+    names: { ja: '2000系', en: '2000 series', zh: '2000 系' },
+    aliases: ['2000', 'metro2000', 'tokyometro2000'],
+    body: '#d8dbdf',
+    roof: '#8d9299',
+    accent: 'body',
+    front: 'flat',
+    doorsPerSide: 3,
+    sourceIds: ['src:tokyometro-marunouchi-2000'],
+    note: `Tokyo Metro's train for the Marunouchi Line since 2019, reported as red; the body takes the line's display colour here. ${SCHEMATIC}`,
+  },
+  {
+    id: 'toei:10-300',
+    series: '10-300形',
+    operatorId: 'toei',
+    names: { ja: '10-300形', en: 'Type 10-300', zh: '10-300 形' },
+    aliases: ['10-300', 'toei10-300'],
+    body: '#dde0e4',
+    roof: '#7a8189',
+    accent: 'belt',
+    front: 'flat',
+    doorsPerSide: 4,
+    sourceIds: ['src:tetsudoch-toei-shinjuku-10cars'],
+    note: `The Toei trainsets of the Shinjuku Line, all 10 cars long since 2022. ${SCHEMATIC}`,
+  },
 ];
 
 function normaliseSeries(s: string): string {
@@ -129,12 +157,12 @@ export interface LineVehicleRule {
  */
 export const LINE_VEHICLE_RULES: readonly LineVehicleRule[] = [
   {
-    line_id: 'jr-east:yamanote', vehicleId: 'jr-east:E235', status: 'verified', sourceIds: ['src:jreast-train-e235'],
-    note: 'JR East lists 山手線 under the E235系; the pages of the other commuter series read (E231系, E233系) do not list it.',
+    line_id: 'jr-east:yamanote', vehicleId: 'jr-east:E235', status: 'verified', sourceIds: ['src:jreast-train-e235', 'src:trafficnews-yamanote-e235'],
+    note: 'JR East lists 山手線 under the E235系, and announced in January 2020 that the whole Yamanote Line fleet had been replaced by it (50 sets, 550 cars).',
   },
   {
-    line_id: 'jr-east:chuo-rapid', vehicleId: 'jr-east:E233', status: 'representative', sourceIds: ['src:jreast-train-e233'],
-    note: 'JR East lists 中央線快速 under the E233系. Whether every trip uses it was not checked.',
+    line_id: 'jr-east:chuo-rapid', vehicleId: 'jr-east:E233', status: 'representative', sourceIds: ['src:jreast-train-e233', 'src:tetsudoch-chuo-green-car'],
+    note: 'JR East lists 中央線快速 under the E233系, which carries the green cars introduced in March 2025. Whether every trip uses it was not checked.',
   },
   {
     line_id: 'jr-east:saikyo', vehicleId: 'jr-east:E233', status: 'representative', sourceIds: ['src:jreast-train-e233'],
@@ -143,6 +171,14 @@ export const LINE_VEHICLE_RULES: readonly LineVehicleRule[] = [
   {
     line_id: 'jr-east:chuo-sobu-local', vehicleId: 'jr-east:E231', status: 'representative', sourceIds: ['src:jreast-train-e231'],
     note: 'JR East lists 中央線・総武線各駅停車 under the E231系. Other types run on the line as well.',
+  },
+  {
+    line_id: 'tokyo-metro:marunouchi', vehicleId: 'tokyo-metro:2000', status: 'representative', sourceIds: ['src:tokyometro-marunouchi-2000'],
+    note: 'Tokyo Metro planned for every Marunouchi Line trainset to be a 2000系 in fiscal 2023; that the last 02系 has gone was not confirmed.',
+  },
+  {
+    line_id: 'toei:shinjuku', vehicleId: 'toei:10-300', status: 'representative', sourceIds: ['src:tetsudoch-toei-shinjuku-10cars'],
+    note: 'The Toei-owned trains of the line. Keio trains run through as well; the type of a given trip was not checked.',
   },
 ];
 
@@ -156,6 +192,22 @@ export interface FormationFact {
 
 /** Car counts that a source states for a line at a station. */
 export const FORMATION_FACTS: readonly FormationFact[] = [
+  {
+    station_id: 'jr-east:shinjuku', line_id: 'jr-east:yamanote', cars: 11, sourceIds: ['src:trafficnews-yamanote-e235'],
+    note: '50 trainsets and 550 cars in all: 11 cars per train.',
+  },
+  {
+    station_id: 'jr-east:shinjuku', line_id: 'jr-east:chuo-rapid', cars: 12, sourceIds: ['src:tetsudoch-chuo-green-car'],
+    note: '10-car E233系 sets plus two green cars since March 2025. 10-car trains were still reported in the mix around the start of the service; a trip that says otherwise in the timetable wins.',
+  },
+  {
+    station_id: 'tokyo-metro:shinjuku:M08', line_id: 'tokyo-metro:marunouchi', cars: 6, sourceIds: ['src:tokyometro-marunouchi-2000'],
+    note: 'Tokyo Metro speaks of 53 six-car trainsets for the line.',
+  },
+  {
+    station_id: 'toei:shinjuku:S01', line_id: 'toei:shinjuku', cars: 10, sourceIds: ['src:tetsudoch-toei-shinjuku-10cars'],
+    note: 'The Toei Shinjuku Line has been all 10-car since August 2022.',
+  },
   {
     station_id: 'toei:shinjuku:E27', line_id: 'toei:oedo', cars: 8, sourceIds: ['src:toei-shinjuku-map'],
     note: 'The のりかえ・出口案内 table under the Toei 立体図 numbers the cars of the Oedo Line from 1 to 8.',

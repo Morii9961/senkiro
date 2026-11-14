@@ -68,7 +68,7 @@ export function buildTrainParts(shape: TrainShape): TrainPart[] {
   const parts: TrainPart[] = [];
   const n = cars ?? 1;
   const carLength = length / n;
-  const doorColor = spec.accent === 'doors-and-front' ? accent : shade(spec.body, 0.9);
+  const doorColor = spec.accent === 'doors-and-front' ? accent : spec.accent === 'body' ? shade(accent, 0.86) : shade(spec.body, 0.9);
   const side = (s: 1 | -1, inner: number, outer: number): [number, number] => (s === 1 ? [HALF + inner, HALF + outer] : [-HALF - outer, -HALF - inner]);
 
   for (let i = 0; i < n; i++) {
@@ -82,7 +82,7 @@ export function buildTrainParts(shape: TrainShape): TrainPart[] {
       const m = a0 + len * at;
       parts.push({ a0: m - bogie / 2, a1: m + bogie / 2, u0: 0, u1: 0.085, c0: -0.23, c1: 0.23, color: BOGIE });
     }
-    parts.push({ a0, a1, u0: FLOOR, u1: TOP, c0: -HALF, c1: HALF, color: spec.body });
+    parts.push({ a0, a1, u0: FLOOR, u1: TOP, c0: -HALF, c1: HALF, color: spec.accent === 'body' ? accent : spec.body });
     parts.push({ a0: a0 + 0.05, a1: a1 - 0.05, u0: TOP, u1: TOP + 0.035, c0: -0.185, c1: 0.185, color: spec.roof });
     const ac = Math.min(1, len * 0.3);
     parts.push({ a0: (a0 + a1) / 2 - ac / 2, a1: (a0 + a1) / 2 + ac / 2, u0: TOP + 0.035, u1: TOP + 0.09, c0: -0.13, c1: 0.13, color: shade(spec.roof, 1.25) });
@@ -122,7 +122,7 @@ export function buildTrainParts(shape: TrainShape): TrainPart[] {
     const out = (d0: number, d1: number): [number, number] => (end === 1 ? [face + d0, face + d1] : [face - d1, face - d0]);
     const [w0, w1] = out(0, 0.012);
     parts.push({ a0: w0, a1: w1, u0: 0.32, u1: 0.56, c0: -0.215, c1: 0.215, color: CAB_GLASS });
-    parts.push({ a0: w0, a1: w1, u0: 0.12, u1: 0.32, c0: -0.235, c1: 0.235, color: spec.accent === 'doors-and-front' ? accent : shade(spec.body, 0.93) });
+    parts.push({ a0: w0, a1: w1, u0: 0.12, u1: 0.32, c0: -0.235, c1: 0.235, color: spec.accent === 'doors-and-front' || spec.accent === 'body' ? accent : shade(spec.body, 0.93) });
     if (spec.accent === 'doors-and-front') parts.push({ a0: w0, a1: w1, u0: 0.56, u1: 0.6, c0: -0.235, c1: 0.235, color: accent });
     const [p0, p1] = out(0.012, 0.02);
     for (const c of [-0.17, 0.17]) parts.push({ a0: p0, a1: p1, u0: 0.15, u1: 0.2, c0: c - 0.04, c1: c + 0.04, color: LAMP_OFF, lamp: end });

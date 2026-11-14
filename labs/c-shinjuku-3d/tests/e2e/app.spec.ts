@@ -591,7 +591,7 @@ test.describe('train simulation', () => {
     await expect(page.getByTestId('train-phase')).toHaveText('停靠（门开）');
     await expect(card).toContainText('12:02'); // the scheduled departure of the demo record
     await expect(card).toContainText('无来源'); // no train number
-    await expect(card).toContainText('未知（长度为示意）'); // no car count is assumed
+    await expect(card).toContainText('11 节 (据线路资料)'); // from a sourced fact about the line, not assumed
     await expect(card).toContainText('Demo Fixture');
     // hiding the train takes it off the display without touching the rest
     await page.getByTestId('train-hide').click();
