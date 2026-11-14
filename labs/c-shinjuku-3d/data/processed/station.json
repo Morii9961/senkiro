@@ -612,12 +612,21 @@
       "sk:station:tokyo-metro-shinjuku",
       "sk:station:seibu-shinjuku",
       "sk:station:tokyo-metro-shinjuku-sanchome",
-      "sk:station:toei-shinjuku-sanchome"
+      "sk:station:toei-shinjuku-sanchome",
+      "sk:station:toei-shinjuku-nishiguchi"
     ],
     "explicitlyExcluded": [
       {
-        "name": "新宿西口駅 (Shinjuku-nishiguchi, Toei Oedo Line)",
-        "reason": "A different station. It appears on the JR and Tokyo Metro 立体図 as a neighbour and is not modelled."
+        "name": "西新宿駅 (Nishi-shinjuku, Marunouchi Line)",
+        "reason": "The next station towards 荻窪. A different station; named on the drawings only as a direction and not modelled."
+      },
+      {
+        "name": "東新宿駅 (Higashi-shinjuku, Oedo and Fukutoshin lines)",
+        "reason": "The next station after 新宿西口 and 新宿三丁目. A different station; named on the drawings only as a direction and not modelled."
+      },
+      {
+        "name": "新宿御苑前駅 (Shinjuku-gyoemmae, Marunouchi Line)",
+        "reason": "The next station towards 池袋 after 新宿三丁目. A different station; named on the drawings only as a direction and not modelled."
       }
     ]
   },
@@ -861,6 +870,32 @@
       "complexId": "sk:complex:shinjuku",
       "railLineIds": [
         "sk:line:toei-shinjuku"
+      ]
+    },
+    {
+      "kind": "station",
+      "id": "sk:station:toei-shinjuku-nishiguchi",
+      "externalIds": {},
+      "names": {
+        "ja": "都営大江戸線 新宿西口駅",
+        "ja_kana": null,
+        "en": "Toei Oedo Line Shinjuku-nishiguchi Station",
+        "zh": "都营大江户线新宿西口站"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-nishiguchi-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12",
+        "note": "E 01 on the Toei drawing. A different station from the Oedo Line 新宿駅 (E 27)."
+      },
+      "validFrom": null,
+      "validTo": null,
+      "operatorId": "sk:operator:toei",
+      "complexId": "sk:complex:shinjuku",
+      "railLineIds": [
+        "sk:line:toei-oedo"
       ]
     }
   ],
@@ -1710,6 +1745,96 @@
       "label": "B2F",
       "ordinal": -2,
       "elevation": -8,
+      "elevationNote": "Schematic. Floor heights were not measured; only the vertical order is taken from the source."
+    },
+    {
+      "kind": "level",
+      "id": "sk:level:toei-shinjuku-nishiguchi-b1f",
+      "externalIds": {},
+      "names": {
+        "ja": "B1F",
+        "ja_kana": null,
+        "en": "B1F",
+        "zh": "B1F"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-nishiguchi-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-shinjuku-nishiguchi",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "The passage with exits D2–D4. Drawn level with the B1F passage of 丸ノ内線 新宿駅, which it runs into; relative heights are not from a source.",
+      "operatorId": "sk:operator:toei",
+      "label": "B1F",
+      "ordinal": -1,
+      "elevation": -4,
+      "elevationNote": "Schematic. Floor heights were not measured; only the vertical order is taken from the source."
+    },
+    {
+      "kind": "level",
+      "id": "sk:level:toei-shinjuku-nishiguchi-b3f",
+      "externalIds": {},
+      "names": {
+        "ja": "B3F",
+        "ja_kana": null,
+        "en": "B3F",
+        "zh": "B3F"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-nishiguchi-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-shinjuku-nishiguchi",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "The Oedo Line concourse.",
+      "operatorId": "sk:operator:toei",
+      "label": "B3F",
+      "ordinal": -3,
+      "elevation": -11,
+      "elevationNote": "Schematic. Floor heights were not measured; only the vertical order is taken from the source."
+    },
+    {
+      "kind": "level",
+      "id": "sk:level:toei-shinjuku-nishiguchi-b4f",
+      "externalIds": {},
+      "names": {
+        "ja": "B4F",
+        "ja_kana": null,
+        "en": "B4F",
+        "zh": "B4F"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-nishiguchi-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-shinjuku-nishiguchi",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "The Oedo Line platform.",
+      "operatorId": "sk:operator:toei",
+      "label": "B4F",
+      "ordinal": -4,
+      "elevation": -14,
       "elevationNote": "Schematic. Floor heights were not measured; only the vertical order is taken from the source."
     }
   ],
@@ -5903,6 +6028,232 @@
           "side": "x-"
         }
       ]
+    },
+    {
+      "kind": "passage",
+      "id": "sk:area:nishiguchi-b1f-passage",
+      "externalIds": {},
+      "names": {
+        "ja": "新宿西口駅 改札外通路（B1F）",
+        "ja_kana": null,
+        "en": "Shinjuku-nishiguchi: passage outside the gates (B1F)",
+        "zh": "新宿西口站 检票口外通道（B1F）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-nishiguchi-map",
+          "src:tokyo-metro-shinjuku-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-shinjuku-nishiguchi",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "Unnamed on the drawing; the label is descriptive. The floor printed \"B1F\" above the Oedo Line station, with exits D2, D3 and D4; at one end it runs into the B1F passage of the Marunouchi Line beside exits B14 and B15. The 立体図 is an oblique view; the position is schematic.",
+      "levelId": "sk:level:toei-shinjuku-nishiguchi-b1f",
+      "fareZone": "unpaid",
+      "footprint": [
+        {
+          "x0": -60,
+          "x1": -27,
+          "z0": 24.2,
+          "z1": 26.6
+        }
+      ],
+      "anchor": {
+        "x": -44,
+        "z": 25.4
+      }
+    },
+    {
+      "kind": "concourse",
+      "id": "sk:area:nishiguchi-b3f-unpaid-south",
+      "externalIds": {},
+      "names": {
+        "ja": "新宿西口駅 改札外（都庁前方面側・B3F）",
+        "ja_kana": null,
+        "en": "Shinjuku-nishiguchi: outside the gates at the Tochomae end (B3F)",
+        "zh": "新宿西口站 检票口外（都厅前方向侧，B3F）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-nishiguchi-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-shinjuku-nishiguchi",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "Descriptive label. Ticket machines are drawn here; the flight marked D1 and a lift come down to it from B1F.",
+      "levelId": "sk:level:toei-shinjuku-nishiguchi-b3f",
+      "fareZone": "unpaid",
+      "footprint": [
+        {
+          "x0": -37.4,
+          "x1": -34,
+          "z0": 21.4,
+          "z1": 23.6
+        },
+        {
+          "x0": -37.4,
+          "x1": -35.4,
+          "z0": 23.6,
+          "z1": 25.4
+        }
+      ],
+      "anchor": {
+        "x": -35.7,
+        "z": 22.5
+      }
+    },
+    {
+      "kind": "concourse",
+      "id": "sk:area:nishiguchi-b3f-paid",
+      "externalIds": {},
+      "names": {
+        "ja": "新宿西口駅 改札内コンコース（B3F）",
+        "ja_kana": null,
+        "en": "Shinjuku-nishiguchi: concourse inside the gates (B3F)",
+        "zh": "新宿西口站 站厅（付费区，B3F）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-nishiguchi-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-shinjuku-nishiguchi",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "Descriptive label. Drawn as one paid floor above the platform between the two gate lines, with the toilets on it.",
+      "levelId": "sk:level:toei-shinjuku-nishiguchi-b3f",
+      "fareZone": "paid:toei",
+      "footprint": [
+        {
+          "x0": -57.5,
+          "x1": -38,
+          "z0": 21.4,
+          "z1": 23.6
+        }
+      ],
+      "anchor": {
+        "x": -47.8,
+        "z": 22.5
+      }
+    },
+    {
+      "kind": "concourse",
+      "id": "sk:area:nishiguchi-b3f-unpaid-north",
+      "externalIds": {},
+      "names": {
+        "ja": "新宿西口駅 改札外（飯田橋方面側・B3F）",
+        "ja_kana": null,
+        "en": "Shinjuku-nishiguchi: outside the gates at the Iidabashi end (B3F)",
+        "zh": "新宿西口站 检票口外（饭田桥方向侧，B3F）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-nishiguchi-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-shinjuku-nishiguchi",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "Descriptive label. Ticket machines are drawn here and the stairs of exit D5 leave from it.",
+      "levelId": "sk:level:toei-shinjuku-nishiguchi-b3f",
+      "fareZone": "unpaid",
+      "footprint": [
+        {
+          "x0": -62,
+          "x1": -58.1,
+          "z0": 21.4,
+          "z1": 23.6
+        }
+      ],
+      "anchor": {
+        "x": -60,
+        "z": 22.5
+      }
+    },
+    {
+      "kind": "platform",
+      "id": "sk:platform:toei-shinjuku-nishiguchi-1-2",
+      "externalIds": {},
+      "names": {
+        "ja": "新宿西口駅 1・2番線ホーム",
+        "ja_kana": null,
+        "en": "Shinjuku-nishiguchi platforms 1–2",
+        "zh": "新宿西口站 1·2号站台"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-nishiguchi-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-shinjuku-nishiguchi",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "An island platform. Toei prints \"都庁前方面 ① (都庁前)\" at one end on the nearer track line and \"飯田橋方面 ② (東新宿)\" at the other end on the farther one. Car numbers on the Toei table run from 1 (都庁前 end) to 8 (飯田橋・両国 end). The 都庁前 end is the one beside the Marunouchi Line passage, entered as south; \"nearer\" is entered as east, which is an assumption about the viewpoint.",
+      "levelId": "sk:level:toei-shinjuku-nishiguchi-b4f",
+      "fareZone": "paid:toei",
+      "footprint": [
+        {
+          "x0": -62,
+          "x1": -34,
+          "z0": 21.5,
+          "z1": 23.5
+        }
+      ],
+      "anchor": {
+        "x": -48,
+        "z": 22.5
+      },
+      "tracks": [
+        {
+          "number": "1",
+          "services": [
+            {
+              "railLineId": "sk:line:toei-oedo",
+              "towardsJa": "都庁前方面（都庁前）",
+              "towardsEn": "for Tochomae (next: Tochomae)"
+            }
+          ],
+          "side": "z-"
+        },
+        {
+          "number": "2",
+          "services": [
+            {
+              "railLineId": "sk:line:toei-oedo",
+              "towardsJa": "飯田橋方面（東新宿）",
+              "towardsEn": "for Iidabashi (next: Higashi-shinjuku)"
+            }
+          ],
+          "side": "z+"
+        }
+      ]
     }
   ],
   "passages": [
@@ -6937,6 +7288,37 @@
       "fromAreaId": "sk:area:tokyo-metro-b1f-concourse",
       "toAreaId": "sk:area:sanchome-marunouchi-b1f-concourse",
       "connection": "inferred",
+      "stepFree": null,
+      "hasSteps": null
+    },
+    {
+      "kind": "passage-link",
+      "id": "sk:passage:marunouchi-concourse-to-nishiguchi-b1f-passage",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-nishiguchi-map",
+          "src:tokyo-metro-shinjuku-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "unknown",
+      "asOf": "2026-11",
+      "notes": "The Toei drawing shows the B1F passage of 新宿西口駅 and the B1F passage of the Marunouchi Line as one continuous floor, meeting beside exits B14 and B15; the Tokyo Metro drawing of 新宿 prints exits D1–D5 at the west end of its passage. Toei lists the Marunouchi Line, JR, Keio, Odakyu and Seibu Shinjuku lines as transfers at this station. Whether there are steps on the way was not read.",
+      "fromAreaId": "sk:area:tokyo-metro-b1f-concourse",
+      "toAreaId": "sk:area:nishiguchi-b1f-passage",
+      "connection": "verified",
       "stepFree": null,
       "hasSteps": null
     }
@@ -8589,6 +8971,92 @@
       "hoursNote": null,
       "stepFree": true,
       "aliases": []
+    },
+    {
+      "kind": "gate",
+      "id": "sk:gate:nishiguchi-gates-south",
+      "externalIds": {},
+      "names": {
+        "ja": "新宿西口駅 改札（都庁前方面側）",
+        "ja_kana": null,
+        "en": "Shinjuku-nishiguchi gates (Tochomae end)",
+        "zh": "新宿西口站 检票口（都厅前方向侧）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-nishiguchi-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-shinjuku-nishiguchi",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "The gate line is drawn on the 立体図 without a name; the label is descriptive. Toei marks the lift route from exit D2 through it to the platform lift.",
+      "levelId": "sk:level:toei-shinjuku-nishiguchi-b3f",
+      "gateKind": "ticket",
+      "position": {
+        "x": -37.7,
+        "z": 22.5
+      },
+      "sides": [
+        {
+          "areaId": "sk:area:nishiguchi-b3f-paid"
+        },
+        {
+          "areaId": "sk:area:nishiguchi-b3f-unpaid-south"
+        }
+      ],
+      "direction": "both",
+      "hoursNote": null,
+      "stepFree": true,
+      "aliases": []
+    },
+    {
+      "kind": "gate",
+      "id": "sk:gate:nishiguchi-gates-north",
+      "externalIds": {},
+      "names": {
+        "ja": "新宿西口駅 改札（飯田橋方面側）",
+        "ja_kana": null,
+        "en": "Shinjuku-nishiguchi gates (Iidabashi end)",
+        "zh": "新宿西口站 检票口（饭田桥方向侧）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-nishiguchi-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-shinjuku-nishiguchi",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "The gate line is drawn on the 立体図 without a name; the label is descriptive.",
+      "levelId": "sk:level:toei-shinjuku-nishiguchi-b3f",
+      "gateKind": "ticket",
+      "position": {
+        "x": -57.8,
+        "z": 22.5
+      },
+      "sides": [
+        {
+          "areaId": "sk:area:nishiguchi-b3f-paid"
+        },
+        {
+          "areaId": "sk:area:nishiguchi-b3f-unpaid-north"
+        }
+      ],
+      "direction": "both",
+      "hoursNote": null,
+      "stepFree": null,
+      "aliases": []
     }
   ],
   "entrances": [
@@ -9467,7 +9935,7 @@
       "existence": "verified",
       "geometryConfidence": "schematic",
       "asOf": "2025-11",
-      "notes": "新宿西口駅 is a different station and is not modelled.",
+      "notes": "新宿西口 is a different station (Oedo Line E 01); it is modelled as its own station, and its B1F passage is linked to this one.",
       "levelId": "sk:level:tokyo-metro-shinjuku-b1f",
       "areaId": "sk:area:tokyo-metro-b1f-concourse",
       "position": {
@@ -10270,6 +10738,108 @@
       },
       "leadsToJa": "新宿文化センター・東京医科大学",
       "leadsToEn": "Shinjuku Bunka Center, Tokyo Medical University",
+      "stepFree": null
+    },
+    {
+      "kind": "entrance",
+      "id": "sk:entrance:nishiguchi-exit-d2",
+      "externalIds": {},
+      "names": {
+        "ja": "出口 D2",
+        "ja_kana": null,
+        "en": "Exit D2",
+        "zh": "D2出口"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-nishiguchi-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-shinjuku-nishiguchi",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "Drawn with stairs and a lift to street level (\"地上へ\"). The facilities printed for it in the 出口案内 box were too small to read.",
+      "levelId": "sk:level:toei-shinjuku-nishiguchi-b1f",
+      "areaId": "sk:area:nishiguchi-b1f-passage",
+      "position": {
+        "x": -36,
+        "z": 26.6
+      },
+      "leadsToJa": null,
+      "leadsToEn": null,
+      "stepFree": true
+    },
+    {
+      "kind": "entrance",
+      "id": "sk:entrance:nishiguchi-exit-d3-d4",
+      "externalIds": {},
+      "names": {
+        "ja": "出口 D3・D4",
+        "ja_kana": null,
+        "en": "Exits D3 / D4",
+        "zh": "D3·D4出口"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-nishiguchi-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-shinjuku-nishiguchi",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "One entry for the two. Which floor the stairs of D3 start from was not legible; entered on B1F with D4. The facilities printed for them were too small to read.",
+      "levelId": "sk:level:toei-shinjuku-nishiguchi-b1f",
+      "areaId": "sk:area:nishiguchi-b1f-passage",
+      "position": {
+        "x": -50,
+        "z": 26.6
+      },
+      "leadsToJa": null,
+      "leadsToEn": null,
+      "stepFree": null
+    },
+    {
+      "kind": "entrance",
+      "id": "sk:entrance:nishiguchi-exit-d5",
+      "externalIds": {},
+      "names": {
+        "ja": "出口 D5",
+        "ja_kana": null,
+        "en": "Exit D5",
+        "zh": "D5出口"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-nishiguchi-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-shinjuku-nishiguchi",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "A long staircase is drawn from the 飯田橋 end of the station up to D5. Which floor it starts from was not legible; entered at the B3F floor outside the gates there. The facilities printed for it were too small to read.",
+      "levelId": "sk:level:toei-shinjuku-nishiguchi-b3f",
+      "areaId": "sk:area:nishiguchi-b3f-unpaid-north",
+      "position": {
+        "x": -62,
+        "z": 22.5
+      },
+      "leadsToJa": null,
+      "leadsToEn": null,
       "stepFree": null
     }
   ],
@@ -17687,6 +18257,495 @@
       "directionNote": null,
       "hoursNote": null,
       "aggregated": false
+    },
+    {
+      "kind": "vertical",
+      "id": "sk:vertical:nishiguchi-stairs-d1-b1f-to-b3f",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-nishiguchi-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-shinjuku-nishiguchi",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "Stairs and an escalator are drawn from the B1F passage, beside exit B14 of the Marunouchi Line, down to the floor outside the gates; the upper end is labelled \"D1*\". Exits marked * on the drawing have restricted hours. Stands for every staircase of this pair drawn on the floor map; how many there are was not counted.",
+      "verticalKind": "stairs",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:toei-shinjuku-nishiguchi-b1f",
+          "areaId": "sk:area:nishiguchi-b1f-passage",
+          "position": {
+            "x": -29.6,
+            "z": 24.849999999999998
+          }
+        },
+        {
+          "levelId": "sk:level:toei-shinjuku-nishiguchi-b3f",
+          "areaId": "sk:area:nishiguchi-b3f-unpaid-south",
+          "position": {
+            "x": -34.6,
+            "z": 21.95
+          }
+        }
+      ],
+      "directionNote": null,
+      "hoursNote": null,
+      "aggregated": true,
+      "declaredNonAdjacent": {
+        "reason": "Drawn by the operator as one run between these floors, with no stop on the floors in between."
+      }
+    },
+    {
+      "kind": "vertical",
+      "id": "sk:vertical:nishiguchi-escalator-d1-b1f-to-b3f",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-nishiguchi-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-shinjuku-nishiguchi",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "Stairs and an escalator are drawn from the B1F passage, beside exit B14 of the Marunouchi Line, down to the floor outside the gates; the upper end is labelled \"D1*\". Exits marked * on the drawing have restricted hours. Stands for every escalator of this pair drawn on the floor map; count and running direction were not recorded.",
+      "verticalKind": "escalator",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:toei-shinjuku-nishiguchi-b1f",
+          "areaId": "sk:area:nishiguchi-b1f-passage",
+          "position": {
+            "x": -29.6,
+            "z": 25.95
+          }
+        },
+        {
+          "levelId": "sk:level:toei-shinjuku-nishiguchi-b3f",
+          "areaId": "sk:area:nishiguchi-b3f-unpaid-south",
+          "position": {
+            "x": -34.6,
+            "z": 23.05
+          }
+        }
+      ],
+      "directionNote": "Running direction is not recorded on the floor map.",
+      "hoursNote": null,
+      "aggregated": true,
+      "declaredNonAdjacent": {
+        "reason": "Drawn by the operator as one run between these floors, with no stop on the floors in between."
+      }
+    },
+    {
+      "kind": "vertical",
+      "id": "sk:vertical:nishiguchi-elevator-b1f-to-b3f",
+      "externalIds": {},
+      "names": {
+        "ja": "エレベーター（B1F ⇔ 改札外 B3F）",
+        "ja_kana": null,
+        "en": "Elevator (B1F ⇔ outside the gates, B3F)",
+        "zh": "电梯（B1F ⇔ 检票口外 B3F）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-nishiguchi-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-shinjuku-nishiguchi",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "A lift shaft is drawn below exit D2 from the B1F passage down to the concourse floor, on the lift route Toei marks. Toei lists four lifts for the station.",
+      "verticalKind": "elevator",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:toei-shinjuku-nishiguchi-b1f",
+          "areaId": "sk:area:nishiguchi-b1f-passage",
+          "position": {
+            "x": -36.4,
+            "z": 24.8
+          }
+        },
+        {
+          "levelId": "sk:level:toei-shinjuku-nishiguchi-b3f",
+          "areaId": "sk:area:nishiguchi-b3f-unpaid-south",
+          "position": {
+            "x": -36.4,
+            "z": 24.8
+          }
+        }
+      ],
+      "directionNote": null,
+      "hoursNote": null,
+      "aggregated": false,
+      "declaredNonAdjacent": {
+        "reason": "Drawn by the operator as one run between these floors, with no stop on the floors in between."
+      }
+    },
+    {
+      "kind": "vertical",
+      "id": "sk:vertical:nishiguchi-stairs-car-2",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-nishiguchi-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-shinjuku-nishiguchi",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "the のりかえ・出口案内 table under the Toei 立体図 shows an escalator and stairs at car 2; the Marunouchi Line, JR, Keio and Odakyu are bracketed over cars 2–5 as transfers. Stands for every staircase of this pair drawn on the floor map; how many there are was not counted.",
+      "verticalKind": "stairs",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:toei-shinjuku-nishiguchi-b3f",
+          "areaId": "sk:area:nishiguchi-b3f-paid",
+          "position": {
+            "x": -38.8,
+            "z": 21.95
+          }
+        },
+        {
+          "levelId": "sk:level:toei-shinjuku-nishiguchi-b4f",
+          "areaId": "sk:platform:toei-shinjuku-nishiguchi-1-2",
+          "position": {
+            "x": -41.4,
+            "z": 21.95
+          }
+        }
+      ],
+      "directionNote": null,
+      "hoursNote": null,
+      "aggregated": true
+    },
+    {
+      "kind": "vertical",
+      "id": "sk:vertical:nishiguchi-escalator-car-2",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-nishiguchi-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-shinjuku-nishiguchi",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "the のりかえ・出口案内 table under the Toei 立体図 shows an escalator and stairs at car 2; the Marunouchi Line, JR, Keio and Odakyu are bracketed over cars 2–5 as transfers. Stands for every escalator of this pair drawn on the floor map; count and running direction were not recorded.",
+      "verticalKind": "escalator",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:toei-shinjuku-nishiguchi-b3f",
+          "areaId": "sk:area:nishiguchi-b3f-paid",
+          "position": {
+            "x": -38.8,
+            "z": 23.05
+          }
+        },
+        {
+          "levelId": "sk:level:toei-shinjuku-nishiguchi-b4f",
+          "areaId": "sk:platform:toei-shinjuku-nishiguchi-1-2",
+          "position": {
+            "x": -41.4,
+            "z": 23.05
+          }
+        }
+      ],
+      "directionNote": "Running direction is not recorded on the floor map.",
+      "hoursNote": null,
+      "aggregated": true
+    },
+    {
+      "kind": "vertical",
+      "id": "sk:vertical:nishiguchi-stairs-car-5",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-nishiguchi-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-shinjuku-nishiguchi",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "the のりかえ・出口案内 table under the Toei 立体図 shows an escalator, stairs and a lift at car 5. Stands for every staircase of this pair drawn on the floor map; how many there are was not counted.",
+      "verticalKind": "stairs",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:toei-shinjuku-nishiguchi-b3f",
+          "areaId": "sk:area:nishiguchi-b3f-paid",
+          "position": {
+            "x": -47.6,
+            "z": 21.95
+          }
+        },
+        {
+          "levelId": "sk:level:toei-shinjuku-nishiguchi-b4f",
+          "areaId": "sk:platform:toei-shinjuku-nishiguchi-1-2",
+          "position": {
+            "x": -45,
+            "z": 21.95
+          }
+        }
+      ],
+      "directionNote": null,
+      "hoursNote": null,
+      "aggregated": true
+    },
+    {
+      "kind": "vertical",
+      "id": "sk:vertical:nishiguchi-escalator-car-5",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-nishiguchi-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-shinjuku-nishiguchi",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "the のりかえ・出口案内 table under the Toei 立体図 shows an escalator, stairs and a lift at car 5. Stands for every escalator of this pair drawn on the floor map; count and running direction were not recorded.",
+      "verticalKind": "escalator",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:toei-shinjuku-nishiguchi-b3f",
+          "areaId": "sk:area:nishiguchi-b3f-paid",
+          "position": {
+            "x": -47.6,
+            "z": 23.05
+          }
+        },
+        {
+          "levelId": "sk:level:toei-shinjuku-nishiguchi-b4f",
+          "areaId": "sk:platform:toei-shinjuku-nishiguchi-1-2",
+          "position": {
+            "x": -45,
+            "z": 23.05
+          }
+        }
+      ],
+      "directionNote": "Running direction is not recorded on the floor map.",
+      "hoursNote": null,
+      "aggregated": true
+    },
+    {
+      "kind": "vertical",
+      "id": "sk:vertical:nishiguchi-elevator-concourse-to-platform",
+      "externalIds": {},
+      "names": {
+        "ja": "エレベーター（改札内 B3F ⇔ ホーム B4F）",
+        "ja_kana": null,
+        "en": "Elevator (concourse B3F ⇔ platform B4F)",
+        "zh": "电梯（站厅 B3F ⇔ 站台 B4F）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-nishiguchi-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-shinjuku-nishiguchi",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "the のりかえ・出口案内 table under the Toei 立体図 shows a lift at car 5, beside an escalator and stairs; the shaft is drawn from the paid concourse down to the platform.",
+      "verticalKind": "elevator",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:toei-shinjuku-nishiguchi-b3f",
+          "areaId": "sk:area:nishiguchi-b3f-paid",
+          "position": {
+            "x": -49.8,
+            "z": 22.5
+          }
+        },
+        {
+          "levelId": "sk:level:toei-shinjuku-nishiguchi-b4f",
+          "areaId": "sk:platform:toei-shinjuku-nishiguchi-1-2",
+          "position": {
+            "x": -49.8,
+            "z": 22.5
+          }
+        }
+      ],
+      "directionNote": null,
+      "hoursNote": null,
+      "aggregated": false
+    },
+    {
+      "kind": "vertical",
+      "id": "sk:vertical:nishiguchi-stairs-car-7",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-nishiguchi-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-shinjuku-nishiguchi",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "the のりかえ・出口案内 table under the Toei 立体図 shows an escalator and stairs at car 7, with the Seibu Shinjuku Line as a transfer. Toei lists 18 escalators for the station. Stands for every staircase of this pair drawn on the floor map; how many there are was not counted.",
+      "verticalKind": "stairs",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:toei-shinjuku-nishiguchi-b3f",
+          "areaId": "sk:area:nishiguchi-b3f-paid",
+          "position": {
+            "x": -57,
+            "z": 21.95
+          }
+        },
+        {
+          "levelId": "sk:level:toei-shinjuku-nishiguchi-b4f",
+          "areaId": "sk:platform:toei-shinjuku-nishiguchi-1-2",
+          "position": {
+            "x": -54.4,
+            "z": 21.95
+          }
+        }
+      ],
+      "directionNote": null,
+      "hoursNote": null,
+      "aggregated": true
+    },
+    {
+      "kind": "vertical",
+      "id": "sk:vertical:nishiguchi-escalator-car-7",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:toei-shinjuku-nishiguchi-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:toei-shinjuku-nishiguchi",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "the のりかえ・出口案内 table under the Toei 立体図 shows an escalator and stairs at car 7, with the Seibu Shinjuku Line as a transfer. Toei lists 18 escalators for the station. Stands for every escalator of this pair drawn on the floor map; count and running direction were not recorded.",
+      "verticalKind": "escalator",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:toei-shinjuku-nishiguchi-b3f",
+          "areaId": "sk:area:nishiguchi-b3f-paid",
+          "position": {
+            "x": -57,
+            "z": 23.05
+          }
+        },
+        {
+          "levelId": "sk:level:toei-shinjuku-nishiguchi-b4f",
+          "areaId": "sk:platform:toei-shinjuku-nishiguchi-1-2",
+          "position": {
+            "x": -54.4,
+            "z": 23.05
+          }
+        }
+      ],
+      "directionNote": "Running direction is not recorded on the floor map.",
+      "hoursNote": null,
+      "aggregated": true
     }
   ],
   "unverifiedBlocks": [],

@@ -452,7 +452,7 @@ const metroEntrances: Entrance[] = [
     '新宿三丁目方面', 'towards Shinjuku-sanchome', metroProv, { common: metroCommon }),
   entrance('tokyo-metro-west-end', ME.lB1, ME.conc, names('出口 B16〜B18・D1〜D5（西端）', 'Exits B16–B18, D1–D5 (west end)', 'B16～B18·D1～D5出口（西端）'), pt(-25.7, 26),
     '小田急ハルク方面／都営大江戸線 新宿西口駅', 'towards Odakyu HALC; Toei Oedo Line Shinjuku-nishiguchi Station', metroProv,
-    { common: metroCommon, notes: '新宿西口駅 is a different station and is not modelled.' }),
+    { common: metroCommon, notes: '新宿西口 is a different station (Oedo Line E 01); it is modelled as its own station, and its B1F passage is linked to this one.' }),
 ];
 
 const metroVerticals: VerticalFacility[] = [

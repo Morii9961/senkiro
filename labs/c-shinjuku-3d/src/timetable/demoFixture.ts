@@ -70,6 +70,8 @@ const PATTERNS: DemoPattern[] = [
   { station_id: 'toei:shinjuku:S01', operator_id: 'toei', line_id: 'toei:shinjuku', track: '5', everyMin: 8, offsetMin: 5, dwellSec: 30 },
   { station_id: 'toei:shinjuku:E27', operator_id: 'toei', line_id: 'toei:oedo', track: '6', everyMin: 6, offsetMin: 0, dwellSec: 30 },
   { station_id: 'toei:shinjuku:E27', operator_id: 'toei', line_id: 'toei:oedo', track: '7', everyMin: 6, offsetMin: 3, dwellSec: 30 },
+  { station_id: 'toei:shinjuku-nishiguchi:E01', operator_id: 'toei', line_id: 'toei:oedo', track: '1', everyMin: 6, offsetMin: 2, dwellSec: 30 },
+  { station_id: 'toei:shinjuku-nishiguchi:E01', operator_id: 'toei', line_id: 'toei:oedo', track: '2', everyMin: 6, offsetMin: 5, dwellSec: 30 },
   { station_id: 'tokyo-metro:shinjuku:M08', operator_id: 'tokyo-metro', line_id: 'tokyo-metro:marunouchi', track: '1', everyMin: 4, offsetMin: 0, dwellSec: 30 },
   { station_id: 'tokyo-metro:shinjuku:M08', operator_id: 'tokyo-metro', line_id: 'tokyo-metro:marunouchi', track: '2', everyMin: 4, offsetMin: 2, dwellSec: 30 },
   { station_id: 'tokyo-metro:shinjuku-sanchome:M09', operator_id: 'tokyo-metro', line_id: 'tokyo-metro:marunouchi', track: '1', everyMin: 4, offsetMin: 1, dwellSec: 30 },

@@ -212,10 +212,14 @@ describe('train simulation', () => {
     const { plans, unplaced } = plansOf([
       rec({ platform_id: null }),
       rec({ trip_id: 'a', platform_id: 'jr-east:shinjuku:99' }),
-      rec({ trip_id: 'b', station_id: 'toei:shinjuku-nishiguchi:E01', operator_id: 'toei', line_id: 'toei:oedo', platform_id: 'toei:shinjuku-nishiguchi:E01:1' }),
+      // 新宿西口 (E01) has tracks 1 and 2; track 6 belongs to the Oedo Line's 新宿 (E27), a different station
+      rec({ trip_id: 'b', station_id: 'toei:shinjuku-nishiguchi:E01', operator_id: 'toei', line_id: 'toei:oedo', platform_id: 'toei:shinjuku-nishiguchi:E01:6' }),
     ]);
     expect(plans).toEqual([]);
-    expect(unplaced.map((u) => u.reason)).toEqual(['no-platform', 'track-not-in-model', expect.stringMatching(/station-not-in-model|track-not-in-model/)]);
+    expect(unplaced.map((u) => u.reason)).toEqual(['no-platform', 'track-not-in-model', 'track-not-in-model']);
+    const e01 = plansOf([rec({ trip_id: 'c', station_id: 'toei:shinjuku-nishiguchi:E01', operator_id: 'toei', line_id: 'toei:oedo', platform_id: 'toei:shinjuku-nishiguchi:E01:1' })]);
+    expect(e01.plans.map((p) => p.platformAreaId)).toEqual(['sk:platform:toei-shinjuku-nishiguchi-1-2']);
+    expect(e01.plans[0]!.vehicle).toMatchObject({ cars: 8, carsBasis: 'line-fact' });
   });
 
   it('filters by the kind of day', () => {

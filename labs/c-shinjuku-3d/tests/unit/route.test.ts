@@ -257,6 +257,19 @@ describe('route search behaviour', () => {
     expect(transfer.inferredLegs).toBe(0);
   });
 
+  it('walks from 新宿 to 新宿西口 (E01) through the Marunouchi Line passage, on drawn links only', () => {
+    const e01 = 'sk:platform:toei-shinjuku-nishiguchi-1-2';
+    const fromJr = mustFind(NODE.platform13_14, e01);
+    expect(fromJr.inferredLegs).toBe(0);
+    expect(fromJr.cost.gatePasses).toBe(2);
+    // 丸ノ内線 新宿 → 大江戸線 新宿西口: out of Tokyo Metro's gates, in through Toei's
+    expect(mustFind('sk:platform:tokyo-metro-shinjuku-1-2', e01).cost.gatePasses).toBe(2);
+    // E01 and E27 are different stations: going between them on foot leaves the gates
+    expect(mustFind(e01, 'sk:platform:toei-oedo-shinjuku-6-7').cost.gatePasses).toBe(2);
+    // step-free: the lift chain D2 → B1F → B3F → platform exists
+    expect(mustFind('sk:entrance:nishiguchi-exit-d2', e01, 'elevator-only').found).toBe(true);
+  });
+
   it('a ticket gate as origin means entering through it, as destination leaving through it', () => {
     const inbound = mustFind(NODE.eastGate, NODE.platform13_14);
     expect(nodeById.get(inbound.nodeIds[1]!)!.zone).toBe('paid:jr-east');

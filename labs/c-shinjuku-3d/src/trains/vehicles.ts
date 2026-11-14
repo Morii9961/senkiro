@@ -345,6 +345,10 @@ export const FORMATION_FACTS: readonly FormationFact[] = [
     note: 'The Toei Shinjuku Line has been all 10-car since August 2022.',
   },
   {
+    station_id: 'toei:shinjuku-nishiguchi:E01', line_id: 'toei:oedo', cars: 8, sourceIds: ['src:toei-shinjuku-nishiguchi-map', 'src:toei-oedo-12-600'],
+    note: 'The のりかえ・出口案内 table under the Toei 立体図 of this station numbers the cars from 1 to 8.',
+  },
+  {
     station_id: 'toei:shinjuku:E27', line_id: 'toei:oedo', cars: 8, sourceIds: ['src:toei-shinjuku-map'],
     note: 'The のりかえ・出口案内 table under the Toei 立体図 numbers the cars of the Oedo Line from 1 to 8.',
   },

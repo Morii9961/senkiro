@@ -433,6 +433,54 @@
       }
     },
     {
+      "id": "sk:area:nishiguchi-b1f-passage",
+      "kind": "area",
+      "elementId": "sk:area:nishiguchi-b1f-passage",
+      "levelId": "sk:level:toei-shinjuku-nishiguchi-b1f",
+      "levelOrdinal": -1,
+      "zone": "unpaid",
+      "position": {
+        "x": -44,
+        "z": 25.4
+      }
+    },
+    {
+      "id": "sk:area:nishiguchi-b3f-paid",
+      "kind": "area",
+      "elementId": "sk:area:nishiguchi-b3f-paid",
+      "levelId": "sk:level:toei-shinjuku-nishiguchi-b3f",
+      "levelOrdinal": -3,
+      "zone": "paid:toei",
+      "position": {
+        "x": -47.8,
+        "z": 22.5
+      }
+    },
+    {
+      "id": "sk:area:nishiguchi-b3f-unpaid-north",
+      "kind": "area",
+      "elementId": "sk:area:nishiguchi-b3f-unpaid-north",
+      "levelId": "sk:level:toei-shinjuku-nishiguchi-b3f",
+      "levelOrdinal": -3,
+      "zone": "unpaid",
+      "position": {
+        "x": -60,
+        "z": 22.5
+      }
+    },
+    {
+      "id": "sk:area:nishiguchi-b3f-unpaid-south",
+      "kind": "area",
+      "elementId": "sk:area:nishiguchi-b3f-unpaid-south",
+      "levelId": "sk:level:toei-shinjuku-nishiguchi-b3f",
+      "levelOrdinal": -3,
+      "zone": "unpaid",
+      "position": {
+        "x": -35.7,
+        "z": 22.5
+      }
+    },
+    {
       "id": "sk:area:odakyu-1f-west-ground-gate-inside",
       "kind": "area",
       "elementId": "sk:area:odakyu-1f-west-ground-gate-inside",
@@ -1018,6 +1066,42 @@
       "position": {
         "x": 32.5,
         "z": 62
+      }
+    },
+    {
+      "id": "sk:entrance:nishiguchi-exit-d2",
+      "kind": "entrance",
+      "elementId": "sk:entrance:nishiguchi-exit-d2",
+      "levelId": "sk:level:toei-shinjuku-nishiguchi-b1f",
+      "levelOrdinal": -1,
+      "zone": "unpaid",
+      "position": {
+        "x": -36,
+        "z": 26.6
+      }
+    },
+    {
+      "id": "sk:entrance:nishiguchi-exit-d3-d4",
+      "kind": "entrance",
+      "elementId": "sk:entrance:nishiguchi-exit-d3-d4",
+      "levelId": "sk:level:toei-shinjuku-nishiguchi-b1f",
+      "levelOrdinal": -1,
+      "zone": "unpaid",
+      "position": {
+        "x": -50,
+        "z": 26.6
+      }
+    },
+    {
+      "id": "sk:entrance:nishiguchi-exit-d5",
+      "kind": "entrance",
+      "elementId": "sk:entrance:nishiguchi-exit-d5",
+      "levelId": "sk:level:toei-shinjuku-nishiguchi-b3f",
+      "levelOrdinal": -3,
+      "zone": "unpaid",
+      "position": {
+        "x": -62,
+        "z": 22.5
       }
     },
     {
@@ -1621,6 +1705,30 @@
       }
     },
     {
+      "id": "sk:gate:nishiguchi-gates-north",
+      "kind": "gate",
+      "elementId": "sk:gate:nishiguchi-gates-north",
+      "levelId": "sk:level:toei-shinjuku-nishiguchi-b3f",
+      "levelOrdinal": -3,
+      "zone": "gate",
+      "position": {
+        "x": -57.8,
+        "z": 22.5
+      }
+    },
+    {
+      "id": "sk:gate:nishiguchi-gates-south",
+      "kind": "gate",
+      "elementId": "sk:gate:nishiguchi-gates-south",
+      "levelId": "sk:level:toei-shinjuku-nishiguchi-b3f",
+      "levelOrdinal": -3,
+      "zone": "gate",
+      "position": {
+        "x": -37.7,
+        "z": 22.5
+      }
+    },
+    {
       "id": "sk:gate:odakyu-south-gate",
       "kind": "gate",
       "elementId": "sk:gate:odakyu-south-gate",
@@ -2062,6 +2170,18 @@
       "position": {
         "x": 53,
         "z": 37.4
+      }
+    },
+    {
+      "id": "sk:platform:toei-shinjuku-nishiguchi-1-2",
+      "kind": "area",
+      "elementId": "sk:platform:toei-shinjuku-nishiguchi-1-2",
+      "levelId": "sk:level:toei-shinjuku-nishiguchi-b4f",
+      "levelOrdinal": -4,
+      "zone": "paid:toei",
+      "position": {
+        "x": -48,
+        "z": 22.5
       }
     },
     {
@@ -4534,6 +4654,246 @@
       "position": {
         "x": 7.8,
         "z": 29.3
+      }
+    },
+    {
+      "id": "sk:vertical:nishiguchi-elevator-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b1f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:nishiguchi-elevator-b1f-to-b3f",
+      "levelId": "sk:level:toei-shinjuku-nishiguchi-b1f",
+      "levelOrdinal": -1,
+      "zone": "unpaid",
+      "position": {
+        "x": -36.4,
+        "z": 24.8
+      }
+    },
+    {
+      "id": "sk:vertical:nishiguchi-elevator-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:nishiguchi-elevator-b1f-to-b3f",
+      "levelId": "sk:level:toei-shinjuku-nishiguchi-b3f",
+      "levelOrdinal": -3,
+      "zone": "unpaid",
+      "position": {
+        "x": -36.4,
+        "z": 24.8
+      }
+    },
+    {
+      "id": "sk:vertical:nishiguchi-elevator-concourse-to-platform@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:nishiguchi-elevator-concourse-to-platform",
+      "levelId": "sk:level:toei-shinjuku-nishiguchi-b3f",
+      "levelOrdinal": -3,
+      "zone": "paid:toei",
+      "position": {
+        "x": -49.8,
+        "z": 22.5
+      }
+    },
+    {
+      "id": "sk:vertical:nishiguchi-elevator-concourse-to-platform@sk:level:toei-shinjuku-nishiguchi-b4f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:nishiguchi-elevator-concourse-to-platform",
+      "levelId": "sk:level:toei-shinjuku-nishiguchi-b4f",
+      "levelOrdinal": -4,
+      "zone": "paid:toei",
+      "position": {
+        "x": -49.8,
+        "z": 22.5
+      }
+    },
+    {
+      "id": "sk:vertical:nishiguchi-escalator-car-2@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:nishiguchi-escalator-car-2",
+      "levelId": "sk:level:toei-shinjuku-nishiguchi-b3f",
+      "levelOrdinal": -3,
+      "zone": "paid:toei",
+      "position": {
+        "x": -38.8,
+        "z": 23.05
+      }
+    },
+    {
+      "id": "sk:vertical:nishiguchi-escalator-car-2@sk:level:toei-shinjuku-nishiguchi-b4f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:nishiguchi-escalator-car-2",
+      "levelId": "sk:level:toei-shinjuku-nishiguchi-b4f",
+      "levelOrdinal": -4,
+      "zone": "paid:toei",
+      "position": {
+        "x": -41.4,
+        "z": 23.05
+      }
+    },
+    {
+      "id": "sk:vertical:nishiguchi-escalator-car-5@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:nishiguchi-escalator-car-5",
+      "levelId": "sk:level:toei-shinjuku-nishiguchi-b3f",
+      "levelOrdinal": -3,
+      "zone": "paid:toei",
+      "position": {
+        "x": -47.6,
+        "z": 23.05
+      }
+    },
+    {
+      "id": "sk:vertical:nishiguchi-escalator-car-5@sk:level:toei-shinjuku-nishiguchi-b4f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:nishiguchi-escalator-car-5",
+      "levelId": "sk:level:toei-shinjuku-nishiguchi-b4f",
+      "levelOrdinal": -4,
+      "zone": "paid:toei",
+      "position": {
+        "x": -45,
+        "z": 23.05
+      }
+    },
+    {
+      "id": "sk:vertical:nishiguchi-escalator-car-7@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:nishiguchi-escalator-car-7",
+      "levelId": "sk:level:toei-shinjuku-nishiguchi-b3f",
+      "levelOrdinal": -3,
+      "zone": "paid:toei",
+      "position": {
+        "x": -57,
+        "z": 23.05
+      }
+    },
+    {
+      "id": "sk:vertical:nishiguchi-escalator-car-7@sk:level:toei-shinjuku-nishiguchi-b4f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:nishiguchi-escalator-car-7",
+      "levelId": "sk:level:toei-shinjuku-nishiguchi-b4f",
+      "levelOrdinal": -4,
+      "zone": "paid:toei",
+      "position": {
+        "x": -54.4,
+        "z": 23.05
+      }
+    },
+    {
+      "id": "sk:vertical:nishiguchi-escalator-d1-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b1f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:nishiguchi-escalator-d1-b1f-to-b3f",
+      "levelId": "sk:level:toei-shinjuku-nishiguchi-b1f",
+      "levelOrdinal": -1,
+      "zone": "unpaid",
+      "position": {
+        "x": -29.6,
+        "z": 25.95
+      }
+    },
+    {
+      "id": "sk:vertical:nishiguchi-escalator-d1-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:nishiguchi-escalator-d1-b1f-to-b3f",
+      "levelId": "sk:level:toei-shinjuku-nishiguchi-b3f",
+      "levelOrdinal": -3,
+      "zone": "unpaid",
+      "position": {
+        "x": -34.6,
+        "z": 23.05
+      }
+    },
+    {
+      "id": "sk:vertical:nishiguchi-stairs-car-2@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:nishiguchi-stairs-car-2",
+      "levelId": "sk:level:toei-shinjuku-nishiguchi-b3f",
+      "levelOrdinal": -3,
+      "zone": "paid:toei",
+      "position": {
+        "x": -38.8,
+        "z": 21.95
+      }
+    },
+    {
+      "id": "sk:vertical:nishiguchi-stairs-car-2@sk:level:toei-shinjuku-nishiguchi-b4f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:nishiguchi-stairs-car-2",
+      "levelId": "sk:level:toei-shinjuku-nishiguchi-b4f",
+      "levelOrdinal": -4,
+      "zone": "paid:toei",
+      "position": {
+        "x": -41.4,
+        "z": 21.95
+      }
+    },
+    {
+      "id": "sk:vertical:nishiguchi-stairs-car-5@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:nishiguchi-stairs-car-5",
+      "levelId": "sk:level:toei-shinjuku-nishiguchi-b3f",
+      "levelOrdinal": -3,
+      "zone": "paid:toei",
+      "position": {
+        "x": -47.6,
+        "z": 21.95
+      }
+    },
+    {
+      "id": "sk:vertical:nishiguchi-stairs-car-5@sk:level:toei-shinjuku-nishiguchi-b4f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:nishiguchi-stairs-car-5",
+      "levelId": "sk:level:toei-shinjuku-nishiguchi-b4f",
+      "levelOrdinal": -4,
+      "zone": "paid:toei",
+      "position": {
+        "x": -45,
+        "z": 21.95
+      }
+    },
+    {
+      "id": "sk:vertical:nishiguchi-stairs-car-7@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:nishiguchi-stairs-car-7",
+      "levelId": "sk:level:toei-shinjuku-nishiguchi-b3f",
+      "levelOrdinal": -3,
+      "zone": "paid:toei",
+      "position": {
+        "x": -57,
+        "z": 21.95
+      }
+    },
+    {
+      "id": "sk:vertical:nishiguchi-stairs-car-7@sk:level:toei-shinjuku-nishiguchi-b4f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:nishiguchi-stairs-car-7",
+      "levelId": "sk:level:toei-shinjuku-nishiguchi-b4f",
+      "levelOrdinal": -4,
+      "zone": "paid:toei",
+      "position": {
+        "x": -54.4,
+        "z": 21.95
+      }
+    },
+    {
+      "id": "sk:vertical:nishiguchi-stairs-d1-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b1f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:nishiguchi-stairs-d1-b1f-to-b3f",
+      "levelId": "sk:level:toei-shinjuku-nishiguchi-b1f",
+      "levelOrdinal": -1,
+      "zone": "unpaid",
+      "position": {
+        "x": -29.6,
+        "z": 24.849999999999998
+      }
+    },
+    {
+      "id": "sk:vertical:nishiguchi-stairs-d1-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:nishiguchi-stairs-d1-b1f-to-b3f",
+      "levelId": "sk:level:toei-shinjuku-nishiguchi-b3f",
+      "levelOrdinal": -3,
+      "zone": "unpaid",
+      "position": {
+        "x": -34.6,
+        "z": 21.95
       }
     },
     {
@@ -8188,6 +8548,237 @@
       "id": "sk:area:keio-new-line-b4f-west→sk:vertical:keio-new-line-stairs-shintoshin-gate-to-b4f@sk:level:keio-new-line-shinjuku-b4f"
     },
     {
+      "kind": "passage",
+      "elementId": "sk:passage:marunouchi-concourse-to-nishiguchi-b1f-passage",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:nishiguchi-b1f-passage",
+      "to": "sk:area:tokyo-metro-b1f-concourse",
+      "id": "sk:area:nishiguchi-b1f-passage→sk:area:tokyo-metro-b1f-concourse"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:nishiguchi-exit-d2",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:area:nishiguchi-b1f-passage",
+      "to": "sk:entrance:nishiguchi-exit-d2",
+      "id": "sk:area:nishiguchi-b1f-passage→sk:entrance:nishiguchi-exit-d2"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:nishiguchi-exit-d3-d4",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:nishiguchi-b1f-passage",
+      "to": "sk:entrance:nishiguchi-exit-d3-d4",
+      "id": "sk:area:nishiguchi-b1f-passage→sk:entrance:nishiguchi-exit-d3-d4"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:nishiguchi-elevator-b1f-to-b3f",
+      "verticalKind": "elevator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:nishiguchi-b1f-passage",
+      "to": "sk:vertical:nishiguchi-elevator-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b1f",
+      "id": "sk:area:nishiguchi-b1f-passage→sk:vertical:nishiguchi-elevator-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b1f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:nishiguchi-escalator-d1-b1f-to-b3f",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:nishiguchi-b1f-passage",
+      "to": "sk:vertical:nishiguchi-escalator-d1-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b1f",
+      "id": "sk:area:nishiguchi-b1f-passage→sk:vertical:nishiguchi-escalator-d1-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b1f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:nishiguchi-stairs-d1-b1f-to-b3f",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:nishiguchi-b1f-passage",
+      "to": "sk:vertical:nishiguchi-stairs-d1-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b1f",
+      "id": "sk:area:nishiguchi-b1f-passage→sk:vertical:nishiguchi-stairs-d1-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b1f"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:nishiguchi-gates-north",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:nishiguchi-b3f-paid",
+      "to": "sk:gate:nishiguchi-gates-north",
+      "id": "sk:area:nishiguchi-b3f-paid→sk:gate:nishiguchi-gates-north"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:nishiguchi-gates-south",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:area:nishiguchi-b3f-paid",
+      "to": "sk:gate:nishiguchi-gates-south",
+      "id": "sk:area:nishiguchi-b3f-paid→sk:gate:nishiguchi-gates-south"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:nishiguchi-elevator-concourse-to-platform",
+      "verticalKind": "elevator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:nishiguchi-b3f-paid",
+      "to": "sk:vertical:nishiguchi-elevator-concourse-to-platform@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "id": "sk:area:nishiguchi-b3f-paid→sk:vertical:nishiguchi-elevator-concourse-to-platform@sk:level:toei-shinjuku-nishiguchi-b3f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:nishiguchi-escalator-car-2",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:nishiguchi-b3f-paid",
+      "to": "sk:vertical:nishiguchi-escalator-car-2@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "id": "sk:area:nishiguchi-b3f-paid→sk:vertical:nishiguchi-escalator-car-2@sk:level:toei-shinjuku-nishiguchi-b3f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:nishiguchi-escalator-car-5",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:nishiguchi-b3f-paid",
+      "to": "sk:vertical:nishiguchi-escalator-car-5@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "id": "sk:area:nishiguchi-b3f-paid→sk:vertical:nishiguchi-escalator-car-5@sk:level:toei-shinjuku-nishiguchi-b3f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:nishiguchi-escalator-car-7",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:nishiguchi-b3f-paid",
+      "to": "sk:vertical:nishiguchi-escalator-car-7@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "id": "sk:area:nishiguchi-b3f-paid→sk:vertical:nishiguchi-escalator-car-7@sk:level:toei-shinjuku-nishiguchi-b3f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:nishiguchi-stairs-car-2",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:nishiguchi-b3f-paid",
+      "to": "sk:vertical:nishiguchi-stairs-car-2@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "id": "sk:area:nishiguchi-b3f-paid→sk:vertical:nishiguchi-stairs-car-2@sk:level:toei-shinjuku-nishiguchi-b3f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:nishiguchi-stairs-car-5",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:nishiguchi-b3f-paid",
+      "to": "sk:vertical:nishiguchi-stairs-car-5@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "id": "sk:area:nishiguchi-b3f-paid→sk:vertical:nishiguchi-stairs-car-5@sk:level:toei-shinjuku-nishiguchi-b3f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:nishiguchi-stairs-car-7",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:nishiguchi-b3f-paid",
+      "to": "sk:vertical:nishiguchi-stairs-car-7@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "id": "sk:area:nishiguchi-b3f-paid→sk:vertical:nishiguchi-stairs-car-7@sk:level:toei-shinjuku-nishiguchi-b3f"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:nishiguchi-exit-d5",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:nishiguchi-b3f-unpaid-north",
+      "to": "sk:entrance:nishiguchi-exit-d5",
+      "id": "sk:area:nishiguchi-b3f-unpaid-north→sk:entrance:nishiguchi-exit-d5"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:nishiguchi-gates-north",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:nishiguchi-b3f-unpaid-north",
+      "to": "sk:gate:nishiguchi-gates-north",
+      "id": "sk:area:nishiguchi-b3f-unpaid-north→sk:gate:nishiguchi-gates-north"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:nishiguchi-gates-south",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:area:nishiguchi-b3f-unpaid-south",
+      "to": "sk:gate:nishiguchi-gates-south",
+      "id": "sk:area:nishiguchi-b3f-unpaid-south→sk:gate:nishiguchi-gates-south"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:nishiguchi-elevator-b1f-to-b3f",
+      "verticalKind": "elevator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:nishiguchi-b3f-unpaid-south",
+      "to": "sk:vertical:nishiguchi-elevator-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "id": "sk:area:nishiguchi-b3f-unpaid-south→sk:vertical:nishiguchi-elevator-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b3f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:nishiguchi-escalator-d1-b1f-to-b3f",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:nishiguchi-b3f-unpaid-south",
+      "to": "sk:vertical:nishiguchi-escalator-d1-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "id": "sk:area:nishiguchi-b3f-unpaid-south→sk:vertical:nishiguchi-escalator-d1-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b3f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:nishiguchi-stairs-d1-b1f-to-b3f",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:nishiguchi-b3f-unpaid-south",
+      "to": "sk:vertical:nishiguchi-stairs-d1-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "id": "sk:area:nishiguchi-b3f-unpaid-south→sk:vertical:nishiguchi-stairs-d1-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b3f"
+    },
+    {
       "kind": "gate-approach",
       "elementId": "sk:gate:odakyu-west-ground-gate",
       "verticalKind": null,
@@ -9564,6 +10155,17 @@
     },
     {
       "kind": "passage",
+      "elementId": "sk:passage:marunouchi-concourse-to-nishiguchi-b1f-passage",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:tokyo-metro-b1f-concourse",
+      "to": "sk:area:nishiguchi-b1f-passage",
+      "id": "sk:area:tokyo-metro-b1f-concourse→sk:area:nishiguchi-b1f-passage"
+    },
+    {
+      "kind": "passage",
       "elementId": "sk:passage:marunouchi-shinjuku-concourse-to-sanchome-concourse",
       "verticalKind": null,
       "levelChange": 0,
@@ -10001,6 +10603,39 @@
       "from": "sk:entrance:new-line-exit-7-8",
       "to": "sk:area:keio-new-line-b1f-concourse",
       "id": "sk:entrance:new-line-exit-7-8→sk:area:keio-new-line-b1f-concourse"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:nishiguchi-exit-d2",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:entrance:nishiguchi-exit-d2",
+      "to": "sk:area:nishiguchi-b1f-passage",
+      "id": "sk:entrance:nishiguchi-exit-d2→sk:area:nishiguchi-b1f-passage"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:nishiguchi-exit-d3-d4",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:entrance:nishiguchi-exit-d3-d4",
+      "to": "sk:area:nishiguchi-b1f-passage",
+      "id": "sk:entrance:nishiguchi-exit-d3-d4→sk:area:nishiguchi-b1f-passage"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:nishiguchi-exit-d5",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:entrance:nishiguchi-exit-d5",
+      "to": "sk:area:nishiguchi-b3f-unpaid-north",
+      "id": "sk:entrance:nishiguchi-exit-d5→sk:area:nishiguchi-b3f-unpaid-north"
     },
     {
       "kind": "entrance-approach",
@@ -10749,6 +11384,50 @@
       "from": "sk:gate:keio-west-gate",
       "to": "sk:area:keio-b1f-west-gate-unpaid",
       "id": "sk:gate:keio-west-gate→sk:area:keio-b1f-west-gate-unpaid"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:nishiguchi-gates-north",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:gate:nishiguchi-gates-north",
+      "to": "sk:area:nishiguchi-b3f-paid",
+      "id": "sk:gate:nishiguchi-gates-north→sk:area:nishiguchi-b3f-paid"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:nishiguchi-gates-north",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:gate:nishiguchi-gates-north",
+      "to": "sk:area:nishiguchi-b3f-unpaid-north",
+      "id": "sk:gate:nishiguchi-gates-north→sk:area:nishiguchi-b3f-unpaid-north"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:nishiguchi-gates-south",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:gate:nishiguchi-gates-south",
+      "to": "sk:area:nishiguchi-b3f-paid",
+      "id": "sk:gate:nishiguchi-gates-south→sk:area:nishiguchi-b3f-paid"
+    },
+    {
+      "kind": "gate-approach",
+      "elementId": "sk:gate:nishiguchi-gates-south",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:gate:nishiguchi-gates-south",
+      "to": "sk:area:nishiguchi-b3f-unpaid-south",
+      "id": "sk:gate:nishiguchi-gates-south→sk:area:nishiguchi-b3f-unpaid-south"
     },
     {
       "kind": "gate-approach",
@@ -12410,6 +13089,83 @@
       "from": "sk:platform:toei-oedo-shinjuku-6-7",
       "to": "sk:vertical:toei-oedo-stairs-b4f-to-platform-north-end@sk:level:toei-oedo-shinjuku-b7f",
       "id": "sk:platform:toei-oedo-shinjuku-6-7→sk:vertical:toei-oedo-stairs-b4f-to-platform-north-end@sk:level:toei-oedo-shinjuku-b7f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:nishiguchi-elevator-concourse-to-platform",
+      "verticalKind": "elevator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:platform:toei-shinjuku-nishiguchi-1-2",
+      "to": "sk:vertical:nishiguchi-elevator-concourse-to-platform@sk:level:toei-shinjuku-nishiguchi-b4f",
+      "id": "sk:platform:toei-shinjuku-nishiguchi-1-2→sk:vertical:nishiguchi-elevator-concourse-to-platform@sk:level:toei-shinjuku-nishiguchi-b4f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:nishiguchi-escalator-car-2",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:platform:toei-shinjuku-nishiguchi-1-2",
+      "to": "sk:vertical:nishiguchi-escalator-car-2@sk:level:toei-shinjuku-nishiguchi-b4f",
+      "id": "sk:platform:toei-shinjuku-nishiguchi-1-2→sk:vertical:nishiguchi-escalator-car-2@sk:level:toei-shinjuku-nishiguchi-b4f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:nishiguchi-escalator-car-5",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:platform:toei-shinjuku-nishiguchi-1-2",
+      "to": "sk:vertical:nishiguchi-escalator-car-5@sk:level:toei-shinjuku-nishiguchi-b4f",
+      "id": "sk:platform:toei-shinjuku-nishiguchi-1-2→sk:vertical:nishiguchi-escalator-car-5@sk:level:toei-shinjuku-nishiguchi-b4f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:nishiguchi-escalator-car-7",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:platform:toei-shinjuku-nishiguchi-1-2",
+      "to": "sk:vertical:nishiguchi-escalator-car-7@sk:level:toei-shinjuku-nishiguchi-b4f",
+      "id": "sk:platform:toei-shinjuku-nishiguchi-1-2→sk:vertical:nishiguchi-escalator-car-7@sk:level:toei-shinjuku-nishiguchi-b4f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:nishiguchi-stairs-car-2",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:platform:toei-shinjuku-nishiguchi-1-2",
+      "to": "sk:vertical:nishiguchi-stairs-car-2@sk:level:toei-shinjuku-nishiguchi-b4f",
+      "id": "sk:platform:toei-shinjuku-nishiguchi-1-2→sk:vertical:nishiguchi-stairs-car-2@sk:level:toei-shinjuku-nishiguchi-b4f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:nishiguchi-stairs-car-5",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:platform:toei-shinjuku-nishiguchi-1-2",
+      "to": "sk:vertical:nishiguchi-stairs-car-5@sk:level:toei-shinjuku-nishiguchi-b4f",
+      "id": "sk:platform:toei-shinjuku-nishiguchi-1-2→sk:vertical:nishiguchi-stairs-car-5@sk:level:toei-shinjuku-nishiguchi-b4f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:nishiguchi-stairs-car-7",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:platform:toei-shinjuku-nishiguchi-1-2",
+      "to": "sk:vertical:nishiguchi-stairs-car-7@sk:level:toei-shinjuku-nishiguchi-b4f",
+      "id": "sk:platform:toei-shinjuku-nishiguchi-1-2→sk:vertical:nishiguchi-stairs-car-7@sk:level:toei-shinjuku-nishiguchi-b4f"
     },
     {
       "kind": "vertical-approach",
@@ -17140,6 +17896,446 @@
       "from": "sk:vertical:keio-stairs-temporary-gate-landing-to-platform-1-2@sk:level:keio-shinjuku-b2f",
       "to": "sk:vertical:keio-stairs-temporary-gate-landing-to-platform-1-2@sk:level:keio-shinjuku-b1f",
       "id": "sk:vertical:keio-stairs-temporary-gate-landing-to-platform-1-2@sk:level:keio-shinjuku-b2f→sk:vertical:keio-stairs-temporary-gate-landing-to-platform-1-2@sk:level:keio-shinjuku-b1f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:nishiguchi-elevator-b1f-to-b3f",
+      "verticalKind": "elevator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:nishiguchi-elevator-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b1f",
+      "to": "sk:area:nishiguchi-b1f-passage",
+      "id": "sk:vertical:nishiguchi-elevator-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b1f→sk:area:nishiguchi-b1f-passage"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:nishiguchi-elevator-b1f-to-b3f",
+      "verticalKind": "elevator",
+      "levelChange": 2,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:vertical:nishiguchi-elevator-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b1f",
+      "to": "sk:vertical:nishiguchi-elevator-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "id": "sk:vertical:nishiguchi-elevator-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b1f→sk:vertical:nishiguchi-elevator-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b3f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:nishiguchi-elevator-b1f-to-b3f",
+      "verticalKind": "elevator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:nishiguchi-elevator-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "to": "sk:area:nishiguchi-b3f-unpaid-south",
+      "id": "sk:vertical:nishiguchi-elevator-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b3f→sk:area:nishiguchi-b3f-unpaid-south"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:nishiguchi-elevator-b1f-to-b3f",
+      "verticalKind": "elevator",
+      "levelChange": 2,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:vertical:nishiguchi-elevator-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "to": "sk:vertical:nishiguchi-elevator-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b1f",
+      "id": "sk:vertical:nishiguchi-elevator-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b3f→sk:vertical:nishiguchi-elevator-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b1f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:nishiguchi-elevator-concourse-to-platform",
+      "verticalKind": "elevator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:nishiguchi-elevator-concourse-to-platform@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "to": "sk:area:nishiguchi-b3f-paid",
+      "id": "sk:vertical:nishiguchi-elevator-concourse-to-platform@sk:level:toei-shinjuku-nishiguchi-b3f→sk:area:nishiguchi-b3f-paid"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:nishiguchi-elevator-concourse-to-platform",
+      "verticalKind": "elevator",
+      "levelChange": 1,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:vertical:nishiguchi-elevator-concourse-to-platform@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "to": "sk:vertical:nishiguchi-elevator-concourse-to-platform@sk:level:toei-shinjuku-nishiguchi-b4f",
+      "id": "sk:vertical:nishiguchi-elevator-concourse-to-platform@sk:level:toei-shinjuku-nishiguchi-b3f→sk:vertical:nishiguchi-elevator-concourse-to-platform@sk:level:toei-shinjuku-nishiguchi-b4f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:nishiguchi-elevator-concourse-to-platform",
+      "verticalKind": "elevator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:nishiguchi-elevator-concourse-to-platform@sk:level:toei-shinjuku-nishiguchi-b4f",
+      "to": "sk:platform:toei-shinjuku-nishiguchi-1-2",
+      "id": "sk:vertical:nishiguchi-elevator-concourse-to-platform@sk:level:toei-shinjuku-nishiguchi-b4f→sk:platform:toei-shinjuku-nishiguchi-1-2"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:nishiguchi-elevator-concourse-to-platform",
+      "verticalKind": "elevator",
+      "levelChange": 1,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:vertical:nishiguchi-elevator-concourse-to-platform@sk:level:toei-shinjuku-nishiguchi-b4f",
+      "to": "sk:vertical:nishiguchi-elevator-concourse-to-platform@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "id": "sk:vertical:nishiguchi-elevator-concourse-to-platform@sk:level:toei-shinjuku-nishiguchi-b4f→sk:vertical:nishiguchi-elevator-concourse-to-platform@sk:level:toei-shinjuku-nishiguchi-b3f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:nishiguchi-escalator-car-2",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:nishiguchi-escalator-car-2@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "to": "sk:area:nishiguchi-b3f-paid",
+      "id": "sk:vertical:nishiguchi-escalator-car-2@sk:level:toei-shinjuku-nishiguchi-b3f→sk:area:nishiguchi-b3f-paid"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:nishiguchi-escalator-car-2",
+      "verticalKind": "escalator",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:nishiguchi-escalator-car-2@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "to": "sk:vertical:nishiguchi-escalator-car-2@sk:level:toei-shinjuku-nishiguchi-b4f",
+      "id": "sk:vertical:nishiguchi-escalator-car-2@sk:level:toei-shinjuku-nishiguchi-b3f→sk:vertical:nishiguchi-escalator-car-2@sk:level:toei-shinjuku-nishiguchi-b4f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:nishiguchi-escalator-car-2",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:nishiguchi-escalator-car-2@sk:level:toei-shinjuku-nishiguchi-b4f",
+      "to": "sk:platform:toei-shinjuku-nishiguchi-1-2",
+      "id": "sk:vertical:nishiguchi-escalator-car-2@sk:level:toei-shinjuku-nishiguchi-b4f→sk:platform:toei-shinjuku-nishiguchi-1-2"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:nishiguchi-escalator-car-2",
+      "verticalKind": "escalator",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:nishiguchi-escalator-car-2@sk:level:toei-shinjuku-nishiguchi-b4f",
+      "to": "sk:vertical:nishiguchi-escalator-car-2@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "id": "sk:vertical:nishiguchi-escalator-car-2@sk:level:toei-shinjuku-nishiguchi-b4f→sk:vertical:nishiguchi-escalator-car-2@sk:level:toei-shinjuku-nishiguchi-b3f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:nishiguchi-escalator-car-5",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:nishiguchi-escalator-car-5@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "to": "sk:area:nishiguchi-b3f-paid",
+      "id": "sk:vertical:nishiguchi-escalator-car-5@sk:level:toei-shinjuku-nishiguchi-b3f→sk:area:nishiguchi-b3f-paid"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:nishiguchi-escalator-car-5",
+      "verticalKind": "escalator",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:nishiguchi-escalator-car-5@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "to": "sk:vertical:nishiguchi-escalator-car-5@sk:level:toei-shinjuku-nishiguchi-b4f",
+      "id": "sk:vertical:nishiguchi-escalator-car-5@sk:level:toei-shinjuku-nishiguchi-b3f→sk:vertical:nishiguchi-escalator-car-5@sk:level:toei-shinjuku-nishiguchi-b4f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:nishiguchi-escalator-car-5",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:nishiguchi-escalator-car-5@sk:level:toei-shinjuku-nishiguchi-b4f",
+      "to": "sk:platform:toei-shinjuku-nishiguchi-1-2",
+      "id": "sk:vertical:nishiguchi-escalator-car-5@sk:level:toei-shinjuku-nishiguchi-b4f→sk:platform:toei-shinjuku-nishiguchi-1-2"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:nishiguchi-escalator-car-5",
+      "verticalKind": "escalator",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:nishiguchi-escalator-car-5@sk:level:toei-shinjuku-nishiguchi-b4f",
+      "to": "sk:vertical:nishiguchi-escalator-car-5@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "id": "sk:vertical:nishiguchi-escalator-car-5@sk:level:toei-shinjuku-nishiguchi-b4f→sk:vertical:nishiguchi-escalator-car-5@sk:level:toei-shinjuku-nishiguchi-b3f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:nishiguchi-escalator-car-7",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:nishiguchi-escalator-car-7@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "to": "sk:area:nishiguchi-b3f-paid",
+      "id": "sk:vertical:nishiguchi-escalator-car-7@sk:level:toei-shinjuku-nishiguchi-b3f→sk:area:nishiguchi-b3f-paid"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:nishiguchi-escalator-car-7",
+      "verticalKind": "escalator",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:nishiguchi-escalator-car-7@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "to": "sk:vertical:nishiguchi-escalator-car-7@sk:level:toei-shinjuku-nishiguchi-b4f",
+      "id": "sk:vertical:nishiguchi-escalator-car-7@sk:level:toei-shinjuku-nishiguchi-b3f→sk:vertical:nishiguchi-escalator-car-7@sk:level:toei-shinjuku-nishiguchi-b4f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:nishiguchi-escalator-car-7",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:nishiguchi-escalator-car-7@sk:level:toei-shinjuku-nishiguchi-b4f",
+      "to": "sk:platform:toei-shinjuku-nishiguchi-1-2",
+      "id": "sk:vertical:nishiguchi-escalator-car-7@sk:level:toei-shinjuku-nishiguchi-b4f→sk:platform:toei-shinjuku-nishiguchi-1-2"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:nishiguchi-escalator-car-7",
+      "verticalKind": "escalator",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:nishiguchi-escalator-car-7@sk:level:toei-shinjuku-nishiguchi-b4f",
+      "to": "sk:vertical:nishiguchi-escalator-car-7@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "id": "sk:vertical:nishiguchi-escalator-car-7@sk:level:toei-shinjuku-nishiguchi-b4f→sk:vertical:nishiguchi-escalator-car-7@sk:level:toei-shinjuku-nishiguchi-b3f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:nishiguchi-escalator-d1-b1f-to-b3f",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:nishiguchi-escalator-d1-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b1f",
+      "to": "sk:area:nishiguchi-b1f-passage",
+      "id": "sk:vertical:nishiguchi-escalator-d1-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b1f→sk:area:nishiguchi-b1f-passage"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:nishiguchi-escalator-d1-b1f-to-b3f",
+      "verticalKind": "escalator",
+      "levelChange": 2,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:nishiguchi-escalator-d1-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b1f",
+      "to": "sk:vertical:nishiguchi-escalator-d1-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "id": "sk:vertical:nishiguchi-escalator-d1-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b1f→sk:vertical:nishiguchi-escalator-d1-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b3f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:nishiguchi-escalator-d1-b1f-to-b3f",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:nishiguchi-escalator-d1-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "to": "sk:area:nishiguchi-b3f-unpaid-south",
+      "id": "sk:vertical:nishiguchi-escalator-d1-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b3f→sk:area:nishiguchi-b3f-unpaid-south"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:nishiguchi-escalator-d1-b1f-to-b3f",
+      "verticalKind": "escalator",
+      "levelChange": 2,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:nishiguchi-escalator-d1-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "to": "sk:vertical:nishiguchi-escalator-d1-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b1f",
+      "id": "sk:vertical:nishiguchi-escalator-d1-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b3f→sk:vertical:nishiguchi-escalator-d1-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b1f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:nishiguchi-stairs-car-2",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:nishiguchi-stairs-car-2@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "to": "sk:area:nishiguchi-b3f-paid",
+      "id": "sk:vertical:nishiguchi-stairs-car-2@sk:level:toei-shinjuku-nishiguchi-b3f→sk:area:nishiguchi-b3f-paid"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:nishiguchi-stairs-car-2",
+      "verticalKind": "stairs",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:nishiguchi-stairs-car-2@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "to": "sk:vertical:nishiguchi-stairs-car-2@sk:level:toei-shinjuku-nishiguchi-b4f",
+      "id": "sk:vertical:nishiguchi-stairs-car-2@sk:level:toei-shinjuku-nishiguchi-b3f→sk:vertical:nishiguchi-stairs-car-2@sk:level:toei-shinjuku-nishiguchi-b4f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:nishiguchi-stairs-car-2",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:nishiguchi-stairs-car-2@sk:level:toei-shinjuku-nishiguchi-b4f",
+      "to": "sk:platform:toei-shinjuku-nishiguchi-1-2",
+      "id": "sk:vertical:nishiguchi-stairs-car-2@sk:level:toei-shinjuku-nishiguchi-b4f→sk:platform:toei-shinjuku-nishiguchi-1-2"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:nishiguchi-stairs-car-2",
+      "verticalKind": "stairs",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:nishiguchi-stairs-car-2@sk:level:toei-shinjuku-nishiguchi-b4f",
+      "to": "sk:vertical:nishiguchi-stairs-car-2@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "id": "sk:vertical:nishiguchi-stairs-car-2@sk:level:toei-shinjuku-nishiguchi-b4f→sk:vertical:nishiguchi-stairs-car-2@sk:level:toei-shinjuku-nishiguchi-b3f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:nishiguchi-stairs-car-5",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:nishiguchi-stairs-car-5@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "to": "sk:area:nishiguchi-b3f-paid",
+      "id": "sk:vertical:nishiguchi-stairs-car-5@sk:level:toei-shinjuku-nishiguchi-b3f→sk:area:nishiguchi-b3f-paid"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:nishiguchi-stairs-car-5",
+      "verticalKind": "stairs",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:nishiguchi-stairs-car-5@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "to": "sk:vertical:nishiguchi-stairs-car-5@sk:level:toei-shinjuku-nishiguchi-b4f",
+      "id": "sk:vertical:nishiguchi-stairs-car-5@sk:level:toei-shinjuku-nishiguchi-b3f→sk:vertical:nishiguchi-stairs-car-5@sk:level:toei-shinjuku-nishiguchi-b4f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:nishiguchi-stairs-car-5",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:nishiguchi-stairs-car-5@sk:level:toei-shinjuku-nishiguchi-b4f",
+      "to": "sk:platform:toei-shinjuku-nishiguchi-1-2",
+      "id": "sk:vertical:nishiguchi-stairs-car-5@sk:level:toei-shinjuku-nishiguchi-b4f→sk:platform:toei-shinjuku-nishiguchi-1-2"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:nishiguchi-stairs-car-5",
+      "verticalKind": "stairs",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:nishiguchi-stairs-car-5@sk:level:toei-shinjuku-nishiguchi-b4f",
+      "to": "sk:vertical:nishiguchi-stairs-car-5@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "id": "sk:vertical:nishiguchi-stairs-car-5@sk:level:toei-shinjuku-nishiguchi-b4f→sk:vertical:nishiguchi-stairs-car-5@sk:level:toei-shinjuku-nishiguchi-b3f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:nishiguchi-stairs-car-7",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:nishiguchi-stairs-car-7@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "to": "sk:area:nishiguchi-b3f-paid",
+      "id": "sk:vertical:nishiguchi-stairs-car-7@sk:level:toei-shinjuku-nishiguchi-b3f→sk:area:nishiguchi-b3f-paid"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:nishiguchi-stairs-car-7",
+      "verticalKind": "stairs",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:nishiguchi-stairs-car-7@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "to": "sk:vertical:nishiguchi-stairs-car-7@sk:level:toei-shinjuku-nishiguchi-b4f",
+      "id": "sk:vertical:nishiguchi-stairs-car-7@sk:level:toei-shinjuku-nishiguchi-b3f→sk:vertical:nishiguchi-stairs-car-7@sk:level:toei-shinjuku-nishiguchi-b4f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:nishiguchi-stairs-car-7",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:nishiguchi-stairs-car-7@sk:level:toei-shinjuku-nishiguchi-b4f",
+      "to": "sk:platform:toei-shinjuku-nishiguchi-1-2",
+      "id": "sk:vertical:nishiguchi-stairs-car-7@sk:level:toei-shinjuku-nishiguchi-b4f→sk:platform:toei-shinjuku-nishiguchi-1-2"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:nishiguchi-stairs-car-7",
+      "verticalKind": "stairs",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:nishiguchi-stairs-car-7@sk:level:toei-shinjuku-nishiguchi-b4f",
+      "to": "sk:vertical:nishiguchi-stairs-car-7@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "id": "sk:vertical:nishiguchi-stairs-car-7@sk:level:toei-shinjuku-nishiguchi-b4f→sk:vertical:nishiguchi-stairs-car-7@sk:level:toei-shinjuku-nishiguchi-b3f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:nishiguchi-stairs-d1-b1f-to-b3f",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:nishiguchi-stairs-d1-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b1f",
+      "to": "sk:area:nishiguchi-b1f-passage",
+      "id": "sk:vertical:nishiguchi-stairs-d1-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b1f→sk:area:nishiguchi-b1f-passage"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:nishiguchi-stairs-d1-b1f-to-b3f",
+      "verticalKind": "stairs",
+      "levelChange": 2,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:nishiguchi-stairs-d1-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b1f",
+      "to": "sk:vertical:nishiguchi-stairs-d1-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "id": "sk:vertical:nishiguchi-stairs-d1-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b1f→sk:vertical:nishiguchi-stairs-d1-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b3f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:nishiguchi-stairs-d1-b1f-to-b3f",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:nishiguchi-stairs-d1-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "to": "sk:area:nishiguchi-b3f-unpaid-south",
+      "id": "sk:vertical:nishiguchi-stairs-d1-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b3f→sk:area:nishiguchi-b3f-unpaid-south"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:nishiguchi-stairs-d1-b1f-to-b3f",
+      "verticalKind": "stairs",
+      "levelChange": 2,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:nishiguchi-stairs-d1-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b3f",
+      "to": "sk:vertical:nishiguchi-stairs-d1-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b1f",
+      "id": "sk:vertical:nishiguchi-stairs-d1-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b3f→sk:vertical:nishiguchi-stairs-d1-b1f-to-b3f@sk:level:toei-shinjuku-nishiguchi-b1f"
     },
     {
       "kind": "vertical-approach",

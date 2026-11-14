@@ -72,6 +72,8 @@ const table: Record<string, TrackRun> = {
   [`${P}keio-new-line-shinjuku-4-5#5`]: run('through', EAST, '本八幡方面 (next: 新宿三丁目), to the east.'),
   [`${P}toei-oedo-shinjuku-6-7#6`]: run('through', SOUTH, '六本木方面 (next: 代々木): the Toei drawing has this arrow leave at the south-east end of the platform.'),
   [`${P}toei-oedo-shinjuku-6-7#7`]: run('through', NORTH, '光が丘方面 (next: 都庁前): the Toei drawing has this arrow leave at the north-west end of the platform.'),
+  [`${P}toei-shinjuku-nishiguchi-1-2#1`]: run('through', SOUTH, '都庁前方面 (next: 都庁前): the end of the platform beside the Marunouchi Line passage, entered as the south end.'),
+  [`${P}toei-shinjuku-nishiguchi-1-2#2`]: run('through', NORTH, '飯田橋方面 (next: 東新宿), the other end.'),
   [`${P}tokyo-metro-shinjuku-1-2#1`]: run('through', WEST, '荻窪方面 (next: 西新宿), to the west.'),
   [`${P}tokyo-metro-shinjuku-1-2#2`]: run('through', EAST, '池袋方面 (next: 新宿三丁目), to the east.'),
   [`${P}tokyo-metro-shinjuku-sanchome-1-2#1`]: run('through', WEST, '荻窪方面 (next: 新宿), to the west.'),

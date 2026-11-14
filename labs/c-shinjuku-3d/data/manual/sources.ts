@@ -310,6 +310,17 @@ export const sources: SourceRecord[] = [
       sourceDate: null,
     },
     {
+      id: 'src:toei-shinjuku-nishiguchi-map',
+      title: '新宿西口駅構内立体図 (solid.png) | 東京都交通局',
+      publisher: 'Bureau of Transportation, Tokyo Metropolitan Government (東京都交通局)',
+      url: 'https://www.kotsu.metro.tokyo.jp/subway/stations/shinjuku-nishiguchi.html',
+      attributionText: 'Facts read from the 東京都交通局 新宿西口駅構内立体図 and the station page.',
+      notes:
+        'Read in a browser on 2026-11-14, in enlarged sections; no date is printed on the drawing as far as could be read. Source of the Oedo Line station E 01: the B1F passage with exits D2–D4, the B3F concourse with two unnamed gate lines, the B4F island platform ("都庁前方面 1 (都庁前)", "飯田橋方面 2 (東新宿)"), the flight marked D1 and the lifts, exit D5, and the のりかえ・出口案内 table (cars 1–8; escalator and stairs at cars 2, 5 and 7, a lift at car 5; 丸ノ内線, JR線, 京王線 and 小田急線 over cars 2–5 and 西武新宿線 at car 7). The drawing also shows the B1F passage and platform of 丸ノ内線 新宿駅, which the station joins. The station page lists 18 escalators and 4 lifts and the same transfers. The facilities printed for exits D1–D5 were too small to read.',
+      accessedVia: 'https://www.kotsu.metro.tokyo.jp/subway/stations/shinjuku-nishiguchi/i/solid.png',
+      sourceDate: null,
+    },
+    {
       id: 'src:busta-floor-maps',
       title: 'バスタ新宿 フロアマップ（2F / 3F / 4F）',
       publisher: '新宿高速バスターミナル株式会社 (Shinjuku Expressway Bus Terminal)',

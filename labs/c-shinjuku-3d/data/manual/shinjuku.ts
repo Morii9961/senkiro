@@ -211,9 +211,11 @@ const complex: StationComplex = {
   kind: 'station-complex',
   ...entity('sk:complex:shinjuku', names('新宿駅', 'Shinjuku Station', '新宿站'), prov([S_PAGE, S_KEIO_PAGE])),
   stationIds: [ST_JR, ST_KEIO, 'sk:station:odakyu-shinjuku', 'sk:station:keio-new-line-shinjuku', 'sk:station:toei-oedo-shinjuku', 'sk:station:tokyo-metro-shinjuku', 'sk:station:seibu-shinjuku',
-    'sk:station:tokyo-metro-shinjuku-sanchome', 'sk:station:toei-shinjuku-sanchome'],
+    'sk:station:tokyo-metro-shinjuku-sanchome', 'sk:station:toei-shinjuku-sanchome', 'sk:station:toei-shinjuku-nishiguchi'],
   explicitlyExcluded: [
-    { name: '新宿西口駅 (Shinjuku-nishiguchi, Toei Oedo Line)', reason: 'A different station. It appears on the JR and Tokyo Metro 立体図 as a neighbour and is not modelled.' },
+    { name: '西新宿駅 (Nishi-shinjuku, Marunouchi Line)', reason: 'The next station towards 荻窪. A different station; named on the drawings only as a direction and not modelled.' },
+    { name: '東新宿駅 (Higashi-shinjuku, Oedo and Fukutoshin lines)', reason: 'The next station after 新宿西口 and 新宿三丁目. A different station; named on the drawings only as a direction and not modelled.' },
+    { name: '新宿御苑前駅 (Shinjuku-gyoemmae, Marunouchi Line)', reason: 'The next station towards 池袋 after 新宿三丁目. A different station; named on the drawings only as a direction and not modelled.' },
   ],
 };
 

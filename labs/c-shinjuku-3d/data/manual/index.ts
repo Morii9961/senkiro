@@ -1,10 +1,11 @@
 /**
  * The whole hand-entered model: JR East and the Keio Line (shinjuku.ts) joined
  * with the other operators and the links between them (extensions.ts), and
- * the neighbouring 新宿三丁目 stations (sanchome.ts).
+ * the neighbouring 新宿三丁目 stations (sanchome.ts) and 新宿西口 (nishiguchi.ts).
  */
 import type { StationModel } from '../../src/domain/types';
 import { EXT_IDS, extensions } from './extensions';
+import { NG, nishiguchi } from './nishiguchi';
 import { SC, sanchome } from './sanchome';
 import { IDS as BASE_IDS, baseModel } from './shinjuku';
 
@@ -15,16 +16,16 @@ export const stationModelInput: Omit<StationModel, 'generatedAt'> = {
   operators: baseModel.operators,
   railLines: [...baseModel.railLines, ...extensions.railLines, ...sanchome.railLines],
   complex: baseModel.complex,
-  stations: [...baseModel.stations, ...extensions.stations, ...sanchome.stations],
-  levels: [...baseModel.levels, ...extensions.levels, ...sanchome.levels],
-  areas: [...baseModel.areas, ...extensions.areas, ...sanchome.areas],
-  passages: [...baseModel.passages, ...extensions.passages, ...sanchome.passages],
-  gates: [...baseModel.gates, ...extensions.gates, ...sanchome.gates],
-  entrances: [...baseModel.entrances, ...extensions.entrances, ...sanchome.entrances],
-  verticals: [...baseModel.verticals, ...extensions.verticals, ...sanchome.verticals],
+  stations: [...baseModel.stations, ...extensions.stations, ...sanchome.stations, ...nishiguchi.stations],
+  levels: [...baseModel.levels, ...extensions.levels, ...sanchome.levels, ...nishiguchi.levels],
+  areas: [...baseModel.areas, ...extensions.areas, ...sanchome.areas, ...nishiguchi.areas],
+  passages: [...baseModel.passages, ...extensions.passages, ...sanchome.passages, ...nishiguchi.passages],
+  gates: [...baseModel.gates, ...extensions.gates, ...sanchome.gates, ...nishiguchi.gates],
+  entrances: [...baseModel.entrances, ...extensions.entrances, ...sanchome.entrances, ...nishiguchi.entrances],
+  verticals: [...baseModel.verticals, ...extensions.verticals, ...sanchome.verticals, ...nishiguchi.verticals],
   unverifiedBlocks: extensions.unverifiedBlocks,
   unconfirmedConnections: baseModel.unconfirmedConnections,
 };
 
 /** Stable ids that the UI and tests refer to by name. */
-export const IDS = { ...BASE_IDS, ...EXT_IDS, SC } as const;
+export const IDS = { ...BASE_IDS, ...EXT_IDS, SC, NG } as const;
