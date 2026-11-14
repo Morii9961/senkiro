@@ -108,7 +108,7 @@ export function buildPlatforms(ctx: Ctx): void {
             [cx + 0.3, top + 0.01, cz + 0.3],
             [cx - 0.3, top + 0.01, cz + 0.3],
           ],
-          alphas: [0.1, 0.1, 0.1, 0.1],
+          alphas: [0.1 * p.contactShadow, 0.1 * p.contactShadow, 0.1 * p.contactShadow, 0.1 * p.contactShadow],
           color: p.shadow,
         });
       }

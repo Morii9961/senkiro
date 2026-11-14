@@ -637,6 +637,78 @@ a {
   color: #f0a45a;
 }
 
+/*
+ * On the dark table the model is the bright thing. Labels step back: no white
+ * blocks, thinner rings, and the minor kinds (gates, entrances, areas) become
+ * quiet captions instead of chips.
+ */
+:root[data-theme='dark'] .label {
+  background: color-mix(in srgb, #1b2029 82%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ink) 10%, transparent);
+  color: #dfe5ed;
+}
+
+:root[data-theme='dark'] .label-level {
+  background: #39424e;
+  color: #eef2f7;
+  box-shadow: none;
+}
+
+:root[data-theme='dark'] .label-platform {
+  background: #1b2029;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ink) 38%, transparent);
+}
+
+:root[data-theme='dark'] .label-gate,
+:root[data-theme='dark'] .label-entrance {
+  padding: 0 5px;
+  background: color-mix(in srgb, #1b2029 88%, transparent);
+  box-shadow: none;
+  font-size: 11.5px;
+  font-weight: 500;
+}
+
+:root[data-theme='dark'] .label-gate {
+  color: #8fd6dc;
+}
+
+:root[data-theme='dark'] .label-entrance {
+  color: #efb47a;
+}
+
+:root[data-theme='dark'] .label-operator {
+  background: transparent;
+  box-shadow: none;
+  color: #aab4c0;
+  text-shadow: 0 0 3px #262b33, 0 0 3px #262b33;
+}
+
+:root[data-theme='dark'] .label-area {
+  padding: 0 5px;
+  background: color-mix(in srgb, #1b2029 66%, transparent);
+  box-shadow: none;
+  color: #cdd5de;
+  font-size: 11px;
+  text-shadow: none;
+}
+
+:root[data-theme='dark'] .label-lift,
+:root[data-theme='dark'] .label-route-start,
+:root[data-theme='dark'] .label-route-end {
+  box-shadow: none;
+}
+
+:root[data-theme='dark'] .label-route-end {
+  background: var(--route);
+  color: #fff;
+}
+
+:root[data-theme='dark'] .label-route-start {
+  background: #1b2029;
+  color: var(--route);
+  box-shadow: 0 0 0 2px var(--route);
+}
+
 .label-lift {
   padding: 0 5px;
   background: #2c63b8;

@@ -1,6 +1,6 @@
 import { Canvas, useFrame, useThree, type ThreeEvent } from '@react-three/fiber';
 import { useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, type Ref, type RefObject } from 'react';
-import { DoubleSide, MOUSE, PMREMGenerator, Spherical, TOUCH, Vector3, type Object3D, type PerspectiveCamera } from 'three';
+import { DoubleSide, MOUSE, NeutralToneMapping, NoToneMapping, PMREMGenerator, Spherical, TOUCH, Vector3, type Object3D, type PerspectiveCamera } from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import type { StationGraph } from '../domain/graph';
@@ -21,6 +21,7 @@ import {
 } from './scene/camera';
 import { OPAQUE_MATERIALS, buildOutlines, elementAtFace, mergeDecals, mergePrims, partition, type MergedMesh } from './scene/geometry';
 import type { MaterialKind } from './scene/prims';
+import type { SceneTheme } from './sceneTheme';
 import { inkOn } from './theme';
 
 export interface SceneHandle {
@@ -54,6 +55,8 @@ interface Props {
   model: StationModel;
   graph: StationGraph;
   view: ViewOptions;
+  /** Lighting and tone mapping of the model; its palette is the one in `view`. */
+  sceneTheme: SceneTheme;
   /** The drawn route, shared with the labels and the 2D plan. */
   routePts: RoutePoint[];
   labels: SceneLabel[];
@@ -179,6 +182,7 @@ function useKeyboard(handleRef: Ref<SceneHandle>) {
 function SceneContent({
   model,
   view,
+  sceneTheme,
   routePts,
   labels,
   showLabels,
@@ -213,6 +217,13 @@ function SceneContent({
       pmrem.dispose();
     };
   }, [gl, scene, invalidate]);
+
+  // --- tone mapping: part of the scene theme, never of the interface theme ---
+  useEffect(() => {
+    gl.toneMapping = sceneTheme.toneMapping === 'neutral' ? NeutralToneMapping : NoToneMapping;
+    gl.toneMappingExposure = sceneTheme.exposure;
+    invalidate();
+  }, [gl, sceneTheme, invalidate]);
 
   // --- geometry -------------------------------------------------------------------
   const parts = useMemo(() => buildScene(model, view), [model, view]);
@@ -498,13 +509,12 @@ function SceneContent({
     onSelect(null);
   };
 
-  const dark = view.palette.background < '#80';
   return (
     <>
       <color attach="background" args={[view.palette.background]} />
-      <hemisphereLight args={[dark ? '#dfe6f2' : '#ffffff', dark ? '#3a4048' : '#a8a296', dark ? 0.85 : 0.66]} />
-      <directionalLight position={[-45, 90, 60]} intensity={dark ? 0.9 : 0.74} />
-      <directionalLight position={[60, 40, -70]} intensity={0.14} />
+      <hemisphereLight args={[sceneTheme.ambient.sky, sceneTheme.ambient.ground, sceneTheme.ambient.intensity]} />
+      <directionalLight position={sceneTheme.key.position} color={sceneTheme.key.color} intensity={sceneTheme.key.intensity} />
+      <directionalLight position={sceneTheme.fill.position} color={sceneTheme.fill.color} intensity={sceneTheme.fill.intensity} />
       {meshes.opaque.map(({ kind, mesh }) => (
         <mesh key={kind} ref={register(mesh)} geometry={mesh.geometry} onClick={pick}>
           {kind === 'metal' ? (
@@ -516,20 +526,20 @@ function SceneContent({
         </mesh>
       ))}
       <mesh geometry={meshes.decals} renderOrder={1} raycast={() => null}>
-        <meshBasicMaterial vertexColors transparent depthWrite={false} side={DoubleSide} polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
+        <meshBasicMaterial vertexColors transparent depthWrite={false} side={DoubleSide} toneMapped={false} polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
       </mesh>
       <lineSegments geometry={meshes.outlines} renderOrder={2}>
-        <lineBasicMaterial vertexColors />
+        <lineBasicMaterial vertexColors toneMapped={false} />
       </lineSegments>
       <mesh ref={register(meshes.translucent)} geometry={meshes.translucent.geometry} onClick={pick} renderOrder={3}>
         <meshStandardMaterial vertexColors transparent depthWrite={false} {...FINISH.glass} />
       </mesh>
       {/* the route twice: solid where it is in view, faint where something stands in front of it */}
       <mesh geometry={routeMesh.geometry} renderOrder={4} raycast={() => null}>
-        <meshBasicMaterial vertexColors />
+        <meshBasicMaterial vertexColors toneMapped={false} />
       </mesh>
       <mesh geometry={routeMesh.geometry} renderOrder={5} raycast={() => null}>
-        <meshBasicMaterial vertexColors transparent opacity={0.42} depthTest={false} depthWrite={false} />
+        <meshBasicMaterial vertexColors transparent opacity={0.42} depthTest={false} depthWrite={false} toneMapped={false} />
       </mesh>
     </>
   );

@@ -177,7 +177,7 @@ export function buildAreas(ctx: Ctx): void {
         e.axis === 'x'
           ? [[e.lo, yS, s0], [e.hi, yS, s0], [e.hi, yS, s1], [e.lo, yS, s1]]
           : [[s0, yS, e.lo], [s0, yS, e.hi], [s1, yS, e.hi], [s1, yS, e.lo]];
-      ctx.decals.push({ corners, alphas: [0.22, 0.22, 0, 0], color: p.shadow });
+      ctx.decals.push({ corners, alphas: [0.22 * p.contactShadow, 0.22 * p.contactShadow, 0, 0], color: p.shadow });
     }
   }
 }

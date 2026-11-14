@@ -89,7 +89,7 @@ export function createContext(model: StationModel, opts: ViewOptions): Ctx {
     let c = color;
     let alpha = baseAlpha;
     if (routeActive && elementId && !onRoute.has(elementId)) c = mix(c, p.background, 0.3);
-    let outlineColor = mix(c, p.ink, 0.3);
+    let outlineColor = mix(c, p.outline, 0.3);
     if (elementId && elementId === opts.selectedId) {
       c = mix(c, p.selected, 0.55);
       outlineColor = p.selected;

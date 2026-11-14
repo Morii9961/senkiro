@@ -18,7 +18,8 @@ import { Plan2D } from './Plan2D';
 import type { RenderStats, SceneHandle } from './Scene3D';
 import { buildLabels, routePoints, type LabelChip, type ViewOptions } from './scene/build';
 import { trackRange } from './scene/labels';
-import { PALETTES, type ThemeName } from './theme';
+import { SCENE_THEMES } from './sceneTheme';
+import type { ThemeName } from './theme';
 import { webgl2Available } from './webgl';
 
 // three.js is most of the bundle. It is loaded on demand so that the page
@@ -111,7 +112,9 @@ export function App() {
   const sceneRef = useRef<SceneHandle>(null);
   const t = useMemo(() => makeT(lang), [lang]);
   const namer = useMemo(() => makeNamer(model, lang, t), [model, lang, t]);
-  const palette = PALETTES[theme];
+  // the model has a theme of its own; the interface theme only chooses which one
+  const sceneTheme = SCENE_THEMES[theme];
+  const palette = sceneTheme.palette;
 
   useEffect(() => {
     document.documentElement.lang = lang === 'zh' ? 'zh-Hans' : lang;
@@ -382,6 +385,7 @@ export function App() {
                 model={model}
                 graph={graph}
                 view={view}
+                sceneTheme={sceneTheme}
                 routePts={routePts}
                 labels={labels}
                 showLabels={showLabels}

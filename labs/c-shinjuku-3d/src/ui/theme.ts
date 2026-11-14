@@ -1,14 +1,24 @@
 /**
- * Colours of the model. V2 reads as an architectural cutaway model: neutral
+ * Colours of the model. It reads as an architectural cutaway model: neutral
  * floors and walls, a few semantic accents, and one loud colour kept for the
  * route. These are this prototype's own colours — they do not reproduce any
  * operator's map palette or signage.
+ *
+ * The dark palette is NOT the light one turned down. A dark interface puts the
+ * same model on a graphite table under neutral light: the materials keep their
+ * own colours (a little lower in value so that they do not glare), and only
+ * the surroundings change. See ./sceneTheme.ts for the lighting that goes with
+ * each palette.
  */
 export type ThemeName = 'light' | 'dark';
 
 export interface Palette {
   background: string;
   ink: string;
+  /** What edges are darkened towards — a soft shadow line, never a highlight. */
+  outline: string;
+  /** Strength of the baked contact shadows, 1 = as authored. */
+  contactShadow: number;
   /** Faint plate under each floor. */
   shell: string;
   floorUnpaid: string;
@@ -51,6 +61,8 @@ export const PALETTES: Record<ThemeName, Palette> = {
   light: {
     background: '#eceae5',
     ink: '#1d2733',
+    outline: '#1d2733',
+    contactShadow: 1,
     shell: '#8f99a5',
     floorUnpaid: '#e2d5b7',
     floorPaid: {
@@ -94,48 +106,50 @@ export const PALETTES: Record<ThemeName, Palette> = {
     statusUnknown: '#8a8f98',
   },
   dark: {
-    background: '#14181e',
+    background: '#262b33',
     ink: '#e6ebf2',
-    shell: '#4a5563',
-    floorUnpaid: '#4b453a',
+    outline: '#10141a',
+    contactShadow: 1.45,
+    shell: '#77818e',
+    floorUnpaid: '#d8cbac',
     floorPaid: {
-      'jr-east': '#33494a',
-      keio: '#473a4c',
-      odakyu: '#34405a',
-      'tokyo-metro': '#523b3b',
-      toei: '#3b4a34',
-      seibu: '#2f4a4d',
+      'jr-east': '#b2cfc4',
+      keio: '#cfbad6',
+      odakyu: '#b5c5e4',
+      'tokyo-metro': '#e2b9b3',
+      toei: '#c0d8ae',
+      seibu: '#b0d6d9',
     },
-    floorPaidDefault: '#3a424d',
-    wall: '#5c6672',
-    platform: '#525b67',
-    platformEdge: '#c9d0d8',
-    tactile: '#c7a637',
-    trackBed: '#24282e',
-    rail: '#8e98a4',
-    column: '#6a7480',
-    stairs: '#7a8491',
-    stairsSide: '#a4afbb',
-    escalator: '#1d2126',
-    escalatorSide: '#6f8fa3',
-    handrail: '#0d0f12',
-    elevatorGlass: '#5d93b4',
-    elevatorFrame: '#aab4c0',
-    elevator: '#6fa4f5',
-    gateBody: '#9aa4b0',
-    gate: '#58c7cf',
-    gateTransfer: '#c49ad6',
-    entrance: '#f0a45a',
-    block: '#6f7680',
-    link: '#8795a6',
-    route: '#ff6a3d',
-    routeDim: '#8a4a38',
-    routeHalo: '#14181e',
-    selected: '#7fb0ff',
-    shadow: '#000000',
-    statusNormal: '#55c98a',
-    statusDelayed: '#f2b33d',
-    statusSuspended: '#ff6b76',
+    floorPaidDefault: '#bfc8d2',
+    wall: '#edece7',
+    platform: '#bcc2ca',
+    platformEdge: '#f3f3ef',
+    tactile: '#e2bd44',
+    trackBed: '#7b7771',
+    rail: '#40464e',
+    column: '#e3e1db',
+    stairs: '#bbc0c7',
+    stairsSide: '#858d97',
+    escalator: '#3d434b',
+    escalatorSide: '#98b0c1',
+    handrail: '#1b1f24',
+    elevatorGlass: '#a4cde5',
+    elevatorFrame: '#646e79',
+    elevator: '#3a73cc',
+    gateBody: '#606a76',
+    gate: '#1f929c',
+    gateTransfer: '#8d5aac',
+    entrance: '#d37a22',
+    block: '#9aa0a8',
+    link: '#8492a1',
+    route: '#ff5a30',
+    routeDim: '#d99684',
+    routeHalo: '#ffffff',
+    selected: '#2f7bff',
+    shadow: '#0b0e12',
+    statusNormal: '#3fae73',
+    statusDelayed: '#e79a12',
+    statusSuspended: '#e2424f',
     statusUnknown: '#8e96a3',
   },
 };

@@ -162,7 +162,7 @@ export function buildBlocks(ctx: Ctx): void {
       color,
       alpha: opts.focusOrdinals === null ? 0.14 : 0.06,
       outline: true,
-      outlineColor: mix(color, p.ink, 0.35),
+      outlineColor: mix(color, p.outline, 0.35),
       pickable: true,
     });
     // diagonal hatching on the top face: the drafting convention for "not surveyed"
@@ -180,7 +180,7 @@ export function buildBlocks(ctx: Ctx): void {
         b: [bx, y1 + 0.02, bz],
         width: 0.07,
         thickness: 0.02,
-        color: mix(color, p.ink, 0.25),
+        color: mix(color, p.outline, 0.25),
         alpha: 1,
         outline: false,
         outlineColor: color,
