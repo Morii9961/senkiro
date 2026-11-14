@@ -671,6 +671,8 @@ test.describe('performance', () => {
   ]) {
     for (const withTrains of [false, true])
     test(`@perf frame rate, triangles and draw calls at ${viewport.width}×${viewport.height}${withTrains ? ', trains running' : ''}`, async ({ page, browser }) => {
+      // software rendering in CI-like runs is slow, and with trains the scene never rests: allow more than the default 45 s
+      test.setTimeout(120_000);
       await page.setViewportSize(viewport);
       const errors = await open(page, `lang=ja&theme=light&perf=1&motion=off${withTrains ? '&trains=on&simtime=12:00:00&simplay=1' : ''}`);
       await waitForScene(page);
