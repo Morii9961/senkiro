@@ -7,34 +7,19 @@
  * where that is not recorded no track is drawn. The columns are decoration:
  * their number and spacing say nothing about the real station.
  */
-import type { Platform, PlanRect } from '../../../domain/types';
+import { TRACK_GAP, TRACK_STUB, TRACK_W, edgeOf, type TrackSide } from '../../../trains/trackGeometry';
 import { mix } from '../../theme';
 import { PLATFORM_TOP, box } from '../prims';
 import type { Ctx } from './context';
 
-const TRACK_W = 0.62;
-const TRACK_GAP = 0.04;
 const COLUMN_STEP = 4;
 
-type Side = NonNullable<Platform['tracks'][number]['side']>;
+type Side = TrackSide;
 
 /** A box given as [along0, along1] × [across0, across1], for a platform whose long axis is `axis`. */
 function oriented(axis: 'x' | 'z', a0: number, a1: number, c0: number, c1: number, y0: number, y1: number) {
   const [lo, hi] = c0 < c1 ? [c0, c1] : [c1, c0];
   return axis === 'x' ? box(a0, a1, y0, y1, lo, hi) : box(lo, hi, y0, y1, a0, a1);
-}
-
-function edgeOf(r: PlanRect, side: Side): { axis: 'x' | 'z'; at: number; out: 1 | -1; lo: number; hi: number } {
-  switch (side) {
-    case 'z-':
-      return { axis: 'x', at: r.z0, out: -1, lo: r.x0, hi: r.x1 };
-    case 'z+':
-      return { axis: 'x', at: r.z1, out: 1, lo: r.x0, hi: r.x1 };
-    case 'x-':
-      return { axis: 'z', at: r.x0, out: -1, lo: r.z0, hi: r.z1 };
-    case 'x+':
-      return { axis: 'z', at: r.x1, out: 1, lo: r.z0, hi: r.z1 };
-  }
 }
 
 export function buildPlatforms(ctx: Ctx): void {
@@ -74,8 +59,8 @@ export function buildPlatforms(ctx: Ctx): void {
         // track bed and rails
         const t0 = e.at + e.out * TRACK_GAP;
         const t1 = e.at + e.out * (TRACK_GAP + TRACK_W);
-        const lo = e.lo - 1.6;
-        const hi = e.hi + 1.6;
+        const lo = e.lo - TRACK_STUB;
+        const hi = e.hi + TRACK_STUB;
         ctx.add(area.id, 'track', 'dark', oriented(e.axis, lo, hi, t0, t1, y - 0.1, y + 0.03), dim(p.trackBed), { shade: [0.8, 1], pickable: false });
         for (const off of [0.17, 0.45]) {
           const c = e.at + e.out * (TRACK_GAP + off);
