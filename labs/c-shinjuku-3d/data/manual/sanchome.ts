@@ -37,7 +37,8 @@ const L_TS = 'sk:line:toei-shinjuku';
 
 const metroCommon: Common = { stationId: ST_METRO_SC, asOf: '2024-06', geometryConfidence: 'schematic' };
 const toeiCommon: Common = { stationId: ST_TOEI_SC, asOf: '2026-11', geometryConfidence: 'schematic' };
-const sharedCommon: Common = { stationId: null, asOf: '2024-06', geometryConfidence: 'unknown' };
+// the passage between the two operators' concourses: its exits carry Tokyo Metro's E numbers, so it is entered under the Tokyo Metro station
+const sharedCommon: Common = { stationId: ST_METRO_SC, asOf: '2024-06', geometryConfidence: 'unknown' };
 const metroProv = p2([S_METRO_SC]);
 const bothProv = p2([S_METRO_SC, S_TOEI_SC]);
 const toeiProv = p2([S_TOEI_SC, S_METRO_SC]);

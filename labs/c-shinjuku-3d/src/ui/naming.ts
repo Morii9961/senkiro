@@ -26,7 +26,21 @@ export interface Namer {
   /** Lines stopping at a platform, in the order of its tracks. */
   linesOf(platform: Platform): RailLine[];
   lineName(railLineId: string): string;
+  /**
+   * The station of an element, when it is one of the neighbouring stations rather than 新宿 itself:
+   * "新宿三丁目駅", "新宿西口駅". Null for the stations called 新宿 and for elements that belong to no station.
+   * Lists that mix the stations (the route pickers) show it, so that equal names can be told apart.
+   */
+  place(stationId: string | null | undefined): string | null;
 }
+
+/** Short place names of the neighbouring stations, as their operators write them. */
+const NEIGHBOUR_PLACE: Record<string, { ja: string; en: string; zh: string }> = {
+  'sk:station:tokyo-metro-shinjuku-sanchome': { ja: '新宿三丁目駅', en: 'Shinjuku-sanchome', zh: '新宿三丁目站' },
+  'sk:station:toei-shinjuku-sanchome': { ja: '新宿三丁目駅', en: 'Shinjuku-sanchome', zh: '新宿三丁目站' },
+  'sk:station:toei-shinjuku-nishiguchi': { ja: '新宿西口駅', en: 'Shinjuku-nishiguchi', zh: '新宿西口站' },
+  'sk:station:seibu-shinjuku': { ja: '西武新宿駅', en: 'Seibu-Shinjuku', zh: '西武新宿站' },
+};
 
 const CIRCLED: Record<string, string> = {
   A: 'Ⓐ', B: 'Ⓑ', C: 'Ⓒ', D: 'Ⓓ', E: 'Ⓔ', F: 'Ⓕ', G: 'Ⓖ', H: 'Ⓗ', I: 'Ⓘ', J: 'Ⓙ', K: 'Ⓚ', L: 'Ⓛ', M: 'Ⓜ', N: 'Ⓝ', O: 'Ⓞ',
@@ -152,7 +166,9 @@ export function makeNamer(model: StationModel, lang: Lang, t: T): Namer {
     return '';
   };
 
-  return { name, short, level, kind, linesOf, lineName };
+  const place = (stationId: string | null | undefined): string | null => (stationId ? (NEIGHBOUR_PLACE[stationId]?.[lang] ?? null) : null);
+
+  return { name, short, level, kind, linesOf, lineName, place };
 }
 
 export function circled(letter: string): string {

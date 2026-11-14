@@ -149,6 +149,38 @@ test.describe('routes', () => {
     await expect(page.getByTestId('step-nav')).toHaveCount(0);
   });
 
+  test('新宿三丁目 and 新宿西口 are destinations of their own, apart from 新宿', async ({ page }) => {
+    const errors = await open(page);
+    await waitForScene(page);
+    const to = page.getByTestId('route-to');
+    // the Marunouchi Line has tracks 1·2 at both stations: two entries, and only the neighbour carries a station name
+    const marunouchi = await to.locator('option', { hasText: '丸ノ内線' }).allInnerTexts();
+    const marunouchiPlatforms = marunouchi.filter((x) => x.includes('番線'));
+    expect(marunouchiPlatforms).toHaveLength(2);
+    expect(marunouchiPlatforms.filter((x) => x.includes('新宿三丁目駅'))).toHaveLength(1);
+    // every entry of the pickers is distinct
+    const all = await to.locator('option').allInnerTexts();
+    expect(all.filter((x, i) => all.indexOf(x) !== i)).toEqual([]);
+    // the Oedo Line: 新宿 (tracks 6·7) and 新宿西口 (tracks 1·2) are two platforms of two stations
+    const oedo = (await to.locator('option', { hasText: '都営大江戸線' }).allInnerTexts()).filter((x) => x.includes('番線'));
+    expect(oedo).toHaveLength(2);
+    expect(oedo.filter((x) => x.includes('新宿西口駅'))).toHaveLength(1);
+
+    await page.getByTestId('route-from').selectOption('sk:gate:jr-south-gate');
+    await to.selectOption('sk:platform:tokyo-metro-shinjuku-sanchome-3-4');
+    await expect(page.getByTestId('route-legs').locator('li').first()).toBeVisible();
+    await expect(page.getByTestId('route-legs')).toContainText('副都心線');
+    // the walk between the two stations rests on signage only, and the route says so
+    await expect(page.getByTestId('route-result').locator('.warn')).toBeVisible();
+    await expect(page.getByTestId('route-legs').locator('.tag-warn')).toHaveCount(1);
+    expect(await page.getByTestId('route-result').innerText()).not.toMatch(/\d+\s?(m|メートル|分|min)\b/);
+
+    await to.selectOption('sk:platform:toei-shinjuku-nishiguchi-1-2');
+    await expect(page.getByTestId('route-legs')).toContainText('新宿西口駅');
+    await expect(page.getByTestId('route-legs').locator('.tag-warn')).toHaveCount(0);
+    expect(errors).toEqual([]);
+  });
+
   test('pressing a step flies the camera to it, shows only its floors, and can be undone', async ({ page }) => {
     const errors = await open(page);
     const home = await waitForScene(page);

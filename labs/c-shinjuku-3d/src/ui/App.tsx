@@ -172,16 +172,31 @@ export function App() {
   const choices = useMemo<RouteChoice[]>(() => {
     const out: RouteChoice[] = [];
     const sep = lang === 'en' ? ', ' : '・';
+    // the pickers list every station together, so anything at a neighbouring station is marked with its station
+    const at = (stationId: string | null, label: string) => {
+      const place = namer.place(stationId);
+      return place && !label.includes(place) ? `${label}［${place}］` : label;
+    };
     for (const a of model.areas) {
       if (a.kind !== 'platform') continue;
       const lines = namer.linesOf(a).map((l) => pickName(l.names, lang) ?? '');
-      out.push({ id: a.id, group: 'platform', label: `${t('platformTitle', { n: trackRange(a.tracks.map((x) => x.number)) })}　${lines.join(sep)}` });
+      out.push({ id: a.id, group: 'platform', label: at(a.stationId, `${t('platformTitle', { n: trackRange(a.tracks.map((x) => x.number)) })}　${lines.join(sep)}`) });
     }
     for (const g of model.gates) {
       if (g.sides.some((s) => 'blockId' in s)) continue; // the far side is outside the verified model
-      out.push({ id: g.id, group: 'gate', label: `${namer.name(g.id)}（${namer.level(g.levelId)}）${g.direction === 'exit-only' ? ` ${t('exitOnly')}` : ''}` });
+      out.push({ id: g.id, group: 'gate', label: at(g.stationId, `${namer.name(g.id)}（${namer.level(g.levelId)}）${g.direction === 'exit-only' ? ` ${t('exitOnly')}` : ''}`) });
     }
-    for (const e of model.entrances) out.push({ id: e.id, group: 'entrance', label: `${namer.name(e.id)}（${namer.level(e.levelId)}）` });
+    for (const e of model.entrances) out.push({ id: e.id, group: 'entrance', label: at(e.stationId, `${namer.name(e.id)}（${namer.level(e.levelId)}）`) });
+    // two operators can use one name on one floor (南口 of JR and of Odakyu): such entries get their station's name
+    const seen = new Map<string, number>();
+    for (const c of out) seen.set(c.label, (seen.get(c.label) ?? 0) + 1);
+    const stationOf = new Map<string, string | null>([...model.areas, ...model.gates, ...model.entrances].map((e) => [e.id, e.stationId]));
+    for (const c of out) {
+      if ((seen.get(c.label) ?? 0) < 2) continue;
+      const st = model.stations.find((x) => x.id === stationOf.get(c.id));
+      const stName = st ? pickName(st.names, lang) : null;
+      if (stName) c.label = `${c.label}［${stName}］`;
+    }
     return out;
   }, [model, namer, t, lang]);
 
