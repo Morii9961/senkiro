@@ -101,6 +101,7 @@ export function App() {
   const [showLabels, setShowLabels] = useState(true);
   const [showVerticals, setShowVerticals] = useState(true);
   const [showBlocks, setShowBlocks] = useState(true);
+  const [showFareBoundary, setShowFareBoundary] = useState(true);
   const [animate, setAnimate] = useState(() => params.get('motion') !== 'off' && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
 
   const [fromId, setFromId] = useState('');
@@ -287,8 +288,8 @@ export function App() {
   }, [route, focusLeg, floorMode, ordinals, floors]);
 
   const view = useMemo<ViewOptions>(
-    () => ({ explode, focusOrdinals, ghostOthers, shellOpacity: shell, showVerticals, showBlocks, palette, route, focusLeg, selectedId, platformStatus }),
-    [explode, focusOrdinals, ghostOthers, shell, showVerticals, showBlocks, palette, route, focusLeg, selectedId, platformStatus],
+    () => ({ explode, focusOrdinals, ghostOthers, shellOpacity: shell, showVerticals, showBlocks, showFareBoundary, palette, route, focusLeg, selectedId, platformStatus }),
+    [explode, focusOrdinals, ghostOthers, shell, showVerticals, showBlocks, showFareBoundary, palette, route, focusLeg, selectedId, platformStatus],
   );
   const lineChip = useCallback(
     (railLineId: string): LabelChip | null => {
@@ -687,6 +688,8 @@ export function App() {
               showLabels={showLabels}
               showVerticals={showVerticals}
               showBlocks={showBlocks}
+              showFareBoundary={showFareBoundary}
+              onFareBoundary={setShowFareBoundary}
               hasBlocks={model.unverifiedBlocks.length > 0}
               animate={animate}
               fareZones={fareZones}

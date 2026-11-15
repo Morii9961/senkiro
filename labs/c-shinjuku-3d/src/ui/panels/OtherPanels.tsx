@@ -17,6 +17,8 @@ export function DisplayPanel(props: {
   showLabels: boolean;
   showVerticals: boolean;
   showBlocks: boolean;
+  showFareBoundary: boolean;
+  onFareBoundary(v: boolean): void;
   hasBlocks: boolean;
   animate: boolean;
   fareZones: { zone: string; label: string }[];
@@ -64,6 +66,7 @@ export function DisplayPanel(props: {
         <Check label={t('showLabels')} checked={props.showLabels} onChange={props.onLabels} />
         <Check label={t('showVerticals')} checked={props.showVerticals} onChange={props.onVerticals} />
         {props.hasBlocks && <Check label={t('showBlocks')} checked={props.showBlocks} onChange={props.onBlocks} />}
+        <Check label={t('showFareBoundary')} checked={props.showFareBoundary} onChange={props.onFareBoundary} disabled={!props.is3d} testId="fare-boundary" />
         <Check label={t('animateCamera')} checked={props.animate} onChange={props.onAnimate} disabled={!props.is3d} testId="animate" />
       </section>
       <section>

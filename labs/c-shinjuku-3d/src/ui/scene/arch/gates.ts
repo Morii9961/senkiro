@@ -100,6 +100,72 @@ export function buildGates(ctx: Ctx): void {
   }
 }
 
+/** Sampling step along an outline when looking for the stretches where the fare zone changes. */
+const FARE_STEP = 0.25;
+
+/**
+ * The edge of the paid area: a low kerb in the gate colour wherever the floor
+ * on one side of a paid area's outline belongs to another fare zone than the
+ * floor on the other side (or to no floor at all). It is left open at ticket
+ * gates. Platforms are left out: their edge towards the track is drawn as a
+ * platform edge already. The kerb follows the footprints of the model, which
+ * are schematic — it is not a surveyed line of walls and fences.
+ */
+export function buildFareBoundary(ctx: Ctx): void {
+  if (ctx.opts.showFareBoundary === false) return;
+  const { p } = ctx;
+  const paidByLevel = new Map<string, Area[]>();
+  for (const area of ctx.model.areas) {
+    if (!area.fareZone.startsWith('paid:')) continue;
+    const list = paidByLevel.get(area.levelId);
+    if (list) list.push(area);
+    else paidByLevel.set(area.levelId, [area]);
+  }
+  const seen = new Set<string>();
+  for (const [levelId, paid] of paidByLevel) {
+    if (ctx.vis(levelId) !== 'full') continue;
+    const gatesHere = ctx.model.gates.filter((g) => g.levelId === levelId);
+    const zoneAt = (x: number, z: number): string | null => {
+      for (const area of paid) for (const r of area.footprint) if (x > r.x0 && x < r.x1 && z > r.z0 && z < r.z1) return area.fareZone;
+      return null;
+    };
+    for (const area of paid) {
+      if (area.kind === 'platform') continue;
+      const s = ctx.style(area.id, mix(p.gate, p.gateBody, 0.25), 'full');
+      if (!s) continue;
+      const y = ctx.topOf(area.id) + 0.035;
+      for (const e of outlineEdges(area.footprint)) {
+        const n = Math.max(1, Math.ceil((e.hi - e.lo) / FARE_STEP));
+        const step = (e.hi - e.lo) / n;
+        let from: number | null = null;
+        for (let i = 0; i <= n; i++) {
+          let boundary = false;
+          if (i < n) {
+            const m = e.lo + step * (i + 0.5);
+            const px = e.axis === 'x' ? m : e.at;
+            const pz = e.axis === 'x' ? e.at : m;
+            const za = e.axis === 'x' ? zoneAt(m, e.at - 0.04) : zoneAt(e.at - 0.04, m);
+            const zb = e.axis === 'x' ? zoneAt(m, e.at + 0.04) : zoneAt(e.at + 0.04, m);
+            boundary = za !== zb && !gatesHere.some((g) => Math.hypot(px - g.position.x, pz - g.position.z) < GATE_HALF + 0.2);
+          }
+          if (boundary && from === null) from = e.lo + step * i;
+          if (!boundary && from !== null) {
+            const to = e.lo + step * i;
+            const key = `${levelId}|${e.axis}|${e.at.toFixed(3)}|${from.toFixed(3)}|${to.toFixed(3)}`;
+            if (!seen.has(key)) {
+              seen.add(key);
+              const a: Vec3 = e.axis === 'x' ? [from, y, e.at] : [e.at, y, from];
+              const b: Vec3 = e.axis === 'x' ? [to, y, e.at] : [e.at, y, to];
+              ctx.add(area.id, 'fare-edge', 'accent', { a, b, width: 0.06, thickness: 0.07 }, s, { pickable: false });
+            }
+            from = null;
+          }
+        }
+      }
+    }
+  }
+}
+
 export function buildEntrances(ctx: Ctx): void {
   const { p } = ctx;
   for (const ent of ctx.model.entrances) {

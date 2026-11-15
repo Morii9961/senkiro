@@ -23,6 +23,7 @@ export type PrimRole =
   | 'track'
   | 'column'
   | 'gate'
+  | 'fare-edge'
   | 'entrance'
   | 'elevator'
   | 'stairs'
@@ -72,6 +73,8 @@ export interface ViewOptions {
   shellOpacity: number;
   showVerticals: boolean;
   showBlocks: boolean;
+  /** The kerb along the edge of the paid area; shown unless this is false. */
+  showFareBoundary?: boolean;
   palette: Palette;
   route: Route | null;
   /** Route leg to emphasise; null = the whole route. */

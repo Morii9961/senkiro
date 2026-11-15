@@ -476,3 +476,23 @@ describe('camera', () => {
     expect(Math.abs(mid.azimuth - Math.PI)).toBeLessThan(0.2);
   });
 });
+
+describe('edge of the paid area', () => {
+  it('runs along paid floors only, stays clear of the ticket gates, and can be switched off', () => {
+    const kerbs = buildPrims(model, view()).filter((q) => q.role === 'fare-edge');
+    expect(kerbs.length).toBeGreaterThan(0);
+    for (const q of kerbs) {
+      const area = areaById.get(q.elementId!)!;
+      expect(area.fareZone.startsWith('paid:')).toBe(true);
+      expect(area.kind).not.toBe('platform');
+      // every kerb lies on the outline of its area
+      const mid = { x: (q.a[0] + q.b[0]) / 2, z: (q.a[2] + q.b[2]) / 2 };
+      expect(nearestInFootprint(mid, area.footprint).distance).toBeLessThan(1e-6);
+      // and neither end reaches into a gate line
+      for (const g of model.gates.filter((gate) => gate.levelId === area.levelId)) {
+        for (const end of [q.a, q.b]) expect(Math.hypot(end[0] - g.position.x, end[2] - g.position.z)).toBeGreaterThan(0.8);
+      }
+    }
+    expect(buildPrims(model, view({ showFareBoundary: false })).some((q) => q.role === 'fare-edge')).toBe(false);
+  });
+});
