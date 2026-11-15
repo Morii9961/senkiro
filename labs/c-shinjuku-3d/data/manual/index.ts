@@ -24,6 +24,7 @@ export const stationModelInput: Omit<StationModel, 'generatedAt'> = {
   entrances: [...baseModel.entrances, ...extensions.entrances, ...sanchome.entrances, ...nishiguchi.entrances],
   verticals: [...baseModel.verticals, ...extensions.verticals, ...sanchome.verticals, ...nishiguchi.verticals],
   unverifiedBlocks: extensions.unverifiedBlocks,
+  services: extensions.services,
   unconfirmedConnections: baseModel.unconfirmedConnections,
 };
 

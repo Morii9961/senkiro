@@ -37,6 +37,8 @@ export function DisplayPanel(props: {
     [p.gate, t('legendGate')],
     [p.gateTransfer, t('kindTransferGate')],
     [p.entrance, t('legendEntrance')],
+    [p.service, t('legendService')],
+    [p.bus, t('legendBus')],
     [p.elevator, t('legendElevator')],
     [p.stairs, t('legendStairs')],
     [p.escalator, t('legendEscalator')],

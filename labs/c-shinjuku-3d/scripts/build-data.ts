@@ -112,6 +112,7 @@ const counts = {
   verticals: model.verticals.length,
   passages: model.passages.length,
   unverifiedBlocks: model.unverifiedBlocks.length,
+  services: model.services.length,
   graphNodes: graph.nodes.length,
   graphEdges: graph.edges.length,
 };

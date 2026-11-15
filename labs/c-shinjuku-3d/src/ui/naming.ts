@@ -53,6 +53,7 @@ export function makeNamer(model: StationModel, lang: Lang, t: T): Namer {
   const verticals = new Map(model.verticals.map((v) => [v.id, v]));
   const passages = new Map(model.passages.map((p) => [p.id, p]));
   const blocks = new Map(model.unverifiedBlocks.map((b) => [b.id, b]));
+  const services = new Map(model.services.map((s) => [s.id, s]));
   const levels = new Map(model.levels.map((l) => [l.id, l]));
   const lines = new Map(model.railLines.map((l) => [l.id, l]));
 
@@ -131,6 +132,8 @@ export function makeNamer(model: StationModel, lang: Lang, t: T): Namer {
     if (p) return `${areaShort(p.fromAreaId)} ⇄ ${areaShort(p.toAreaId)}`;
     const b = blocks.get(id);
     if (b) return pickName(b.names, lang) ?? id;
+    const sv = services.get(id);
+    if (sv) return pickName(sv.names, lang) ?? id;
     const l = levels.get(id);
     if (l) return floorLabel(l.ordinal);
     return id;

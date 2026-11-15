@@ -14,7 +14,7 @@
  */
 import type {
   Area, Entrance, FareZone, Gate, Level, Names, Passage, PlanPoint, PlanRect, Platform, PlatformTrack, Provenance,
-  RailLine, Station, UnverifiedBlock, VerticalFacility, VerticalKind,
+  RailLine, ServiceKind, ServicePoint, Station, UnverifiedBlock, VerticalFacility, VerticalKind,
 } from '../../src/domain/types';
 import {
   A, AGG, AGG_ESC, BUSTA, D2, KEIO, LV, METRO, ODAKYU, PAID_KEIO, PUBLIC, SEIBU, TOEI, X,
@@ -34,6 +34,7 @@ const S_TOEI = 'src:toei-shinjuku-map';
 const S_METRO = 'src:tokyo-metro-shinjuku-map';
 const S_BUSTA = 'src:busta-floor-maps';
 const S_TERMINAL = 'src:shinjuku-terminal-map';
+const S_BUSTA_SERVICE = 'src:busta-service-page';
 const S_JR_B1 = 'src:jreast-floormap-b1f';
 const S_JR_2F = 'src:jreast-floormap-2f';
 
@@ -806,6 +807,37 @@ const stations: Station[] = [
   station(ST_METRO, METRO, names('東京メトロ丸ノ内線 新宿駅', 'Tokyo Metro Marunouchi Line Shinjuku Station', '东京地铁丸之内线新宿站'), p2([S_METRO]), [L_MARU]),
 ];
 
+// Passenger services of the 4F hall, read again from the 4F floor map on 2026-11-15. The page puts a
+// clickable icon over each service (an HTML image map, so the icon positions are exact pixels of the
+// 751×677 drawing). The drawing's hall — from the north wall (y 52 px) to the walkway south of the A
+// bays (y 400 px), and from the front of the waiting area (x 577 px) to the east wall (x 727 px) — is
+// mapped linearly onto the schematic hall rectangle (x 24–33.4, z -12.6 to -19.5): the relative place
+// of each service in the hall is kept; sizes and coordinates are schematic like everything else.
+// Not drawn: the three light-teal blocks in the hall (the drawing does not say what they are, and the
+// 待合室 is the hall itself — see src:busta-service-page), lockers, toilets, shops and the ATM.
+const HALL_MAP = 'Place converted from the 4F floor map: relative position in the hall kept, size and coordinates schematic.';
+const service = (slug: string, kind: ServiceKind, n: Names, box: PlanRect, iconOnly: boolean, notes: string, extra: string[] = []): ServicePoint => ({
+  kind: 'service',
+  ...base(`sk:service:busta-4f-${slug}`, n, p2([S_BUSTA, ...extra]), bustaCommon, `${notes} ${HALL_MAP}`),
+  serviceKind: kind,
+  levelId: BU.l4,
+  areaId: BU.hall4,
+  box,
+  iconOnly,
+});
+const services: ServicePoint[] = [
+  service('ticket-counter', 'ticket-counter', names('有人発券窓口', 'Ticket counter (staffed)', '有人售票窗口'), rect(27.35, 30, -15.91, -15.13), false,
+    'The orange band along the east side of the hall that carries the 有人発券窓口 icon (icon at 617–643 × 211–236 px; band at about 632–649 × 176–274 px).'),
+  service('ticket-machines-north', 'ticket-machines', names('自動発券機（北側）', 'Ticket machines (north)', '自动售票机（北侧）'), rect(25.97, 27.35, -15.91, -15.31), false,
+    'The pink band beside the northern 自動発券機 icon (icon at 617–643 × 136–162 px; band at about 636–649 × 125–176 px). The service page speaks of "北側の自動発券機".', [S_BUSTA_SERVICE]),
+  service('ticket-machines-south', 'ticket-machines', names('自動発券機（南側）', 'Ticket machines (south)', '自动售票机（南侧）'), rect(30, 31.16, -15.91, -15.31), false,
+    'The pink band beside the southern 自動発券機 icon (icon at 617–643 × 283–309 px; band at about 636–649 × 271–317 px). "（南側）" is added here to tell it from the northern one.'),
+  service('information', 'information', names('インフォメーションカウンター', 'Information counter', '问讯处'), rect(32.21, 32.81, -13.61, -13.01), true,
+    'Only an icon on the drawing (580–605 × 354–380 px), south of the light-teal blocks; the service page puts it inside the 待合室.', [S_BUSTA_SERVICE]),
+  service('waiting-room', 'waiting-room', names('待合室', 'Waiting room', '候车室'), rect(28.73, 29.33, -13.54, -12.94), true,
+    'Only an icon on the drawing (578–604 × 225–251 px). The service page puts the information counter and the ATM inside the 待合室, so the waiting room is the hall round them; the marker stands where the icon is.', [S_BUSTA_SERVICE]),
+];
+
 // Every gate now leads somewhere that was read from a drawing; nothing is left as an abstract block.
 const unverifiedBlocks: UnverifiedBlock[] = [];
 
@@ -819,6 +851,7 @@ export const extensions = {
   entrances: [...odEntrances, ...nlEntrances, ...oedoEntrances, ...metroEntrances, ...bustaEntrances, ...publicEntrances, ...seibuEntrances],
   verticals: [...odVerticals, ...nlVerticals, ...oedoVerticals, ...metroVerticals, ...bustaVerticals, ...seibuVerticals],
   unverifiedBlocks,
+  services,
 };
 
 export const EXT_IDS = { OD, NL, OE, ME, BU, PUB, SB } as const;

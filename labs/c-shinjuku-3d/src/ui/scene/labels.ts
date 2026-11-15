@@ -126,6 +126,22 @@ export function buildLabels(
     });
   }
 
+  for (const sv of model.services) {
+    if (!visible(sv.levelId)) continue;
+    const cx = (sv.box.x0 + sv.box.x1) / 2;
+    const cz = (sv.box.z0 + sv.box.z1) / 2;
+    labels.push({
+      key: `service:${sv.id}`,
+      // drawn from the floor map, but no card: like a hall, it is named and nothing more
+      elementId: null,
+      text: name(sv.id),
+      position: [cx, yOf(sv.levelId) + SLAB_TOP + (sv.iconOnly ? 1.35 : 0.7), cz],
+      tier: tierOf(sv.id, 3),
+      priority: 20 + boost(sv.id),
+      variant: 'area',
+    });
+  }
+
   for (const v of model.verticals) {
     if (v.verticalKind !== 'elevator' || !v.operatorLabel) continue;
     if (!v.stops.some((s) => visible(s.levelId))) continue;

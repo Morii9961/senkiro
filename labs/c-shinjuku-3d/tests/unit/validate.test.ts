@@ -143,3 +143,24 @@ describe('span check of stairs and escalators (scripts/check-verticals.ts prints
     expect(steep.filter((r) => !byId.get(r.id)!.declaredNonAdjacent).map((r) => r.id)).toEqual([]);
   });
 });
+
+describe('passenger services (Busta 4F hall)', () => {
+  const model = loadModel();
+
+  it('each service stands in its area, on its floor, and cites the Busta floor map', () => {
+    expect(model.services.length).toBeGreaterThan(0);
+    for (const s of model.services) {
+      const area = model.areas.find((a) => a.id === s.areaId)!;
+      expect(area.levelId).toBe(s.levelId);
+      expect(s.provenance.sourceIds).toContain('src:busta-floor-maps');
+      expect(s.geometryConfidence).toBe('schematic');
+    }
+    expect(new Set(model.services.map((s) => s.serviceKind))).toEqual(new Set(['waiting-room', 'information', 'ticket-counter', 'ticket-machines']));
+  });
+
+  it('a service box that reaches outside its area is rejected', () => {
+    const bad = structuredClone(model);
+    bad.services[0]!.box = { ...bad.services[0]!.box, z0: bad.services[0]!.box.z0 - 20 };
+    expect(rules(bad)).toContain('geometry');
+  });
+});

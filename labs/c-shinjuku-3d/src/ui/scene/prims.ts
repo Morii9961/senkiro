@@ -28,6 +28,8 @@ export type PrimRole =
   | 'gate-arrow'
   | 'fare-edge'
   | 'entrance'
+  | 'service'
+  | 'bus'
   | 'elevator'
   | 'stairs'
   | 'escalator'

@@ -20445,6 +20445,186 @@
     }
   ],
   "unverifiedBlocks": [],
+  "services": [
+    {
+      "kind": "service",
+      "id": "sk:service:busta-4f-ticket-counter",
+      "externalIds": {},
+      "names": {
+        "ja": "有人発券窓口",
+        "ja_kana": null,
+        "en": "Ticket counter (staffed)",
+        "zh": "有人售票窗口"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "The orange band along the east side of the hall that carries the 有人発券窓口 icon (icon at 617–643 × 211–236 px; band at about 632–649 × 176–274 px). Place converted from the 4F floor map: relative position in the hall kept, size and coordinates schematic.",
+      "serviceKind": "ticket-counter",
+      "levelId": "sk:level:busta-shinjuku-4f",
+      "areaId": "sk:area:busta-4f-hall",
+      "box": {
+        "x0": 27.35,
+        "x1": 30,
+        "z0": -15.91,
+        "z1": -15.13
+      },
+      "iconOnly": false
+    },
+    {
+      "kind": "service",
+      "id": "sk:service:busta-4f-ticket-machines-north",
+      "externalIds": {},
+      "names": {
+        "ja": "自動発券機（北側）",
+        "ja_kana": null,
+        "en": "Ticket machines (north)",
+        "zh": "自动售票机（北侧）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps",
+          "src:busta-service-page"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "The pink band beside the northern 自動発券機 icon (icon at 617–643 × 136–162 px; band at about 636–649 × 125–176 px). The service page speaks of \"北側の自動発券機\". Place converted from the 4F floor map: relative position in the hall kept, size and coordinates schematic.",
+      "serviceKind": "ticket-machines",
+      "levelId": "sk:level:busta-shinjuku-4f",
+      "areaId": "sk:area:busta-4f-hall",
+      "box": {
+        "x0": 25.97,
+        "x1": 27.35,
+        "z0": -15.91,
+        "z1": -15.31
+      },
+      "iconOnly": false
+    },
+    {
+      "kind": "service",
+      "id": "sk:service:busta-4f-ticket-machines-south",
+      "externalIds": {},
+      "names": {
+        "ja": "自動発券機（南側）",
+        "ja_kana": null,
+        "en": "Ticket machines (south)",
+        "zh": "自动售票机（南侧）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "The pink band beside the southern 自動発券機 icon (icon at 617–643 × 283–309 px; band at about 636–649 × 271–317 px). \"（南側）\" is added here to tell it from the northern one. Place converted from the 4F floor map: relative position in the hall kept, size and coordinates schematic.",
+      "serviceKind": "ticket-machines",
+      "levelId": "sk:level:busta-shinjuku-4f",
+      "areaId": "sk:area:busta-4f-hall",
+      "box": {
+        "x0": 30,
+        "x1": 31.16,
+        "z0": -15.91,
+        "z1": -15.31
+      },
+      "iconOnly": false
+    },
+    {
+      "kind": "service",
+      "id": "sk:service:busta-4f-information",
+      "externalIds": {},
+      "names": {
+        "ja": "インフォメーションカウンター",
+        "ja_kana": null,
+        "en": "Information counter",
+        "zh": "问讯处"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps",
+          "src:busta-service-page"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "Only an icon on the drawing (580–605 × 354–380 px), south of the light-teal blocks; the service page puts it inside the 待合室. Place converted from the 4F floor map: relative position in the hall kept, size and coordinates schematic.",
+      "serviceKind": "information",
+      "levelId": "sk:level:busta-shinjuku-4f",
+      "areaId": "sk:area:busta-4f-hall",
+      "box": {
+        "x0": 32.21,
+        "x1": 32.81,
+        "z0": -13.61,
+        "z1": -13.01
+      },
+      "iconOnly": true
+    },
+    {
+      "kind": "service",
+      "id": "sk:service:busta-4f-waiting-room",
+      "externalIds": {},
+      "names": {
+        "ja": "待合室",
+        "ja_kana": null,
+        "en": "Waiting room",
+        "zh": "候车室"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps",
+          "src:busta-service-page"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "Only an icon on the drawing (578–604 × 225–251 px). The service page puts the information counter and the ATM inside the 待合室, so the waiting room is the hall round them; the marker stands where the icon is. Place converted from the 4F floor map: relative position in the hall kept, size and coordinates schematic.",
+      "serviceKind": "waiting-room",
+      "levelId": "sk:level:busta-shinjuku-4f",
+      "areaId": "sk:area:busta-4f-hall",
+      "box": {
+        "x0": 28.73,
+        "x1": 29.33,
+        "z0": -13.54,
+        "z1": -12.94
+      },
+      "iconOnly": true
+    }
+  ],
   "unconfirmedConnections": [
     {
       "id": "uc-southeast-to-south",

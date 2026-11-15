@@ -63,6 +63,8 @@ const dict = {
   legendPlatform: { ja: 'ホーム', en: 'Platform', zh: '站台' },
   legendGate: { ja: '改札口', en: 'Gate', zh: '检票口' },
   legendEntrance: { ja: "出入口", en: "Entrance", zh: "出入口" },
+  legendService: { ja: "案内所・発券窓口・券売機（フロアマップの位置）", en: "Information, ticket counters and machines (as placed on the floor map)", zh: "问讯处·售票窗口·自动售票机（按楼层图位置）" },
+  legendBus: { ja: "バス（イメージ。運行・行先は表しません）", en: "Bus (illustration — no service or destination)", zh: "巴士（示意，不表示班次与目的地）" },
   legendElevator: { ja: 'エレベーター', en: 'Elevator', zh: '电梯' },
   legendStairs: { ja: '階段', en: 'Stairs', zh: '楼梯' },
   legendEscalator: { ja: 'エスカレーター', en: 'Escalator', zh: '自动扶梯' },

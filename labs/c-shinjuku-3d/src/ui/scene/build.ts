@@ -10,6 +10,7 @@ import type { PlanRect, StationModel } from '../../domain/types';
 import { createContext } from './arch/context';
 import { buildBlocks, buildEntrances, buildFareBoundary, buildGates } from './arch/gates';
 import { buildPlatforms } from './arch/platforms';
+import { buildBuses, buildServices } from './arch/services';
 import { buildAreas, buildLinks, buildShells } from './arch/slabs';
 import { buildVerticals, computeHoles } from './arch/vertical';
 import { boundsOf, elevationY, levelY, type Decal, type Prim, type Vec3, type ViewOptions } from './prims';
@@ -36,6 +37,8 @@ export function buildScene(model: StationModel, opts: ViewOptions): SceneParts {
   buildGates(ctx);
   buildFareBoundary(ctx);
   buildEntrances(ctx);
+  buildServices(ctx);
+  buildBuses(ctx);
   buildVerticals(ctx);
   buildBlocks(ctx);
   return { prims: ctx.prims, decals: ctx.decals };

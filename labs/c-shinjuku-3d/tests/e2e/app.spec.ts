@@ -560,6 +560,15 @@ test.describe('display options', () => {
     await expect.poll(async () => (await stats(page))!.triangles).toBe(withEdge);
     expect(errors).toEqual([]);
   });
+
+  test('the legend says the Busta buses are an illustration, and where the services come from', async ({ page }) => {
+    await open(page, 'lang=zh&theme=light');
+    await waitForScene(page);
+    await page.getByTestId('tab-display').click();
+    const legend = page.locator('.legend');
+    await expect(legend).toContainText('巴士（示意，不表示班次与目的地）');
+    await expect(legend).toContainText('按楼层图位置');
+  });
 });
 
 test.describe('honesty about data', () => {

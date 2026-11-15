@@ -323,6 +323,28 @@ export interface UnverifiedBlock extends StationElementBase {
   height: number;
 }
 
+/** Passenger services that an operator's floor map marks with an icon. */
+export type ServiceKind = 'waiting-room' | 'information' | 'ticket-counter' | 'ticket-machines';
+
+/**
+ * A passenger service drawn on an operator's floor map (a ticket counter, a
+ * bank of ticket machines, an information counter, a waiting room). Drawn
+ * only: it is not a place in the walking graph and no route goes to it.
+ * `box` is the service's place on the source drawing, converted into the
+ * schematic plan of the area it stands in (relative position kept, size and
+ * coordinates schematic like everything else). A service the drawing marks
+ * only with an icon gets a small box round the icon.
+ */
+export interface ServicePoint extends StationElementBase {
+  kind: 'service';
+  serviceKind: ServiceKind;
+  levelId: string;
+  areaId: string;
+  box: PlanRect;
+  /** True when the source shows only an icon, not the extent of the service. */
+  iconOnly: boolean;
+}
+
 // ---------------------------------------------------------------------------
 // Whole model
 // ---------------------------------------------------------------------------
@@ -342,6 +364,7 @@ export interface StationModel {
   entrances: Entrance[];
   verticals: VerticalFacility[];
   unverifiedBlocks: UnverifiedBlock[];
+  services: ServicePoint[];
   /** Connections that the sources hint at but that were NOT modelled. */
   unconfirmedConnections: { id: string; description: string; reason: string }[];
 }
@@ -353,4 +376,5 @@ export type StationElement =
   | Gate
   | Entrance
   | VerticalFacility
-  | UnverifiedBlock;
+  | UnverifiedBlock
+  | ServicePoint;

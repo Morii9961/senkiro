@@ -93,6 +93,7 @@ describe('3D primitives ⇄ model', () => {
       ...model.entrances.map((e) => e.id),
       ...model.verticals.map((v) => v.id),
       ...model.unverifiedBlocks.map((b) => b.id),
+      ...model.services.map((s) => s.id),
       ...model.passages.map((p) => p.id),
     ]);
     expect([...drawn].filter((id) => !known.has(id))).toEqual([]);
@@ -557,5 +558,31 @@ describe('platform furniture', () => {
       }
     }
     expect(oneSided).toBeGreaterThan(0);
+  });
+});
+
+describe('Busta services and buses', () => {
+  const prims = buildPrims(model, view());
+
+  it('every service of the model is drawn, and none can be picked', () => {
+    for (const s of model.services) {
+      const mine = prims.filter((q) => q.elementId === s.id);
+      expect(mine.length).toBeGreaterThan(0);
+      expect(mine.every((q) => !q.pickable)).toBe(true);
+    }
+  });
+
+  it('one illustrative bus per bay, parked on the roadway, never on a walkway', () => {
+    const road = areaById.get('sk:area:busta-4f-roadway')!;
+    const bays = model.entrances.filter((e) => e.id.startsWith('sk:entrance:busta-4f-bay-'));
+    const bodies = prims.filter((q) => q.role === 'bus' && q.material === 'metal' && q.thickness > 0.4);
+    expect(bays).toHaveLength(12);
+    expect(bodies).toHaveLength(bays.length);
+    const walkways = model.areas.filter((a) => a.levelId === road.levelId && a.fareZone !== 'roadway');
+    for (const q of bodies) {
+      const c = { x: (q.a[0] + q.b[0]) / 2, z: (q.a[2] + q.b[2]) / 2 };
+      expect(nearestInFootprint(c, road.footprint).distance).toBe(0);
+      expect(walkways.every((w) => nearestInFootprint(c, w.footprint).distance > 0.2)).toBe(true);
+    }
   });
 });

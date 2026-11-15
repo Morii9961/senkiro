@@ -391,6 +391,23 @@
     "sourceDate": null
   },
   {
+    "id": "src:busta-service-page",
+    "title": "バスタ新宿 サービス施設案内",
+    "publisher": "新宿高速バスターミナル株式会社 (Shinjuku Expressway Bus Terminal)",
+    "url": "https://shinjuku-busterminal.co.jp/service/",
+    "retrievedAt": "2026-11-15",
+    "license": "All rights reserved — no open licence is stated. Site terms were not reviewed.",
+    "licenseUrl": null,
+    "commercialUse": "unknown",
+    "redistribution": "no",
+    "shareAlike": "unknown",
+    "attributionText": "Facts read from バスタ新宿 サービス施設案内.",
+    "notes": "Read in a browser on 2026-11-15. Used for two facts only: the インフォメーションカウンター is inside the 待合室 (\"待合室内のインフォメーションカウンター\"), and so is the ATM — so the 待合室 is the hall round them, not one of the drawn blocks; and there are ticket machines on the north side (\"北側の自動発券機\"). Opening hours and the reservation systems on the page are not used.",
+    "accessedVia": null,
+    "sourceDate": null,
+    "usedInData": true
+  },
+  {
     "id": "src:jreast-train-e235",
     "title": "E235系｜JR東日本の列車たち",
     "publisher": "East Japan Railway Company (JR東日本)",

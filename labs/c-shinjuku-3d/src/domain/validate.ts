@@ -68,6 +68,7 @@ export function allElements(model: StationModel): StationElementBase[] {
     ...model.entrances,
     ...model.verticals,
     ...model.unverifiedBlocks,
+    ...model.services,
   ];
 }
 
@@ -299,6 +300,20 @@ export function validateModel(model: StationModel, sources: SourceRecord[]): Val
         }
       }
     }
+  }
+
+  // --- services stand inside the area they belong to, on its floor -------------
+  for (const s of model.services) {
+    const area = model.areas.find((a) => a.id === s.areaId);
+    if (!area) {
+      push('reference', s.id, `unknown area ${s.areaId}`);
+      continue;
+    }
+    if (area.levelId !== s.levelId) push('reference', s.id, 'service is not on the level of its area');
+    const r = s.box;
+    if (!(r.x1 > r.x0 && r.z1 > r.z0)) push('geometry', s.id, 'empty box');
+    const corners = [{ x: r.x0, z: r.z0 }, { x: r.x1, z: r.z0 }, { x: r.x0, z: r.z1 }, { x: r.x1, z: r.z1 }];
+    if (!corners.every((c) => pointInFootprint(c, area.footprint))) push('geometry', s.id, 'service box reaches outside its area');
   }
 
   // --- unverified blocks must say so -----------------------------------------

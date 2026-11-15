@@ -44,6 +44,11 @@ export interface Palette {
   gate: string;
   gateTransfer: string;
   entrance: string;
+  /** Passenger services marked on a floor map (ticket counters, information). */
+  service: string;
+  /** Illustrative buses at the bus terminal bays. */
+  bus: string;
+  busWindow: string;
   block: string;
   link: string;
   route: string;
@@ -93,6 +98,9 @@ export const PALETTES: Record<ThemeName, Palette> = {
     gate: '#18808a',
     gateTransfer: '#8250a0',
     entrance: '#c06a18',
+    service: '#2f6db5',
+    bus: '#dfe2e6',
+    busWindow: '#3a4450',
     block: '#9a9a9a',
     link: '#6c7a89',
     route: '#f0401c',
@@ -140,6 +148,9 @@ export const PALETTES: Record<ThemeName, Palette> = {
     gate: '#1f929c',
     gateTransfer: '#8d5aac',
     entrance: '#d37a22',
+    service: '#5a95d6',
+    bus: '#c9ced5',
+    busWindow: '#2a323c',
     block: '#9aa0a8',
     link: '#8492a1',
     route: '#ff5a30',
