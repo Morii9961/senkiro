@@ -12,7 +12,7 @@ import { buildBlocks, buildEntrances, buildFareBoundary, buildGates } from './ar
 import { buildPlatforms } from './arch/platforms';
 import { buildBuses, buildServices } from './arch/services';
 import { buildAreas, buildLinks, buildShells } from './arch/slabs';
-import { buildVerticals, computeHoles } from './arch/vertical';
+import { buildOpeningGuards, buildVerticals, computeHoles } from './arch/vertical';
 import { boundsOf, elevationY, levelY, type Decal, type Prim, type Vec3, type ViewOptions } from './prims';
 
 export type { Decal, Prim, Vec3, ViewOptions } from './prims';
@@ -40,6 +40,7 @@ export function buildScene(model: StationModel, opts: ViewOptions): SceneParts {
   buildServices(ctx);
   buildBuses(ctx);
   buildVerticals(ctx);
+  buildOpeningGuards(ctx);
   buildBlocks(ctx);
   return { prims: ctx.prims, decals: ctx.decals };
 }

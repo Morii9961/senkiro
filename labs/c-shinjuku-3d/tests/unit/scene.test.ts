@@ -586,3 +586,47 @@ describe('Busta services and buses', () => {
     }
   });
 });
+
+describe('guards round floor openings', () => {
+  const prims = buildPrims(model, view());
+
+  it('stand on the floor of the upper area, and leave the head of each flight open', () => {
+    const guards = prims.filter((q) => q.role === 'opening-guard' && q.material === 'glass');
+    expect(guards.length).toBeGreaterThan(0);
+    const byId = new Map(model.verticals.map((v) => [v.id, v]));
+    for (const q of guards) {
+      const v = byId.get(q.elementId!)!;
+      const up = v.stops.reduce((m, s) => (levelY(model.levels.find((l) => l.id === s.levelId)!, 0) > levelY(model.levels.find((l) => l.id === m.levelId)!, 0) ? s : m), v.stops[0]!);
+      const area = areaById.get(up.areaId)!;
+      // both ends on the floor of an area of that level
+      const sameLevel = model.areas.filter((a) => a.levelId === area.levelId);
+      for (const end of [q.a, q.b]) {
+        expect(sameLevel.some((a) => nearestInFootprint({ x: end[0], z: end[2] }, a.footprint).distance < 1e-6)).toBe(true);
+      }
+    }
+    // the head of every flight (its upper stop) is not crossed by a guard; the foot end is
+    const yOf = (levelId: string) => levelY(model.levels.find((l) => l.id === levelId)!, 0);
+    let feet = 0;
+    for (const v of model.verticals.filter((f) => f.verticalKind !== 'elevator')) {
+      const mine = guards.filter((q) => q.elementId === v.id);
+      for (let i = 0; i + 1 < v.stops.length; i++) {
+        const [s0, s1] = [v.stops[i]!, v.stops[i + 1]!];
+        const [foot, head] = yOf(s0.levelId) <= yOf(s1.levelId) ? [s0, s1] : [s1, s0];
+        // guards on the floor of the stop in question (a flight through three floors has guards on two of them)
+        const ex = view().explode;
+        const through = (pt: { x: number; z: number; levelId: string }) =>
+          mine.some((q) => {
+            if (Math.abs(q.a[1] - levelY(model.levels.find((l) => l.id === pt.levelId)!, ex)) > 0.6) return false;
+            const alongX = Math.abs(q.b[0] - q.a[0]) > Math.abs(q.b[2] - q.a[2]);
+            const [lo, hi] = alongX ? [Math.min(q.a[0], q.b[0]), Math.max(q.a[0], q.b[0])] : [Math.min(q.a[2], q.b[2]), Math.max(q.a[2], q.b[2])];
+            const along = alongX ? pt.x : pt.z;
+            const across = alongX ? Math.abs(q.a[2] - pt.z) : Math.abs(q.a[0] - pt.x);
+            return along > lo + 1e-6 && along < hi - 1e-6 && across < 0.05;
+          });
+        expect(through({ ...head.position, levelId: head.levelId })).toBe(false);
+        if (through({ ...foot.position, levelId: head.levelId })) feet += 1;
+      }
+    }
+    expect(feet).toBeGreaterThan(0);
+  });
+});

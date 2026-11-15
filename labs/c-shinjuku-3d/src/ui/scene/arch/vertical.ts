@@ -66,6 +66,82 @@ export function computeHoles(ctx: Ctx): void {
   }
 }
 
+/** Height of the glass guard round an opening, above the floor it stands on. */
+const GUARD_H = 0.3;
+
+/**
+ * A low glass guard with a rail round each opening that a staircase or an
+ * escalator cuts into the floor above it: along both long sides and across
+ * the far end (over the foot of the flight). The end at the head of the flight,
+ * where one steps on, stays open. Drawn by rule like the openings themselves;
+ * it says nothing about the real balustrades. It stays below the route line so
+ * that the cutaway still shows the path.
+ */
+export function buildOpeningGuards(ctx: Ctx): void {
+  const { p } = ctx;
+  for (const v of ctx.model.verticals) {
+    if (v.verticalKind === 'elevator') continue;
+    const half = (v.verticalKind === 'stairs' ? STAIR_W : ESC_W + 0.12) / 2 + 0.05;
+    for (let i = 0; i + 1 < v.stops.length; i++) {
+      const [lo, up] = ordered(ctx, v.stops[i]!, v.stops[i + 1]!);
+      const area = ctx.areaById.get(up.areaId);
+      if (!area) continue;
+      const vis = ctx.vis(area.levelId);
+      if (vis !== 'full' || ctx.veiled(area.levelId)) continue;
+      const glass = ctx.style(v.id, p.elevatorGlass, vis, 0.3);
+      const rail = ctx.style(v.id, p.handrail, vis);
+      if (!glass || !rail) continue;
+      const alongX = Math.abs(up.position.x - lo.position.x) >= Math.abs(up.position.z - lo.position.z);
+      // the opening, as computeHoles cuts it
+      const [dx, dz] = unit(up.position.x - lo.position.x, up.position.z - lo.position.z);
+      const px = Math.abs(dz) * half;
+      const pz = Math.abs(dx) * half;
+      const x0 = Math.min(lo.position.x, up.position.x) - px;
+      const x1 = Math.max(lo.position.x, up.position.x) + px;
+      const z0 = Math.min(lo.position.z, up.position.z) - pz;
+      const z1 = Math.max(lo.position.z, up.position.z) + pz;
+      const y = ctx.topOf(up.areaId);
+      // only where there is floor: an opening may reach past the edge of the area it is cut into
+      const run = (a: Vec3, b: Vec3) => {
+        const axisX = Math.abs(b[0] - a[0]) > Math.abs(b[2] - a[2]);
+        const at = axisX ? a[2] : a[0];
+        const [s0, s1] = axisX ? [Math.min(a[0], b[0]), Math.max(a[0], b[0])] : [Math.min(a[2], b[2]), Math.max(a[2], b[2])];
+        const pieces: [number, number][] = [];
+        for (const r of area.footprint) {
+          const [c0, c1] = axisX ? [r.z0, r.z1] : [r.x0, r.x1];
+          if (at < c0 - 1e-6 || at > c1 + 1e-6) continue;
+          const lo = Math.max(s0, axisX ? r.x0 : r.z0);
+          const hi = Math.min(s1, axisX ? r.x1 : r.z1);
+          if (hi - lo > 0.05) pieces.push([lo, hi]);
+        }
+        pieces.sort((m, n) => m[0] - n[0]);
+        const merged: [number, number][] = [];
+        for (const q of pieces) {
+          const last = merged[merged.length - 1];
+          if (last && q[0] <= last[1] + 1e-6) last[1] = Math.max(last[1], q[1]);
+          else merged.push([q[0], q[1]]);
+        }
+        for (const [m0, m1] of merged) guard(axisX ? [m0, 0, at] : [at, 0, m0], axisX ? [m1, 0, at] : [at, 0, m1]);
+      };
+      const guard = (a: Vec3, b: Vec3) => {
+        ctx.add(v.id, 'opening-guard', 'glass', { a: [a[0], y + GUARD_H / 2, a[2]], b: [b[0], y + GUARD_H / 2, b[2]], width: 0.025, thickness: GUARD_H }, glass, { pickable: false });
+        ctx.add(v.id, 'opening-guard', 'metal', { a: [a[0], y + GUARD_H, a[2]], b: [b[0], y + GUARD_H, b[2]], width: 0.04, thickness: 0.03 }, rail, { pickable: false });
+      };
+      if (alongX) {
+        const far = lo.position.x < up.position.x ? x0 : x1;
+        run([x0, 0, z0], [x1, 0, z0]);
+        run([x0, 0, z1], [x1, 0, z1]);
+        run([far, 0, z0], [far, 0, z1]);
+      } else {
+        const far = lo.position.z < up.position.z ? z0 : z1;
+        run([x0, 0, z0], [x0, 0, z1]);
+        run([x1, 0, z0], [x1, 0, z1]);
+        run([x0, 0, far], [x1, 0, far]);
+      }
+    }
+  }
+}
+
 function facilityVisibility(ctx: Ctx, v: VerticalFacility): Visibility {
   const vs = v.stops.map((s) => ctx.vis(s.levelId));
   return vs.includes('full') ? 'full' : vs.includes('ghost') ? 'ghost' : 'hidden';

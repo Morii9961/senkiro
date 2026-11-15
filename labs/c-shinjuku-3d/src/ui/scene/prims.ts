@@ -33,6 +33,7 @@ export type PrimRole =
   | 'elevator'
   | 'stairs'
   | 'escalator'
+  | 'opening-guard'
   | 'link'
   | 'block'
   | 'block-hatch'
