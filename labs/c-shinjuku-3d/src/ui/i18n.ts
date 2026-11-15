@@ -86,6 +86,7 @@ const dict = {
   demos: { ja: 'デモ経路', en: 'Demo routes', zh: '演示路线' },
   demo1: { ja: '東口（地上）→ 山手線 13・14番線', en: 'East Exit (street) → Yamanote, tracks 13–14', zh: '东口（地面）→ 山手线 13·14 号站台' },
   demo2: { ja: '東改札 → 5・6番線（エレベーターのみ）', en: 'East Gate → tracks 5–6 (elevators only)', zh: '东检票口 → 5·6 号站台（仅电梯）' },
+  demo4: { ja: '山手線 13・14番線 → 甲州街道改札 → バスタ新宿 4F C8 のりば', en: 'Yamanote, tracks 13–14 → Koshu-kaido Gate → Busta Shinjuku 4F, bay C8', zh: '山手线 13·14 号站台 → 甲州街道检票口 → Busta 新宿 4F C8 乘车位' },
   demo3: { ja: "南口 → 京王線 1・2番線（改札 2 回）", en: "South Exit → Keio Line tracks 1–2 (two gates)", zh: "南口 → 京王线 1·2 号站台（过两次检票口）" },
   clearRoute: { ja: '経路を消す', en: 'Clear route', zh: '清除路线' },
   routeSummary: { ja: '経路の概要', en: 'Route summary', zh: '路线概要' },

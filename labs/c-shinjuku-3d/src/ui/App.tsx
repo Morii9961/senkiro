@@ -73,7 +73,7 @@ function remember(key: string, value: string) {
   }
 }
 
-const DEMO_LABELS: StrKey[] = ['demo1', 'demo2', 'demo3'];
+const DEMO_LABELS: StrKey[] = ['demo1', 'demo2', 'demo3', 'demo4'];
 
 export function App() {
   const { model, graph, sources } = useMemo(loadStationData, []);

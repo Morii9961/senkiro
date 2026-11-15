@@ -18,10 +18,10 @@
  * Lexicographic comparison of additive non-negative tuples is a total order
  * compatible with addition, so plain Dijkstra stays correct.
  */
-import type { GraphEdge, GraphNode, StationGraph } from './graph';
-import type { ConnectionConfidence, StepFree, VerticalKind } from './types';
+import type { GraphEdge, GraphNode, StationGraph } from "./graph";
+import type { ConnectionConfidence, StepFree, VerticalKind } from "./types";
 
-export type RouteMode = 'default' | 'elevator-only';
+export type RouteMode = "default" | "elevator-only";
 
 export interface RouteOptions {
   mode?: RouteMode;
@@ -37,7 +37,7 @@ export interface RouteCost {
   segments: number;
 }
 
-export type RouteLegKind = 'enter' | 'exit' | 'walk' | 'gate' | 'vertical';
+export type RouteLegKind = "enter" | "exit" | "walk" | "gate" | "vertical";
 
 export interface RouteLeg {
   index: number;
@@ -77,7 +77,7 @@ export interface Route {
 export interface NoRoute {
   found: false;
   mode: RouteMode;
-  reason: 'unknown-node' | 'unreachable';
+  reason: "unknown-node" | "unreachable";
   detail: string;
 }
 
@@ -106,30 +106,43 @@ const DEFAULT_PREFERENCE = { escalator: 0, stairs: 1, elevator: 2 } as const;
  * facility. The segment component approximates the number of legs a person
  * would describe, so stepping off a facility or out of a gate is free.
  */
-function edgeWeight(edge: GraphEdge, nodeById: Map<string, GraphNode>, mode: RouteMode): Cost {
+function edgeWeight(
+  edge: GraphEdge,
+  nodeById: Map<string, GraphNode>,
+  mode: RouteMode,
+): Cost {
   const to = nodeById.get(edge.to);
   switch (edge.kind) {
-    case 'gate-approach':
-      return to?.kind === 'gate' ? [1, 0, 0, 1, 0] : ZERO;
-    case 'vertical':
+    case "gate-approach":
+      return to?.kind === "gate" ? [1, 0, 0, 1, 0] : ZERO;
+    case "vertical":
       return [0, edge.levelChange, 0, 0, 0];
-    case 'vertical-approach': {
-      if (to?.kind !== 'vertical-stop') return ZERO;
-      const pref = mode === 'default' && edge.verticalKind ? DEFAULT_PREFERENCE[edge.verticalKind] : 0;
+    case "vertical-approach": {
+      if (to?.kind !== "vertical-stop") return ZERO;
+      const pref =
+        mode === "default" && edge.verticalKind
+          ? DEFAULT_PREFERENCE[edge.verticalKind]
+          : 0;
       return [0, 0, 1, 1, pref];
     }
-    case 'entrance-approach':
+    case "entrance-approach":
       return [0, 0, 0, 1, 0];
-    case 'passage':
+    case "passage":
       return [0, 0, 0, 1, 0];
   }
 }
 
-function edgeAllowed(edge: GraphEdge, mode: RouteMode, allowInferred: boolean): boolean {
-  if (!allowInferred && edge.connection === 'inferred') return false;
-  if (mode === 'elevator-only') {
-    if (edge.kind === 'vertical' && edge.verticalKind !== 'elevator') return false;
-    if (edge.kind === 'vertical-approach' && edge.verticalKind !== 'elevator') return false;
+function edgeAllowed(
+  edge: GraphEdge,
+  mode: RouteMode,
+  allowInferred: boolean,
+): boolean {
+  if (!allowInferred && edge.connection === "inferred") return false;
+  if (mode === "elevator-only") {
+    if (edge.kind === "vertical" && edge.verticalKind !== "elevator")
+      return false;
+    if (edge.kind === "vertical-approach" && edge.verticalKind !== "elevator")
+      return false;
     if (edge.stepFree === false) return false;
   }
   return true;
@@ -141,91 +154,117 @@ export function findRoute(
   toNodeId: string,
   options: RouteOptions = {},
 ): RouteResult {
-  const mode = options.mode ?? 'default';
+  const mode = options.mode ?? "default";
   const allowInferred = options.allowInferred ?? true;
   const nodeById = new Map(graph.nodes.map((n) => [n.id, n]));
   if (!nodeById.has(fromNodeId) || !nodeById.has(toNodeId)) {
     return {
       found: false,
       mode,
-      reason: 'unknown-node',
+      reason: "unknown-node",
       detail: `${!nodeById.has(fromNodeId) ? fromNodeId : toNodeId} is not a node of the graph`,
     };
   }
 
   // A ticket gate as origin means "enter here"; as destination, "leave here".
   // So the first step may not fall back out to the unpaid side, and the last
-  // step may not arrive from it. (An exit-only gate therefore cannot be an origin.)
+  // step may not arrive from it.
+  // Where that reading leads nowhere — an exit-only gate as origin, or a gate whose paid side has no
+  // other way out that joins the rest of the model — the search is run once more with the gate read the
+  // other way round: the route then starts by leaving through it, or ends by entering through it.
   const ticketGates = new Set<string>();
   for (const e of graph.edges) {
     const a = nodeById.get(e.from);
     const b = nodeById.get(e.to);
-    if (a?.kind === 'gate' && b?.zone === 'unpaid') ticketGates.add(a.id);
-    if (b?.kind === 'gate' && a?.zone === 'unpaid') ticketGates.add(b.id);
+    if (a?.kind === "gate" && b?.zone === "unpaid") ticketGates.add(a.id);
+    if (b?.kind === "gate" && a?.zone === "unpaid") ticketGates.add(b.id);
   }
   const startsAtTicketGate = ticketGates.has(fromNodeId);
   const endsAtTicketGate = ticketGates.has(toNodeId);
 
-  const out = new Map<string, GraphEdge[]>();
-  for (const e of graph.edges) {
-    if (!edgeAllowed(e, mode, allowInferred)) continue;
-    if (startsAtTicketGate && e.from === fromNodeId && nodeById.get(e.to)?.zone === 'unpaid') continue;
-    if (endsAtTicketGate && e.to === toNodeId && nodeById.get(e.from)?.zone === 'unpaid') continue;
-    const list = out.get(e.from);
-    if (list) list.push(e);
-    else out.set(e.from, [e]);
-  }
+  const strict = search(true);
+  if (strict.found || !(startsAtTicketGate || endsAtTicketGate)) return strict;
+  const relaxed = search(false);
+  return relaxed.found ? relaxed : strict;
 
-  const dist = new Map<string, Cost>([[fromNodeId, ZERO]]);
-  const prev = new Map<string, GraphEdge>();
-  const done = new Set<string>();
+  function search(gatesAsPicked: boolean): RouteResult {
+    const out = new Map<string, GraphEdge[]>();
+    for (const e of graph.edges) {
+      if (!edgeAllowed(e, mode, allowInferred)) continue;
+      if (
+        gatesAsPicked &&
+        startsAtTicketGate &&
+        e.from === fromNodeId &&
+        nodeById.get(e.to)?.zone === "unpaid"
+      )
+        continue;
+      if (
+        gatesAsPicked &&
+        endsAtTicketGate &&
+        e.to === toNodeId &&
+        nodeById.get(e.from)?.zone === "unpaid"
+      )
+        continue;
+      const list = out.get(e.from);
+      if (list) list.push(e);
+      else out.set(e.from, [e]);
+    }
 
-  // The graph has a few hundred nodes; a linear scan keeps this dependency-free
-  // and fully deterministic (ties resolve by node id).
-  for (;;) {
-    let current: string | null = null;
-    let best: Cost | null = null;
-    for (const [id, d] of dist) {
-      if (done.has(id)) continue;
-      if (best === null || less(d, best) || (!less(best, d) && current !== null && id < current)) {
-        best = d;
-        current = id;
+    const dist = new Map<string, Cost>([[fromNodeId, ZERO]]);
+    const prev = new Map<string, GraphEdge>();
+    const done = new Set<string>();
+
+    // The graph has a few hundred nodes; a linear scan keeps this dependency-free
+    // and fully deterministic (ties resolve by node id).
+    for (;;) {
+      let current: string | null = null;
+      let best: Cost | null = null;
+      for (const [id, d] of dist) {
+        if (done.has(id)) continue;
+        if (
+          best === null ||
+          less(d, best) ||
+          (!less(best, d) && current !== null && id < current)
+        ) {
+          best = d;
+          current = id;
+        }
+      }
+      if (current === null || best === null) break;
+      if (current === toNodeId) break;
+      done.add(current);
+      for (const e of out.get(current) ?? []) {
+        if (done.has(e.to)) continue;
+        const cand = add(best, edgeWeight(e, nodeById, mode));
+        const known = dist.get(e.to);
+        if (!known || less(cand, known)) {
+          dist.set(e.to, cand);
+          prev.set(e.to, e);
+        }
       }
     }
-    if (current === null || best === null) break;
-    if (current === toNodeId) break;
-    done.add(current);
-    for (const e of out.get(current) ?? []) {
-      if (done.has(e.to)) continue;
-      const cand = add(best, edgeWeight(e, nodeById, mode));
-      const known = dist.get(e.to);
-      if (!known || less(cand, known)) {
-        dist.set(e.to, cand);
-        prev.set(e.to, e);
-      }
+
+    if (!dist.has(toNodeId)) {
+      return {
+        found: false,
+        mode,
+        reason: "unreachable",
+        detail:
+          mode === "elevator-only"
+            ? "No route that uses only elevators and avoids links known to have steps."
+            : "No route in the verified model.",
+      };
     }
-  }
 
-  if (!dist.has(toNodeId)) {
-    return {
-      found: false,
-      mode,
-      reason: 'unreachable',
-      detail:
-        mode === 'elevator-only'
-          ? 'No route that uses only elevators and avoids links known to have steps.'
-          : 'No route in the verified model.',
-    };
+    const pathEdges: GraphEdge[] = [];
+    for (let at = toNodeId; at !== fromNodeId;) {
+      const e = prev.get(at);
+      if (!e) break;
+      pathEdges.unshift(e);
+      at = e.from;
+    }
+    return assembleRoute(mode, fromNodeId, pathEdges, nodeById);
   }
-
-  const pathEdges: GraphEdge[] = [];
-  for (let at = toNodeId; at !== fromNodeId; ) {
-    const e = prev.get(at);
-    if (!e) break;
-    pathEdges.unshift(e);
-    at = e.from;
-  }
-  return assembleRoute(mode, fromNodeId, pathEdges, nodeById);
 }
 
 function assembleRoute(
@@ -237,7 +276,8 @@ function assembleRoute(
   const nodeIds = [fromNodeId, ...pathEdges.map((e) => e.to)];
   const legs: RouteLeg[] = [];
   const node = (id: string) => nodeById.get(id)!;
-  const areaOf = (id: string): string | null => (node(id).kind === 'area' ? id : null);
+  const areaOf = (id: string): string | null =>
+    node(id).kind === "area" ? id : null;
 
   let i = 0;
   while (i < pathEdges.length) {
@@ -245,17 +285,17 @@ function assembleRoute(
     const from = node(e.from);
     const to = node(e.to);
 
-    if (e.kind === 'passage') {
-      legs.push(leg('walk', [e.from, e.to], e, e.from, e.to, [from.levelId]));
+    if (e.kind === "passage") {
+      legs.push(leg("walk", [e.from, e.to], e, e.from, e.to, [from.levelId]));
       i += 1;
       continue;
     }
 
-    if (e.kind === 'entrance-approach') {
-      const entering = from.kind === 'entrance';
+    if (e.kind === "entrance-approach") {
+      const entering = from.kind === "entrance";
       legs.push(
         leg(
-          entering ? 'enter' : 'exit',
+          entering ? "enter" : "exit",
           [e.from, e.to],
           e,
           entering ? null : e.from,
@@ -267,15 +307,28 @@ function assembleRoute(
       continue;
     }
 
-    if (e.kind === 'gate-approach') {
+    if (e.kind === "gate-approach") {
       // area → gate [→ area]; a route may also start or end on the gate itself.
       const next = pathEdges[i + 1];
-      if (to.kind === 'gate' && next && next.kind === 'gate-approach' && next.from === e.to) {
-        legs.push(leg('gate', [e.from, e.to, next.to], e, e.from, next.to, [to.levelId]));
+      if (
+        to.kind === "gate" &&
+        next &&
+        next.kind === "gate-approach" &&
+        next.from === e.to
+      ) {
+        legs.push(
+          leg("gate", [e.from, e.to, next.to], e, e.from, next.to, [
+            to.levelId,
+          ]),
+        );
         i += 2;
       } else {
-        const gateId = to.kind === 'gate' ? e.to : e.from;
-        legs.push(leg('gate', [e.from, e.to], e, areaOf(e.from), areaOf(e.to), [node(gateId).levelId]));
+        const gateId = to.kind === "gate" ? e.to : e.from;
+        legs.push(
+          leg("gate", [e.from, e.to], e, areaOf(e.from), areaOf(e.to), [
+            node(gateId).levelId,
+          ]),
+        );
         i += 1;
       }
       continue;
@@ -289,9 +342,13 @@ function assembleRoute(
     let j = i;
     while (j < pathEdges.length) {
       const r = pathEdges[j]!;
-      if (r.elementId !== facilityId || (r.kind !== 'vertical' && r.kind !== 'vertical-approach')) break;
+      if (
+        r.elementId !== facilityId ||
+        (r.kind !== "vertical" && r.kind !== "vertical-approach")
+      )
+        break;
       rideNodes.push(r.to);
-      if (r.kind === 'vertical') {
+      if (r.kind === "vertical") {
         if (levels.length === 0) levels.push(node(r.from).levelId);
         levels.push(node(r.to).levelId);
         if (r.stepFree !== true) stepFree = r.stepFree;
@@ -303,7 +360,7 @@ function assembleRoute(
     const last = rideNodes[rideNodes.length - 1]!;
     legs.push({
       index: legs.length,
-      kind: 'vertical',
+      kind: "vertical",
       nodeIds: rideNodes,
       elementId: facilityId,
       fromAreaId: areaOf(first),
@@ -311,7 +368,7 @@ function assembleRoute(
       levelIds: levels,
       verticalKind: e.verticalKind,
       stepFree,
-      connection: 'verified',
+      connection: "verified",
     });
     i = j;
   }
@@ -346,14 +403,18 @@ function assembleRoute(
 
   const facilityElementIds: string[] = [];
   for (const l of legs) {
-    if (l.kind !== 'walk' && facilityElementIds[facilityElementIds.length - 1] !== l.elementId) {
+    if (
+      l.kind !== "walk" &&
+      facilityElementIds[facilityElementIds.length - 1] !== l.elementId
+    ) {
       facilityElementIds.push(l.elementId);
     }
   }
 
   let levelChanges = 0;
-  for (const e of pathEdges) if (e.kind === 'vertical') levelChanges += e.levelChange;
-  const gatePasses = nodeIds.filter((id) => node(id).kind === 'gate').length;
+  for (const e of pathEdges)
+    if (e.kind === "vertical") levelChanges += e.levelChange;
+  const gatePasses = nodeIds.filter((id) => node(id).kind === "gate").length;
 
   return {
     found: true,
@@ -364,13 +425,15 @@ function assembleRoute(
     cost: {
       gatePasses,
       levelChanges,
-      facilityBoardings: legs.filter((l) => l.kind === 'vertical').length,
+      facilityBoardings: legs.filter((l) => l.kind === "vertical").length,
       segments: legs.length,
     },
     levelSequence,
     facilityElementIds,
-    unconfirmedStepFreeLegs: legs.filter((l) => l.kind !== 'vertical' && l.stepFree === null).length,
-    inferredLegs: legs.filter((l) => l.connection === 'inferred').length,
+    unconfirmedStepFreeLegs: legs.filter(
+      (l) => l.kind !== "vertical" && l.stepFree === null,
+    ).length,
+    inferredLegs: legs.filter((l) => l.connection === "inferred").length,
     distanceMeters: null,
     durationMinutes: null,
   };

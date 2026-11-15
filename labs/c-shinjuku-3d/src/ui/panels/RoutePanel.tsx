@@ -24,7 +24,8 @@ export function legText(leg: RouteLeg, t: T, namer: Namer, zoneOf: (areaId: stri
       const g = namer.name(leg.elementId);
       const fromZone = leg.fromAreaId ? zoneOf(leg.fromAreaId) : undefined;
       const toZone = leg.toAreaId ? zoneOf(leg.toAreaId) : undefined;
-      if (toZone === undefined) return fromZone === undefined ? t('legGateOnly', { g }) : t('legGateOut', { g });
+      // a route that ends on the gate: left from inside as a rule, entered from outside when that is the only way to it
+      if (toZone === undefined) return fromZone === undefined ? t('legGateOnly', { g }) : fromZone === 'unpaid' ? t('legGateIn', { g }) : t('legGateOut', { g });
       if (toZone === 'unpaid') return t('legGateOut', { g });
       if (fromZone !== undefined && fromZone !== 'unpaid') return t('legGateTransfer', { g, b });
       return t('legGateIn', { g });

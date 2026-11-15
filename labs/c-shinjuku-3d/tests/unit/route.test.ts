@@ -165,13 +165,16 @@ describe('route search behaviour', () => {
   });
 
   it('exit-only gates cannot be used to enter', () => {
+    // (a route that starts on one therefore leaves through it: see the consistency tests below)
     const hiroba = 'sk:gate:keio-hiroba-gate';
     // leaving through it works
     const out = mustFind(NODE.keioPlatforms, hiroba);
     expect(out.cost.gatePasses).toBe(1);
     expect(out.nodeIds.at(-1)).toBe(hiroba);
-    // as an origin ("enter here") it leads nowhere
-    expect(findRoute(graph, hiroba, NODE.keioPlatforms)).toMatchObject({ found: false, reason: 'unreachable' });
+    // as an origin it cannot be entered: the route starts outside it and goes in through another gate
+    const round = mustFind(hiroba, NODE.keioPlatforms);
+    expect(nodeById.get(round.nodeIds[1]!)!.zone).toBe('unpaid');
+    expect(round.nodeIds.filter((id) => nodeById.get(id)!.kind === 'gate')).toEqual([hiroba, 'sk:gate:keio-west-gate']);
     // and entering from outside never goes through it
     for (const from of ['sk:entrance:keio-west-side', 'sk:area:keio-b1f-west-gate-unpaid']) {
       const into = mustFind(from, NODE.keioPlatforms);
@@ -181,7 +184,7 @@ describe('route search behaviour', () => {
     // the temporary gate is exit-only too: it can be left through, never entered
     const rinji = 'sk:gate:keio-temporary-gate';
     expect(mustFind(NODE.keioPlatforms, rinji).nodeIds.at(-1)).toBe(rinji);
-    expect(findRoute(graph, rinji, NODE.keioPlatforms)).toMatchObject({ found: false, reason: 'unreachable' });
+    expect(nodeById.get(mustFind(rinji, NODE.keioPlatforms).nodeIds[1]!)!.zone).toBe('unpaid');
   });
 
   it('大江戸線改札B leads down to the Oedo Line, and the Shinjuku Line transfer gate joins the two Toei lines', () => {
@@ -319,22 +322,27 @@ describe('consistency of the whole walking graph (scripts/check-routes.ts runs i
   const places = [...model.areas.filter((a) => a.kind === 'platform').map((a) => a.id), ...model.gates.map((g) => g.id), ...model.entrances.map((e) => e.id)];
   const hub = NODE.platform13_14;
 
-  it('every place a user can pick is reached from a JR platform, except two gates that can only be left from inside', () => {
-    const lost = places.filter((p) => p !== hub && !findRoute(graph, hub, p, { mode: 'default' }).found);
-    // a gate as destination means leaving through it; these two are entered from a side nothing else leads to
-    expect(lost).toEqual(['sk:gate:seibu-front-gate', 'sk:gate:nishiguchi-gates-south']);
-    for (const g of lost) {
-      const own = model.areas.find((a) => a.kind === 'platform' && a.stationId === model.gates.find((x) => x.id === g)!.stationId)!;
-      expect(findRoute(graph, own.id, g, { mode: 'default' }).found, g).toBe(true);
-    }
+  it('every place a user can pick is reached from a JR platform, and leads back to one', () => {
+    expect(places.filter((p) => p !== hub && !findRoute(graph, hub, p, { mode: 'default' }).found)).toEqual([]);
+    expect(places.filter((p) => p !== hub && !findRoute(graph, p, hub, { mode: 'default' }).found)).toEqual([]);
   });
 
-  it('every place leads back to a JR platform, except four gates that cannot be entered and left again', () => {
-    // a gate as origin means entering through it: two Keio gates are exit-only, and behind the other two
-    // the only other way out leads to an exit that joins nothing else in the model
-    const stuck = places.filter((p) => p !== hub && !findRoute(graph, p, hub, { mode: 'default' }).found);
-    expect(stuck).toEqual(['sk:gate:keio-hiroba-gate', 'sk:gate:keio-temporary-gate', 'sk:gate:seibu-front-gate', 'sk:gate:nishiguchi-gates-south']);
-    expect(stuck.filter((g) => model.gates.find((x) => x.id === g)!.direction !== 'both')).toEqual(['sk:gate:keio-hiroba-gate', 'sk:gate:keio-temporary-gate']);
+  it('a gate that cannot be used the way it was picked is read the other way round', () => {
+    // origin = "enter here" fails for an exit-only gate: the route then starts by leaving through it
+    const hiroba = mustFind('sk:gate:keio-hiroba-gate', hub);
+    expect(hiroba.legs[0]!.kind).toBe('gate');
+    expect(hiroba.legs[0]!.toAreaId).toBe('sk:area:keio-b1f-west-gate-unpaid');
+    // behind 西武新宿 正面口 the only other gate leads to an exit that joins nothing else
+    const seibu = mustFind('sk:gate:seibu-front-gate', hub);
+    expect(nodeById.get(seibu.nodeIds[1]!)!.zone).toBe('unpaid');
+    // destination = "leave here" fails the same way: the route then ends by entering through it
+    const e01 = mustFind(hub, 'sk:gate:nishiguchi-gates-south');
+    expect(nodeById.get(e01.nodeIds.at(-2)!)!.zone).toBe('unpaid');
+    expect(e01.cost.gatePasses).toBe(2);
+    // where the picked reading works it is kept: from inside its own station the gate is still left from the paid side
+    const own = mustFind('sk:platform:toei-shinjuku-nishiguchi-1-2', 'sk:gate:nishiguchi-gates-south');
+    expect(nodeById.get(own.nodeIds.at(-2)!)!.zone).not.toBe('unpaid');
+    expect(own.cost.gatePasses).toBe(1);
   });
 
   it('a route changes floor only on stairs, escalators and lifts', () => {

@@ -149,6 +149,26 @@ test.describe('routes', () => {
     await expect(page.getByTestId('step-nav')).toHaveCount(0);
   });
 
+  test('a bus bay of Busta 新宿 can be picked as destination; a gate that cannot be left from inside is entered instead', async ({ page }) => {
+    await page.goto('/?lang=ja&trains=off');
+    await page.getByTestId('route-from').selectOption('sk:platform:jr-east-shinjuku-13-14');
+    await page.getByTestId('route-to').selectOption('sk:entrance:busta-4f-bay-c8');
+    await expect(page.getByTestId('route-result')).toBeVisible();
+    await expect(page.getByTestId('route-levels')).toContainText('4F');
+    await expect(page.getByTestId('cost-gates')).toContainText('1');
+    await expect(page.getByTestId('route-legs')).toContainText('Cエリア');
+    // 新宿西口 南側改札 as destination: nothing leads to its paid side from here, so the route goes in through it
+    await page.getByTestId('route-to').selectOption('sk:gate:nishiguchi-gates-south');
+    await expect(page.getByTestId('route-result')).toBeVisible();
+    await expect(page.getByTestId('route-none')).toHaveCount(0);
+    await expect(page.getByTestId('cost-gates')).toContainText('2');
+    // the fourth demo route is the train-to-bus example: a JR platform, one named gate, a named bay
+    await page.getByTestId('demo-4').click();
+    await expect(page.getByTestId('route-to')).toHaveValue('sk:entrance:busta-4f-bay-c8');
+    await expect(page.getByTestId('route-legs')).toContainText('甲州街道改札');
+    await expect(page.getByTestId('cost-gates')).toContainText('1');
+  });
+
   test('新宿三丁目 and 新宿西口 are destinations of their own, apart from 新宿', async ({ page }) => {
     const errors = await open(page);
     await waitForScene(page);

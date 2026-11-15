@@ -21,6 +21,7 @@ export const NODE = {
   platform13_14: 'sk:platform:jr-east-shinjuku-13-14',
   platform5_6: 'sk:platform:jr-east-shinjuku-5-6',
   keioPlatforms: 'sk:platform:keio-shinjuku-1-2',
+  bustaBayC8: 'sk:entrance:busta-4f-bay-c8',
 } as const;
 
 export const DEMO_ROUTES: DemoRoute[] = [
@@ -48,6 +49,14 @@ export const DEMO_ROUTES: DemoRoute[] = [
     toNodeId: NODE.keioPlatforms,
     mode: 'default',
     expectedLevelLabels: ['2F', '1F', 'B1F', 'B1F', 'B1F', 'B2F'],
+  },
+  {
+    // Train to bus: Yamanote Line island → up to 2F → out through 甲州街道改札 → the Busta escalators → bay C8 on 4F.
+    id: 'yamanote-to-busta-bay',
+    fromNodeId: NODE.platform13_14,
+    toNodeId: NODE.bustaBayC8,
+    mode: 'default',
+    expectedLevelLabels: ['1F', '2F', '3F', '4F'],
   },
 ];
 

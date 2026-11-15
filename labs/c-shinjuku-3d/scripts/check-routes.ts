@@ -3,7 +3,7 @@
  *
  * Searches a route between every ordered pair of places a user can pick (platforms, ticket gates,
  * entrances), in both modes, and prints what cannot be reached and why. Nothing is written.
- * The unit test tests/unit/route.test.ts pins the numbers this prints.
+ * It takes about two minutes; tests/unit/route.test.ts runs the quick part of it (to and from one hub platform).
  */
 import stationJson from '../data/processed/station.json';
 import { buildGraph } from '../src/domain/graph';
