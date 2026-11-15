@@ -1,8 +1,16 @@
 /**
- * Stairs, escalators and lifts as recognisable objects: stairs are a flight of
- * steps with handrails, escalators an incline with glass balustrades and
- * landing plates, lifts a glass shaft with a car at every stop. Where one of
- * them comes up through a floor, the slab above is opened.
+ * Stairs, escalators and lifts as recognisable objects. Stairs are two flights
+ * of steps with a half landing between them, on stringers, with handrails.
+ * Escalators are an incline with step treads, glass balustrades that run out
+ * level over the landing plates, and newels at both ends. Lifts are a glass
+ * shaft with a car at every stop and, on the side that faces into the area,
+ * a door with an indicator above it. Where one of them comes up through a
+ * floor, the slab above is opened.
+ *
+ * All of this is drawn by rule from the two ends of each facility: the number
+ * of steps, the landing, which way a lift door faces and how wide anything is
+ * say nothing about the real station. Running direction of escalators is not
+ * recorded in the data and is not shown.
  *
  * One model entry may stand for several physical staircases (`aggregated`);
  * it is still drawn once, at its schematic position.
@@ -16,6 +24,10 @@ const STAIR_W = 0.8;
 const ESC_W = 0.5;
 const STEPS = 12;
 const LIFT_R = 0.34;
+/** Share of a staircase's run taken by its half landing. */
+const LANDING = 0.1;
+/** How far an escalator's balustrade runs level beyond each end, over the landing plate. */
+const ESC_LEAD = 0.34;
 
 function ordered(ctx: Ctx, a: VerticalStop, b: VerticalStop): [VerticalStop, VerticalStop] {
   return ctx.topOf(a.areaId) <= ctx.topOf(b.areaId) ? [a, b] : [b, a];
@@ -101,6 +113,27 @@ export function buildVerticals(ctx: Ctx): void {
       c.add(v.id, 'elevator', 'accent', box(x - LIFT_R + 0.06, x + LIFT_R - 0.06, y + 0.02, y + 0.62, z - LIFT_R + 0.06, z + LIFT_R - 0.06), car, { shade: [0.75, 1] });
       c.add(v.id, 'elevator', 'accent', box(x - LIFT_R - 0.03, x + LIFT_R + 0.03, y + 0.7, y + 0.76, z - LIFT_R - 0.03, z + LIFT_R + 0.03), band);
     }
+    // a door at every stop, on the face that looks into the area it serves, with an indicator above it
+    const door = c.style(v.id, mix(p.elevatorFrame, p.platformEdge, 0.55), vis)!;
+    for (const stop of v.stops) {
+      const y = c.topOf(stop.areaId);
+      const anchor = c.areaById.get(stop.areaId)?.anchor ?? stop.position;
+      const ax = anchor.x - x;
+      const az = anchor.z - z;
+      const alongX = Math.abs(ax) >= Math.abs(az);
+      const sgn = (alongX ? ax : az) >= 0 ? 1 : -1;
+      // a slab on the door face: w0..w1 across the face, d0..d1 out from the shaft wall
+      const face = (w0: number, w1: number, ya: number, yb: number, d0: number, d1: number) => {
+        const a = (alongX ? x : z) + sgn * (LIFT_R + d0);
+        const b = (alongX ? x : z) + sgn * (LIFT_R + d1);
+        const [lo, hi] = a < b ? [a, b] : [b, a];
+        return alongX ? box(lo, hi, ya, yb, z + w0, z + w1) : box(x + w0, x + w1, ya, yb, lo, hi);
+      };
+      c.add(v.id, 'elevator', 'metal', face(-0.22, 0.22, y + 0.02, y + 0.66, 0, 0.02), frame);
+      c.add(v.id, 'elevator', 'metal', face(-0.18, -0.005, y + 0.04, y + 0.6, 0.02, 0.032), door);
+      c.add(v.id, 'elevator', 'metal', face(0.005, 0.18, y + 0.04, y + 0.6, 0.02, 0.032), door);
+      c.add(v.id, 'elevator', 'accent', face(-0.1, 0.1, y + 0.61, y + 0.655, 0.02, 0.034), car);
+    }
   }
 
   function ends(c: Ctx, lo: VerticalStop, up: VerticalStop) {
@@ -124,19 +157,43 @@ export function buildVerticals(ctx: Ctx): void {
       c.add(v.id, 'stairs', 'concrete', { a: at(0, 0.05), b: at(1, 0.05), width: STAIR_W, thickness: 0.08 }, s);
       return;
     }
+    // two flights with a half landing between them
+    const half = STEPS / 2;
+    const k0 = (1 - LANDING) / 2;
+    const k1 = (1 + LANDING) / 2;
+    const yM = (yL + yU) / 2;
     const rise = (yU - yL) / STEPS;
-    for (let i = 0; i < STEPS; i++) {
-      const top = yL + rise * (i + 1);
-      const th = Math.max(rise * 1.5, 0.08);
-      const a = at(i / STEPS);
-      const b = at((i + 1) / STEPS);
-      a[1] = b[1] = top - th / 2;
-      c.add(v.id, 'stairs', 'concrete', { a, b, width: STAIR_W, thickness: th }, s, { shade: [0.78, 1] });
-    }
+    const th = Math.max(rise * 1.5, 0.08);
+    /** A point of the run at share k, at height y, moved sideways by "side". */
+    const P = (k: number, y: number, side = 0): Vec3 => {
+      const q = at(k, 0, side);
+      q[1] = y;
+      return q;
+    };
+    const tread = (ka: number, kb: number, top: number) =>
+      c.add(v.id, 'stairs', 'concrete', { a: P(ka, top - th / 2), b: P(kb, top - th / 2), width: STAIR_W, thickness: th }, s, { shade: [0.78, 1] });
+    for (let n = 0; n < half; n++) tread((k0 * n) / half, (k0 * (n + 1)) / half, yL + rise * (n + 1));
+    c.add(v.id, 'stairs', 'concrete', { a: P(k0, yM - 0.05), b: P(k1, yM - 0.05), width: STAIR_W + 0.08, thickness: 0.1 }, s, { shade: [0.78, 1] });
+    for (let n = 0; n < half; n++) tread(k1 + ((1 - k1) * n) / half, k1 + ((1 - k1) * (n + 1)) / half, yM + rise * (n + 1));
+
     const rail = c.style(v.id, p.stairsSide, vis)!;
+    const stringer = c.style(v.id, mix(p.stairs, p.stairsSide, 0.45), vis)!;
+    const legs: [number, number, number, number][] = [
+      [0, yL, k0, yM],
+      [k0, yM, k1, yM],
+      [k1, yM, 1, yU],
+    ];
     for (const side of [-1, 1]) {
       const off = side * (STAIR_W / 2 + 0.02);
-      c.add(v.id, 'stairs', 'metal', { a: at(0, 0.34, off), b: at(1, 0.34, off), width: 0.035, thickness: 0.045 }, rail);
+      for (const [ka, ya, kb, yb] of legs) {
+        c.add(v.id, 'stairs', 'metal', { a: P(ka, ya + 0.36, off), b: P(kb, yb + 0.36, off), width: 0.035, thickness: 0.045 }, rail);
+        c.add(v.id, 'stairs', 'concrete', { a: P(ka, ya - 0.04, off), b: P(kb, yb - 0.04, off), width: 0.03, thickness: 0.22 }, stringer, { shade: [0.8, 1] });
+      }
+      // newel posts at the foot, the landing and the head
+      for (const [k, y] of [[0, yL], [k0, yM], [k1, yM], [1, yU]] as const) {
+        const q = P(k, y, off);
+        c.add(v.id, 'stairs', 'metal', box(q[0] - 0.02, q[0] + 0.02, y, y + 0.38, q[2] - 0.02, q[2] + 0.02), rail);
+      }
     }
   }
 
@@ -149,10 +206,31 @@ export function buildVerticals(ctx: Ctx): void {
     const glass = c.style(v.id, p.escalatorSide, vis, 0.5)!;
     const rail = c.style(v.id, p.handrail, vis)!;
     const plate = c.style(v.id, p.stairsSide, vis)!;
+    const { run } = ends(c, lo, up);
+    // step treads: bright nosings across the incline (how many says nothing about the real machine)
+    const nosing = c.style(v.id, mix(p.escalator, p.stairsSide, 0.6), vis)!;
+    const treads = Math.max(6, Math.min(16, Math.round(run / 0.28)));
+    for (let n = 1; n < treads; n++) {
+      const k = n / treads;
+      c.add(v.id, 'escalator', 'metal', { a: at(k - 0.012, 0.095), b: at(k + 0.012, 0.095), width: ESC_W - 0.08, thickness: 0.02 }, nosing);
+    }
+    /** A point beyond an end of the incline: level, ESC_LEAD further out along the run. */
+    const beyond = (k: 0 | 1, lift: number, off: number): Vec3 => {
+      const q = at(k, lift, off);
+      const dir = k === 0 ? -1 : 1;
+      return [q[0] + dx * dir * ESC_LEAD, q[1], q[2] + dz * dir * ESC_LEAD];
+    };
     for (const side of [-1, 1]) {
       const off = side * (ESC_W / 2 + 0.03);
       c.add(v.id, 'escalator', 'glass', { a: at(0, 0.24, off), b: at(1, 0.24, off), width: 0.025, thickness: 0.32 }, glass);
       c.add(v.id, 'escalator', 'dark', { a: at(0, 0.42, off), b: at(1, 0.42, off), width: 0.06, thickness: 0.045 }, rail);
+      // the balustrade and handrail run out level over the landing plate and end in a newel
+      for (const k of [0, 1] as const) {
+        c.add(v.id, 'escalator', 'glass', { a: at(k, 0.24, off), b: beyond(k, 0.24, off), width: 0.025, thickness: 0.32 }, glass);
+        c.add(v.id, 'escalator', 'dark', { a: at(k, 0.42, off), b: beyond(k, 0.42, off), width: 0.06, thickness: 0.045 }, rail);
+        const q = beyond(k, 0, off);
+        c.add(v.id, 'escalator', 'dark', box(q[0] - 0.035, q[0] + 0.035, q[1] + 0.02, q[1] + 0.44, q[2] - 0.035, q[2] + 0.035), rail);
+      }
     }
     // landing plates at the foot and the head
     for (const [x, z, y, dir] of [
