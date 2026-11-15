@@ -2631,7 +2631,8 @@
         "sourceIds": [
           "src:jreast-floormap-1f",
           "src:jreast-floormap-b1f",
-          "src:jre-media-6147"
+          "src:jre-media-6147",
+          "src:tetsudo-com-column-1526"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-11"
@@ -2671,7 +2672,15 @@
               "towardsEn": "for Yokohama, Ofuna, Odawara, Zushi"
             }
           ],
-          "side": "z-"
+          "side": "z-",
+          "platformDoors": {
+            "status": "none",
+            "since": null,
+            "sourceIds": [
+              "src:tetsudo-com-column-1526"
+            ],
+            "note": "2026年3月時点で新宿駅（JR）にホームドアはない（改札内コンコース工事のため）。2028年度末までに設置予定（山手線・中央・総武線各駅停車・埼京線・湘南新宿ライン）。"
+          }
         },
         {
           "number": "2",
@@ -2687,7 +2696,15 @@
               "towardsEn": "for Yokohama, Ofuna, Odawara, Zushi"
             }
           ],
-          "side": "z+"
+          "side": "z+",
+          "platformDoors": {
+            "status": "none",
+            "since": null,
+            "sourceIds": [
+              "src:tetsudo-com-column-1526"
+            ],
+            "note": "2026年3月時点で新宿駅（JR）にホームドアはない（改札内コンコース工事のため）。2028年度末までに設置予定（山手線・中央・総武線各駅停車・埼京線・湘南新宿ライン）。"
+          }
         }
       ]
     },
@@ -2705,7 +2722,8 @@
         "sourceIds": [
           "src:jreast-floormap-1f",
           "src:jreast-floormap-b1f",
-          "src:jre-media-6147"
+          "src:jre-media-6147",
+          "src:tetsudo-com-column-1526"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-11"
@@ -2740,7 +2758,15 @@
               "towardsEn": "for Ikebukuro, Omiya, Kawagoe / for Shibuya, Osaki, Sotetsu Line"
             }
           ],
-          "side": "z-"
+          "side": "z-",
+          "platformDoors": {
+            "status": "none",
+            "since": null,
+            "sourceIds": [
+              "src:tetsudo-com-column-1526"
+            ],
+            "note": "2026年3月時点で新宿駅（JR）にホームドアはない（改札内コンコース工事のため）。2028年度末までに設置予定（山手線・中央・総武線各駅停車・埼京線・湘南新宿ライン）。"
+          }
         },
         {
           "number": "4",
@@ -2756,7 +2782,15 @@
               "towardsEn": "for Omiya, Utsunomiya, Takasaki"
             }
           ],
-          "side": "z+"
+          "side": "z+",
+          "platformDoors": {
+            "status": "none",
+            "since": null,
+            "sourceIds": [
+              "src:tetsudo-com-column-1526"
+            ],
+            "note": "2026年3月時点で新宿駅（JR）にホームドアはない（改札内コンコース工事のため）。2028年度末までに設置予定（山手線・中央・総武線各駅停車・埼京線・湘南新宿ライン）。"
+          }
         }
       ]
     },
@@ -3041,7 +3075,9 @@
         "sourceIds": [
           "src:jreast-floormap-1f",
           "src:jreast-floormap-b1f",
-          "src:jre-media-6147"
+          "src:jre-media-6147",
+          "src:wikipedia-ja-shinjuku-station",
+          "src:tetsudo-com-column-1526"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-11"
@@ -3076,7 +3112,16 @@
               "towardsEn": "for Suidobashi, Akihabara, Chiba"
             }
           ],
-          "side": "z-"
+          "side": "z-",
+          "platformDoors": {
+            "status": "planned",
+            "since": "2026-11-25",
+            "sourceIds": [
+              "src:wikipedia-ja-shinjuku-station",
+              "src:tetsudo-com-column-1526"
+            ],
+            "note": "スリットフレームホームドア。2026年11月25日使用開始予定（Wikipediaの年表）。"
+          }
         },
         {
           "number": "14",
@@ -3087,7 +3132,15 @@
               "towardsEn": "for Harajuku, Shibuya, Shinagawa"
             }
           ],
-          "side": "z+"
+          "side": "z+",
+          "platformDoors": {
+            "status": "none",
+            "since": null,
+            "sourceIds": [
+              "src:tetsudo-com-column-1526"
+            ],
+            "note": "2026年3月時点で新宿駅（JR）にホームドアはない（改札内コンコース工事のため）。2028年度末までに設置予定（山手線・中央・総武線各駅停車・埼京線・湘南新宿ライン）。"
+          }
         }
       ]
     },
@@ -3105,7 +3158,9 @@
         "sourceIds": [
           "src:jreast-floormap-1f",
           "src:jreast-floormap-b1f",
-          "src:jre-media-6147"
+          "src:jre-media-6147",
+          "src:tetsudo-com-column-1526",
+          "src:wikipedia-ja-shinjuku-station"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-11"
@@ -3140,7 +3195,15 @@
               "towardsEn": "for Ikebukuro, Tabata, Ueno"
             }
           ],
-          "side": "z-"
+          "side": "z-",
+          "platformDoors": {
+            "status": "none",
+            "since": null,
+            "sourceIds": [
+              "src:tetsudo-com-column-1526"
+            ],
+            "note": "2026年3月時点で新宿駅（JR）にホームドアはない（改札内コンコース工事のため）。2028年度末までに設置予定（山手線・中央・総武線各駅停車・埼京線・湘南新宿ライン）。"
+          }
         },
         {
           "number": "16",
@@ -3151,7 +3214,16 @@
               "towardsEn": "for Higashi-Nakano, Nakano, Mitaka"
             }
           ],
-          "side": "z+"
+          "side": "z+",
+          "platformDoors": {
+            "status": "planned",
+            "since": "2026-11-25",
+            "sourceIds": [
+              "src:wikipedia-ja-shinjuku-station",
+              "src:tetsudo-com-column-1526"
+            ],
+            "note": "スリットフレームホームドア。2026年11月25日使用開始予定（Wikipediaの年表）。"
+          }
         }
       ]
     },
@@ -3538,7 +3610,10 @@
         "sourceIds": [
           "src:keio-layer-map",
           "src:keio-station-map",
-          "src:keio-shinjuku-page"
+          "src:keio-shinjuku-page",
+          "src:ecomo-rakuraku-stations",
+          "src:wikipedia-ja-shinjuku-station",
+          "src:trafficnews-keio-shinjuku-2024"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-12"
@@ -3574,7 +3649,16 @@
               "towardsEn": "for Keio-hachioji, Takaosanguchi, Hashimoto"
             }
           ],
-          "side": "z-"
+          "side": "z-",
+          "platformDoors": {
+            "status": "installed",
+            "since": "2013-10",
+            "sourceIds": [
+              "src:ecomo-rakuraku-stations",
+              "src:wikipedia-ja-shinjuku-station"
+            ],
+            "note": "可動式ホーム柵（らくらくおでかけネット: H25.10 供用開始）。"
+          }
         },
         {
           "number": "2",
@@ -3585,9 +3669,25 @@
               "towardsEn": "for Keio-hachioji, Takaosanguchi, Hashimoto"
             }
           ],
-          "side": "z+"
+          "side": "z+",
+          "platformDoors": {
+            "status": "installed",
+            "since": "2014-03",
+            "sourceIds": [
+              "src:ecomo-rakuraku-stations",
+              "src:wikipedia-ja-shinjuku-station"
+            ],
+            "note": "可動式ホーム柵（らくらくおでかけネット: H26.3 供用開始）。"
+          }
         }
-      ]
+      ],
+      "terminus": {
+        "end": "x-",
+        "sourceIds": [
+          "src:trafficnews-keio-shinjuku-2024"
+        ],
+        "note": "ホームは京王八王子方（南）にしか延ばせず、車止め方向へ延ばす計画は改札側（北）。車止めは北端。"
+      }
     },
     {
       "kind": "platform",
@@ -3603,7 +3703,10 @@
         "sourceIds": [
           "src:keio-layer-map",
           "src:keio-station-map",
-          "src:keio-shinjuku-page"
+          "src:keio-shinjuku-page",
+          "src:ecomo-rakuraku-stations",
+          "src:wikipedia-ja-shinjuku-station",
+          "src:trafficnews-keio-shinjuku-2024"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-12"
@@ -3639,9 +3742,25 @@
               "towardsEn": "for Keio-hachioji, Takaosanguchi, Hashimoto"
             }
           ],
-          "side": "z-"
+          "side": "z-",
+          "platformDoors": {
+            "status": "installed",
+            "since": null,
+            "sourceIds": [
+              "src:ecomo-rakuraku-stations",
+              "src:wikipedia-ja-shinjuku-station"
+            ],
+            "note": "可動式ホーム柵。Wikipediaでは2012年度に使用開始。"
+          }
         }
-      ]
+      ],
+      "terminus": {
+        "end": "x-",
+        "sourceIds": [
+          "src:trafficnews-keio-shinjuku-2024"
+        ],
+        "note": "ホームは京王八王子方（南）にしか延ばせず、車止め方向へ延ばす計画は改札側（北）。車止めは北端。"
+      }
     },
     {
       "kind": "concourse",
@@ -3810,7 +3929,9 @@
       },
       "provenance": {
         "sourceIds": [
-          "src:odakyu-shinjuku-map"
+          "src:odakyu-shinjuku-map",
+          "src:ecomo-rakuraku-stations",
+          "src:wikipedia-ja-shinjuku-station"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-12"
@@ -3846,7 +3967,15 @@
               "towardsEn": "Romancecar limited express (for Odawara, Katase-Enoshima, Karakida)"
             }
           ],
-          "side": "z-"
+          "side": "z-",
+          "platformDoors": {
+            "status": "none",
+            "since": null,
+            "sourceIds": [
+              "src:ecomo-rakuraku-stations"
+            ],
+            "note": "可動式ホーム柵は地上4・5番線と地下8・9番線のみ。このホームは未設置。"
+          }
         },
         {
           "number": "3",
@@ -3857,9 +3986,24 @@
               "towardsEn": "Romancecar limited express (for Odawara, Katase-Enoshima, Karakida)"
             }
           ],
-          "side": "z+"
+          "side": "z+",
+          "platformDoors": {
+            "status": "none",
+            "since": null,
+            "sourceIds": [
+              "src:ecomo-rakuraku-stations"
+            ],
+            "note": "可動式ホーム柵は地上4・5番線と地下8・9番線のみ。このホームは未設置。"
+          }
         }
-      ]
+      ],
+      "terminus": {
+        "end": "x-",
+        "sourceIds": [
+          "src:wikipedia-ja-shinjuku-station"
+        ],
+        "note": "小田急新宿駅は地上・地下とも北端が頭端（列車は南側から発着）。"
+      }
     },
     {
       "kind": "platform",
@@ -3873,7 +4017,9 @@
       },
       "provenance": {
         "sourceIds": [
-          "src:odakyu-shinjuku-map"
+          "src:odakyu-shinjuku-map",
+          "src:ecomo-rakuraku-stations",
+          "src:wikipedia-ja-shinjuku-station"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-12"
@@ -3909,7 +4055,16 @@
               "towardsEn": "rapid express, express, semi express (for Odawara, Katase-Enoshima, Karakida)"
             }
           ],
-          "side": "z-"
+          "side": "z-",
+          "platformDoors": {
+            "status": "installed",
+            "since": "2012-09-30",
+            "sourceIds": [
+              "src:ecomo-rakuraku-stations",
+              "src:wikipedia-ja-shinjuku-station"
+            ],
+            "note": "可動式ホーム柵。"
+          }
         },
         {
           "number": "5",
@@ -3920,9 +4075,25 @@
               "towardsEn": "rapid express, express, semi express (for Odawara, Katase-Enoshima, Karakida)"
             }
           ],
-          "side": "z+"
+          "side": "z+",
+          "platformDoors": {
+            "status": "installed",
+            "since": "2012-09-30",
+            "sourceIds": [
+              "src:ecomo-rakuraku-stations",
+              "src:wikipedia-ja-shinjuku-station"
+            ],
+            "note": "可動式ホーム柵。"
+          }
         }
-      ]
+      ],
+      "terminus": {
+        "end": "x-",
+        "sourceIds": [
+          "src:wikipedia-ja-shinjuku-station"
+        ],
+        "note": "小田急新宿駅は地上・地下とも北端が頭端（列車は南側から発着）。"
+      }
     },
     {
       "kind": "platform",
@@ -3936,7 +4107,9 @@
       },
       "provenance": {
         "sourceIds": [
-          "src:odakyu-shinjuku-map"
+          "src:odakyu-shinjuku-map",
+          "src:ecomo-rakuraku-stations",
+          "src:wikipedia-ja-shinjuku-station"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-12"
@@ -3972,9 +4145,24 @@
               "towardsEn": "alighting only"
             }
           ],
-          "side": "z-"
+          "side": "z-",
+          "platformDoors": {
+            "status": "none",
+            "since": null,
+            "sourceIds": [
+              "src:ecomo-rakuraku-stations"
+            ],
+            "note": "可動式ホーム柵は地上4・5番線と地下8・9番線のみ。このホームは未設置。"
+          }
         }
-      ]
+      ],
+      "terminus": {
+        "end": "x-",
+        "sourceIds": [
+          "src:wikipedia-ja-shinjuku-station"
+        ],
+        "note": "小田急新宿駅は地上・地下とも北端が頭端（列車は南側から発着）。"
+      }
     },
     {
       "kind": "concourse",
@@ -4072,7 +4260,9 @@
       },
       "provenance": {
         "sourceIds": [
-          "src:odakyu-shinjuku-map"
+          "src:odakyu-shinjuku-map",
+          "src:ecomo-rakuraku-stations",
+          "src:wikipedia-ja-shinjuku-station"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-12"
@@ -4108,9 +4298,24 @@
               "towardsEn": "alighting only"
             }
           ],
-          "side": "z+"
+          "side": "z+",
+          "platformDoors": {
+            "status": "none",
+            "since": null,
+            "sourceIds": [
+              "src:ecomo-rakuraku-stations"
+            ],
+            "note": "可動式ホーム柵は地上4・5番線と地下8・9番線のみ。このホームは未設置。"
+          }
         }
-      ]
+      ],
+      "terminus": {
+        "end": "x-",
+        "sourceIds": [
+          "src:wikipedia-ja-shinjuku-station"
+        ],
+        "note": "小田急新宿駅は地上・地下とも北端が頭端（列車は南側から発着）。"
+      }
     },
     {
       "kind": "platform",
@@ -4124,7 +4329,9 @@
       },
       "provenance": {
         "sourceIds": [
-          "src:odakyu-shinjuku-map"
+          "src:odakyu-shinjuku-map",
+          "src:ecomo-rakuraku-stations",
+          "src:wikipedia-ja-shinjuku-station"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-12"
@@ -4160,7 +4367,16 @@
               "towardsEn": "local (for Odawara, Katase-Enoshima, Karakida)"
             }
           ],
-          "side": "z-"
+          "side": "z-",
+          "platformDoors": {
+            "status": "installed",
+            "since": "2022-01-30",
+            "sourceIds": [
+              "src:ecomo-rakuraku-stations",
+              "src:wikipedia-ja-shinjuku-station"
+            ],
+            "note": "可動式ホーム柵。"
+          }
         },
         {
           "number": "9",
@@ -4171,9 +4387,25 @@
               "towardsEn": "local (for Odawara, Katase-Enoshima, Karakida)"
             }
           ],
-          "side": "z+"
+          "side": "z+",
+          "platformDoors": {
+            "status": "installed",
+            "since": "2022-01-30",
+            "sourceIds": [
+              "src:ecomo-rakuraku-stations",
+              "src:wikipedia-ja-shinjuku-station"
+            ],
+            "note": "可動式ホーム柵。"
+          }
         }
-      ]
+      ],
+      "terminus": {
+        "end": "x-",
+        "sourceIds": [
+          "src:wikipedia-ja-shinjuku-station"
+        ],
+        "note": "小田急新宿駅は地上・地下とも北端が頭端（列車は南側から発着）。"
+      }
     },
     {
       "kind": "platform",
@@ -4187,7 +4419,9 @@
       },
       "provenance": {
         "sourceIds": [
-          "src:odakyu-shinjuku-map"
+          "src:odakyu-shinjuku-map",
+          "src:ecomo-rakuraku-stations",
+          "src:wikipedia-ja-shinjuku-station"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-12"
@@ -4223,9 +4457,24 @@
               "towardsEn": "alighting only"
             }
           ],
-          "side": "z-"
+          "side": "z-",
+          "platformDoors": {
+            "status": "none",
+            "since": null,
+            "sourceIds": [
+              "src:ecomo-rakuraku-stations"
+            ],
+            "note": "可動式ホーム柵は地上4・5番線と地下8・9番線のみ。このホームは未設置。"
+          }
         }
-      ]
+      ],
+      "terminus": {
+        "end": "x-",
+        "sourceIds": [
+          "src:wikipedia-ja-shinjuku-station"
+        ],
+        "note": "小田急新宿駅は地上・地下とも北端が頭端（列車は南側から発着）。"
+      }
     },
     {
       "kind": "passage",
@@ -4482,7 +4731,8 @@
         "sourceIds": [
           "src:keio-new-line-layer-map",
           "src:keio-new-line-map",
-          "src:toei-shinjuku-map"
+          "src:toei-shinjuku-map",
+          "src:ecomo-rakuraku-stations"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-12"
@@ -4518,7 +4768,15 @@
               "towardsEn": "for Keio-hachioji, Takaosanguchi, Hashimoto"
             }
           ],
-          "side": "x+"
+          "side": "x+",
+          "platformDoors": {
+            "status": "installed",
+            "since": null,
+            "sourceIds": [
+              "src:ecomo-rakuraku-stations"
+            ],
+            "note": "可動式ホーム柵。使用開始日は読んだ資料に書かれていない。"
+          }
         },
         {
           "number": "5",
@@ -4529,7 +4787,15 @@
               "towardsEn": "for Motoyawata"
             }
           ],
-          "side": "x-"
+          "side": "x-",
+          "platformDoors": {
+            "status": "installed",
+            "since": null,
+            "sourceIds": [
+              "src:ecomo-rakuraku-stations"
+            ],
+            "note": "可動式ホーム柵。使用開始日は読んだ資料に書かれていない。"
+          }
         }
       ]
     },
@@ -4709,7 +4975,8 @@
       },
       "provenance": {
         "sourceIds": [
-          "src:toei-shinjuku-map"
+          "src:toei-shinjuku-map",
+          "src:ecomo-rakuraku-stations"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-12"
@@ -4745,7 +5012,15 @@
               "towardsEn": "for Roppongi (next: Yoyogi)"
             }
           ],
-          "side": "z-"
+          "side": "z-",
+          "platformDoors": {
+            "status": "installed",
+            "since": null,
+            "sourceIds": [
+              "src:ecomo-rakuraku-stations"
+            ],
+            "note": "可動式ホーム柵。使用開始日は読んだ資料に書かれていない。"
+          }
         },
         {
           "number": "7",
@@ -4756,7 +5031,15 @@
               "towardsEn": "for Hikarigaoka (next: Tochomae)"
             }
           ],
-          "side": "z+"
+          "side": "z+",
+          "platformDoors": {
+            "status": "installed",
+            "since": null,
+            "sourceIds": [
+              "src:ecomo-rakuraku-stations"
+            ],
+            "note": "可動式ホーム柵。使用開始日は読んだ資料に書かれていない。"
+          }
         }
       ]
     },
@@ -4890,7 +5173,9 @@
       },
       "provenance": {
         "sourceIds": [
-          "src:tokyo-metro-shinjuku-map"
+          "src:tokyo-metro-shinjuku-map",
+          "src:ecomo-rakuraku-stations",
+          "src:wikipedia-ja-shinjuku-station"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-12"
@@ -4926,7 +5211,16 @@
               "towardsEn": "for Ogikubo"
             }
           ],
-          "side": "x+"
+          "side": "x+",
+          "platformDoors": {
+            "status": "installed",
+            "since": "2006-10",
+            "sourceIds": [
+              "src:ecomo-rakuraku-stations",
+              "src:wikipedia-ja-shinjuku-station"
+            ],
+            "note": "可動式ホーム柵。"
+          }
         },
         {
           "number": "2",
@@ -4937,7 +5231,16 @@
               "towardsEn": "for Ikebukuro"
             }
           ],
-          "side": "x-"
+          "side": "x-",
+          "platformDoors": {
+            "status": "installed",
+            "since": "2006-10",
+            "sourceIds": [
+              "src:ecomo-rakuraku-stations",
+              "src:wikipedia-ja-shinjuku-station"
+            ],
+            "note": "可動式ホーム柵。"
+          }
         }
       ]
     },
@@ -5832,7 +6135,10 @@
       },
       "provenance": {
         "sourceIds": [
-          "src:seibu-shinjuku-map"
+          "src:seibu-shinjuku-map",
+          "src:ecomo-rakuraku-stations",
+          "src:wikipedia-ja-seibu-shinjuku",
+          "src:trafficnews-seibu-shinjuku-2018"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-12"
@@ -5868,9 +6174,26 @@
               "towardsEn": "for Tokorozawa, Hon-Kawagoe, Haijima"
             }
           ],
-          "side": "z+"
+          "side": "z+",
+          "platformDoors": {
+            "status": "installed",
+            "since": "2020-08-05",
+            "sourceIds": [
+              "src:ecomo-rakuraku-stations",
+              "src:wikipedia-ja-seibu-shinjuku"
+            ],
+            "note": "可動式ホーム柵。"
+          }
         }
-      ]
+      ],
+      "terminus": {
+        "end": "x+",
+        "sourceIds": [
+          "src:trafficnews-seibu-shinjuku-2018",
+          "src:wikipedia-ja-seibu-shinjuku"
+        ],
+        "note": "頭端式2面3線。西武新宿駅は新宿駅の北約400mにあり、行き止まりの線路を400m延ばせば新宿駅に届く——車止めは南端。"
+      }
     },
     {
       "kind": "platform",
@@ -5884,7 +6207,10 @@
       },
       "provenance": {
         "sourceIds": [
-          "src:seibu-shinjuku-map"
+          "src:seibu-shinjuku-map",
+          "src:ecomo-rakuraku-stations",
+          "src:wikipedia-ja-seibu-shinjuku",
+          "src:trafficnews-seibu-shinjuku-2018"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-12"
@@ -5920,7 +6246,16 @@
               "towardsEn": "for Tokorozawa, Hon-Kawagoe, Haijima"
             }
           ],
-          "side": "z-"
+          "side": "z-",
+          "platformDoors": {
+            "status": "installed",
+            "since": "2020-03-11",
+            "sourceIds": [
+              "src:ecomo-rakuraku-stations",
+              "src:wikipedia-ja-seibu-shinjuku"
+            ],
+            "note": "可動式ホーム柵。"
+          }
         },
         {
           "number": "3",
@@ -5931,9 +6266,26 @@
               "towardsEn": "for Tokorozawa, Hon-Kawagoe, Haijima"
             }
           ],
-          "side": "z+"
+          "side": "z+",
+          "platformDoors": {
+            "status": "installed",
+            "since": "2020-10-14",
+            "sourceIds": [
+              "src:ecomo-rakuraku-stations",
+              "src:wikipedia-ja-seibu-shinjuku"
+            ],
+            "note": "可動式ホーム柵。"
+          }
         }
-      ]
+      ],
+      "terminus": {
+        "end": "x+",
+        "sourceIds": [
+          "src:trafficnews-seibu-shinjuku-2018",
+          "src:wikipedia-ja-seibu-shinjuku"
+        ],
+        "note": "頭端式2面3線。西武新宿駅は新宿駅の北約400mにあり、行き止まりの線路を400m延ばせば新宿駅に届く——車止めは南端。"
+      }
     },
     {
       "kind": "passage",
@@ -6105,7 +6457,8 @@
       "provenance": {
         "sourceIds": [
           "src:tokyo-metro-shinjuku-sanchome-map",
-          "src:toei-shinjuku-sanchome-map"
+          "src:toei-shinjuku-sanchome-map",
+          "src:ecomo-rakuraku-stations"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-12"
@@ -6141,7 +6494,15 @@
               "towardsEn": "for Ogikubo (next: Shinjuku)"
             }
           ],
-          "side": "x+"
+          "side": "x+",
+          "platformDoors": {
+            "status": "installed",
+            "since": null,
+            "sourceIds": [
+              "src:ecomo-rakuraku-stations"
+            ],
+            "note": "可動式ホーム柵。使用開始日は読んだ資料に書かれていない。"
+          }
         },
         {
           "number": "2",
@@ -6152,7 +6513,15 @@
               "towardsEn": "for Ikebukuro (next: Shinjuku-gyoemmae)"
             }
           ],
-          "side": "x-"
+          "side": "x-",
+          "platformDoors": {
+            "status": "installed",
+            "since": null,
+            "sourceIds": [
+              "src:ecomo-rakuraku-stations"
+            ],
+            "note": "可動式ホーム柵。使用開始日は読んだ資料に書かれていない。"
+          }
         }
       ]
     },
@@ -6298,7 +6667,8 @@
       "provenance": {
         "sourceIds": [
           "src:tokyo-metro-shinjuku-sanchome-map",
-          "src:toei-shinjuku-sanchome-map"
+          "src:toei-shinjuku-sanchome-map",
+          "src:ecomo-rakuraku-stations"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-12"
@@ -6334,7 +6704,15 @@
               "towardsEn": "for Shibuya (next: Kita-sando)"
             }
           ],
-          "side": "z-"
+          "side": "z-",
+          "platformDoors": {
+            "status": "installed",
+            "since": "2008-06",
+            "sourceIds": [
+              "src:ecomo-rakuraku-stations"
+            ],
+            "note": "可動式ホーム柵（らくらくおでかけネット: H20.6 設置）。"
+          }
         },
         {
           "number": "4",
@@ -6345,7 +6723,15 @@
               "towardsEn": "for Wakoshi (next: Higashi-shinjuku)"
             }
           ],
-          "side": "z+"
+          "side": "z+",
+          "platformDoors": {
+            "status": "installed",
+            "since": "2008-06",
+            "sourceIds": [
+              "src:ecomo-rakuraku-stations"
+            ],
+            "note": "可動式ホーム柵（らくらくおでかけネット: H20.6 設置）。"
+          }
         }
       ]
     },
@@ -6494,7 +6880,9 @@
       "provenance": {
         "sourceIds": [
           "src:toei-shinjuku-sanchome-map",
-          "src:tokyo-metro-shinjuku-sanchome-map"
+          "src:tokyo-metro-shinjuku-sanchome-map",
+          "src:ecomo-rakuraku-stations",
+          "src:wikipedia-ja-shinjuku-sanchome"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-12"
@@ -6530,7 +6918,16 @@
               "towardsEn": "for Shinjuku (next: Shinjuku)"
             }
           ],
-          "side": "x+"
+          "side": "x+",
+          "platformDoors": {
+            "status": "installed",
+            "since": "2019-08-10",
+            "sourceIds": [
+              "src:ecomo-rakuraku-stations",
+              "src:wikipedia-ja-shinjuku-sanchome"
+            ],
+            "note": "可動式ホーム柵。"
+          }
         },
         {
           "number": "2",
@@ -6541,7 +6938,16 @@
               "towardsEn": "for Motoyawata (next: Akebonobashi)"
             }
           ],
-          "side": "x-"
+          "side": "x-",
+          "platformDoors": {
+            "status": "installed",
+            "since": "2019-08-10",
+            "sourceIds": [
+              "src:ecomo-rakuraku-stations",
+              "src:wikipedia-ja-shinjuku-sanchome"
+            ],
+            "note": "可動式ホーム柵。"
+          }
         }
       ]
     },
@@ -6720,7 +7126,9 @@
       },
       "provenance": {
         "sourceIds": [
-          "src:toei-shinjuku-nishiguchi-map"
+          "src:toei-shinjuku-nishiguchi-map",
+          "src:ecomo-rakuraku-stations",
+          "src:wikipedia-ja-shinjuku-nishiguchi"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-12"
@@ -6756,7 +7164,16 @@
               "towardsEn": "for Tochomae (next: Tochomae)"
             }
           ],
-          "side": "z-"
+          "side": "z-",
+          "platformDoors": {
+            "status": "installed",
+            "since": "2012-10",
+            "sourceIds": [
+              "src:ecomo-rakuraku-stations",
+              "src:wikipedia-ja-shinjuku-nishiguchi"
+            ],
+            "note": "可動式ホーム柵。"
+          }
         },
         {
           "number": "2",
@@ -6767,7 +7184,16 @@
               "towardsEn": "for Iidabashi (next: Higashi-shinjuku)"
             }
           ],
-          "side": "z+"
+          "side": "z+",
+          "platformDoors": {
+            "status": "installed",
+            "since": "2012-10",
+            "sourceIds": [
+              "src:ecomo-rakuraku-stations",
+              "src:wikipedia-ja-shinjuku-nishiguchi"
+            ],
+            "note": "可動式ホーム柵。"
+          }
         }
       ]
     }
@@ -13845,7 +14271,8 @@
       "provenance": {
         "sourceIds": [
           "src:jreast-floormap-1f",
-          "src:jreast-floormap-2f"
+          "src:jreast-floormap-2f",
+          "src:wikipedia-ja-shinjuku-station"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-11"
@@ -13877,9 +14304,16 @@
           }
         }
       ],
-      "directionNote": "Running direction is not recorded on the floor map.",
+      "directionNote": "南口跨線橋：13〜16番線へのエスカレーターはホームからの上り方向のみ（エレベーターあり）。",
       "hoursNote": null,
-      "aggregated": true
+      "aggregated": true,
+      "escalatorDirection": {
+        "direction": "up",
+        "sourceIds": [
+          "src:wikipedia-ja-shinjuku-station"
+        ],
+        "note": "南口跨線橋：13〜16番線へのエスカレーターはホームからの上り方向のみ（エレベーターあり）。"
+      }
     },
     {
       "kind": "vertical",
@@ -13943,7 +14377,8 @@
       "provenance": {
         "sourceIds": [
           "src:jreast-floormap-1f",
-          "src:jreast-floormap-2f"
+          "src:jreast-floormap-2f",
+          "src:wikipedia-ja-shinjuku-station"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-11"
@@ -13975,9 +14410,16 @@
           }
         }
       ],
-      "directionNote": "Running direction is not recorded on the floor map.",
+      "directionNote": "南口跨線橋：13〜16番線へのエスカレーターはホームからの上り方向のみ（エレベーターあり）。",
       "hoursNote": null,
-      "aggregated": true
+      "aggregated": true,
+      "escalatorDirection": {
+        "direction": "up",
+        "sourceIds": [
+          "src:wikipedia-ja-shinjuku-station"
+        ],
+        "note": "南口跨線橋：13〜16番線へのエスカレーターはホームからの上り方向のみ（エレベーターあり）。"
+      }
     },
     {
       "kind": "vertical",
@@ -16502,7 +16944,8 @@
       },
       "provenance": {
         "sourceIds": [
-          "src:odakyu-shinjuku-map"
+          "src:odakyu-shinjuku-map",
+          "src:wikipedia-ja-shinjuku-station"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-12"
@@ -16534,9 +16977,16 @@
           }
         }
       ],
-      "directionNote": "Running direction is not recorded on the floor map.",
+      "directionNote": "2・3番ホームから南口改札への上りのみ（幅の狭いタイプ）。",
       "hoursNote": null,
-      "aggregated": true
+      "aggregated": true,
+      "escalatorDirection": {
+        "direction": "up",
+        "sourceIds": [
+          "src:wikipedia-ja-shinjuku-station"
+        ],
+        "note": "2・3番ホームから南口改札への上りのみ（幅の狭いタイプ）。"
+      }
     },
     {
       "kind": "vertical",
@@ -18056,7 +18506,8 @@
       },
       "provenance": {
         "sourceIds": [
-          "src:tokyo-metro-shinjuku-map"
+          "src:tokyo-metro-shinjuku-map",
+          "src:wikipedia-ja-shinjuku-station"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-12"
@@ -18088,9 +18539,16 @@
           }
         }
       ],
-      "directionNote": "Running direction is not recorded on the floor map.",
+      "directionNote": "東側のエスカレーターは改札階方向のみ。",
       "hoursNote": null,
-      "aggregated": true
+      "aggregated": true,
+      "escalatorDirection": {
+        "direction": "up",
+        "sourceIds": [
+          "src:wikipedia-ja-shinjuku-station"
+        ],
+        "note": "東側のエスカレーターは改札階方向のみ。"
+      }
     },
     {
       "kind": "vertical",

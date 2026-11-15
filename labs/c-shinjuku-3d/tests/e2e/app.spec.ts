@@ -568,6 +568,11 @@ test.describe('display options', () => {
     const legend = page.locator('.legend');
     await expect(legend).toContainText('巴士（示意，不表示班次与目的地）');
     await expect(legend).toContainText('按楼层图位置');
+    // the same services are drawn on the 2D plan of 4F
+    await page.getByTestId('view-2d').click();
+    await page.getByTestId('floor-4F').click();
+    await expect(page.getByTestId('plan-2d')).toHaveAttribute('data-floor', '4F');
+    await expect(page.getByTestId('plan-service')).toHaveCount(5);
   });
 });
 

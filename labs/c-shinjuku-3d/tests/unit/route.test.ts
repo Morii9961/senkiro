@@ -354,3 +354,26 @@ describe('consistency of the whole walking graph (scripts/check-routes.ts runs i
     }
   });
 });
+
+describe('one-way escalators (only where a source says so)', () => {
+  const oneWay = model.verticals.filter((v) => v.escalatorDirection);
+
+  it('have their walking edge in the running direction only', () => {
+    expect(oneWay.length).toBeGreaterThan(0);
+    for (const v of oneWay) {
+      const edges = graph.edges.filter((e) => e.kind === 'vertical' && e.elementId === v.id);
+      expect(edges).toHaveLength(v.stops.length - 1);
+      for (const e of edges) {
+        const from = nodeById.get(e.from)!;
+        const to = nodeById.get(e.to)!;
+        const up = v.escalatorDirection!.direction === 'up';
+        expect(up ? to.levelOrdinal > from.levelOrdinal : to.levelOrdinal < from.levelOrdinal).toBe(true);
+      }
+    }
+  });
+
+  it('a route down to the Yamanote platform from the south concourse does not ride the up-only escalator', () => {
+    const down = mustFind('sk:area:jr-2f-south-concourse', 'sk:platform:jr-east-shinjuku-13-14');
+    expect(down.legs.some((l) => l.elementId === 'sk:vertical:jr-escalator-2f-south-to-platform-13-14')).toBe(false);
+  });
+});

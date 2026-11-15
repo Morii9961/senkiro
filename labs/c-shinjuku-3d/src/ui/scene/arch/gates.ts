@@ -127,15 +127,16 @@ export function buildGates(ctx: Ctx): void {
       );
     }
     if (gate.direction === 'exit-only') {
-      // chevrons in each lane, pointing from the paid side to the unpaid side
+      // a chevron in front of each lane on the way out, pointing from the paid side to the unpaid side
       const out = -readerEnds[0]!;
+      const arrow = ctx.style(gate.id, p.platformEdge, vis)!;
       for (let i = 0; i < MACHINES; i++) {
         const off = -GATE_HALF + (i + 0.5) * lane;
-        const tipX = x + nx * off + dx * out * 0.16;
-        const tipZ = z + nz * off + dz * out * 0.16;
+        const tipX = x + nx * off + dx * out * 0.56;
+        const tipZ = z + nz * off + dz * out * 0.56;
         for (const s of [-1, 1]) {
-          const tail: Vec3 = [tipX - dx * out * 0.14 + nx * s * 0.11, top + 0.012, tipZ - dz * out * 0.14 + nz * s * 0.11];
-          ctx.add(gate.id, 'gate-arrow', 'accent', { a: tail, b: [tipX, top + 0.012, tipZ], width: 0.05, thickness: 0.012 }, accent, { pickable: false });
+          const tail: Vec3 = [tipX - dx * out * 0.2 + nx * s * 0.15, top + 0.014, tipZ - dz * out * 0.2 + nz * s * 0.15];
+          ctx.add(gate.id, 'gate-arrow', 'accent', { a: tail, b: [tipX, top + 0.014, tipZ], width: 0.06, thickness: 0.012 }, arrow, { pickable: false });
         }
       }
     }

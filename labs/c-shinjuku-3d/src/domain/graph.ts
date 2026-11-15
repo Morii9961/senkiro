@@ -210,18 +210,23 @@ export function buildGraph(model: StationModel): StationGraph {
       const la = levelById.get(a.levelId);
       const lb = levelById.get(b.levelId);
       const levelChange = la && lb ? Math.abs(la.ordinal - lb.ordinal) : 1;
-      addBoth(
-        {
-          kind: 'vertical',
-          elementId: vf.id,
-          verticalKind: vf.verticalKind,
-          levelChange,
-          stepFree: vf.verticalKind === 'elevator',
-          connection: 'verified',
-        },
-        stopIds[i]!,
-        stopIds[i + 1]!,
-      );
+      const edge = {
+        kind: 'vertical' as const,
+        elementId: vf.id,
+        verticalKind: vf.verticalKind,
+        levelChange,
+        stepFree: vf.verticalKind === 'elevator',
+        connection: 'verified' as const,
+      };
+      const run = vf.verticalKind === 'escalator' ? vf.escalatorDirection?.direction : undefined;
+      if (run && la && lb && la.elevation !== lb.elevation) {
+        // a one-way escalator: only from its lower stop to its upper one ('up'), or the reverse ('down')
+        const [lower, upper] = la.elevation < lb.elevation ? [stopIds[i]!, stopIds[i + 1]!] : [stopIds[i + 1]!, stopIds[i]!];
+        if (run === 'up') addEdge({ ...edge, from: lower, to: upper });
+        else addEdge({ ...edge, from: upper, to: lower });
+      } else {
+        addBoth(edge, stopIds[i]!, stopIds[i + 1]!);
+      }
     }
   }
 

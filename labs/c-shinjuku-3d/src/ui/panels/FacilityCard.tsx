@@ -127,8 +127,36 @@ export function FacilityCard(props: {
       ),
     });
     if (vertical.hoursNote) facts.push({ key: 'hours', label: t('fHours'), value: vertical.hoursNote });
-    if (vertical.verticalKind === 'escalator') facts.push({ key: 'dir', label: t('fDirection'), value: t('escalatorDirectionUnknown') });
+    if (vertical.verticalKind === 'escalator') {
+      const runs = vertical.escalatorDirection?.direction;
+      facts.push({ key: 'dir', label: t('fDirection'), value: runs ? <strong>{t(runs === 'up' ? 'escalatorUp' : 'escalatorDown')}</strong> : t('escalatorDirectionUnknown') });
+    }
     if (vertical.aggregated && vertical.verticalKind !== 'elevator') facts.push({ key: 'agg', label: t('fNote'), value: t('aggregatedNote') });
+  }
+
+  if (platform) {
+    const doors = platform.tracks.filter((tr) => tr.platformDoors);
+    if (doors.length > 0) {
+      const line = (d: NonNullable<(typeof doors)[number]['platformDoors']>) =>
+        d.status === 'installed' ? (d.since ? t('doorInstalledSince', { since: d.since }) : t('doorInstalled')) : d.status === 'planned' ? (d.since ? t('doorPlannedFrom', { since: d.since }) : t('doorPlanned')) : t('doorNone');
+      facts.push({
+        key: 'doors',
+        label: t('fPlatformDoors'),
+        value: (
+          <ul className="stops" data-testid="card-doors">
+            {doors.map((tr) => (
+              <li key={tr.number}>
+                <span>{t('trackN', { n: tr.number })}</span> <span>{line(tr.platformDoors!)}</span>
+              </li>
+            ))}
+          </ul>
+        ),
+      });
+    }
+    if (platform.terminus) {
+      const end = { 'x-': 'endNorth', 'x+': 'endSouth', 'z-': 'endEast', 'z+': 'endWest' } as const;
+      facts.push({ key: 'terminus', label: t('fTerminus'), value: t('terminusAt', { end: t(end[platform.terminus.end]) }) });
+    }
   }
 
   const tracks = platform && props.bound ? props.bound.tracks.filter((tr) => tr.platformId === platform.id) : [];

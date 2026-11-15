@@ -5,7 +5,7 @@
 //   steps: comma-separated  click:<testid> | css:<selector> | select:<testid>=<value> | wait:<ms> | key:<Key>
 //          | drag:<dx>x<dy> | wheel:<deltaY> | wheelat:<fx>x<fy>:<deltaY> | set:<testid>=<value> | hover:<testid>
 //
-// Needs a server: BASE_URL (default http://localhost:5183).
+// Needs a server: BASE_URL (default http://localhost:5183). DPR=2 takes a sharper (larger) image.
 import { mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -19,7 +19,8 @@ mkdirSync(outDir, { recursive: true });
 
 const mobile = w < 700;
 const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
-const page = await browser.newPage({ viewport: { width: w, height: h }, deviceScaleFactor: mobile ? 2 : 1, hasTouch: mobile, isMobile: mobile });
+const dpr = Number(process.env.DPR) || (mobile ? 2 : 1);
+const page = await browser.newPage({ viewport: { width: w, height: h }, deviceScaleFactor: dpr, hasTouch: mobile, isMobile: mobile });
 const errors = [];
 page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
 page.on('pageerror', (e) => errors.push(String(e)));

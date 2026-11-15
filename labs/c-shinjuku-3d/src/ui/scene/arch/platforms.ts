@@ -11,16 +11,25 @@
  * keeps both edge markings, since nothing says which edge is used. Whether a
  * platform is a terminal (buffer stops) is not in the data and is not drawn.
  *
+ * Platform doors are drawn along a face only where a source says they are
+ * installed (`PlatformTrack.platformDoors`), and buffer stops only at the end
+ * a source names as the head of a terminus (`Platform.terminus`). How the
+ * door panels are spaced and what the buffer stops look like is drawn by rule.
+ *
  * The columns, boards and benches are decoration drawn by rule: their number,
  * spacing and look say nothing about the real station. A board carries, on each
  * half, the colour of the line on the track on that side; it has no text.
  */
-import { TRACK_GAP, TRACK_STUB, TRACK_W, edgeOf, type TrackSide } from '../../../trains/trackGeometry';
+import { TRACK_GAP, TRACK_HEAD_STUB, TRACK_STUB, TRACK_W, edgeOf, headEnd, type TrackSide } from '../../../trains/trackGeometry';
 import { mix } from '../../theme';
 import { PLATFORM_TOP, box } from '../prims';
 import type { Ctx } from './context';
 
 const COLUMN_STEP = 4;
+/** Platform doors: one panel and one doorway per unit along the edge (spacing drawn by rule), and their height. */
+const DOOR_UNIT = 1.1;
+const DOOR_H = 0.26;
+
 
 type Side = TrackSide;
 
@@ -68,11 +77,31 @@ export function buildPlatforms(ctx: Ctx): void {
           ctx.add(area.id, 'line-band', 'accent', oriented(e.axis, e.lo, e.hi, e.at, e.at + e.out * 0.03, y1 - h, y1), dim(c));
         });
 
-        // track bed and rails
+        // platform doors (waist-high panels with gaps at the doorways), only where a source says they are installed
+        if (track.platformDoors?.status === 'installed') {
+          const door = dim(mix(p.platformEdge, p.gateBody, 0.35));
+          const n = Math.max(2, Math.floor((e.hi - e.lo) / DOOR_UNIT));
+          const unit = (e.hi - e.lo) / n;
+          for (let i = 0; i < n; i++) {
+            const a0 = e.lo + i * unit + unit * 0.2;
+            const a1 = e.lo + (i + 1) * unit - unit * 0.2;
+            ctx.add(area.id, 'platform-door', 'metal', oriented(e.axis, a0, a1, e.at + inw * 0.085, e.at + inw * 0.12, top, top + DOOR_H), door, { shade: [0.8, 1], pickable: false });
+          }
+        }
+
+        // track bed and rails; at the head of a terminus the track stops just past the platform, at a buffer stop
         const t0 = e.at + e.out * TRACK_GAP;
         const t1 = e.at + e.out * (TRACK_GAP + TRACK_W);
-        const lo = e.lo - TRACK_STUB;
-        const hi = e.hi + TRACK_STUB;
+        const head = headEnd(area, e);
+        const lo = head === -1 ? e.lo - TRACK_HEAD_STUB : e.lo - TRACK_STUB;
+        const hi = head === 1 ? e.hi + TRACK_HEAD_STUB : e.hi + TRACK_STUB;
+        if (head !== 0) {
+          const at = head === -1 ? lo : hi;
+          const [b0, b1] = head === -1 ? [at, at + 0.14] : [at - 0.14, at];
+          ctx.add(area.id, 'buffer-stop', 'metal', oriented(e.axis, b0, b1, t0 + e.out * 0.08, t1 - e.out * 0.08, y + 0.03, y + 0.28), dim(mix(p.trackBed, p.platformEdge, 0.25)), { shade: [0.75, 1], pickable: false });
+          const [f0, f1] = head === -1 ? [b1, b1 + 0.02] : [b0 - 0.02, b0];
+          ctx.add(area.id, 'buffer-stop', 'accent', oriented(e.axis, f0, f1, t0 + e.out * 0.12, t1 - e.out * 0.12, y + 0.18, y + 0.26), dim(p.tactile), { pickable: false });
+        }
         ctx.add(area.id, 'track', 'dark', oriented(e.axis, lo, hi, t0, t1, y - 0.1, y + 0.03), dim(p.trackBed), { shade: [0.8, 1], pickable: false });
         for (const off of [0.17, 0.45]) {
           const c = e.at + e.out * (TRACK_GAP + off);

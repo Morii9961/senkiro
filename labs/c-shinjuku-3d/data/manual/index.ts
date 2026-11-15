@@ -5,9 +5,16 @@
  */
 import type { StationModel } from '../../src/domain/types';
 import { EXT_IDS, extensions } from './extensions';
+import { applyLaterFacts } from './laterFacts';
 import { NG, nishiguchi } from './nishiguchi';
 import { SC, sanchome } from './sanchome';
 import { IDS as BASE_IDS, baseModel } from './shinjuku';
+
+// platform doors, termini and one-way escalators read later from other sources (laterFacts.ts)
+const later = applyLaterFacts(
+  [...baseModel.areas, ...extensions.areas, ...sanchome.areas, ...nishiguchi.areas],
+  [...baseModel.verticals, ...extensions.verticals, ...sanchome.verticals, ...nishiguchi.verticals],
+);
 
 export const stationModelInput: Omit<StationModel, 'generatedAt'> = {
   schemaVersion: 1,
@@ -18,11 +25,11 @@ export const stationModelInput: Omit<StationModel, 'generatedAt'> = {
   complex: baseModel.complex,
   stations: [...baseModel.stations, ...extensions.stations, ...sanchome.stations, ...nishiguchi.stations],
   levels: [...baseModel.levels, ...extensions.levels, ...sanchome.levels, ...nishiguchi.levels],
-  areas: [...baseModel.areas, ...extensions.areas, ...sanchome.areas, ...nishiguchi.areas],
+  areas: later.areas,
   passages: [...baseModel.passages, ...extensions.passages, ...sanchome.passages, ...nishiguchi.passages],
   gates: [...baseModel.gates, ...extensions.gates, ...sanchome.gates, ...nishiguchi.gates],
   entrances: [...baseModel.entrances, ...extensions.entrances, ...sanchome.entrances, ...nishiguchi.entrances],
-  verticals: [...baseModel.verticals, ...extensions.verticals, ...sanchome.verticals, ...nishiguchi.verticals],
+  verticals: later.verticals,
   unverifiedBlocks: extensions.unverifiedBlocks,
   services: extensions.services,
   unconfirmedConnections: baseModel.unconfirmedConnections,

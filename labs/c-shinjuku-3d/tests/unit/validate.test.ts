@@ -164,3 +164,27 @@ describe('passenger services (Busta 4F hall)', () => {
     expect(rules(bad)).toContain('geometry');
   });
 });
+
+describe('details added later (platform doors, termini, one-way escalators)', () => {
+  const model = loadModel();
+
+  it('every such detail cites known sources', () => {
+    const platforms = model.areas.filter((a) => a.kind === 'platform');
+    const doors = platforms.flatMap((p) => (p.kind === 'platform' ? p.tracks.filter((t) => t.platformDoors) : []));
+    expect(doors.length).toBeGreaterThan(20);
+    expect(platforms.filter((p) => p.kind === 'platform' && p.terminus)).toHaveLength(10);
+    expect(model.verticals.filter((v) => v.escalatorDirection)).toHaveLength(4);
+    expect(rules(model)).toEqual([]);
+  });
+
+  it('a terminus across the short axis, or a running direction on stairs, is rejected', () => {
+    const bad = structuredClone(model);
+    const p = bad.areas.find((a) => a.id === 'sk:platform:keio-shinjuku-3')!;
+    if (p.kind === 'platform') p.terminus = { ...p.terminus!, end: 'z-' };
+    expect(rules(bad)).toContain('geometry');
+    const bad2 = structuredClone(model);
+    const stairs = bad2.verticals.find((v) => v.verticalKind === 'stairs')!;
+    stairs.escalatorDirection = { direction: 'up', sourceIds: ['src:wikipedia-ja-shinjuku-station'], note: '' };
+    expect(rules(bad2)).toContain('reference');
+  });
+});

@@ -523,8 +523,10 @@ describe('ticket gate arrays', () => {
         expect(dist(x, z, paid)).toBeLessThan(dist(x, z, unpaid));
       }
       for (const c of of(g.id, 'gate-arrow')) {
-        // a chevron runs from its tail (towards the paid side) to its tip (towards the unpaid side)
-        expect(dist(c.b[0], c.b[2], unpaid)).toBeLessThan(dist(c.a[0], c.a[2], unpaid));
+        // a chevron runs from its tail to its tip, away from the paid side
+        expect(dist(c.b[0], c.b[2], paid)).toBeGreaterThan(dist(c.a[0], c.a[2], paid));
+        // and it lies on the way out, on the unpaid side
+        expect(dist(c.b[0], c.b[2], unpaid)).toBeLessThan(dist(c.b[0], c.b[2], paid));
       }
     }
   });
@@ -628,5 +630,41 @@ describe('guards round floor openings', () => {
       }
     }
     expect(feet).toBeGreaterThan(0);
+  });
+});
+
+describe('platform doors and buffer stops (only where a source says so)', () => {
+  const prims = buildPrims(model, view());
+
+  it('door panels stand only along faces with installed doors', () => {
+    for (const area of model.areas) {
+      if (area.kind !== 'platform') continue;
+      const panels = prims.filter((q) => q.elementId === area.id && q.role === 'platform-door');
+      const installed = area.tracks.filter((t) => t.side && t.platformDoors?.status === 'installed');
+      expect(panels.length > 0).toBe(installed.length > 0);
+      const r = area.footprint[0]!;
+      const alongX = r.x1 - r.x0 >= r.z1 - r.z0;
+      const edgeAt = (side: string) => ({ 'z-': r.z0, 'z+': r.z1, 'x-': r.x0, 'x+': r.x1 })[side]!;
+      for (const q of panels) {
+        const across = alongX ? (q.a[2] + q.b[2]) / 2 : (q.a[0] + q.b[0]) / 2;
+        expect(Math.min(...installed.map((t) => Math.abs(edgeAt(t.side!) - across)))).toBeLessThan(0.2);
+      }
+    }
+  });
+
+  it('buffer stops stand only at the head a source names, just beyond the platform', () => {
+    for (const area of model.areas) {
+      if (area.kind !== 'platform') continue;
+      const stops = prims.filter((q) => q.elementId === area.id && q.role === 'buffer-stop');
+      expect(stops.length > 0).toBe(!!area.terminus);
+      if (!area.terminus) continue;
+      const r = area.footprint[0]!;
+      for (const q of stops) {
+        const x = (q.a[0] + q.b[0]) / 2;
+        if (area.terminus.end === 'x-') expect(x).toBeLessThan(r.x0);
+        if (area.terminus.end === 'x+') expect(x).toBeGreaterThan(r.x1);
+        expect(Math.abs(area.terminus.end === 'x-' ? r.x0 - x : x - r.x1)).toBeLessThan(0.5);
+      }
+    }
   });
 });

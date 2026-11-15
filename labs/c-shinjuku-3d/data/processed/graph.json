@@ -16620,17 +16620,6 @@
       "id": "sk:vertical:jr-escalator-2f-south-to-platform-13-14@sk:level:jr-east-shinjuku-2f→sk:area:jr-2f-south-concourse"
     },
     {
-      "kind": "vertical",
-      "elementId": "sk:vertical:jr-escalator-2f-south-to-platform-13-14",
-      "verticalKind": "escalator",
-      "levelChange": 1,
-      "stepFree": false,
-      "connection": "verified",
-      "from": "sk:vertical:jr-escalator-2f-south-to-platform-13-14@sk:level:jr-east-shinjuku-2f",
-      "to": "sk:vertical:jr-escalator-2f-south-to-platform-13-14@sk:level:jr-east-shinjuku-1f",
-      "id": "sk:vertical:jr-escalator-2f-south-to-platform-13-14@sk:level:jr-east-shinjuku-2f→sk:vertical:jr-escalator-2f-south-to-platform-13-14@sk:level:jr-east-shinjuku-1f"
-    },
-    {
       "kind": "vertical-approach",
       "elementId": "sk:vertical:jr-escalator-2f-south-to-platform-15-16",
       "verticalKind": "escalator",
@@ -16662,17 +16651,6 @@
       "from": "sk:vertical:jr-escalator-2f-south-to-platform-15-16@sk:level:jr-east-shinjuku-2f",
       "to": "sk:area:jr-2f-south-concourse",
       "id": "sk:vertical:jr-escalator-2f-south-to-platform-15-16@sk:level:jr-east-shinjuku-2f→sk:area:jr-2f-south-concourse"
-    },
-    {
-      "kind": "vertical",
-      "elementId": "sk:vertical:jr-escalator-2f-south-to-platform-15-16",
-      "verticalKind": "escalator",
-      "levelChange": 1,
-      "stepFree": false,
-      "connection": "verified",
-      "from": "sk:vertical:jr-escalator-2f-south-to-platform-15-16@sk:level:jr-east-shinjuku-2f",
-      "to": "sk:vertical:jr-escalator-2f-south-to-platform-15-16@sk:level:jr-east-shinjuku-1f",
-      "id": "sk:vertical:jr-escalator-2f-south-to-platform-15-16@sk:level:jr-east-shinjuku-2f→sk:vertical:jr-escalator-2f-south-to-platform-15-16@sk:level:jr-east-shinjuku-1f"
     },
     {
       "kind": "vertical-approach",
@@ -20272,17 +20250,6 @@
       "id": "sk:vertical:odakyu-escalator-2f-to-platform-2-3@sk:level:odakyu-shinjuku-2f→sk:area:odakyu-2f-concourse"
     },
     {
-      "kind": "vertical",
-      "elementId": "sk:vertical:odakyu-escalator-2f-to-platform-2-3",
-      "verticalKind": "escalator",
-      "levelChange": 1,
-      "stepFree": false,
-      "connection": "verified",
-      "from": "sk:vertical:odakyu-escalator-2f-to-platform-2-3@sk:level:odakyu-shinjuku-2f",
-      "to": "sk:vertical:odakyu-escalator-2f-to-platform-2-3@sk:level:odakyu-shinjuku-1f",
-      "id": "sk:vertical:odakyu-escalator-2f-to-platform-2-3@sk:level:odakyu-shinjuku-2f→sk:vertical:odakyu-escalator-2f-to-platform-2-3@sk:level:odakyu-shinjuku-1f"
-    },
-    {
       "kind": "vertical-approach",
       "elementId": "sk:vertical:odakyu-stairs-2f-to-platform-2-3",
       "verticalKind": "stairs",
@@ -22228,17 +22195,6 @@
       "from": "sk:vertical:tokyo-metro-escalator-east-gates-to-platform@sk:level:tokyo-metro-shinjuku-b1f",
       "to": "sk:area:tokyo-metro-b1f-paid-east",
       "id": "sk:vertical:tokyo-metro-escalator-east-gates-to-platform@sk:level:tokyo-metro-shinjuku-b1f→sk:area:tokyo-metro-b1f-paid-east"
-    },
-    {
-      "kind": "vertical",
-      "elementId": "sk:vertical:tokyo-metro-escalator-east-gates-to-platform",
-      "verticalKind": "escalator",
-      "levelChange": 1,
-      "stepFree": false,
-      "connection": "verified",
-      "from": "sk:vertical:tokyo-metro-escalator-east-gates-to-platform@sk:level:tokyo-metro-shinjuku-b1f",
-      "to": "sk:vertical:tokyo-metro-escalator-east-gates-to-platform@sk:level:tokyo-metro-shinjuku-b2f",
-      "id": "sk:vertical:tokyo-metro-escalator-east-gates-to-platform@sk:level:tokyo-metro-shinjuku-b1f→sk:vertical:tokyo-metro-escalator-east-gates-to-platform@sk:level:tokyo-metro-shinjuku-b2f"
     },
     {
       "kind": "vertical-approach",

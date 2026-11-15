@@ -9,6 +9,15 @@ export const TRACK_W = 0.62;
 export const TRACK_GAP = 0.04;
 /** How far the drawn track continues past each end of the platform. */
 export const TRACK_STUB = 1.6;
+/** At the head of a terminus (when a source names it) the track stops this far past the platform, at a buffer stop. */
+export const TRACK_HEAD_STUB = 0.35;
+
+/** -1 / +1 when the low / high end of this edge is the head of a terminus, else 0. */
+export function headEnd(platform: Platform, e: PlatformEdge): -1 | 0 | 1 {
+  const t = platform.terminus;
+  if (!t || t.end[0] !== e.axis) return 0;
+  return t.end[1] === '-' ? -1 : 1;
+}
 
 export type TrackSide = NonNullable<Platform['tracks'][number]['side']>;
 
@@ -72,8 +81,8 @@ export function trackLine(platform: Platform, trackNumber: string): TrackLine | 
     platformSide: e.out === 1 ? -1 : 1,
     lo: e.lo,
     hi: e.hi,
-    clipLo: e.lo - TRACK_STUB,
-    clipHi: e.hi + TRACK_STUB,
+    clipLo: e.lo - (headEnd(platform, e) === -1 ? TRACK_HEAD_STUB : TRACK_STUB),
+    clipHi: e.hi + (headEnd(platform, e) === 1 ? TRACK_HEAD_STUB : TRACK_STUB),
     levelId: platform.levelId,
   };
 }

@@ -232,11 +232,24 @@ export interface PlatformTrack {
    * likewise for x. Absent or null = not established; no track is drawn then.
    */
   side?: 'z-' | 'z+' | 'x-' | 'x+' | null;
+  /**
+   * Platform doors along this face, only when a source says so. Absent = not
+   * established (which is not the same as "no doors").
+   */
+  platformDoors?: SourcedFact<{ status: 'installed' | 'planned' | 'none'; since: string | null }>;
 }
+
+/** A fact that carries its own sources, for details read after the element itself was entered. */
+export type SourcedFact<T> = T & { sourceIds: string[]; note: string };
 
 export interface Platform extends AreaBase {
   kind: 'platform';
   tracks: PlatformTrack[];
+  /**
+   * The end of the platform's long axis where the tracks stop (a terminus with
+   * buffer stops), only when a source says so. 'x-' is the low-x (north) end.
+   */
+  terminus?: SourcedFact<{ end: 'x-' | 'x+' | 'z-' | 'z+' }>;
 }
 
 export type Area = Concourse | PassageArea | Platform;
@@ -308,6 +321,13 @@ export interface VerticalFacility extends StationElementBase {
   declaredNonAdjacent?: { reason: string };
   /** Direction of escalators is not recorded on the sources read. */
   directionNote: string | null;
+  /**
+   * Running direction of an escalator, only when a source says so: 'up' runs
+   * only from the lower stop to the upper one, 'down' only the other way. The
+   * walking graph then has the edge in that direction only. Absent = unknown,
+   * and the escalator is treated as usable both ways.
+   */
+  escalatorDirection?: SourcedFact<{ direction: 'up' | 'down' }>;
   hoursNote: string | null;
   /** True when one entry stands for several physical units of the same kind. */
   aggregated: boolean;

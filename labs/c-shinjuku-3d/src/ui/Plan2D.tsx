@@ -104,6 +104,7 @@ export function Plan2D(props: Props) {
       bounds,
       gates: model.gates.filter((g) => levelIds.has(g.levelId)),
       entrances: model.entrances.filter((e) => levelIds.has(e.levelId)),
+      services: model.services.filter((s) => levelIds.has(s.levelId)),
       verticals: model.verticals.filter((v) => v.stops.some((s) => levelIds.has(s.levelId))),
       links: model.passages.filter((l) => {
         const a = areaById.get(l.fromAreaId);
@@ -274,6 +275,10 @@ export function Plan2D(props: Props) {
     }
     for (const g of floor.gates) {
       out.push({ key: g.id, elementId: g.id, x: g.position.x, z: g.position.z, text: namer.name(g.id), variant: 'gate', priority: 50 + boost(g.id), minScale: 0, anchor: 'above' });
+    }
+    for (const sv of floor.services) {
+      const r = sv.box;
+      out.push({ key: sv.id, elementId: null, x: (r.x0 + r.x1) / 2, z: (r.z0 + r.z1) / 2, text: namer.name(sv.id), variant: 'area', priority: 18, minScale: 12, anchor: 'above' });
     }
     for (const e of floor.entrances) {
       out.push({ key: e.id, elementId: e.id, x: e.position.x, z: e.position.z, text: namer.name(e.id), variant: 'entrance', priority: (e.names.ja ? 45 : 15) + boost(e.id), minScale: e.names.ja || onRoute.has(e.id) ? 0 : 12, anchor: 'above' });
@@ -537,6 +542,23 @@ export function Plan2D(props: Props) {
           if (v.verticalKind === 'elevator') return lift(v);
           if (!props.showVerticals && !onRoute.has(v.id) && v.id !== props.selectedId) return null;
           return flight(v);
+        })}
+
+        {/* passenger services marked on a floor map (drawn only: no card, not a route end) */}
+        {floor.services.map((sv) => {
+          const r = sv.box;
+          const cx = (r.x0 + r.x1) / 2;
+          const cz = (r.z0 + r.z1) / 2;
+          return (
+            <g key={sv.id} data-testid="plan-service">
+              <title>{namer.name(sv.id)}</title>
+              {sv.iconOnly ? (
+                <rect x={cx - px(5)} y={cz - px(5)} width={px(10)} height={px(10)} rx={px(2)} fill={p.service} stroke={p.background} strokeWidth={px(1.2)} />
+              ) : (
+                <rect x={r.x0} y={r.z0} width={r.x1 - r.x0} height={r.z1 - r.z0} fill={p.service} fillOpacity={sv.serviceKind === 'ticket-machines' ? 0.45 : 0.75} stroke={p.service} strokeWidth={px(1)} />
+              )}
+            </g>
+          );
         })}
 
         {/* entrances */}

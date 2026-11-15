@@ -290,6 +290,17 @@ export function buildVerticals(ctx: Ctx): void {
       const k = n / treads;
       c.add(v.id, 'escalator', 'metal', { a: at(k - 0.012, 0.095), b: at(k + 0.012, 0.095), width: ESC_W - 0.08, thickness: 0.02 }, nosing);
     }
+    // a one-way escalator (only when a source says so): chevrons on the treads pointing the way it runs
+    const runs = v.escalatorDirection?.direction;
+    if (runs) {
+      const arrow = c.style(v.id, p.tactile, vis)!;
+      for (const k of [0.3, 0.55, 0.8]) {
+        const [tip, tail] = runs === 'up' ? [k + 0.07, k - 0.05] : [k - 0.07, k + 0.05];
+        for (const side of [-1, 1]) {
+          c.add(v.id, 'escalator-arrow', 'accent', { a: at(tail, 0.12, side * ESC_W * 0.36), b: at(tip, 0.12, 0), width: 0.07, thickness: 0.02 }, arrow, { pickable: false });
+        }
+      }
+    }
     /** A point beyond an end of the incline: level, ESC_LEAD further out along the run. */
     const beyond = (k: 0 | 1, lift: number, off: number): Vec3 => {
       const q = at(k, lift, off);

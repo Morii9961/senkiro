@@ -138,14 +138,14 @@ ODPT 两个数据集能否用于 SENKIRO，是留给人决定的**待决事项**
 | `sk:area:jr-2f-koshu-kaido-unpaid` | concourse | 甲州街道改札外 | `src:jreast-floormap-2f`<br>`src:busta-floor-maps` | 2026-08, 不明 | verified | schematic | manual-verified |
 | `sk:area:jr-2f-new-south-unpaid` | concourse | 新南改札外 | `src:jreast-floormap-2f`<br>`src:jreast-floormap-all`<br>`src:busta-floor-maps` | 2026-08, 不明 | verified | schematic | manual-verified |
 | `sk:area:jr-2f-miraina-tower-unpaid` | concourse | ミライナタワー改札外 | `src:jreast-floormap-2f`<br>`src:busta-floor-maps` | 2026-08, 不明 | verified | schematic | manual-verified |
-| `sk:platform:jr-east-shinjuku-1-2` | platform | 1・2番線ホーム | `src:jreast-floormap-1f`<br>`src:jreast-floormap-b1f`<br>`src:jre-media-6147` | 2026-08, 2026-04 | verified | schematic | manual-verified |
-| `sk:platform:jr-east-shinjuku-3-4` | platform | 3・4番線ホーム | `src:jreast-floormap-1f`<br>`src:jreast-floormap-b1f`<br>`src:jre-media-6147` | 2026-08, 2026-04 | verified | schematic | manual-verified |
+| `sk:platform:jr-east-shinjuku-1-2` | platform | 1・2番線ホーム | `src:jreast-floormap-1f`<br>`src:jreast-floormap-b1f`<br>`src:jre-media-6147`<br>`src:tetsudo-com-column-1526` | 2026-08, 2026-04, 2026-03-29 | verified | schematic | manual-verified |
+| `sk:platform:jr-east-shinjuku-3-4` | platform | 3・4番線ホーム | `src:jreast-floormap-1f`<br>`src:jreast-floormap-b1f`<br>`src:jre-media-6147`<br>`src:tetsudo-com-column-1526` | 2026-08, 2026-04, 2026-03-29 | verified | schematic | manual-verified |
 | `sk:platform:jr-east-shinjuku-5-6` | platform | 5・6番線ホーム | `src:jreast-floormap-1f`<br>`src:jreast-floormap-b1f`<br>`src:jre-media-6147` | 2026-08, 2026-04 | verified | schematic | manual-verified |
 | `sk:platform:jr-east-shinjuku-7-8` | platform | 7・8番線ホーム | `src:jreast-floormap-1f`<br>`src:jreast-floormap-b1f`<br>`src:jre-media-6147` | 2026-08, 2026-04 | verified | schematic | manual-verified |
 | `sk:platform:jr-east-shinjuku-9-10` | platform | 9・10番線ホーム | `src:jreast-floormap-1f`<br>`src:jreast-floormap-b1f`<br>`src:jre-media-6147` | 2026-08, 2026-04 | verified | schematic | manual-verified |
 | `sk:platform:jr-east-shinjuku-11-12` | platform | 11・12番線ホーム | `src:jreast-floormap-1f`<br>`src:jreast-floormap-b1f`<br>`src:jre-media-6147` | 2026-08, 2026-04 | verified | schematic | manual-verified |
-| `sk:platform:jr-east-shinjuku-13-14` | platform | 13・14番線ホーム | `src:jreast-floormap-1f`<br>`src:jreast-floormap-b1f`<br>`src:jre-media-6147` | 2026-08, 2026-04 | verified | schematic | manual-verified |
-| `sk:platform:jr-east-shinjuku-15-16` | platform | 15・16番線ホーム | `src:jreast-floormap-1f`<br>`src:jreast-floormap-b1f`<br>`src:jre-media-6147` | 2026-08, 2026-04 | verified | schematic | manual-verified |
+| `sk:platform:jr-east-shinjuku-13-14` | platform | 13・14番線ホーム | `src:jreast-floormap-1f`<br>`src:jreast-floormap-b1f`<br>`src:jre-media-6147`<br>`src:wikipedia-ja-shinjuku-station`<br>`src:tetsudo-com-column-1526` | 2026-08, 2026-04, 不明, 2026-03-29 | verified | schematic | manual-verified |
+| `sk:platform:jr-east-shinjuku-15-16` | platform | 15・16番線ホーム | `src:jreast-floormap-1f`<br>`src:jreast-floormap-b1f`<br>`src:jre-media-6147`<br>`src:tetsudo-com-column-1526`<br>`src:wikipedia-ja-shinjuku-station` | 2026-08, 2026-04, 2026-03-29, 不明 | verified | schematic | manual-verified |
 | `sk:area:keio-b1f-concourse` | concourse | 京王線 改札内コンコース（B1F） | `src:keio-station-map`<br>`src:keio-layer-map` | 2025-03, 2026-03 | verified | schematic | manual-verified |
 | `sk:area:keio-b1f-department-store-side-unpaid` | concourse | 京王百貨店口前・京王のれん街（改札外） | `src:keio-station-map`<br>`src:keio-layer-map`<br>`src:jreast-floormap-b1f` | 2025-03, 2026-03, 2026-08 | verified | schematic | manual-verified |
 | `sk:area:keio-b1f-west-gate-unpaid` | concourse | 京王西口前（改札外） | `src:keio-station-map`<br>`src:keio-layer-map` | 2025-03, 2026-03 | verified | schematic | manual-verified |
@@ -155,36 +155,36 @@ ODPT 两个数据集能否用于 SENKIRO，是留给人决定的**待决事项**
 | `sk:area:keio-b1f-lumine-gate-unpaid` | concourse | ルミネ口前（改札外） | `src:keio-station-map`<br>`src:keio-layer-map` | 2025-03, 2026-03 | verified | schematic | manual-verified |
 | `sk:area:keio-b1f-keio-mall` | passage | 京王モール | `src:keio-layer-map`<br>`src:keio-new-line-layer-map` | 2026-03 | verified | schematic | manual-verified |
 | `sk:area:keio-b2f-platform-head` | passage | Platform head (B2F) | `src:keio-layer-map` | 2026-03 | verified | schematic | manual-verified |
-| `sk:platform:keio-shinjuku-1-2` | platform | 1・2番線ホーム | `src:keio-layer-map`<br>`src:keio-station-map`<br>`src:keio-shinjuku-page` | 2026-03, 2025-03, 不明 | verified | schematic | manual-verified |
-| `sk:platform:keio-shinjuku-3` | platform | 3番線ホーム | `src:keio-layer-map`<br>`src:keio-station-map`<br>`src:keio-shinjuku-page` | 2026-03, 2025-03, 不明 | verified | schematic | manual-verified |
+| `sk:platform:keio-shinjuku-1-2` | platform | 1・2番線ホーム | `src:keio-layer-map`<br>`src:keio-station-map`<br>`src:keio-shinjuku-page`<br>`src:ecomo-rakuraku-stations`<br>`src:wikipedia-ja-shinjuku-station`<br>`src:trafficnews-keio-shinjuku-2024` | 2026-03, 2025-03, 不明, 2024-10-11 | verified | schematic | manual-verified |
+| `sk:platform:keio-shinjuku-3` | platform | 3番線ホーム | `src:keio-layer-map`<br>`src:keio-station-map`<br>`src:keio-shinjuku-page`<br>`src:ecomo-rakuraku-stations`<br>`src:wikipedia-ja-shinjuku-station`<br>`src:trafficnews-keio-shinjuku-2024` | 2026-03, 2025-03, 不明, 2024-10-11 | verified | schematic | manual-verified |
 | `sk:area:odakyu-2f-concourse` | concourse | 南口 改札内コンコース（2F） | `src:odakyu-shinjuku-map` | 2026-07 | verified | schematic | manual-verified |
 | `sk:area:odakyu-2f-south-gate-unpaid` | concourse | 南口改札外（2F） | `src:odakyu-shinjuku-map` | 2026-07 | verified | schematic | manual-verified |
 | `sk:area:odakyu-1f-west-ground-gate-inside` | concourse | 西口地上改札内（1F） | `src:odakyu-shinjuku-map` | 2026-07 | verified | schematic | manual-verified |
 | `sk:area:odakyu-1f-west-ground-gate-unpaid` | concourse | 西口地上改札外（1F） | `src:odakyu-shinjuku-map` | 2026-07 | verified | schematic | manual-verified |
-| `sk:platform:odakyu-shinjuku-2-3` | platform | 2・3番ホーム | `src:odakyu-shinjuku-map` | 2026-07 | verified | schematic | manual-verified |
-| `sk:platform:odakyu-shinjuku-4-5` | platform | 4・5番ホーム | `src:odakyu-shinjuku-map` | 2026-07 | verified | schematic | manual-verified |
-| `sk:platform:odakyu-shinjuku-6` | platform | 6番ホーム（降車ホーム） | `src:odakyu-shinjuku-map` | 2026-07 | verified | schematic | manual-verified |
+| `sk:platform:odakyu-shinjuku-2-3` | platform | 2・3番ホーム | `src:odakyu-shinjuku-map`<br>`src:ecomo-rakuraku-stations`<br>`src:wikipedia-ja-shinjuku-station` | 2026-07, 不明 | verified | schematic | manual-verified |
+| `sk:platform:odakyu-shinjuku-4-5` | platform | 4・5番ホーム | `src:odakyu-shinjuku-map`<br>`src:ecomo-rakuraku-stations`<br>`src:wikipedia-ja-shinjuku-station` | 2026-07, 不明 | verified | schematic | manual-verified |
+| `sk:platform:odakyu-shinjuku-6` | platform | 6番ホーム（降車ホーム） | `src:odakyu-shinjuku-map`<br>`src:ecomo-rakuraku-stations`<br>`src:wikipedia-ja-shinjuku-station` | 2026-07, 不明 | verified | schematic | manual-verified |
 | `sk:area:odakyu-b1f-concourse` | concourse | 西口地下改札内コンコース（B1F） | `src:odakyu-shinjuku-map` | 2026-07 | verified | schematic | manual-verified |
 | `sk:area:odakyu-b1f-west-underground-gate-unpaid` | concourse | 西口地下改札外（B1F） | `src:odakyu-shinjuku-map` | 2026-07 | verified | schematic | manual-verified |
-| `sk:platform:odakyu-shinjuku-7` | platform | 7番ホーム（降車ホーム） | `src:odakyu-shinjuku-map` | 2026-07 | verified | schematic | manual-verified |
-| `sk:platform:odakyu-shinjuku-8-9` | platform | 8・9番ホーム | `src:odakyu-shinjuku-map` | 2026-07 | verified | schematic | manual-verified |
-| `sk:platform:odakyu-shinjuku-10` | platform | 10番ホーム（降車ホーム） | `src:odakyu-shinjuku-map` | 2026-07 | verified | schematic | manual-verified |
+| `sk:platform:odakyu-shinjuku-7` | platform | 7番ホーム（降車ホーム） | `src:odakyu-shinjuku-map`<br>`src:ecomo-rakuraku-stations`<br>`src:wikipedia-ja-shinjuku-station` | 2026-07, 不明 | verified | schematic | manual-verified |
+| `sk:platform:odakyu-shinjuku-8-9` | platform | 8・9番ホーム | `src:odakyu-shinjuku-map`<br>`src:ecomo-rakuraku-stations`<br>`src:wikipedia-ja-shinjuku-station` | 2026-07, 不明 | verified | schematic | manual-verified |
+| `sk:platform:odakyu-shinjuku-10` | platform | 10番ホーム（降車ホーム） | `src:odakyu-shinjuku-map`<br>`src:ecomo-rakuraku-stations`<br>`src:wikipedia-ja-shinjuku-station` | 2026-07, 不明 | verified | schematic | manual-verified |
 | `sk:area:keio-new-line-b1f-concourse` | passage | 京王新線通路（改札外・B1F） | `src:keio-new-line-layer-map`<br>`src:keio-new-line-map`<br>`src:shinjuku-terminal-map`<br>`src:toei-shinjuku-map` | 2026-03, 2020-07, 不明 | verified | schematic | manual-verified |
 | `sk:area:keio-new-line-b1f-paid-east` | concourse | 京王新線口 改札内（B1F） | `src:keio-new-line-layer-map`<br>`src:keio-new-line-map` | 2026-03 | verified | schematic | manual-verified |
 | `sk:area:keio-new-line-b1f-paid-west` | concourse | 新都心口 改札内（B1F） | `src:keio-new-line-layer-map`<br>`src:keio-new-line-map` | 2026-03 | verified | schematic | manual-verified |
 | `sk:area:keio-new-line-b4f-west` | concourse | B4F mezzanine (west) | `src:keio-new-line-layer-map`<br>`src:keio-new-line-map` | 2026-03 | verified | schematic | manual-verified |
 | `sk:area:keio-new-line-b4f-central` | concourse | B4F mezzanine (central) | `src:keio-new-line-layer-map`<br>`src:keio-new-line-map` | 2026-03 | verified | schematic | manual-verified |
 | `sk:area:keio-new-line-b4f-east` | concourse | B4F mezzanine (east) | `src:keio-new-line-layer-map`<br>`src:keio-new-line-map` | 2026-03 | verified | schematic | manual-verified |
-| `sk:platform:keio-new-line-shinjuku-4-5` | platform | 4・5番線ホーム | `src:keio-new-line-layer-map`<br>`src:keio-new-line-map`<br>`src:toei-shinjuku-map` | 2026-03, 不明 | verified | schematic | manual-verified |
+| `sk:platform:keio-new-line-shinjuku-4-5` | platform | 4・5番線ホーム | `src:keio-new-line-layer-map`<br>`src:keio-new-line-map`<br>`src:toei-shinjuku-map`<br>`src:ecomo-rakuraku-stations` | 2026-03, 不明 | verified | schematic | manual-verified |
 | `sk:area:toei-oedo-b1f-gate-b-inside` | concourse | 大江戸線改札B 改札内（B1F） | `src:toei-shinjuku-map`<br>`src:keio-new-line-layer-map` | 不明, 2026-03 | verified | unknown | manual-verified |
 | `sk:area:toei-oedo-b4f-transfer-passage` | concourse | 大江戸線 コンコース（B4F・新宿線のりかえ側） | `src:toei-shinjuku-map`<br>`src:keio-new-line-layer-map` | 不明, 2026-03 | verified | unknown | manual-verified |
 | `sk:area:toei-oedo-b3f-concourse` | concourse | 大江戸線 改札内コンコース（A1出口側） | `src:toei-shinjuku-map` | 不明 | verified | unknown | manual-verified |
 | `sk:area:toei-oedo-b3f-unpaid` | concourse | 大江戸線 改札外（A1出口側） | `src:toei-shinjuku-map` | 不明 | verified | unknown | manual-verified |
-| `sk:platform:toei-oedo-shinjuku-6-7` | platform | 6・7番線ホーム | `src:toei-shinjuku-map` | 不明 | verified | unknown | manual-verified |
+| `sk:platform:toei-oedo-shinjuku-6-7` | platform | 6・7番線ホーム | `src:toei-shinjuku-map`<br>`src:ecomo-rakuraku-stations` | 不明 | verified | unknown | manual-verified |
 | `sk:area:tokyo-metro-b1f-concourse` | passage | 丸ノ内線 改札外通路（B1F） | `src:tokyo-metro-shinjuku-map`<br>`src:shinjuku-terminal-map` | 2025-11, 2020-07 | verified | schematic | manual-verified |
 | `sk:area:tokyo-metro-b1f-paid-east` | concourse | 丸ノ内線 改札内（東側・B1F） | `src:tokyo-metro-shinjuku-map` | 2025-11 | verified | schematic | manual-verified |
 | `sk:area:tokyo-metro-b1f-paid-west` | concourse | 丸ノ内線 改札内（西側・B1F） | `src:tokyo-metro-shinjuku-map` | 2025-11 | verified | schematic | manual-verified |
-| `sk:platform:tokyo-metro-shinjuku-1-2` | platform | 1・2番線ホーム | `src:tokyo-metro-shinjuku-map` | 2025-11 | verified | schematic | manual-verified |
+| `sk:platform:tokyo-metro-shinjuku-1-2` | platform | 1・2番線ホーム | `src:tokyo-metro-shinjuku-map`<br>`src:ecomo-rakuraku-stations`<br>`src:wikipedia-ja-shinjuku-station` | 2025-11, 不明 | verified | schematic | manual-verified |
 | `sk:area:busta-3f-taxi` | concourse | タクシー乗車場・降車場 | `src:busta-floor-maps` | 不明 | verified | schematic | manual-verified |
 | `sk:area:busta-3f-west-walkway` | concourse | 3F 西側通路 | `src:busta-floor-maps` | 不明 | verified | schematic | manual-verified |
 | `sk:area:busta-3f-bus-drop-off-centre` | concourse | 高速バス降車場（中央） | `src:busta-floor-maps` | 不明 | verified | schematic | manual-verified |
@@ -206,26 +206,26 @@ ODPT 两个数据集能否用于 SENKIRO，是留给人决定的**待决事项**
 | `sk:area:seibu-1f-front` | concourse | 正面口 1F（駅前） | `src:seibu-shinjuku-map`<br>`src:shinjuku-terminal-map` | 2025-06, 2020-07 | verified | schematic | manual-verified |
 | `sk:area:seibu-1f-north-gate-inside` | concourse | 北口 改札内（1F） | `src:seibu-shinjuku-map` | 2025-06 | verified | schematic | manual-verified |
 | `sk:area:seibu-1f-north-gate-unpaid` | concourse | 北口 改札外（1F） | `src:seibu-shinjuku-map` | 2025-06 | verified | schematic | manual-verified |
-| `sk:platform:seibu-shinjuku-1` | platform | 1番ホーム | `src:seibu-shinjuku-map` | 2025-06 | verified | schematic | manual-verified |
-| `sk:platform:seibu-shinjuku-2-3` | platform | 2・3番ホーム | `src:seibu-shinjuku-map` | 2025-06 | verified | schematic | manual-verified |
+| `sk:platform:seibu-shinjuku-1` | platform | 1番ホーム | `src:seibu-shinjuku-map`<br>`src:ecomo-rakuraku-stations`<br>`src:wikipedia-ja-seibu-shinjuku`<br>`src:trafficnews-seibu-shinjuku-2018` | 2025-06, 不明, 2018-06-20 | verified | schematic | manual-verified |
+| `sk:platform:seibu-shinjuku-2-3` | platform | 2・3番ホーム | `src:seibu-shinjuku-map`<br>`src:ecomo-rakuraku-stations`<br>`src:wikipedia-ja-seibu-shinjuku`<br>`src:trafficnews-seibu-shinjuku-2018` | 2025-06, 不明, 2018-06-20 | verified | schematic | manual-verified |
 | `sk:area:sanchome-marunouchi-b1f-concourse` | passage | 新宿三丁目駅 丸ノ内線 改札外コンコース（B1F） | `src:tokyo-metro-shinjuku-sanchome-map`<br>`src:toei-shinjuku-sanchome-map` | 2024-06, 不明 | verified | schematic | manual-verified |
 | `sk:area:sanchome-marunouchi-b1f-paid-west` | concourse | 丸ノ内線 改札内（新宿駅方面側・B1F） | `src:tokyo-metro-shinjuku-sanchome-map` | 2024-06 | verified | schematic | manual-verified |
 | `sk:area:sanchome-marunouchi-b1f-paid-mid` | concourse | 丸ノ内線 改札内（中央・B1F） | `src:tokyo-metro-shinjuku-sanchome-map` | 2024-06 | verified | schematic | manual-verified |
 | `sk:area:sanchome-marunouchi-b1f-paid-east` | concourse | 丸ノ内線 改札内（池袋方面側・B1F） | `src:tokyo-metro-shinjuku-sanchome-map` | 2024-06 | verified | schematic | manual-verified |
-| `sk:platform:tokyo-metro-shinjuku-sanchome-1-2` | platform | 新宿三丁目駅 1・2番線ホーム | `src:tokyo-metro-shinjuku-sanchome-map`<br>`src:toei-shinjuku-sanchome-map` | 2024-06, 不明 | verified | schematic | manual-verified |
+| `sk:platform:tokyo-metro-shinjuku-sanchome-1-2` | platform | 新宿三丁目駅 1・2番線ホーム | `src:tokyo-metro-shinjuku-sanchome-map`<br>`src:toei-shinjuku-sanchome-map`<br>`src:ecomo-rakuraku-stations` | 2024-06, 不明 | verified | schematic | manual-verified |
 | `sk:area:sanchome-fukutoshin-b2f-concourse` | passage | 新宿三丁目駅 副都心線 改札外コンコース（B2F） | `src:tokyo-metro-shinjuku-sanchome-map` | 2024-06 | verified | schematic | manual-verified |
 | `sk:area:sanchome-fukutoshin-b2f-paid-north` | concourse | 副都心線 改札内（丸ノ内線側・B2F） | `src:tokyo-metro-shinjuku-sanchome-map` | 2024-06 | verified | schematic | manual-verified |
 | `sk:area:sanchome-fukutoshin-b2f-paid-south` | concourse | 副都心線 改札内（E7出口側・B2F） | `src:tokyo-metro-shinjuku-sanchome-map` | 2024-06 | verified | schematic | manual-verified |
-| `sk:platform:tokyo-metro-shinjuku-sanchome-3-4` | platform | 新宿三丁目駅 3・4番線ホーム | `src:tokyo-metro-shinjuku-sanchome-map`<br>`src:toei-shinjuku-sanchome-map` | 2024-06, 不明 | verified | schematic | manual-verified |
+| `sk:platform:tokyo-metro-shinjuku-sanchome-3-4` | platform | 新宿三丁目駅 3・4番線ホーム | `src:tokyo-metro-shinjuku-sanchome-map`<br>`src:toei-shinjuku-sanchome-map`<br>`src:ecomo-rakuraku-stations` | 2024-06, 不明 | verified | schematic | manual-verified |
 | `sk:area:sanchome-b2f-link-passage` | passage | 連絡通路（B2F・出口 E1〜E4） | `src:tokyo-metro-shinjuku-sanchome-map`<br>`src:toei-shinjuku-sanchome-map` | 2024-06, 不明 | verified | unknown | manual-verified |
 | `sk:area:sanchome-toei-b1f-concourse` | passage | 新宿三丁目駅 都営新宿線 改札外コンコース（B1F） | `src:toei-shinjuku-sanchome-map`<br>`src:tokyo-metro-shinjuku-sanchome-map` | 不明, 2024-06 | verified | schematic | manual-verified |
 | `sk:area:sanchome-toei-b1f-paid` | concourse | 都営新宿線 改札内コンコース（B1F） | `src:toei-shinjuku-sanchome-map`<br>`src:tokyo-metro-shinjuku-sanchome-map` | 不明, 2024-06 | verified | schematic | manual-verified |
-| `sk:platform:toei-shinjuku-sanchome-1-2` | platform | 新宿三丁目駅 1・2番線ホーム | `src:toei-shinjuku-sanchome-map`<br>`src:tokyo-metro-shinjuku-sanchome-map` | 不明, 2024-06 | verified | schematic | manual-verified |
+| `sk:platform:toei-shinjuku-sanchome-1-2` | platform | 新宿三丁目駅 1・2番線ホーム | `src:toei-shinjuku-sanchome-map`<br>`src:tokyo-metro-shinjuku-sanchome-map`<br>`src:ecomo-rakuraku-stations`<br>`src:wikipedia-ja-shinjuku-sanchome` | 不明, 2024-06 | verified | schematic | manual-verified |
 | `sk:area:nishiguchi-b1f-passage` | passage | 新宿西口駅 改札外通路（B1F） | `src:toei-shinjuku-nishiguchi-map`<br>`src:tokyo-metro-shinjuku-map` | 不明, 2025-11 | verified | schematic | manual-verified |
 | `sk:area:nishiguchi-b3f-unpaid-south` | concourse | 新宿西口駅 改札外（都庁前方面側・B3F） | `src:toei-shinjuku-nishiguchi-map` | 不明 | verified | schematic | manual-verified |
 | `sk:area:nishiguchi-b3f-paid` | concourse | 新宿西口駅 改札内コンコース（B3F） | `src:toei-shinjuku-nishiguchi-map` | 不明 | verified | schematic | manual-verified |
 | `sk:area:nishiguchi-b3f-unpaid-north` | concourse | 新宿西口駅 改札外（飯田橋方面側・B3F） | `src:toei-shinjuku-nishiguchi-map` | 不明 | verified | schematic | manual-verified |
-| `sk:platform:toei-shinjuku-nishiguchi-1-2` | platform | 新宿西口駅 1・2番線ホーム | `src:toei-shinjuku-nishiguchi-map` | 不明 | verified | schematic | manual-verified |
+| `sk:platform:toei-shinjuku-nishiguchi-1-2` | platform | 新宿西口駅 1・2番線ホーム | `src:toei-shinjuku-nishiguchi-map`<br>`src:ecomo-rakuraku-stations`<br>`src:wikipedia-ja-shinjuku-nishiguchi` | 不明 | verified | schematic | manual-verified |
 | `sk:passage:jr-b1f-free-passage-east-end` | passage-link | （無名） | `src:jreast-floormap-b1f` | 2026-08 | verified | schematic | manual-verified |
 | `sk:passage:jr-b1f-free-passage-west-end` | passage-link | （無名） | `src:jreast-floormap-b1f` | 2026-08 | verified | schematic | manual-verified |
 | `sk:passage:jr-b1f-north-to-east-link` | passage-link | （無名） | `src:jreast-floormap-b1f` | 2026-08 | verified | schematic | manual-verified |
@@ -412,9 +412,9 @@ ODPT 两个数据集能否用于 SENKIRO，是留给人决定的**待决事项**
 | `sk:vertical:jr-stairs-2f-south-to-platform-11-12` | stairs | （無名） | `src:jreast-floormap-1f`<br>`src:jreast-floormap-2f` | 2026-08 | verified | schematic | manual-verified |
 | `sk:vertical:jr-escalator-2f-south-to-platform-11-12` | escalator | （無名） | `src:jreast-floormap-1f`<br>`src:jreast-floormap-2f` | 2026-08 | verified | schematic | manual-verified |
 | `sk:vertical:jr-stairs-2f-south-to-platform-13-14` | stairs | （無名） | `src:jreast-floormap-1f`<br>`src:jreast-floormap-2f` | 2026-08 | verified | schematic | manual-verified |
-| `sk:vertical:jr-escalator-2f-south-to-platform-13-14` | escalator | （無名） | `src:jreast-floormap-1f`<br>`src:jreast-floormap-2f` | 2026-08 | verified | schematic | manual-verified |
+| `sk:vertical:jr-escalator-2f-south-to-platform-13-14` | escalator | （無名） | `src:jreast-floormap-1f`<br>`src:jreast-floormap-2f`<br>`src:wikipedia-ja-shinjuku-station` | 2026-08, 不明 | verified | schematic | manual-verified |
 | `sk:vertical:jr-stairs-2f-south-to-platform-15-16` | stairs | （無名） | `src:jreast-floormap-1f`<br>`src:jreast-floormap-2f` | 2026-08 | verified | schematic | manual-verified |
-| `sk:vertical:jr-escalator-2f-south-to-platform-15-16` | escalator | （無名） | `src:jreast-floormap-1f`<br>`src:jreast-floormap-2f` | 2026-08 | verified | schematic | manual-verified |
+| `sk:vertical:jr-escalator-2f-south-to-platform-15-16` | escalator | （無名） | `src:jreast-floormap-1f`<br>`src:jreast-floormap-2f`<br>`src:wikipedia-ja-shinjuku-station` | 2026-08, 不明 | verified | schematic | manual-verified |
 | `sk:vertical:jr-stairs-2f-new-south-to-platform-1-2` | stairs | （無名） | `src:jreast-floormap-1f`<br>`src:jreast-floormap-2f` | 2026-08 | verified | schematic | manual-verified |
 | `sk:vertical:jr-escalator-2f-new-south-to-platform-1-2` | escalator | （無名） | `src:jreast-floormap-1f`<br>`src:jreast-floormap-2f` | 2026-08 | verified | schematic | manual-verified |
 | `sk:vertical:jr-stairs-2f-new-south-to-platform-3-4` | stairs | （無名） | `src:jreast-floormap-1f`<br>`src:jreast-floormap-2f` | 2026-08 | verified | schematic | manual-verified |
@@ -466,7 +466,7 @@ ODPT 两个数据集能否用于 SENKIRO，是留给人决定的**待决事项**
 | `sk:vertical:odakyu-stairs-2f-to-platform-6` | stairs | （無名） | `src:odakyu-shinjuku-map` | 2026-07 | verified | schematic | manual-verified |
 | `sk:vertical:odakyu-stairs-2f-to-platform-4-5` | stairs | （無名） | `src:odakyu-shinjuku-map` | 2026-07 | verified | schematic | manual-verified |
 | `sk:vertical:odakyu-stairs-2f-to-platform-2-3` | stairs | （無名） | `src:odakyu-shinjuku-map` | 2026-07 | verified | schematic | manual-verified |
-| `sk:vertical:odakyu-escalator-2f-to-platform-2-3` | escalator | （無名） | `src:odakyu-shinjuku-map` | 2026-07 | verified | schematic | manual-verified |
+| `sk:vertical:odakyu-escalator-2f-to-platform-2-3` | escalator | （無名） | `src:odakyu-shinjuku-map`<br>`src:wikipedia-ja-shinjuku-station` | 2026-07, 不明 | verified | schematic | manual-verified |
 | `sk:vertical:odakyu-stairs-platform-6-to-platform-10` | stairs | （無名） | `src:odakyu-shinjuku-map` | 2026-07 | verified | schematic | manual-verified |
 | `sk:vertical:odakyu-stairs-platform-4-5-to-platform-8-9` | stairs | （無名） | `src:odakyu-shinjuku-map` | 2026-07 | verified | schematic | manual-verified |
 | `sk:vertical:odakyu-stairs-platform-2-3-to-platform-7` | stairs | （無名） | `src:odakyu-shinjuku-map` | 2026-07 | verified | schematic | manual-verified |
@@ -497,7 +497,7 @@ ODPT 两个数据集能否用于 SENKIRO，是留给人决定的**待决事项**
 | `sk:vertical:toei-oedo-escalator-concourse-to-platform` | escalator | （無名） | `src:toei-shinjuku-map` | 不明 | verified | unknown | manual-verified |
 | `sk:vertical:toei-oedo-elevator-concourse-to-platform` | elevator | エレベーター（改札内 B3F ⇔ ホーム B7F） | `src:toei-shinjuku-map` | 不明 | verified | unknown | manual-verified |
 | `sk:vertical:tokyo-metro-stairs-east-gates-to-platform` | stairs | （無名） | `src:tokyo-metro-shinjuku-map` | 2025-11 | verified | schematic | manual-verified |
-| `sk:vertical:tokyo-metro-escalator-east-gates-to-platform` | escalator | （無名） | `src:tokyo-metro-shinjuku-map` | 2025-11 | verified | schematic | manual-verified |
+| `sk:vertical:tokyo-metro-escalator-east-gates-to-platform` | escalator | （無名） | `src:tokyo-metro-shinjuku-map`<br>`src:wikipedia-ja-shinjuku-station` | 2025-11, 不明 | verified | schematic | manual-verified |
 | `sk:vertical:tokyo-metro-stairs-west-gates-to-platform` | stairs | （無名） | `src:tokyo-metro-shinjuku-map` | 2025-11 | verified | schematic | manual-verified |
 | `sk:vertical:tokyo-metro-elevator-east` | elevator | エレベーター（改札内 B1F ⇔ ホーム B2F） | `src:tokyo-metro-shinjuku-map` | 2025-11 | verified | schematic | manual-verified |
 | `sk:vertical:busta-escalator-new-south-direct-4f` | escalator | 4F直結エスカレーター | `src:busta-floor-maps`<br>`src:jreast-floormap-2f` | 不明, 2026-08 | verified | schematic | manual-verified |

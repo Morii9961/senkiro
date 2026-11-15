@@ -302,6 +302,27 @@ export function validateModel(model: StationModel, sources: SourceRecord[]): Val
     }
   }
 
+  // --- facts added later carry known sources and fit what they describe ------
+  const sourced = (elementId: string, ids: string[]) => {
+    if (ids.length === 0) push('provenance', elementId, 'a sourced fact without a source');
+    for (const s of ids) if (!sourceIds.has(s)) push('provenance', elementId, `unknown source ${s}`);
+  };
+  for (const a of model.areas) {
+    if (a.kind !== 'platform') continue;
+    for (const t of a.tracks) if (t.platformDoors) sourced(a.id, t.platformDoors.sourceIds);
+    if (a.terminus) {
+      sourced(a.id, a.terminus.sourceIds);
+      const r = a.footprint[0]!;
+      const alongX = r.x1 - r.x0 >= r.z1 - r.z0;
+      if (alongX !== a.terminus.end.startsWith('x')) push('geometry', a.id, 'a terminus must be at an end of the long axis');
+    }
+  }
+  for (const v of model.verticals) {
+    if (!v.escalatorDirection) continue;
+    sourced(v.id, v.escalatorDirection.sourceIds);
+    if (v.verticalKind !== 'escalator') push('reference', v.id, 'only an escalator has a running direction');
+  }
+
   // --- services stand inside the area they belong to, on its floor -------------
   for (const s of model.services) {
     const area = model.areas.find((a) => a.id === s.areaId);
