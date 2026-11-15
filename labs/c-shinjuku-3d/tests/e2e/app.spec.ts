@@ -667,6 +667,9 @@ test.describe('train simulation', () => {
     await page.getByTestId('sim-rate-60').click();
     await expect.poll(async () => (await trains(page))?.seconds ?? 0, { timeout: 6_000 }).toBeGreaterThan(8 * 3600 + 60);
     await page.getByTestId('sim-play').click();
+    // The readout is written by the render loop, so right after the click it still holds the last frame drawn
+    // before the pause. Let a frame drawn after the pause land before taking the value that must then stand still.
+    await page.waitForTimeout(800);
     const paused = (await trains(page))!.seconds;
     await page.waitForTimeout(600);
     expect((await trains(page))!.seconds).toBe(paused);
