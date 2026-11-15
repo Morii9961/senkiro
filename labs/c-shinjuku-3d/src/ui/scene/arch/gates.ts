@@ -2,6 +2,13 @@
  * Ticket gates (a row of gate machines across the opening, on a strip of floor
  * that joins the two sides), entrances (a portal) and the abstract blocks that
  * stand for areas which were not verified.
+ *
+ * A gate is drawn by rule as four lanes between five machines, each machine with
+ * a flap reaching into the lane(s) beside it and card readers on top. The number
+ * of lanes, their width and the flaps say nothing about the real gate (the data
+ * records no machine count or width). The one thing taken from the data is the
+ * direction: an exit-only gate has readers only at the end on the paid side and
+ * chevrons on the floor pointing out; every other gate has readers at both ends.
  */
 import type { Area, Gate, PlanPoint } from '../../../domain/types';
 import { nearestInFootprint } from '../../../domain/validate';
@@ -31,6 +38,22 @@ export function gateDirection(gate: Gate, areaById: Map<string, Area>): { d: [nu
   if (ends.length >= 1 && Math.hypot(gate.position.x - ends[0]!.x, gate.position.z - ends[0]!.z) > 0.05) return { d: axisTowards(ends[0]!, gate.position), ends };
   const first = gate.sides.map((s) => ('areaId' in s ? areaById.get(s.areaId) : undefined)).find((a) => a);
   return { d: first ? axisTowards(first.anchor, gate.position) : [1, 0], ends };
+}
+
+/**
+ * Which end of the gate line (-1 or +1 along the direction of travel `d`) lies on the paid side.
+ * Used only for exit-only gates, whose paid side is where one may enter the gate from.
+ */
+function paidEndSign(gate: Gate, ctx: Ctx, x: number, z: number, dx: number, dz: number): number {
+  for (const side of gate.sides) {
+    const area = 'areaId' in side ? ctx.areaById.get(side.areaId) : undefined;
+    if (!area || !area.fareZone.startsWith('paid:')) continue;
+    const near = nearestInFootprint(gate.position, area.footprint);
+    const ref = near.distance > 0.05 ? near.point : area.anchor;
+    const dot = (ref.x - x) * dx + (ref.z - z) * dz;
+    if (Math.abs(dot) > 1e-6) return Math.sign(dot);
+  }
+  return -1;
 }
 
 export function buildGates(ctx: Ctx): void {
@@ -67,16 +90,54 @@ export function buildGates(ctx: Ctx): void {
       { shade: [0.72, 1] },
     );
 
-    // gate machines side by side, each with a strip of the gate's colour on top
+    // Ends of the machines where a card or ticket is read. Both ends unless the data says the gate
+    // is exit-only; then only the end on the paid side, and chevrons on the floor point the way out.
+    const readerEnds = gate.direction === 'exit-only' ? [paidEndSign(gate, ctx, x, z, dx, dz)] : [-1, 1];
+
+    // gate machines side by side, each with a strip of the gate's colour on top, card readers at
+    // the ends one may enter from, and a flap reaching into the lane(s) beside it
     const body = ctx.style(gate.id, p.gateBody, vis)!;
+    const reader = ctx.style(gate.id, mix(p.platformEdge, p.gateBody, 0.15), vis)!;
+    const flap = ctx.style(gate.id, mix(accentColor, p.platformEdge, 0.3), vis)!;
+    const lane = (2 * GATE_HALF) / MACHINES;
     for (let i = 0; i <= MACHINES; i++) {
-      const off = -GATE_HALF + (i * 2 * GATE_HALF) / MACHINES;
+      const off = -GATE_HALF + i * lane;
       const cx = x + nx * off;
       const cz = z + nz * off;
       const a: Vec3 = [cx - dx * 0.26, top + 0.17, cz - dz * 0.26];
       const b: Vec3 = [cx + dx * 0.26, top + 0.17, cz + dz * 0.26];
       ctx.add(gate.id, 'gate', 'metal', { a, b, width: 0.09, thickness: 0.34 }, body, { shade: [0.75, 1] });
       ctx.add(gate.id, 'gate', 'accent', { a: [a[0], top + 0.355, a[2]], b: [b[0], top + 0.355, b[2]], width: 0.09, thickness: 0.03 }, accent);
+      for (const end of readerEnds) {
+        const rx = cx + dx * end * 0.19;
+        const rz = cz + dz * end * 0.19;
+        ctx.add(gate.id, 'gate-reader', 'accent', { a: [rx - dx * 0.04, top + 0.378, rz - dz * 0.04], b: [rx + dx * 0.04, top + 0.378, rz + dz * 0.04], width: 0.075, thickness: 0.016 }, reader, { pickable: false });
+      }
+      // one flap through the machine, sticking out into the lane on either side (only inwards at the two outer machines)
+      const reach = lane * 0.3;
+      const f0 = i === 0 ? 0 : -(0.045 + reach);
+      const f1 = i === MACHINES ? 0 : 0.045 + reach;
+      ctx.add(
+        gate.id,
+        'gate-flap',
+        'accent',
+        { a: [cx + nx * f0, top + 0.21, cz + nz * f0], b: [cx + nx * f1, top + 0.21, cz + nz * f1], width: 0.025, thickness: 0.12 },
+        flap,
+        { pickable: false },
+      );
+    }
+    if (gate.direction === 'exit-only') {
+      // chevrons in each lane, pointing from the paid side to the unpaid side
+      const out = -readerEnds[0]!;
+      for (let i = 0; i < MACHINES; i++) {
+        const off = -GATE_HALF + (i + 0.5) * lane;
+        const tipX = x + nx * off + dx * out * 0.16;
+        const tipZ = z + nz * off + dz * out * 0.16;
+        for (const s of [-1, 1]) {
+          const tail: Vec3 = [tipX - dx * out * 0.14 + nx * s * 0.11, top + 0.012, tipZ - dz * out * 0.14 + nz * s * 0.11];
+          ctx.add(gate.id, 'gate-arrow', 'accent', { a: tail, b: [tipX, top + 0.012, tipZ], width: 0.05, thickness: 0.012 }, accent, { pickable: false });
+        }
+      }
     }
     // header beam carrying the gate's colour — the thing one looks for from a distance
     const post = ctx.style(gate.id, p.gateBody, vis)!;

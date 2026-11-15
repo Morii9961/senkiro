@@ -257,7 +257,7 @@ const dict = {
   stepsHint: { ja: "区間を押すと、その場所へ視点が移動します。", en: "Press a step to move the view there.", zh: "点某一步，视角会移到那一段。" },
   displayModel: { ja: "モデルの見え方", en: "Model", zh: "模型显示" },
   animateCamera: { ja: "視点をなめらかに移動する", en: "Animate camera moves", zh: "视角平滑移动" },
-  archNote: { ja: "壁・柱・階段の段・改札機・線路は、エリアの形と接続関係から自動的に描いたものです。実際の位置や数を示すものではありません。", en: "Walls, columns, steps, gate machines and tracks are generated from the area outlines and connections. They do not show real positions or counts.", zh: "墙、柱、台阶、闸机和轨道是根据区域轮廓与连接关系自动画出来的，不代表实际的位置和数量。" },
+  archNote: { ja: "壁・柱・階段の段・改札機・線路・ホームのベンチや番線標は、エリアの形と接続関係から自動的に描いたものです。実際の位置や数を示すものではありません。", en: "Walls, columns, steps, gate machines, tracks, and platform benches and track boards are generated from the area outlines and connections. They do not show real positions or counts.", zh: "墙、柱、台阶、闸机、轨道以及站台上的长椅和番线牌是根据区域轮廓与连接关系自动画出来的，不代表实际的位置和数量。" },
   conditional: { ja: "条件付き", en: "conditional", zh: "有条件" },
   sourcesUnused: { ja: "確認したが使っていない資料（{n}）", en: "Checked but not used ({n})", zh: "查过但未使用的资料（{n}）" },
   helpRoute: { ja: "経路", en: "Routes", zh: "路线" },

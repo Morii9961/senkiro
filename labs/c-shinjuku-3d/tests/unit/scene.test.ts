@@ -496,3 +496,66 @@ describe('edge of the paid area', () => {
     expect(buildPrims(model, view({ showFareBoundary: false })).some((q) => q.role === 'fare-edge')).toBe(false);
   });
 });
+
+describe('ticket gate arrays', () => {
+  const prims = buildPrims(model, view());
+  const of = (gateId: string, role: Prim['role']) => prims.filter((q) => q.elementId === gateId && q.role === role);
+
+  it('every gate has flaps and card readers; only exit-only gates have chevrons on the floor', () => {
+    for (const g of model.gates) {
+      expect(of(g.id, 'gate-flap').length).toBeGreaterThan(0);
+      expect(of(g.id, 'gate-reader').length).toBeGreaterThan(0);
+      expect(of(g.id, 'gate-arrow').length > 0).toBe(g.direction === 'exit-only');
+    }
+  });
+
+  it('an exit-only gate reads cards on its paid side only, and its chevrons point to the unpaid side', () => {
+    const exitOnly = model.gates.filter((g) => g.direction === 'exit-only');
+    expect(exitOnly.length).toBeGreaterThan(0);
+    for (const g of exitOnly) {
+      const paid = g.sides.map((s) => ('areaId' in s ? areaById.get(s.areaId) : undefined)).find((a) => a?.fareZone.startsWith('paid:'))!;
+      const unpaid = g.sides.map((s) => ('areaId' in s ? areaById.get(s.areaId) : undefined)).find((a) => a && !a.fareZone.startsWith('paid:'))!;
+      const dist = (x: number, z: number, area: typeof paid) => nearestInFootprint({ x, z }, area.footprint).distance;
+      for (const r of of(g.id, 'gate-reader')) {
+        const x = (r.a[0] + r.b[0]) / 2;
+        const z = (r.a[2] + r.b[2]) / 2;
+        expect(dist(x, z, paid)).toBeLessThan(dist(x, z, unpaid));
+      }
+      for (const c of of(g.id, 'gate-arrow')) {
+        // a chevron runs from its tail (towards the paid side) to its tip (towards the unpaid side)
+        expect(dist(c.b[0], c.b[2], unpaid)).toBeLessThan(dist(c.a[0], c.a[2], unpaid));
+      }
+    }
+  });
+
+  it('a two-way gate reads cards at both ends of every machine, an exit-only gate at one', () => {
+    for (const g of model.gates) {
+      // one flap per machine
+      const machines = of(g.id, 'gate-flap').length;
+      expect(of(g.id, 'gate-reader').length).toBe(g.direction === 'exit-only' ? machines : 2 * machines);
+    }
+  });
+});
+
+describe('platform furniture', () => {
+  const prims = buildPrims(model, view());
+
+  it('edge line and tactile strip run only along edges with a recorded track (island vs one-sided)', () => {
+    let oneSided = 0;
+    for (const area of model.areas) {
+      if (area.kind !== 'platform' || !area.tracks.some((t) => t.side)) continue;
+      const r = area.footprint[0]!;
+      const alongX = r.x1 - r.x0 >= r.z1 - r.z0;
+      const edgeAt = (side: string) => ({ 'z-': r.z0, 'z+': r.z1, 'x-': r.x0, 'x+': r.x1 })[side]!;
+      const recorded = area.tracks.filter((t) => t.side).map((t) => edgeAt(t.side!));
+      if (new Set(recorded).size === 1) oneSided += 1;
+      const edges = prims.filter((q) => q.elementId === area.id && q.role === 'platform-edge');
+      expect(edges.length).toBe(2 * new Set(recorded).size);
+      for (const q of edges) {
+        const across = alongX ? (q.a[2] + q.b[2]) / 2 : (q.a[0] + q.b[0]) / 2;
+        expect(Math.min(...recorded.map((at) => Math.abs(at - across)))).toBeLessThan(0.4);
+      }
+    }
+    expect(oneSided).toBeGreaterThan(0);
+  });
+});

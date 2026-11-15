@@ -2,7 +2,7 @@
 // Output goes to test-results/shots/ (git-ignored) — screenshots are never committed.
 //
 //   node scripts/shots.mjs <name> [query] [WxH] [steps]
-//   steps: comma-separated  click:<testid> | select:<testid>=<value> | wait:<ms> | key:<Key>
+//   steps: comma-separated  click:<testid> | css:<selector> | select:<testid>=<value> | wait:<ms> | key:<Key>
 //          | drag:<dx>x<dy> | wheel:<deltaY> | wheelat:<fx>x<fy>:<deltaY> | set:<testid>=<value> | hover:<testid>
 //
 // Needs a server: BASE_URL (default http://localhost:5183).
@@ -30,6 +30,7 @@ await page.waitForTimeout(900);
 for (const step of steps.split(',').filter(Boolean)) {
   const [op, arg = ''] = [step.slice(0, step.indexOf(':')), step.slice(step.indexOf(':') + 1)];
   if (op === 'click') await page.getByTestId(arg).first().click();
+  else if (op === 'css') await page.locator(arg).first().click();
   else if (op === 'hover') await page.getByTestId(arg).first().hover();
   else if (op === 'select') {
     const [id, value] = arg.split('=');
