@@ -477,12 +477,14 @@ const jrAreas: Area[] = [
     [rect(27, 31, -16, 15)], pt(29, 0), prov([S_2F, S_1F]), jrCommon,
     'Unnamed on the map; the 1F map calls its stair zone "2F 甲州街道改札・新南改札・ミライナタワー改札". Separate from 南口コンコース: no paid link between the two is drawn on 2F.'),
   concourse(A.koshuUnpaid, LV.jr2, 'unpaid', names('甲州街道改札外', 'Outside Koshu-kaido Gate', '甲州街道检票口外'),
-    [rect(24, 26.5, -4, 2)], pt(25.25, -1), prov([S_2F])),
+    [rect(24, 26.5, -16.5, 14)], pt(25.25, -1), prov([S_2F, 'src:busta-floor-maps']), jrCommon,
+    'The strip along 甲州街道 on the north side of the JR block. The Busta 2F map draws it from the lift and escalator at the north-west corner to those at the north-east corner; the JR map shows only the part in front of the gate.'),
   concourse(A.newSouthUnpaid, LV.jr2, 'unpaid', names('新南改札外', 'Outside New South Gate', '新南检票口外'),
-    [rect(31.5, 35.5, -6, 6)], pt(33.5, 0), prov([S_2F, S_ALL]), jrCommon,
-    'The JR maps label "Suicaのペンギン広場" and lifts / escalators to バスタ新宿 on this side.'),
+    [rect(31.5, 35.5, -19.5, 8)], pt(33.5, 0), prov([S_2F, S_ALL, 'src:busta-floor-maps']), jrCommon,
+    'The JR maps label "Suicaのペンギン広場" and lifts / escalators to バスタ新宿 on this side. The Busta 2F map calls it 歩行者広場 and draws it along the whole south side, as far as the stairs towards タカシマヤ タイムズスクエア at the south-east corner.'),
   concourse(A.mirainaUnpaid, LV.jr2, 'unpaid', names('ミライナタワー改札外', 'Outside Miraina Tower Gate', 'Miraina Tower 检票口外'),
-    [rect(26.5, 31.5, -19.5, -16.5)], pt(29, -18), prov([S_2F])),
+    [rect(24, 31.5, -19.5, -16.5)], pt(29, -18), prov([S_2F, 'src:busta-floor-maps']), jrCommon,
+    'The Busta 2F map draws this side running north to the lift and escalator at the north-east corner of the block.'),
 ];
 
 // --- Keio areas ------------------------------------------------------------
@@ -988,7 +990,7 @@ const unconfirmedConnections: StationModel['unconfirmedConnections'] = [
   { id: 'uc-metro-oedo-nishiguchi', description: 'The west end of the Marunouchi Line concourse ⇄ 都営大江戸線 新宿西口駅.',
     reason: 'A different station; drawn on the Tokyo Metro 立体図 but explicitly excluded from this model.' },
   { id: 'uc-busta-ground', description: 'バスタ新宿 3F / 4F ⇄ サザンテラス, タカシマヤ タイムズスクエア, and the street.',
-    reason: 'Only the lifts and escalators that the Busta 2F drawing ties to the outside of the JR gates are modelled.' },
+    reason: 'Only the lifts, escalators and stairs that the Busta floor maps draw between 2F, 3F and 4F are modelled. The maps print "サザンテラス方面", "タカシマヤ タイムズスクエア方面" and "ミライナタワー" as directions only.' },
 ];
 
 // ---------------------------------------------------------------------------

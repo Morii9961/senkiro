@@ -214,9 +214,34 @@ describe('route search behaviour', () => {
     expect(r.inferredLegs).toBe(0);
     expect(r.nodeIds).toContain('sk:area:west-exit-underground-plaza');
     // JR South Exit → the crossing of 甲州街道 → Busta 4F
-    const bus = mustFind('sk:entrance:jr-south-exit', 'sk:entrance:busta-4f-bus-boarding');
+    const bus = mustFind('sk:entrance:jr-south-exit', 'sk:entrance:busta-4f-bay-c8');
     expect(bus.cost.gatePasses).toBe(0);
     expect(levelLabels(model, bus.levelSequence).at(-1)).toBe('4F');
+  });
+
+  it('Busta 新宿: every boarding bay and both drop-off points are reachable from the JR gates below', () => {
+    const bays = model.entrances.filter((e) => /busta-4f-bay-/.test(e.id));
+    expect(bays.map((e) => e.names.ja)).toEqual(['A1', 'A2', 'A3', 'B4', 'B5', 'B6', 'C7', 'C8', 'C9', 'D10', 'D11', 'D12'].map((c) => `${c} のりば`));
+    for (const b of bays) {
+      // from a JR platform: out through one gate line, then up to 4F
+      const r = mustFind(NODE.platform13_14, b.id);
+      expect(r.cost.gatePasses, b.id).toBe(1);
+      expect(r.inferredLegs, b.id).toBe(0);
+      expect(levelLabels(model, r.levelSequence).at(-1), b.id).toBe('4F');
+      // and by lift alone from outside 新南改札
+      expect(mustFind('sk:gate:jr-new-south-gate', b.id, 'elevator-only').found, b.id).toBe(true);
+    }
+    // the bay belongs to the boarding area whose letter it carries
+    for (const b of bays) expect(b.areaId).toBe(`sk:area:busta-4f-area-${b.names.ja![0]!.toLowerCase()}`);
+    // arriving on 3F: from either drop-off point down to the JR gate, and across to the taxi stand
+    for (const from of ['sk:entrance:busta-3f-bus-drop-off-centre', 'sk:entrance:busta-3f-bus-drop-off-deck']) {
+      const down = mustFind(from, 'sk:gate:jr-new-south-gate');
+      expect(levelLabels(model, down.levelSequence)[0]).toBe('3F');
+      expect(mustFind(from, 'sk:entrance:busta-3f-taxi').levelSequence.every((l) => l === 'sk:level:busta-shinjuku-3f')).toBe(true);
+    }
+    // the 4F直結 escalator skips 3F
+    const direct = model.verticals.find((v) => v.id === 'sk:vertical:busta-escalator-new-south-direct-4f')!;
+    expect(direct.stops.map((st) => st.levelId)).toEqual(['sk:level:jr-east-shinjuku-2f', 'sk:level:busta-shinjuku-4f']);
   });
 
   it('marks legs that rest on inferred connections, and can be told to avoid them', () => {
@@ -287,5 +312,37 @@ describe('route search behaviour', () => {
     const a = mustFind(NODE.southExit, NODE.keioPlatforms);
     const b = mustFind(NODE.southExit, NODE.keioPlatforms);
     expect(a.nodeIds).toEqual(b.nodeIds);
+  });
+});
+
+describe('consistency of the whole walking graph (scripts/check-routes.ts runs it over every pair)', () => {
+  const places = [...model.areas.filter((a) => a.kind === 'platform').map((a) => a.id), ...model.gates.map((g) => g.id), ...model.entrances.map((e) => e.id)];
+  const hub = NODE.platform13_14;
+
+  it('every place a user can pick is reached from a JR platform, except two gates that can only be left from inside', () => {
+    const lost = places.filter((p) => p !== hub && !findRoute(graph, hub, p, { mode: 'default' }).found);
+    // a gate as destination means leaving through it; these two are entered from a side nothing else leads to
+    expect(lost).toEqual(['sk:gate:seibu-front-gate', 'sk:gate:nishiguchi-gates-south']);
+    for (const g of lost) {
+      const own = model.areas.find((a) => a.kind === 'platform' && a.stationId === model.gates.find((x) => x.id === g)!.stationId)!;
+      expect(findRoute(graph, own.id, g, { mode: 'default' }).found, g).toBe(true);
+    }
+  });
+
+  it('every place leads back to a JR platform, except four gates that cannot be entered and left again', () => {
+    // a gate as origin means entering through it: two Keio gates are exit-only, and behind the other two
+    // the only other way out leads to an exit that joins nothing else in the model
+    const stuck = places.filter((p) => p !== hub && !findRoute(graph, p, hub, { mode: 'default' }).found);
+    expect(stuck).toEqual(['sk:gate:keio-hiroba-gate', 'sk:gate:keio-temporary-gate', 'sk:gate:seibu-front-gate', 'sk:gate:nishiguchi-gates-south']);
+    expect(stuck.filter((g) => model.gates.find((x) => x.id === g)!.direction !== 'both')).toEqual(['sk:gate:keio-hiroba-gate', 'sk:gate:keio-temporary-gate']);
+  });
+
+  it('a route changes floor only on stairs, escalators and lifts', () => {
+    for (const p of places) {
+      for (const r of [findRoute(graph, hub, p, { mode: 'default' }), findRoute(graph, p, hub, { mode: 'elevator-only' })]) {
+        if (!r.found) continue;
+        for (const leg of r.legs) if (leg.kind !== 'vertical') expect(new Set(leg.levelIds).size, `${p}: ${leg.kind}`).toBe(1);
+      }
+    }
   });
 });

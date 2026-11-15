@@ -469,50 +469,150 @@ const metroVerticals: VerticalFacility[] = [
 
 const bustaCommon: Common = { stationId: null, asOf: '2026-11', geometryConfidence: 'schematic' };
 const bustaProv = p2([S_BUSTA]);
-const BU = {
+export const BU = {
   l3: 'sk:level:busta-shinjuku-3f',
   l4: 'sk:level:busta-shinjuku-4f',
-  f3: 'sk:area:busta-3f',
-  f4: 'sk:area:busta-4f',
+  // 3F
+  taxi3: 'sk:area:busta-3f-taxi',
+  west3: 'sk:area:busta-3f-west-walkway',
+  island3: 'sk:area:busta-3f-bus-drop-off-centre',
+  deck3: 'sk:area:busta-3f-deck',
+  tic3: 'sk:area:busta-3f-tourist-information',
+  east3: 'sk:area:busta-3f-east-walkway',
+  // 4F
+  areaA: 'sk:area:busta-4f-area-a',
+  areaB: 'sk:area:busta-4f-area-b',
+  areaC: 'sk:area:busta-4f-area-c',
+  areaD: 'sk:area:busta-4f-area-d',
+  hall4: 'sk:area:busta-4f-hall',
+  south4: 'sk:area:busta-4f-south-walkway',
 };
 
 const bustaLevels: Level[] = [
-  level(BU.l3, BUSTA, '3F', 2, 8, bustaProv, bustaCommon, 'Above the JR 2F concourse of 新南改札 / 甲州街道改札 / ミライナタワー改札.'),
-  level(BU.l4, BUSTA, '4F', 3, 12, bustaProv, bustaCommon),
+  level(BU.l3, BUSTA, '3F', 2, 8, bustaProv, bustaCommon, 'Above the JR 2F concourse of 新南改札 / 甲州街道改札 / ミライナタワー改札. The Busta site calls it 高速バスおりばフロア.'),
+  level(BU.l4, BUSTA, '4F', 3, 12, bustaProv, bustaCommon, 'The Busta site calls it 高速バスのりばフロア.'),
 ];
+
+// Both floors are a ring of walkways round a roadway. Only the walkways are areas: the roadway, the
+// bus bays themselves and the planted islands are not places a person walks, and are not modelled.
+// North is 甲州街道 (x = 24), east is ミライナタワー (z = -19.5).
+const NO_NAME = 'Unnamed on the floor map; the name here only says where it is.';
+const boardingArea = (id: string, letter: string, bays: string, footprint: PlanRect[], anchor: PlanPoint, where: string): Area =>
+  concourse(id, BU.l4, 'unpaid',
+    names(`高速バスのりば ${letter}エリア（${bays}）`, `Expressway bus boarding, Area ${letter} (${bays.replace('〜', '–')})`, `高速巴士乘车处 ${letter}区（${bays.replace('〜', '～')}）`),
+    footprint, anchor, bustaProv, bustaCommon,
+    `The 4F map prints "${letter} エリア ${bays.replace('〜', '▸')}" ${where}. The walkway beside the bays is the area; the bays stand on the roadway.`);
 
 const bustaAreas: Area[] = [
-  concourse(BU.f3, BU.l3, 'unpaid', names('バスタ新宿 3F（タクシーのりば・高速バス降車場）', 'Busta Shinjuku 3F (taxi stand, expressway bus drop-off)', 'Busta 新宿 3F（出租车乘车处·高速巴士下车处）'),
-    [rect(25, 35.5, -19.5, 12)], pt(30, -4), bustaProv, bustaCommon,
-    'One area for the whole floor. The Busta map also labels 東京都観光案内所 and a 歩行者デッキ on this floor.'),
-  concourse(BU.f4, BU.l4, 'unpaid', names('バスタ新宿 4F（高速バスのりば A〜D）', 'Busta Shinjuku 4F (expressway bus boarding, areas A–D)', 'Busta 新宿 4F（高速巴士乘车处 A～D）'),
-    [rect(25, 35.5, -19.5, 12)], pt(30, -4), bustaProv, bustaCommon,
-    'One area for the whole floor. The Busta map divides the boarding bays into A (A1–A3), B (B4–B6), C (C7–C9) and D (D10–D12).'),
+  // ---- 3F ----
+  concourse(BU.taxi3, BU.l3, 'unpaid', names('タクシー乗車場・降車場', 'Taxi stand and taxi drop-off', '出租车乘车处·下车处'),
+    [rect(24, 25.6, -15.4, 14)], pt(24.8, 0), bustaProv, bustaCommon,
+    'The walkway along the north (甲州街道) side of 3F: the map prints タクシー乗車場 on its western part and タクシー降車場 further east.'),
+  concourse(BU.west3, BU.l3, 'unpaid', names('3F 西側通路', '3F west walkway', '3F 西侧通道'),
+    [rect(25.6, 32.6, 11.6, 14)], pt(29, 12.8), bustaProv, bustaCommon,
+    `${NO_NAME} The strip drawn along the west edge of 3F, from the north-west lift down to 東京都観光案内所.`),
+  concourse(BU.island3, BU.l3, 'unpaid', names('高速バス降車場（中央）', 'Expressway bus drop-off (centre island)', '高速巴士下车处（中央）'),
+    [rect(28, 30, -9, 8.6)], pt(29, 0), bustaProv, bustaCommon,
+    'The island in the middle of the roadway that the map labels 高速バス降車場. "（中央）" is added here to tell it from the second 高速バス降車場 beside the deck.'),
+  concourse(BU.deck3, BU.l3, 'unpaid', names('歩行者デッキ・高速バス降車場', 'Pedestrian deck and expressway bus drop-off', '步行平台·高速巴士下车处'),
+    [rect(32.6, 35.5, -16.5, 8), rect(32.6, 33.6, 8, 14)], pt(34, -2), bustaProv, bustaCommon,
+    'The south side of 3F: the map prints 高速バス降車場 along the roadway and 歩行者デッキ behind it, with a dashed line between the two. Toilets and a 授乳室 are drawn at its west end.'),
+  concourse(BU.tic3, BU.l3, 'unpaid', names('東京都観光案内所', 'Tokyo Tourist Information Center', '东京都观光咨询处'),
+    [rect(33.6, 35.5, 8, 14)], pt(34.6, 11), bustaProv, bustaCommon,
+    'Drawn in the south-west corner of 3F, opening onto the deck. Only the Japanese name is on the map; the other two are this model\'s renderings.'),
+  concourse(BU.east3, BU.l3, 'unpaid', names('3F 東側通路（ミライナタワー側）', '3F east walkway (Miraina Tower side)', '3F 东侧通道（Miraina Tower 侧）'),
+    [rect(24, 31.4, -19.5, -15.4)], pt(28, -17.4), bustaProv, bustaCommon,
+    `${NO_NAME} The strip along the east edge of 3F with a lift and escalators; the map prints "▶ ミライナタワー" at its edge. The roadway leaves the building south of it, so it does not reach the deck on this floor.`),
+  // ---- 4F ----
+  boardingArea(BU.areaA, 'A', 'A1〜A3', [rect(31.6, 32.6, -10.6, 7)], pt(32.1, 0.8), 'on the tongue of walkway that runs west from the hall, labelled 高速バス乗車場'),
+  boardingArea(BU.areaB, 'B', 'B4〜B6', [rect(25.4, 32.6, -12.6, -10.6)], pt(28.5, -11.6), 'on the east side, in front of the waiting rooms'),
+  boardingArea(BU.areaC, 'C', 'C7〜C9', [rect(24, 25.4, -12.6, 14)], pt(24.7, 0.4), 'on the north side, labelled 高速バス乗車場 (甲州街道)'),
+  boardingArea(BU.areaD, 'D', 'D10〜D12', [rect(25.4, 33.4, 11.6, 14)], pt(29.4, 12.8), 'on the west side'),
+  concourse(BU.hall4, BU.l4, 'unpaid', names('4F 待合室・発券カウンター', '4F waiting room and ticket counters', '4F 候车室·售票柜台'),
+    [rect(24, 33.4, -19.5, -12.6)], pt(28.6, -16), bustaProv, bustaCommon,
+    'The east side of 4F. Read from the map by matching its pictograms to the legend on the page: three 待合室 blocks behind Area B; a counter strip with 有人発券窓口 between two 自動発券機; 土産品; an インフォメーションカウンター, an ATM, a コンビニエンスストア and コインロッカー towards the south; toilets, a 授乳室 and a 女子更衣室 in the north-east corner. One area stands for all of them: none is a separate room in this model.'),
+  concourse(BU.south4, BU.l4, 'unpaid', names('4F 南側通路', '4F south walkway', '4F 南侧通道'),
+    [rect(33.4, 35.5, -19.5, 14)], pt(34.4, -2), bustaProv, bustaCommon,
+    `${NO_NAME} The walkway along the south edge of 4F, where the lifts and escalators from the 2F 歩行者広場 arrive ("2F直結"); toilets, a 授乳室 and コインロッカー are drawn on it.`),
 ];
+
+const FLAT = 'Drawn as one continuous floor on the map; whether there is a step or a door on the way was not read.';
+const bustaLink = (slug: string, from: string, to: string, notes: string): Passage =>
+  link(`busta-${slug}`, from, to, bustaProv, null, { common: bustaCommon, notes: `${notes} ${FLAT}` });
+
+const bustaPassages: Passage[] = [
+  // 4F ring
+  bustaLink('4f-hall-to-area-b', BU.hall4, BU.areaB, 'Area B is the walkway in front of the waiting rooms.'),
+  bustaLink('4f-area-b-to-area-a', BU.areaB, BU.areaA, 'The tongue of Area A leaves the east side at its south end.'),
+  bustaLink('4f-area-b-to-area-c', BU.areaB, BU.areaC, 'The north-east corner, where the north walkway meets the east side.'),
+  bustaLink('4f-hall-to-area-c', BU.hall4, BU.areaC, 'The north-east corner, beside the lift and the toilets.'),
+  bustaLink('4f-area-c-to-area-d', BU.areaC, BU.areaD, 'The north-west corner, beside the lift and the escalator.'),
+  bustaLink('4f-area-d-to-south-walkway', BU.areaD, BU.south4, 'The south-west corner.'),
+  bustaLink('4f-hall-to-south-walkway', BU.hall4, BU.south4, 'The south-east corner, past the インフォメーションカウンター.'),
+  // 3F
+  bustaLink('3f-taxi-to-west-walkway', BU.taxi3, BU.west3, 'The north-west corner, beside the lift and the escalator.'),
+  bustaLink('3f-taxi-to-east-walkway', BU.taxi3, BU.east3, 'The north-east corner: the walkway is read as continuing past the head of the roadway loop to the lift.'),
+  bustaLink('3f-west-walkway-to-deck', BU.west3, BU.deck3, 'The south-west corner, beside the toilets.'),
+  bustaLink('3f-deck-to-tourist-information', BU.deck3, BU.tic3, '東京都観光案内所 opens onto the deck.'),
+  link('busta-3f-west-walkway-to-bus-drop-off-centre', BU.west3, BU.island3, bustaProv, null,
+    { common: bustaCommon, notes: 'The pedestrian crossing (white stripes) drawn across the roadway at the west end of the island. A crossing of the bus and taxi roadway, not a corridor.' }),
+];
+
+const BAY_NOTE = 'Which services leave from this bay is not on the floor map: the terminal announces the bay for each departure.';
+const bay = (code: string, areaId: string, at: PlanPoint): Entrance =>
+  entrance(`busta-4f-bay-${code.toLowerCase()}`, BU.l4, areaId, names(`${code} のりば`, `Bay ${code}`, `${code} 乘车位`), at,
+    '高速バス', 'expressway buses', bustaProv, { common: bustaCommon, stepFree: null, notes: BAY_NOTE });
 
 const bustaEntrances: Entrance[] = [
-  entrance('busta-4f-bus-boarding', BU.l4, BU.f4, names('高速バスのりば（A〜Dエリア）', 'Expressway bus boarding (areas A–D)', '高速巴士乘车处（A～D区）'), pt(28, 2),
-    '高速バス・空港バス', 'expressway and airport buses', bustaProv, { common: bustaCommon, stepFree: true }),
-  entrance('busta-3f-taxi', BU.l3, BU.f3, names('タクシーのりば', 'Taxi stand', '出租车乘车处'), pt(28, -8),
-    'タクシー乗車場・高速バス降車場', 'taxi stand; expressway bus drop-off', bustaProv, { common: bustaCommon, stepFree: true }),
+  bay('A1', BU.areaA, pt(31.6, 5.6)), bay('A2', BU.areaA, pt(31.6, 0.8)), bay('A3', BU.areaA, pt(31.6, -3.8)),
+  bay('B4', BU.areaB, pt(30.6, -10.6)), bay('B5', BU.areaB, pt(28.4, -10.6)), bay('B6', BU.areaB, pt(26.4, -10.6)),
+  bay('C7', BU.areaC, pt(25.4, -4.3)), bay('C8', BU.areaC, pt(25.4, 0.3)), bay('C9', BU.areaC, pt(25.4, 4.9)),
+  bay('D10', BU.areaD, pt(26.5, 11.6)), bay('D11', BU.areaD, pt(28.9, 11.6)), bay('D12', BU.areaD, pt(31.3, 11.6)),
+  entrance('busta-4f-miraina-tower-side', BU.l4, BU.hall4, names('ミライナタワー方面（4F）', 'Towards Miraina Tower (4F)', '往 Miraina Tower（4F）'), pt(29.6, -19.5),
+    'ミライナタワー', 'Miraina Tower', bustaProv, { common: bustaCommon, stepFree: null, notes: 'Printed as "▶ ミライナタワー" at the east edge of the 4F map. What lies beyond the edge is not drawn.' }),
+  entrance('busta-3f-taxi', BU.l3, BU.taxi3, names('タクシー乗車場', 'Taxi stand', '出租车乘车处'), pt(25.6, 3),
+    'タクシー', 'taxis', bustaProv, { common: bustaCommon, stepFree: null }),
+  entrance('busta-3f-taxi-drop-off', BU.l3, BU.taxi3, names('タクシー降車場', 'Taxi drop-off', '出租车下车处'), pt(25.6, -4.8),
+    'タクシー', 'taxis', bustaProv, { common: bustaCommon, stepFree: null }),
+  entrance('busta-3f-bus-drop-off-centre', BU.l3, BU.island3, names('高速バス降車場（中央）', 'Expressway bus drop-off (centre island)', '高速巴士下车处（中央）'), pt(30, 1.4),
+    '高速バス（到着）', 'arriving expressway buses', bustaProv, { common: bustaCommon, stepFree: null, notes: 'Where arriving buses set passengers down, on the island. "（中央）" is added here.' }),
+  entrance('busta-3f-bus-drop-off-deck', BU.l3, BU.deck3, names('高速バス降車場（歩行者デッキ側）', 'Expressway bus drop-off (deck side)', '高速巴士下车处（步行平台侧）'), pt(32.6, 1),
+    '高速バス（到着）', 'arriving expressway buses', bustaProv, { common: bustaCommon, stepFree: null, notes: 'Where arriving buses set passengers down, along the deck. "（歩行者デッキ側）" is added here.' }),
+  entrance('busta-3f-miraina-tower-side', BU.l3, BU.east3, names('ミライナタワー方面（3F）', 'Towards Miraina Tower (3F)', '往 Miraina Tower（3F）'), pt(28.6, -19.5),
+    'ミライナタワー', 'Miraina Tower', bustaProv, { common: bustaCommon, stepFree: null, notes: 'Printed as "▶ ミライナタワー" at the east edge of the 3F map. What lies beyond the edge is not drawn.' }),
 ];
 
-const BUSTA_2F = 'Drawn on the Busta 2F map with the callout "4F 高速バス / 3F タクシー".';
-const bustaLift = (slug: string, areaId: string, at: PlanPoint, where: string): VerticalFacility =>
-  vertical(`busta-elevator-${slug}`, 'elevator', names(`エレベーター（${where} 2F ⇔ 3F ⇔ 4F）`, `Elevator (${slug} side, 2F ⇔ 3F ⇔ 4F)`, `电梯（${where} 2F ⇔ 3F ⇔ 4F）`),
-    [{ levelId: LV.jr2, areaId, at }, { levelId: BU.l3, areaId: BU.f3, at }, { levelId: BU.l4, areaId: BU.f4, at }],
+const BUSTA_2F = 'Drawn on the Busta 2F map with the callout "4F 高速バス / 3F タクシー", and at the same place on the 3F and 4F maps.';
+type BustaStops = [a2: string, a3: string, a4: string];
+const bustaLift = (slug: string, areas: BustaStops, at: PlanPoint, where: string, whereEn: string): VerticalFacility =>
+  vertical(`busta-elevator-${slug}`, 'elevator', names(`エレベーター（${where} 2F ⇔ 3F ⇔ 4F）`, `Elevator (${whereEn}, 2F ⇔ 3F ⇔ 4F)`, `电梯（${where} 2F ⇔ 3F ⇔ 4F）`),
+    [{ levelId: LV.jr2, areaId: areas[0], at }, { levelId: BU.l3, areaId: areas[1], at }, { levelId: BU.l4, areaId: areas[2], at }],
     p2([S_BUSTA, S_JR_2F]), { common: bustaCommon, notes: BUSTA_2F });
+const BUSTA_LEVELS = [LV.jr2, BU.l3, BU.l4];
+const bustaEsc = (slug: string, stops: [string, PlanPoint][], notes: string): VerticalFacility =>
+  vertical(`busta-escalator-${slug}`, 'escalator', unnamed,
+    stops.map(([areaId, at], i) => ({ levelId: BUSTA_LEVELS[i]!, areaId, at })),
+    p2([S_BUSTA, S_JR_2F]), { common: bustaCommon, aggregated: true, notes: `${notes} ${AGG_ESC}` });
 
 const bustaVerticals: VerticalFacility[] = [
   vertical('busta-escalator-new-south-direct-4f', 'escalator', names('4F直結エスカレーター', 'Escalator direct to 4F', '直达4F的自动扶梯'),
-    [{ levelId: LV.jr2, areaId: A.newSouthUnpaid, at: pt(33, -3.4) }, { levelId: BU.l4, areaId: BU.f4, at: pt(33, -0.6) }],
+    [{ levelId: LV.jr2, areaId: A.newSouthUnpaid, at: pt(33, -5.4) }, { levelId: BU.l4, areaId: BU.south4, at: pt(33.9, -11.8) }],
     p2([S_BUSTA, S_JR_2F]), { common: bustaCommon, nonAdjacent: true, notes: 'Printed "4F直結" outside 新南改札 on the Busta 2F map and "2F直結" on the 4F map. It does not stop on 3F.' }),
-  vertical('busta-escalator-new-south', 'escalator', unnamed,
-    [{ levelId: LV.jr2, areaId: A.newSouthUnpaid, at: pt(33.4, 4.8) }, { levelId: BU.l3, areaId: BU.f3, at: pt(33.4, 7.2) }, { levelId: BU.l4, areaId: BU.f4, at: pt(33.4, 9.6) }],
-    p2([S_BUSTA, S_JR_2F]), { common: bustaCommon, notes: `${BUSTA_2F} ${AGG_ESC}` }),
-  bustaLift('new-south', A.newSouthUnpaid, pt(34.4, 2.4), '新南改札側'),
-  bustaLift('koshu-kaido', A.koshuUnpaid, pt(25.8, 1), '甲州街道側'),
-  bustaLift('miraina-tower', A.mirainaUnpaid, pt(30.4, -17.6), 'ミライナタワー側'),
+  bustaEsc('new-south', [[A.newSouthUnpaid, pt(33.6, 1.6)], [BU.deck3, pt(34.2, -1.2)], [BU.south4, pt(34.2, -5.6)]],
+    'The escalators west of the 4F直結 one: 2F 歩行者広場 → 3F 歩行者デッキ → 4F south walkway. The 2F callout names both floors.'),
+  bustaEsc('south-east', [[A.newSouthUnpaid, pt(34.6, -17.8)], [BU.deck3, pt(34.8, -13.8)], [BU.south4, pt(33.9, -15.8)]],
+    'The escalators at the south-east corner, beside the wide stairs towards タカシマヤ タイムズスクエア. The 2F callout names both floors.'),
+  bustaEsc('koshu-kaido', [[A.koshuUnpaid, pt(24.8, 10.6)], [BU.taxi3, pt(24.6, 6.4)], [BU.areaC, pt(24.6, 9)]],
+    'The escalators at the north-west corner, on the 甲州街道 side.'),
+  bustaEsc('miraina-tower', [[A.mirainaUnpaid, pt(24.8, -18.6)], [BU.east3, pt(27.6, -18.2)], [BU.hall4, pt(30.2, -18.4)]],
+    'The escalators on the east (ミライナタワー) side: one at the north-east corner on 2F, two on 3F, one on 4F.'),
+  vertical('busta-stairs-south-east', 'stairs', unnamed,
+    [{ levelId: LV.jr2, areaId: A.newSouthUnpaid, at: pt(35, -18.8) }, { levelId: BU.l3, areaId: BU.deck3, at: pt(35.1, -15.6) }],
+    p2([S_BUSTA]), { common: bustaCommon, notes: 'The wide flight drawn at the south-east corner of the 3F deck and, on the 2F map, beside the escalator towards タカシマヤ タイムズスクエア.' }),
+  bustaLift('koshu-kaido', [A.koshuUnpaid, BU.taxi3, BU.areaC], pt(24.8, 12.6), '甲州街道側・北西', 'Koshu-kaido side, north-west'),
+  bustaLift('miraina-tower', [A.mirainaUnpaid, BU.east3, BU.hall4], pt(25.4, -17.6), 'ミライナタワー側・北東', 'Miraina Tower side, north-east'),
+  bustaLift('new-south', [A.newSouthUnpaid, BU.deck3, BU.south4], pt(34.6, 5.2), '新南改札側・西', 'New South Gate side, west'),
+  bustaLift('new-south-east', [A.newSouthUnpaid, BU.deck3, BU.south4], pt(34.6, -8.6), '新南改札側・東', 'New South Gate side, east'),
 ];
 
 // ===========================================================================
@@ -704,7 +804,7 @@ export const extensions = {
   stations,
   levels: [...odLevels, ...nlLevels, ...oedoLevels, ...metroLevels, ...bustaLevels, ...publicLevels, ...seibuLevels],
   areas: [...odAreas, ...nlAreas, ...oedoAreas, ...metroAreas, ...bustaAreas, ...publicAreas, ...seibuAreas],
-  passages: [...odPassages, ...crossPassages, ...seibuPassages],
+  passages: [...odPassages, ...bustaPassages, ...crossPassages, ...seibuPassages],
   gates: [...odGates, ...nlGates, ...oedoGates, ...metroGates, ...seibuGates],
   entrances: [...odEntrances, ...nlEntrances, ...oedoEntrances, ...metroEntrances, ...bustaEntrances, ...publicEntrances, ...seibuEntrances],
   verticals: [...odVerticals, ...nlVerticals, ...oedoVerticals, ...metroVerticals, ...bustaVerticals, ...seibuVerticals],

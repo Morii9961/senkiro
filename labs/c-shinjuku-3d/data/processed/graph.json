@@ -1,27 +1,147 @@
 {
   "nodes": [
     {
-      "id": "sk:area:busta-3f",
+      "id": "sk:area:busta-3f-bus-drop-off-centre",
       "kind": "area",
-      "elementId": "sk:area:busta-3f",
+      "elementId": "sk:area:busta-3f-bus-drop-off-centre",
       "levelId": "sk:level:busta-shinjuku-3f",
       "levelOrdinal": 2,
       "zone": "unpaid",
       "position": {
-        "x": 30,
-        "z": -4
+        "x": 29,
+        "z": 0
       }
     },
     {
-      "id": "sk:area:busta-4f",
+      "id": "sk:area:busta-3f-deck",
       "kind": "area",
-      "elementId": "sk:area:busta-4f",
+      "elementId": "sk:area:busta-3f-deck",
+      "levelId": "sk:level:busta-shinjuku-3f",
+      "levelOrdinal": 2,
+      "zone": "unpaid",
+      "position": {
+        "x": 34,
+        "z": -2
+      }
+    },
+    {
+      "id": "sk:area:busta-3f-east-walkway",
+      "kind": "area",
+      "elementId": "sk:area:busta-3f-east-walkway",
+      "levelId": "sk:level:busta-shinjuku-3f",
+      "levelOrdinal": 2,
+      "zone": "unpaid",
+      "position": {
+        "x": 28,
+        "z": -17.4
+      }
+    },
+    {
+      "id": "sk:area:busta-3f-taxi",
+      "kind": "area",
+      "elementId": "sk:area:busta-3f-taxi",
+      "levelId": "sk:level:busta-shinjuku-3f",
+      "levelOrdinal": 2,
+      "zone": "unpaid",
+      "position": {
+        "x": 24.8,
+        "z": 0
+      }
+    },
+    {
+      "id": "sk:area:busta-3f-tourist-information",
+      "kind": "area",
+      "elementId": "sk:area:busta-3f-tourist-information",
+      "levelId": "sk:level:busta-shinjuku-3f",
+      "levelOrdinal": 2,
+      "zone": "unpaid",
+      "position": {
+        "x": 34.6,
+        "z": 11
+      }
+    },
+    {
+      "id": "sk:area:busta-3f-west-walkway",
+      "kind": "area",
+      "elementId": "sk:area:busta-3f-west-walkway",
+      "levelId": "sk:level:busta-shinjuku-3f",
+      "levelOrdinal": 2,
+      "zone": "unpaid",
+      "position": {
+        "x": 29,
+        "z": 12.8
+      }
+    },
+    {
+      "id": "sk:area:busta-4f-area-a",
+      "kind": "area",
+      "elementId": "sk:area:busta-4f-area-a",
       "levelId": "sk:level:busta-shinjuku-4f",
       "levelOrdinal": 3,
       "zone": "unpaid",
       "position": {
-        "x": 30,
-        "z": -4
+        "x": 32.1,
+        "z": 0.8
+      }
+    },
+    {
+      "id": "sk:area:busta-4f-area-b",
+      "kind": "area",
+      "elementId": "sk:area:busta-4f-area-b",
+      "levelId": "sk:level:busta-shinjuku-4f",
+      "levelOrdinal": 3,
+      "zone": "unpaid",
+      "position": {
+        "x": 28.5,
+        "z": -11.6
+      }
+    },
+    {
+      "id": "sk:area:busta-4f-area-c",
+      "kind": "area",
+      "elementId": "sk:area:busta-4f-area-c",
+      "levelId": "sk:level:busta-shinjuku-4f",
+      "levelOrdinal": 3,
+      "zone": "unpaid",
+      "position": {
+        "x": 24.7,
+        "z": 0.4
+      }
+    },
+    {
+      "id": "sk:area:busta-4f-area-d",
+      "kind": "area",
+      "elementId": "sk:area:busta-4f-area-d",
+      "levelId": "sk:level:busta-shinjuku-4f",
+      "levelOrdinal": 3,
+      "zone": "unpaid",
+      "position": {
+        "x": 29.4,
+        "z": 12.8
+      }
+    },
+    {
+      "id": "sk:area:busta-4f-hall",
+      "kind": "area",
+      "elementId": "sk:area:busta-4f-hall",
+      "levelId": "sk:level:busta-shinjuku-4f",
+      "levelOrdinal": 3,
+      "zone": "unpaid",
+      "position": {
+        "x": 28.6,
+        "z": -16
+      }
+    },
+    {
+      "id": "sk:area:busta-4f-south-walkway",
+      "kind": "area",
+      "elementId": "sk:area:busta-4f-south-walkway",
+      "levelId": "sk:level:busta-shinjuku-4f",
+      "levelOrdinal": 3,
+      "zone": "unpaid",
+      "position": {
+        "x": 34.4,
+        "z": -2
       }
     },
     {
@@ -841,6 +961,42 @@
       }
     },
     {
+      "id": "sk:entrance:busta-3f-bus-drop-off-centre",
+      "kind": "entrance",
+      "elementId": "sk:entrance:busta-3f-bus-drop-off-centre",
+      "levelId": "sk:level:busta-shinjuku-3f",
+      "levelOrdinal": 2,
+      "zone": "unpaid",
+      "position": {
+        "x": 30,
+        "z": 1.4
+      }
+    },
+    {
+      "id": "sk:entrance:busta-3f-bus-drop-off-deck",
+      "kind": "entrance",
+      "elementId": "sk:entrance:busta-3f-bus-drop-off-deck",
+      "levelId": "sk:level:busta-shinjuku-3f",
+      "levelOrdinal": 2,
+      "zone": "unpaid",
+      "position": {
+        "x": 32.6,
+        "z": 1
+      }
+    },
+    {
+      "id": "sk:entrance:busta-3f-miraina-tower-side",
+      "kind": "entrance",
+      "elementId": "sk:entrance:busta-3f-miraina-tower-side",
+      "levelId": "sk:level:busta-shinjuku-3f",
+      "levelOrdinal": 2,
+      "zone": "unpaid",
+      "position": {
+        "x": 28.6,
+        "z": -19.5
+      }
+    },
+    {
       "id": "sk:entrance:busta-3f-taxi",
       "kind": "entrance",
       "elementId": "sk:entrance:busta-3f-taxi",
@@ -848,20 +1004,176 @@
       "levelOrdinal": 2,
       "zone": "unpaid",
       "position": {
-        "x": 28,
-        "z": -8
+        "x": 25.6,
+        "z": 3
       }
     },
     {
-      "id": "sk:entrance:busta-4f-bus-boarding",
+      "id": "sk:entrance:busta-3f-taxi-drop-off",
       "kind": "entrance",
-      "elementId": "sk:entrance:busta-4f-bus-boarding",
+      "elementId": "sk:entrance:busta-3f-taxi-drop-off",
+      "levelId": "sk:level:busta-shinjuku-3f",
+      "levelOrdinal": 2,
+      "zone": "unpaid",
+      "position": {
+        "x": 25.6,
+        "z": -4.8
+      }
+    },
+    {
+      "id": "sk:entrance:busta-4f-bay-a1",
+      "kind": "entrance",
+      "elementId": "sk:entrance:busta-4f-bay-a1",
       "levelId": "sk:level:busta-shinjuku-4f",
       "levelOrdinal": 3,
       "zone": "unpaid",
       "position": {
-        "x": 28,
-        "z": 2
+        "x": 31.6,
+        "z": 5.6
+      }
+    },
+    {
+      "id": "sk:entrance:busta-4f-bay-a2",
+      "kind": "entrance",
+      "elementId": "sk:entrance:busta-4f-bay-a2",
+      "levelId": "sk:level:busta-shinjuku-4f",
+      "levelOrdinal": 3,
+      "zone": "unpaid",
+      "position": {
+        "x": 31.6,
+        "z": 0.8
+      }
+    },
+    {
+      "id": "sk:entrance:busta-4f-bay-a3",
+      "kind": "entrance",
+      "elementId": "sk:entrance:busta-4f-bay-a3",
+      "levelId": "sk:level:busta-shinjuku-4f",
+      "levelOrdinal": 3,
+      "zone": "unpaid",
+      "position": {
+        "x": 31.6,
+        "z": -3.8
+      }
+    },
+    {
+      "id": "sk:entrance:busta-4f-bay-b4",
+      "kind": "entrance",
+      "elementId": "sk:entrance:busta-4f-bay-b4",
+      "levelId": "sk:level:busta-shinjuku-4f",
+      "levelOrdinal": 3,
+      "zone": "unpaid",
+      "position": {
+        "x": 30.6,
+        "z": -10.6
+      }
+    },
+    {
+      "id": "sk:entrance:busta-4f-bay-b5",
+      "kind": "entrance",
+      "elementId": "sk:entrance:busta-4f-bay-b5",
+      "levelId": "sk:level:busta-shinjuku-4f",
+      "levelOrdinal": 3,
+      "zone": "unpaid",
+      "position": {
+        "x": 28.4,
+        "z": -10.6
+      }
+    },
+    {
+      "id": "sk:entrance:busta-4f-bay-b6",
+      "kind": "entrance",
+      "elementId": "sk:entrance:busta-4f-bay-b6",
+      "levelId": "sk:level:busta-shinjuku-4f",
+      "levelOrdinal": 3,
+      "zone": "unpaid",
+      "position": {
+        "x": 26.4,
+        "z": -10.6
+      }
+    },
+    {
+      "id": "sk:entrance:busta-4f-bay-c7",
+      "kind": "entrance",
+      "elementId": "sk:entrance:busta-4f-bay-c7",
+      "levelId": "sk:level:busta-shinjuku-4f",
+      "levelOrdinal": 3,
+      "zone": "unpaid",
+      "position": {
+        "x": 25.4,
+        "z": -4.3
+      }
+    },
+    {
+      "id": "sk:entrance:busta-4f-bay-c8",
+      "kind": "entrance",
+      "elementId": "sk:entrance:busta-4f-bay-c8",
+      "levelId": "sk:level:busta-shinjuku-4f",
+      "levelOrdinal": 3,
+      "zone": "unpaid",
+      "position": {
+        "x": 25.4,
+        "z": 0.3
+      }
+    },
+    {
+      "id": "sk:entrance:busta-4f-bay-c9",
+      "kind": "entrance",
+      "elementId": "sk:entrance:busta-4f-bay-c9",
+      "levelId": "sk:level:busta-shinjuku-4f",
+      "levelOrdinal": 3,
+      "zone": "unpaid",
+      "position": {
+        "x": 25.4,
+        "z": 4.9
+      }
+    },
+    {
+      "id": "sk:entrance:busta-4f-bay-d10",
+      "kind": "entrance",
+      "elementId": "sk:entrance:busta-4f-bay-d10",
+      "levelId": "sk:level:busta-shinjuku-4f",
+      "levelOrdinal": 3,
+      "zone": "unpaid",
+      "position": {
+        "x": 26.5,
+        "z": 11.6
+      }
+    },
+    {
+      "id": "sk:entrance:busta-4f-bay-d11",
+      "kind": "entrance",
+      "elementId": "sk:entrance:busta-4f-bay-d11",
+      "levelId": "sk:level:busta-shinjuku-4f",
+      "levelOrdinal": 3,
+      "zone": "unpaid",
+      "position": {
+        "x": 28.9,
+        "z": 11.6
+      }
+    },
+    {
+      "id": "sk:entrance:busta-4f-bay-d12",
+      "kind": "entrance",
+      "elementId": "sk:entrance:busta-4f-bay-d12",
+      "levelId": "sk:level:busta-shinjuku-4f",
+      "levelOrdinal": 3,
+      "zone": "unpaid",
+      "position": {
+        "x": 31.3,
+        "z": 11.6
+      }
+    },
+    {
+      "id": "sk:entrance:busta-4f-miraina-tower-side",
+      "kind": "entrance",
+      "elementId": "sk:entrance:busta-4f-miraina-tower-side",
+      "levelId": "sk:level:busta-shinjuku-4f",
+      "levelOrdinal": 3,
+      "zone": "unpaid",
+      "position": {
+        "x": 29.6,
+        "z": -19.5
       }
     },
     {
@@ -2240,8 +2552,8 @@
       "levelOrdinal": 2,
       "zone": "unpaid",
       "position": {
-        "x": 25.8,
-        "z": 1
+        "x": 24.8,
+        "z": 12.6
       }
     },
     {
@@ -2252,8 +2564,8 @@
       "levelOrdinal": 3,
       "zone": "unpaid",
       "position": {
-        "x": 25.8,
-        "z": 1
+        "x": 24.8,
+        "z": 12.6
       }
     },
     {
@@ -2264,8 +2576,8 @@
       "levelOrdinal": 1,
       "zone": "unpaid",
       "position": {
-        "x": 25.8,
-        "z": 1
+        "x": 24.8,
+        "z": 12.6
       }
     },
     {
@@ -2276,7 +2588,7 @@
       "levelOrdinal": 2,
       "zone": "unpaid",
       "position": {
-        "x": 30.4,
+        "x": 25.4,
         "z": -17.6
       }
     },
@@ -2288,7 +2600,7 @@
       "levelOrdinal": 3,
       "zone": "unpaid",
       "position": {
-        "x": 30.4,
+        "x": 25.4,
         "z": -17.6
       }
     },
@@ -2300,8 +2612,44 @@
       "levelOrdinal": 1,
       "zone": "unpaid",
       "position": {
-        "x": 30.4,
+        "x": 25.4,
         "z": -17.6
+      }
+    },
+    {
+      "id": "sk:vertical:busta-elevator-new-south-east@sk:level:busta-shinjuku-3f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:busta-elevator-new-south-east",
+      "levelId": "sk:level:busta-shinjuku-3f",
+      "levelOrdinal": 2,
+      "zone": "unpaid",
+      "position": {
+        "x": 34.6,
+        "z": -8.6
+      }
+    },
+    {
+      "id": "sk:vertical:busta-elevator-new-south-east@sk:level:busta-shinjuku-4f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:busta-elevator-new-south-east",
+      "levelId": "sk:level:busta-shinjuku-4f",
+      "levelOrdinal": 3,
+      "zone": "unpaid",
+      "position": {
+        "x": 34.6,
+        "z": -8.6
+      }
+    },
+    {
+      "id": "sk:vertical:busta-elevator-new-south-east@sk:level:jr-east-shinjuku-2f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:busta-elevator-new-south-east",
+      "levelId": "sk:level:jr-east-shinjuku-2f",
+      "levelOrdinal": 1,
+      "zone": "unpaid",
+      "position": {
+        "x": 34.6,
+        "z": -8.6
       }
     },
     {
@@ -2312,8 +2660,8 @@
       "levelOrdinal": 2,
       "zone": "unpaid",
       "position": {
-        "x": 34.4,
-        "z": 2.4
+        "x": 34.6,
+        "z": 5.2
       }
     },
     {
@@ -2324,8 +2672,8 @@
       "levelOrdinal": 3,
       "zone": "unpaid",
       "position": {
-        "x": 34.4,
-        "z": 2.4
+        "x": 34.6,
+        "z": 5.2
       }
     },
     {
@@ -2336,8 +2684,80 @@
       "levelOrdinal": 1,
       "zone": "unpaid",
       "position": {
-        "x": 34.4,
-        "z": 2.4
+        "x": 34.6,
+        "z": 5.2
+      }
+    },
+    {
+      "id": "sk:vertical:busta-escalator-koshu-kaido@sk:level:busta-shinjuku-3f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:busta-escalator-koshu-kaido",
+      "levelId": "sk:level:busta-shinjuku-3f",
+      "levelOrdinal": 2,
+      "zone": "unpaid",
+      "position": {
+        "x": 24.6,
+        "z": 6.4
+      }
+    },
+    {
+      "id": "sk:vertical:busta-escalator-koshu-kaido@sk:level:busta-shinjuku-4f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:busta-escalator-koshu-kaido",
+      "levelId": "sk:level:busta-shinjuku-4f",
+      "levelOrdinal": 3,
+      "zone": "unpaid",
+      "position": {
+        "x": 24.6,
+        "z": 9
+      }
+    },
+    {
+      "id": "sk:vertical:busta-escalator-koshu-kaido@sk:level:jr-east-shinjuku-2f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:busta-escalator-koshu-kaido",
+      "levelId": "sk:level:jr-east-shinjuku-2f",
+      "levelOrdinal": 1,
+      "zone": "unpaid",
+      "position": {
+        "x": 24.8,
+        "z": 10.6
+      }
+    },
+    {
+      "id": "sk:vertical:busta-escalator-miraina-tower@sk:level:busta-shinjuku-3f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:busta-escalator-miraina-tower",
+      "levelId": "sk:level:busta-shinjuku-3f",
+      "levelOrdinal": 2,
+      "zone": "unpaid",
+      "position": {
+        "x": 27.6,
+        "z": -18.2
+      }
+    },
+    {
+      "id": "sk:vertical:busta-escalator-miraina-tower@sk:level:busta-shinjuku-4f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:busta-escalator-miraina-tower",
+      "levelId": "sk:level:busta-shinjuku-4f",
+      "levelOrdinal": 3,
+      "zone": "unpaid",
+      "position": {
+        "x": 30.2,
+        "z": -18.4
+      }
+    },
+    {
+      "id": "sk:vertical:busta-escalator-miraina-tower@sk:level:jr-east-shinjuku-2f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:busta-escalator-miraina-tower",
+      "levelId": "sk:level:jr-east-shinjuku-2f",
+      "levelOrdinal": 1,
+      "zone": "unpaid",
+      "position": {
+        "x": 24.8,
+        "z": -18.6
       }
     },
     {
@@ -2348,8 +2768,8 @@
       "levelOrdinal": 3,
       "zone": "unpaid",
       "position": {
-        "x": 33,
-        "z": -0.6
+        "x": 33.9,
+        "z": -11.8
       }
     },
     {
@@ -2361,7 +2781,7 @@
       "zone": "unpaid",
       "position": {
         "x": 33,
-        "z": -3.4
+        "z": -5.4
       }
     },
     {
@@ -2372,8 +2792,8 @@
       "levelOrdinal": 2,
       "zone": "unpaid",
       "position": {
-        "x": 33.4,
-        "z": 7.2
+        "x": 34.2,
+        "z": -1.2
       }
     },
     {
@@ -2384,8 +2804,8 @@
       "levelOrdinal": 3,
       "zone": "unpaid",
       "position": {
-        "x": 33.4,
-        "z": 9.6
+        "x": 34.2,
+        "z": -5.6
       }
     },
     {
@@ -2396,8 +2816,68 @@
       "levelOrdinal": 1,
       "zone": "unpaid",
       "position": {
-        "x": 33.4,
-        "z": 4.8
+        "x": 33.6,
+        "z": 1.6
+      }
+    },
+    {
+      "id": "sk:vertical:busta-escalator-south-east@sk:level:busta-shinjuku-3f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:busta-escalator-south-east",
+      "levelId": "sk:level:busta-shinjuku-3f",
+      "levelOrdinal": 2,
+      "zone": "unpaid",
+      "position": {
+        "x": 34.8,
+        "z": -13.8
+      }
+    },
+    {
+      "id": "sk:vertical:busta-escalator-south-east@sk:level:busta-shinjuku-4f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:busta-escalator-south-east",
+      "levelId": "sk:level:busta-shinjuku-4f",
+      "levelOrdinal": 3,
+      "zone": "unpaid",
+      "position": {
+        "x": 33.9,
+        "z": -15.8
+      }
+    },
+    {
+      "id": "sk:vertical:busta-escalator-south-east@sk:level:jr-east-shinjuku-2f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:busta-escalator-south-east",
+      "levelId": "sk:level:jr-east-shinjuku-2f",
+      "levelOrdinal": 1,
+      "zone": "unpaid",
+      "position": {
+        "x": 34.6,
+        "z": -17.8
+      }
+    },
+    {
+      "id": "sk:vertical:busta-stairs-south-east@sk:level:busta-shinjuku-3f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:busta-stairs-south-east",
+      "levelId": "sk:level:busta-shinjuku-3f",
+      "levelOrdinal": 2,
+      "zone": "unpaid",
+      "position": {
+        "x": 35.1,
+        "z": -15.6
+      }
+    },
+    {
+      "id": "sk:vertical:busta-stairs-south-east@sk:level:jr-east-shinjuku-2f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:busta-stairs-south-east",
+      "levelId": "sk:level:jr-east-shinjuku-2f",
+      "levelOrdinal": 1,
+      "zone": "unpaid",
+      "position": {
+        "x": 35,
+        "z": -18.8
       }
     },
     {
@@ -6183,37 +6663,70 @@
   ],
   "edges": [
     {
-      "kind": "entrance-approach",
-      "elementId": "sk:entrance:busta-3f-taxi",
+      "kind": "passage",
+      "elementId": "sk:passage:busta-3f-west-walkway-to-bus-drop-off-centre",
       "verticalKind": null,
       "levelChange": 0,
-      "stepFree": true,
+      "stepFree": null,
       "connection": "verified",
-      "from": "sk:area:busta-3f",
-      "to": "sk:entrance:busta-3f-taxi",
-      "id": "sk:area:busta-3f→sk:entrance:busta-3f-taxi"
+      "from": "sk:area:busta-3f-bus-drop-off-centre",
+      "to": "sk:area:busta-3f-west-walkway",
+      "id": "sk:area:busta-3f-bus-drop-off-centre→sk:area:busta-3f-west-walkway"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:busta-3f-bus-drop-off-centre",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-3f-bus-drop-off-centre",
+      "to": "sk:entrance:busta-3f-bus-drop-off-centre",
+      "id": "sk:area:busta-3f-bus-drop-off-centre→sk:entrance:busta-3f-bus-drop-off-centre"
+    },
+    {
+      "kind": "passage",
+      "elementId": "sk:passage:busta-3f-deck-to-tourist-information",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-3f-deck",
+      "to": "sk:area:busta-3f-tourist-information",
+      "id": "sk:area:busta-3f-deck→sk:area:busta-3f-tourist-information"
+    },
+    {
+      "kind": "passage",
+      "elementId": "sk:passage:busta-3f-west-walkway-to-deck",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-3f-deck",
+      "to": "sk:area:busta-3f-west-walkway",
+      "id": "sk:area:busta-3f-deck→sk:area:busta-3f-west-walkway"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:busta-3f-bus-drop-off-deck",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-3f-deck",
+      "to": "sk:entrance:busta-3f-bus-drop-off-deck",
+      "id": "sk:area:busta-3f-deck→sk:entrance:busta-3f-bus-drop-off-deck"
     },
     {
       "kind": "vertical-approach",
-      "elementId": "sk:vertical:busta-elevator-koshu-kaido",
+      "elementId": "sk:vertical:busta-elevator-new-south-east",
       "verticalKind": "elevator",
       "levelChange": 0,
       "stepFree": null,
       "connection": "verified",
-      "from": "sk:area:busta-3f",
-      "to": "sk:vertical:busta-elevator-koshu-kaido@sk:level:busta-shinjuku-3f",
-      "id": "sk:area:busta-3f→sk:vertical:busta-elevator-koshu-kaido@sk:level:busta-shinjuku-3f"
-    },
-    {
-      "kind": "vertical-approach",
-      "elementId": "sk:vertical:busta-elevator-miraina-tower",
-      "verticalKind": "elevator",
-      "levelChange": 0,
-      "stepFree": null,
-      "connection": "verified",
-      "from": "sk:area:busta-3f",
-      "to": "sk:vertical:busta-elevator-miraina-tower@sk:level:busta-shinjuku-3f",
-      "id": "sk:area:busta-3f→sk:vertical:busta-elevator-miraina-tower@sk:level:busta-shinjuku-3f"
+      "from": "sk:area:busta-3f-deck",
+      "to": "sk:vertical:busta-elevator-new-south-east@sk:level:busta-shinjuku-3f",
+      "id": "sk:area:busta-3f-deck→sk:vertical:busta-elevator-new-south-east@sk:level:busta-shinjuku-3f"
     },
     {
       "kind": "vertical-approach",
@@ -6222,9 +6735,9 @@
       "levelChange": 0,
       "stepFree": null,
       "connection": "verified",
-      "from": "sk:area:busta-3f",
+      "from": "sk:area:busta-3f-deck",
       "to": "sk:vertical:busta-elevator-new-south@sk:level:busta-shinjuku-3f",
-      "id": "sk:area:busta-3f→sk:vertical:busta-elevator-new-south@sk:level:busta-shinjuku-3f"
+      "id": "sk:area:busta-3f-deck→sk:vertical:busta-elevator-new-south@sk:level:busta-shinjuku-3f"
     },
     {
       "kind": "vertical-approach",
@@ -6233,31 +6746,53 @@
       "levelChange": 0,
       "stepFree": null,
       "connection": "verified",
-      "from": "sk:area:busta-3f",
+      "from": "sk:area:busta-3f-deck",
       "to": "sk:vertical:busta-escalator-new-south@sk:level:busta-shinjuku-3f",
-      "id": "sk:area:busta-3f→sk:vertical:busta-escalator-new-south@sk:level:busta-shinjuku-3f"
-    },
-    {
-      "kind": "entrance-approach",
-      "elementId": "sk:entrance:busta-4f-bus-boarding",
-      "verticalKind": null,
-      "levelChange": 0,
-      "stepFree": true,
-      "connection": "verified",
-      "from": "sk:area:busta-4f",
-      "to": "sk:entrance:busta-4f-bus-boarding",
-      "id": "sk:area:busta-4f→sk:entrance:busta-4f-bus-boarding"
+      "id": "sk:area:busta-3f-deck→sk:vertical:busta-escalator-new-south@sk:level:busta-shinjuku-3f"
     },
     {
       "kind": "vertical-approach",
-      "elementId": "sk:vertical:busta-elevator-koshu-kaido",
-      "verticalKind": "elevator",
+      "elementId": "sk:vertical:busta-escalator-south-east",
+      "verticalKind": "escalator",
       "levelChange": 0,
       "stepFree": null,
       "connection": "verified",
-      "from": "sk:area:busta-4f",
-      "to": "sk:vertical:busta-elevator-koshu-kaido@sk:level:busta-shinjuku-4f",
-      "id": "sk:area:busta-4f→sk:vertical:busta-elevator-koshu-kaido@sk:level:busta-shinjuku-4f"
+      "from": "sk:area:busta-3f-deck",
+      "to": "sk:vertical:busta-escalator-south-east@sk:level:busta-shinjuku-3f",
+      "id": "sk:area:busta-3f-deck→sk:vertical:busta-escalator-south-east@sk:level:busta-shinjuku-3f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:busta-stairs-south-east",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-3f-deck",
+      "to": "sk:vertical:busta-stairs-south-east@sk:level:busta-shinjuku-3f",
+      "id": "sk:area:busta-3f-deck→sk:vertical:busta-stairs-south-east@sk:level:busta-shinjuku-3f"
+    },
+    {
+      "kind": "passage",
+      "elementId": "sk:passage:busta-3f-taxi-to-east-walkway",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-3f-east-walkway",
+      "to": "sk:area:busta-3f-taxi",
+      "id": "sk:area:busta-3f-east-walkway→sk:area:busta-3f-taxi"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:busta-3f-miraina-tower-side",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-3f-east-walkway",
+      "to": "sk:entrance:busta-3f-miraina-tower-side",
+      "id": "sk:area:busta-3f-east-walkway→sk:entrance:busta-3f-miraina-tower-side"
     },
     {
       "kind": "vertical-approach",
@@ -6266,9 +6801,482 @@
       "levelChange": 0,
       "stepFree": null,
       "connection": "verified",
-      "from": "sk:area:busta-4f",
+      "from": "sk:area:busta-3f-east-walkway",
+      "to": "sk:vertical:busta-elevator-miraina-tower@sk:level:busta-shinjuku-3f",
+      "id": "sk:area:busta-3f-east-walkway→sk:vertical:busta-elevator-miraina-tower@sk:level:busta-shinjuku-3f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:busta-escalator-miraina-tower",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-3f-east-walkway",
+      "to": "sk:vertical:busta-escalator-miraina-tower@sk:level:busta-shinjuku-3f",
+      "id": "sk:area:busta-3f-east-walkway→sk:vertical:busta-escalator-miraina-tower@sk:level:busta-shinjuku-3f"
+    },
+    {
+      "kind": "passage",
+      "elementId": "sk:passage:busta-3f-taxi-to-east-walkway",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-3f-taxi",
+      "to": "sk:area:busta-3f-east-walkway",
+      "id": "sk:area:busta-3f-taxi→sk:area:busta-3f-east-walkway"
+    },
+    {
+      "kind": "passage",
+      "elementId": "sk:passage:busta-3f-taxi-to-west-walkway",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-3f-taxi",
+      "to": "sk:area:busta-3f-west-walkway",
+      "id": "sk:area:busta-3f-taxi→sk:area:busta-3f-west-walkway"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:busta-3f-taxi",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-3f-taxi",
+      "to": "sk:entrance:busta-3f-taxi",
+      "id": "sk:area:busta-3f-taxi→sk:entrance:busta-3f-taxi"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:busta-3f-taxi-drop-off",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-3f-taxi",
+      "to": "sk:entrance:busta-3f-taxi-drop-off",
+      "id": "sk:area:busta-3f-taxi→sk:entrance:busta-3f-taxi-drop-off"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:busta-elevator-koshu-kaido",
+      "verticalKind": "elevator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-3f-taxi",
+      "to": "sk:vertical:busta-elevator-koshu-kaido@sk:level:busta-shinjuku-3f",
+      "id": "sk:area:busta-3f-taxi→sk:vertical:busta-elevator-koshu-kaido@sk:level:busta-shinjuku-3f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:busta-escalator-koshu-kaido",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-3f-taxi",
+      "to": "sk:vertical:busta-escalator-koshu-kaido@sk:level:busta-shinjuku-3f",
+      "id": "sk:area:busta-3f-taxi→sk:vertical:busta-escalator-koshu-kaido@sk:level:busta-shinjuku-3f"
+    },
+    {
+      "kind": "passage",
+      "elementId": "sk:passage:busta-3f-deck-to-tourist-information",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-3f-tourist-information",
+      "to": "sk:area:busta-3f-deck",
+      "id": "sk:area:busta-3f-tourist-information→sk:area:busta-3f-deck"
+    },
+    {
+      "kind": "passage",
+      "elementId": "sk:passage:busta-3f-west-walkway-to-bus-drop-off-centre",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-3f-west-walkway",
+      "to": "sk:area:busta-3f-bus-drop-off-centre",
+      "id": "sk:area:busta-3f-west-walkway→sk:area:busta-3f-bus-drop-off-centre"
+    },
+    {
+      "kind": "passage",
+      "elementId": "sk:passage:busta-3f-west-walkway-to-deck",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-3f-west-walkway",
+      "to": "sk:area:busta-3f-deck",
+      "id": "sk:area:busta-3f-west-walkway→sk:area:busta-3f-deck"
+    },
+    {
+      "kind": "passage",
+      "elementId": "sk:passage:busta-3f-taxi-to-west-walkway",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-3f-west-walkway",
+      "to": "sk:area:busta-3f-taxi",
+      "id": "sk:area:busta-3f-west-walkway→sk:area:busta-3f-taxi"
+    },
+    {
+      "kind": "passage",
+      "elementId": "sk:passage:busta-4f-area-b-to-area-a",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-4f-area-a",
+      "to": "sk:area:busta-4f-area-b",
+      "id": "sk:area:busta-4f-area-a→sk:area:busta-4f-area-b"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:busta-4f-bay-a1",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-4f-area-a",
+      "to": "sk:entrance:busta-4f-bay-a1",
+      "id": "sk:area:busta-4f-area-a→sk:entrance:busta-4f-bay-a1"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:busta-4f-bay-a2",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-4f-area-a",
+      "to": "sk:entrance:busta-4f-bay-a2",
+      "id": "sk:area:busta-4f-area-a→sk:entrance:busta-4f-bay-a2"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:busta-4f-bay-a3",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-4f-area-a",
+      "to": "sk:entrance:busta-4f-bay-a3",
+      "id": "sk:area:busta-4f-area-a→sk:entrance:busta-4f-bay-a3"
+    },
+    {
+      "kind": "passage",
+      "elementId": "sk:passage:busta-4f-area-b-to-area-a",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-4f-area-b",
+      "to": "sk:area:busta-4f-area-a",
+      "id": "sk:area:busta-4f-area-b→sk:area:busta-4f-area-a"
+    },
+    {
+      "kind": "passage",
+      "elementId": "sk:passage:busta-4f-area-b-to-area-c",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-4f-area-b",
+      "to": "sk:area:busta-4f-area-c",
+      "id": "sk:area:busta-4f-area-b→sk:area:busta-4f-area-c"
+    },
+    {
+      "kind": "passage",
+      "elementId": "sk:passage:busta-4f-hall-to-area-b",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-4f-area-b",
+      "to": "sk:area:busta-4f-hall",
+      "id": "sk:area:busta-4f-area-b→sk:area:busta-4f-hall"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:busta-4f-bay-b4",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-4f-area-b",
+      "to": "sk:entrance:busta-4f-bay-b4",
+      "id": "sk:area:busta-4f-area-b→sk:entrance:busta-4f-bay-b4"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:busta-4f-bay-b5",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-4f-area-b",
+      "to": "sk:entrance:busta-4f-bay-b5",
+      "id": "sk:area:busta-4f-area-b→sk:entrance:busta-4f-bay-b5"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:busta-4f-bay-b6",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-4f-area-b",
+      "to": "sk:entrance:busta-4f-bay-b6",
+      "id": "sk:area:busta-4f-area-b→sk:entrance:busta-4f-bay-b6"
+    },
+    {
+      "kind": "passage",
+      "elementId": "sk:passage:busta-4f-area-b-to-area-c",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-4f-area-c",
+      "to": "sk:area:busta-4f-area-b",
+      "id": "sk:area:busta-4f-area-c→sk:area:busta-4f-area-b"
+    },
+    {
+      "kind": "passage",
+      "elementId": "sk:passage:busta-4f-area-c-to-area-d",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-4f-area-c",
+      "to": "sk:area:busta-4f-area-d",
+      "id": "sk:area:busta-4f-area-c→sk:area:busta-4f-area-d"
+    },
+    {
+      "kind": "passage",
+      "elementId": "sk:passage:busta-4f-hall-to-area-c",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-4f-area-c",
+      "to": "sk:area:busta-4f-hall",
+      "id": "sk:area:busta-4f-area-c→sk:area:busta-4f-hall"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:busta-4f-bay-c7",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-4f-area-c",
+      "to": "sk:entrance:busta-4f-bay-c7",
+      "id": "sk:area:busta-4f-area-c→sk:entrance:busta-4f-bay-c7"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:busta-4f-bay-c8",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-4f-area-c",
+      "to": "sk:entrance:busta-4f-bay-c8",
+      "id": "sk:area:busta-4f-area-c→sk:entrance:busta-4f-bay-c8"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:busta-4f-bay-c9",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-4f-area-c",
+      "to": "sk:entrance:busta-4f-bay-c9",
+      "id": "sk:area:busta-4f-area-c→sk:entrance:busta-4f-bay-c9"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:busta-elevator-koshu-kaido",
+      "verticalKind": "elevator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-4f-area-c",
+      "to": "sk:vertical:busta-elevator-koshu-kaido@sk:level:busta-shinjuku-4f",
+      "id": "sk:area:busta-4f-area-c→sk:vertical:busta-elevator-koshu-kaido@sk:level:busta-shinjuku-4f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:busta-escalator-koshu-kaido",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-4f-area-c",
+      "to": "sk:vertical:busta-escalator-koshu-kaido@sk:level:busta-shinjuku-4f",
+      "id": "sk:area:busta-4f-area-c→sk:vertical:busta-escalator-koshu-kaido@sk:level:busta-shinjuku-4f"
+    },
+    {
+      "kind": "passage",
+      "elementId": "sk:passage:busta-4f-area-c-to-area-d",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-4f-area-d",
+      "to": "sk:area:busta-4f-area-c",
+      "id": "sk:area:busta-4f-area-d→sk:area:busta-4f-area-c"
+    },
+    {
+      "kind": "passage",
+      "elementId": "sk:passage:busta-4f-area-d-to-south-walkway",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-4f-area-d",
+      "to": "sk:area:busta-4f-south-walkway",
+      "id": "sk:area:busta-4f-area-d→sk:area:busta-4f-south-walkway"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:busta-4f-bay-d10",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-4f-area-d",
+      "to": "sk:entrance:busta-4f-bay-d10",
+      "id": "sk:area:busta-4f-area-d→sk:entrance:busta-4f-bay-d10"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:busta-4f-bay-d11",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-4f-area-d",
+      "to": "sk:entrance:busta-4f-bay-d11",
+      "id": "sk:area:busta-4f-area-d→sk:entrance:busta-4f-bay-d11"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:busta-4f-bay-d12",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-4f-area-d",
+      "to": "sk:entrance:busta-4f-bay-d12",
+      "id": "sk:area:busta-4f-area-d→sk:entrance:busta-4f-bay-d12"
+    },
+    {
+      "kind": "passage",
+      "elementId": "sk:passage:busta-4f-hall-to-area-b",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-4f-hall",
+      "to": "sk:area:busta-4f-area-b",
+      "id": "sk:area:busta-4f-hall→sk:area:busta-4f-area-b"
+    },
+    {
+      "kind": "passage",
+      "elementId": "sk:passage:busta-4f-hall-to-area-c",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-4f-hall",
+      "to": "sk:area:busta-4f-area-c",
+      "id": "sk:area:busta-4f-hall→sk:area:busta-4f-area-c"
+    },
+    {
+      "kind": "passage",
+      "elementId": "sk:passage:busta-4f-hall-to-south-walkway",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-4f-hall",
+      "to": "sk:area:busta-4f-south-walkway",
+      "id": "sk:area:busta-4f-hall→sk:area:busta-4f-south-walkway"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:busta-4f-miraina-tower-side",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-4f-hall",
+      "to": "sk:entrance:busta-4f-miraina-tower-side",
+      "id": "sk:area:busta-4f-hall→sk:entrance:busta-4f-miraina-tower-side"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:busta-elevator-miraina-tower",
+      "verticalKind": "elevator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-4f-hall",
       "to": "sk:vertical:busta-elevator-miraina-tower@sk:level:busta-shinjuku-4f",
-      "id": "sk:area:busta-4f→sk:vertical:busta-elevator-miraina-tower@sk:level:busta-shinjuku-4f"
+      "id": "sk:area:busta-4f-hall→sk:vertical:busta-elevator-miraina-tower@sk:level:busta-shinjuku-4f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:busta-escalator-miraina-tower",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-4f-hall",
+      "to": "sk:vertical:busta-escalator-miraina-tower@sk:level:busta-shinjuku-4f",
+      "id": "sk:area:busta-4f-hall→sk:vertical:busta-escalator-miraina-tower@sk:level:busta-shinjuku-4f"
+    },
+    {
+      "kind": "passage",
+      "elementId": "sk:passage:busta-4f-area-d-to-south-walkway",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-4f-south-walkway",
+      "to": "sk:area:busta-4f-area-d",
+      "id": "sk:area:busta-4f-south-walkway→sk:area:busta-4f-area-d"
+    },
+    {
+      "kind": "passage",
+      "elementId": "sk:passage:busta-4f-hall-to-south-walkway",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-4f-south-walkway",
+      "to": "sk:area:busta-4f-hall",
+      "id": "sk:area:busta-4f-south-walkway→sk:area:busta-4f-hall"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:busta-elevator-new-south-east",
+      "verticalKind": "elevator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-4f-south-walkway",
+      "to": "sk:vertical:busta-elevator-new-south-east@sk:level:busta-shinjuku-4f",
+      "id": "sk:area:busta-4f-south-walkway→sk:vertical:busta-elevator-new-south-east@sk:level:busta-shinjuku-4f"
     },
     {
       "kind": "vertical-approach",
@@ -6277,9 +7285,9 @@
       "levelChange": 0,
       "stepFree": null,
       "connection": "verified",
-      "from": "sk:area:busta-4f",
+      "from": "sk:area:busta-4f-south-walkway",
       "to": "sk:vertical:busta-elevator-new-south@sk:level:busta-shinjuku-4f",
-      "id": "sk:area:busta-4f→sk:vertical:busta-elevator-new-south@sk:level:busta-shinjuku-4f"
+      "id": "sk:area:busta-4f-south-walkway→sk:vertical:busta-elevator-new-south@sk:level:busta-shinjuku-4f"
     },
     {
       "kind": "vertical-approach",
@@ -6288,9 +7296,9 @@
       "levelChange": 0,
       "stepFree": null,
       "connection": "verified",
-      "from": "sk:area:busta-4f",
+      "from": "sk:area:busta-4f-south-walkway",
       "to": "sk:vertical:busta-escalator-new-south-direct-4f@sk:level:busta-shinjuku-4f",
-      "id": "sk:area:busta-4f→sk:vertical:busta-escalator-new-south-direct-4f@sk:level:busta-shinjuku-4f"
+      "id": "sk:area:busta-4f-south-walkway→sk:vertical:busta-escalator-new-south-direct-4f@sk:level:busta-shinjuku-4f"
     },
     {
       "kind": "vertical-approach",
@@ -6299,9 +7307,20 @@
       "levelChange": 0,
       "stepFree": null,
       "connection": "verified",
-      "from": "sk:area:busta-4f",
+      "from": "sk:area:busta-4f-south-walkway",
       "to": "sk:vertical:busta-escalator-new-south@sk:level:busta-shinjuku-4f",
-      "id": "sk:area:busta-4f→sk:vertical:busta-escalator-new-south@sk:level:busta-shinjuku-4f"
+      "id": "sk:area:busta-4f-south-walkway→sk:vertical:busta-escalator-new-south@sk:level:busta-shinjuku-4f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:busta-escalator-south-east",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:busta-4f-south-walkway",
+      "to": "sk:vertical:busta-escalator-south-east@sk:level:busta-shinjuku-4f",
+      "id": "sk:area:busta-4f-south-walkway→sk:vertical:busta-escalator-south-east@sk:level:busta-shinjuku-4f"
     },
     {
       "kind": "entrance-approach",
@@ -6436,6 +7455,17 @@
       "id": "sk:area:jr-2f-koshu-kaido-unpaid→sk:vertical:busta-elevator-koshu-kaido@sk:level:jr-east-shinjuku-2f"
     },
     {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:busta-escalator-koshu-kaido",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:jr-2f-koshu-kaido-unpaid",
+      "to": "sk:vertical:busta-escalator-koshu-kaido@sk:level:jr-east-shinjuku-2f",
+      "id": "sk:area:jr-2f-koshu-kaido-unpaid→sk:vertical:busta-escalator-koshu-kaido@sk:level:jr-east-shinjuku-2f"
+    },
+    {
       "kind": "passage",
       "elementId": "sk:passage:jr-2f-koshu-kaido-outside-to-miraina-outside",
       "verticalKind": null,
@@ -6489,6 +7519,17 @@
       "from": "sk:area:jr-2f-miraina-tower-unpaid",
       "to": "sk:vertical:busta-elevator-miraina-tower@sk:level:jr-east-shinjuku-2f",
       "id": "sk:area:jr-2f-miraina-tower-unpaid→sk:vertical:busta-elevator-miraina-tower@sk:level:jr-east-shinjuku-2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:busta-escalator-miraina-tower",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:jr-2f-miraina-tower-unpaid",
+      "to": "sk:vertical:busta-escalator-miraina-tower@sk:level:jr-east-shinjuku-2f",
+      "id": "sk:area:jr-2f-miraina-tower-unpaid→sk:vertical:busta-escalator-miraina-tower@sk:level:jr-east-shinjuku-2f"
     },
     {
       "kind": "gate-approach",
@@ -6712,6 +7753,17 @@
     },
     {
       "kind": "vertical-approach",
+      "elementId": "sk:vertical:busta-elevator-new-south-east",
+      "verticalKind": "elevator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:jr-2f-new-south-unpaid",
+      "to": "sk:vertical:busta-elevator-new-south-east@sk:level:jr-east-shinjuku-2f",
+      "id": "sk:area:jr-2f-new-south-unpaid→sk:vertical:busta-elevator-new-south-east@sk:level:jr-east-shinjuku-2f"
+    },
+    {
+      "kind": "vertical-approach",
       "elementId": "sk:vertical:busta-elevator-new-south",
       "verticalKind": "elevator",
       "levelChange": 0,
@@ -6742,6 +7794,28 @@
       "from": "sk:area:jr-2f-new-south-unpaid",
       "to": "sk:vertical:busta-escalator-new-south@sk:level:jr-east-shinjuku-2f",
       "id": "sk:area:jr-2f-new-south-unpaid→sk:vertical:busta-escalator-new-south@sk:level:jr-east-shinjuku-2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:busta-escalator-south-east",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:jr-2f-new-south-unpaid",
+      "to": "sk:vertical:busta-escalator-south-east@sk:level:jr-east-shinjuku-2f",
+      "id": "sk:area:jr-2f-new-south-unpaid→sk:vertical:busta-escalator-south-east@sk:level:jr-east-shinjuku-2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:busta-stairs-south-east",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:jr-2f-new-south-unpaid",
+      "to": "sk:vertical:busta-stairs-south-east@sk:level:jr-east-shinjuku-2f",
+      "id": "sk:area:jr-2f-new-south-unpaid→sk:vertical:busta-stairs-south-east@sk:level:jr-east-shinjuku-2f"
     },
     {
       "kind": "gate-approach",
@@ -10397,25 +11471,201 @@
     },
     {
       "kind": "entrance-approach",
-      "elementId": "sk:entrance:busta-3f-taxi",
+      "elementId": "sk:entrance:busta-3f-bus-drop-off-centre",
       "verticalKind": null,
       "levelChange": 0,
-      "stepFree": true,
+      "stepFree": null,
       "connection": "verified",
-      "from": "sk:entrance:busta-3f-taxi",
-      "to": "sk:area:busta-3f",
-      "id": "sk:entrance:busta-3f-taxi→sk:area:busta-3f"
+      "from": "sk:entrance:busta-3f-bus-drop-off-centre",
+      "to": "sk:area:busta-3f-bus-drop-off-centre",
+      "id": "sk:entrance:busta-3f-bus-drop-off-centre→sk:area:busta-3f-bus-drop-off-centre"
     },
     {
       "kind": "entrance-approach",
-      "elementId": "sk:entrance:busta-4f-bus-boarding",
+      "elementId": "sk:entrance:busta-3f-bus-drop-off-deck",
       "verticalKind": null,
       "levelChange": 0,
-      "stepFree": true,
+      "stepFree": null,
       "connection": "verified",
-      "from": "sk:entrance:busta-4f-bus-boarding",
-      "to": "sk:area:busta-4f",
-      "id": "sk:entrance:busta-4f-bus-boarding→sk:area:busta-4f"
+      "from": "sk:entrance:busta-3f-bus-drop-off-deck",
+      "to": "sk:area:busta-3f-deck",
+      "id": "sk:entrance:busta-3f-bus-drop-off-deck→sk:area:busta-3f-deck"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:busta-3f-miraina-tower-side",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:entrance:busta-3f-miraina-tower-side",
+      "to": "sk:area:busta-3f-east-walkway",
+      "id": "sk:entrance:busta-3f-miraina-tower-side→sk:area:busta-3f-east-walkway"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:busta-3f-taxi-drop-off",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:entrance:busta-3f-taxi-drop-off",
+      "to": "sk:area:busta-3f-taxi",
+      "id": "sk:entrance:busta-3f-taxi-drop-off→sk:area:busta-3f-taxi"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:busta-3f-taxi",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:entrance:busta-3f-taxi",
+      "to": "sk:area:busta-3f-taxi",
+      "id": "sk:entrance:busta-3f-taxi→sk:area:busta-3f-taxi"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:busta-4f-bay-a1",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:entrance:busta-4f-bay-a1",
+      "to": "sk:area:busta-4f-area-a",
+      "id": "sk:entrance:busta-4f-bay-a1→sk:area:busta-4f-area-a"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:busta-4f-bay-a2",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:entrance:busta-4f-bay-a2",
+      "to": "sk:area:busta-4f-area-a",
+      "id": "sk:entrance:busta-4f-bay-a2→sk:area:busta-4f-area-a"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:busta-4f-bay-a3",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:entrance:busta-4f-bay-a3",
+      "to": "sk:area:busta-4f-area-a",
+      "id": "sk:entrance:busta-4f-bay-a3→sk:area:busta-4f-area-a"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:busta-4f-bay-b4",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:entrance:busta-4f-bay-b4",
+      "to": "sk:area:busta-4f-area-b",
+      "id": "sk:entrance:busta-4f-bay-b4→sk:area:busta-4f-area-b"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:busta-4f-bay-b5",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:entrance:busta-4f-bay-b5",
+      "to": "sk:area:busta-4f-area-b",
+      "id": "sk:entrance:busta-4f-bay-b5→sk:area:busta-4f-area-b"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:busta-4f-bay-b6",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:entrance:busta-4f-bay-b6",
+      "to": "sk:area:busta-4f-area-b",
+      "id": "sk:entrance:busta-4f-bay-b6→sk:area:busta-4f-area-b"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:busta-4f-bay-c7",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:entrance:busta-4f-bay-c7",
+      "to": "sk:area:busta-4f-area-c",
+      "id": "sk:entrance:busta-4f-bay-c7→sk:area:busta-4f-area-c"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:busta-4f-bay-c8",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:entrance:busta-4f-bay-c8",
+      "to": "sk:area:busta-4f-area-c",
+      "id": "sk:entrance:busta-4f-bay-c8→sk:area:busta-4f-area-c"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:busta-4f-bay-c9",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:entrance:busta-4f-bay-c9",
+      "to": "sk:area:busta-4f-area-c",
+      "id": "sk:entrance:busta-4f-bay-c9→sk:area:busta-4f-area-c"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:busta-4f-bay-d10",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:entrance:busta-4f-bay-d10",
+      "to": "sk:area:busta-4f-area-d",
+      "id": "sk:entrance:busta-4f-bay-d10→sk:area:busta-4f-area-d"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:busta-4f-bay-d11",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:entrance:busta-4f-bay-d11",
+      "to": "sk:area:busta-4f-area-d",
+      "id": "sk:entrance:busta-4f-bay-d11→sk:area:busta-4f-area-d"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:busta-4f-bay-d12",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:entrance:busta-4f-bay-d12",
+      "to": "sk:area:busta-4f-area-d",
+      "id": "sk:entrance:busta-4f-bay-d12→sk:area:busta-4f-area-d"
+    },
+    {
+      "kind": "entrance-approach",
+      "elementId": "sk:entrance:busta-4f-miraina-tower-side",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:entrance:busta-4f-miraina-tower-side",
+      "to": "sk:area:busta-4f-hall",
+      "id": "sk:entrance:busta-4f-miraina-tower-side→sk:area:busta-4f-hall"
     },
     {
       "kind": "entrance-approach",
@@ -13395,8 +14645,8 @@
       "stepFree": null,
       "connection": "verified",
       "from": "sk:vertical:busta-elevator-koshu-kaido@sk:level:busta-shinjuku-3f",
-      "to": "sk:area:busta-3f",
-      "id": "sk:vertical:busta-elevator-koshu-kaido@sk:level:busta-shinjuku-3f→sk:area:busta-3f"
+      "to": "sk:area:busta-3f-taxi",
+      "id": "sk:vertical:busta-elevator-koshu-kaido@sk:level:busta-shinjuku-3f→sk:area:busta-3f-taxi"
     },
     {
       "kind": "vertical",
@@ -13428,8 +14678,8 @@
       "stepFree": null,
       "connection": "verified",
       "from": "sk:vertical:busta-elevator-koshu-kaido@sk:level:busta-shinjuku-4f",
-      "to": "sk:area:busta-4f",
-      "id": "sk:vertical:busta-elevator-koshu-kaido@sk:level:busta-shinjuku-4f→sk:area:busta-4f"
+      "to": "sk:area:busta-4f-area-c",
+      "id": "sk:vertical:busta-elevator-koshu-kaido@sk:level:busta-shinjuku-4f→sk:area:busta-4f-area-c"
     },
     {
       "kind": "vertical",
@@ -13472,8 +14722,8 @@
       "stepFree": null,
       "connection": "verified",
       "from": "sk:vertical:busta-elevator-miraina-tower@sk:level:busta-shinjuku-3f",
-      "to": "sk:area:busta-3f",
-      "id": "sk:vertical:busta-elevator-miraina-tower@sk:level:busta-shinjuku-3f→sk:area:busta-3f"
+      "to": "sk:area:busta-3f-east-walkway",
+      "id": "sk:vertical:busta-elevator-miraina-tower@sk:level:busta-shinjuku-3f→sk:area:busta-3f-east-walkway"
     },
     {
       "kind": "vertical",
@@ -13505,8 +14755,8 @@
       "stepFree": null,
       "connection": "verified",
       "from": "sk:vertical:busta-elevator-miraina-tower@sk:level:busta-shinjuku-4f",
-      "to": "sk:area:busta-4f",
-      "id": "sk:vertical:busta-elevator-miraina-tower@sk:level:busta-shinjuku-4f→sk:area:busta-4f"
+      "to": "sk:area:busta-4f-hall",
+      "id": "sk:vertical:busta-elevator-miraina-tower@sk:level:busta-shinjuku-4f→sk:area:busta-4f-hall"
     },
     {
       "kind": "vertical",
@@ -13543,14 +14793,91 @@
     },
     {
       "kind": "vertical-approach",
+      "elementId": "sk:vertical:busta-elevator-new-south-east",
+      "verticalKind": "elevator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:busta-elevator-new-south-east@sk:level:busta-shinjuku-3f",
+      "to": "sk:area:busta-3f-deck",
+      "id": "sk:vertical:busta-elevator-new-south-east@sk:level:busta-shinjuku-3f→sk:area:busta-3f-deck"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:busta-elevator-new-south-east",
+      "verticalKind": "elevator",
+      "levelChange": 1,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:vertical:busta-elevator-new-south-east@sk:level:busta-shinjuku-3f",
+      "to": "sk:vertical:busta-elevator-new-south-east@sk:level:busta-shinjuku-4f",
+      "id": "sk:vertical:busta-elevator-new-south-east@sk:level:busta-shinjuku-3f→sk:vertical:busta-elevator-new-south-east@sk:level:busta-shinjuku-4f"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:busta-elevator-new-south-east",
+      "verticalKind": "elevator",
+      "levelChange": 1,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:vertical:busta-elevator-new-south-east@sk:level:busta-shinjuku-3f",
+      "to": "sk:vertical:busta-elevator-new-south-east@sk:level:jr-east-shinjuku-2f",
+      "id": "sk:vertical:busta-elevator-new-south-east@sk:level:busta-shinjuku-3f→sk:vertical:busta-elevator-new-south-east@sk:level:jr-east-shinjuku-2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:busta-elevator-new-south-east",
+      "verticalKind": "elevator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:busta-elevator-new-south-east@sk:level:busta-shinjuku-4f",
+      "to": "sk:area:busta-4f-south-walkway",
+      "id": "sk:vertical:busta-elevator-new-south-east@sk:level:busta-shinjuku-4f→sk:area:busta-4f-south-walkway"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:busta-elevator-new-south-east",
+      "verticalKind": "elevator",
+      "levelChange": 1,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:vertical:busta-elevator-new-south-east@sk:level:busta-shinjuku-4f",
+      "to": "sk:vertical:busta-elevator-new-south-east@sk:level:busta-shinjuku-3f",
+      "id": "sk:vertical:busta-elevator-new-south-east@sk:level:busta-shinjuku-4f→sk:vertical:busta-elevator-new-south-east@sk:level:busta-shinjuku-3f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:busta-elevator-new-south-east",
+      "verticalKind": "elevator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:busta-elevator-new-south-east@sk:level:jr-east-shinjuku-2f",
+      "to": "sk:area:jr-2f-new-south-unpaid",
+      "id": "sk:vertical:busta-elevator-new-south-east@sk:level:jr-east-shinjuku-2f→sk:area:jr-2f-new-south-unpaid"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:busta-elevator-new-south-east",
+      "verticalKind": "elevator",
+      "levelChange": 1,
+      "stepFree": true,
+      "connection": "verified",
+      "from": "sk:vertical:busta-elevator-new-south-east@sk:level:jr-east-shinjuku-2f",
+      "to": "sk:vertical:busta-elevator-new-south-east@sk:level:busta-shinjuku-3f",
+      "id": "sk:vertical:busta-elevator-new-south-east@sk:level:jr-east-shinjuku-2f→sk:vertical:busta-elevator-new-south-east@sk:level:busta-shinjuku-3f"
+    },
+    {
+      "kind": "vertical-approach",
       "elementId": "sk:vertical:busta-elevator-new-south",
       "verticalKind": "elevator",
       "levelChange": 0,
       "stepFree": null,
       "connection": "verified",
       "from": "sk:vertical:busta-elevator-new-south@sk:level:busta-shinjuku-3f",
-      "to": "sk:area:busta-3f",
-      "id": "sk:vertical:busta-elevator-new-south@sk:level:busta-shinjuku-3f→sk:area:busta-3f"
+      "to": "sk:area:busta-3f-deck",
+      "id": "sk:vertical:busta-elevator-new-south@sk:level:busta-shinjuku-3f→sk:area:busta-3f-deck"
     },
     {
       "kind": "vertical",
@@ -13582,8 +14909,8 @@
       "stepFree": null,
       "connection": "verified",
       "from": "sk:vertical:busta-elevator-new-south@sk:level:busta-shinjuku-4f",
-      "to": "sk:area:busta-4f",
-      "id": "sk:vertical:busta-elevator-new-south@sk:level:busta-shinjuku-4f→sk:area:busta-4f"
+      "to": "sk:area:busta-4f-south-walkway",
+      "id": "sk:vertical:busta-elevator-new-south@sk:level:busta-shinjuku-4f→sk:area:busta-4f-south-walkway"
     },
     {
       "kind": "vertical",
@@ -13620,14 +14947,168 @@
     },
     {
       "kind": "vertical-approach",
+      "elementId": "sk:vertical:busta-escalator-koshu-kaido",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:busta-escalator-koshu-kaido@sk:level:busta-shinjuku-3f",
+      "to": "sk:area:busta-3f-taxi",
+      "id": "sk:vertical:busta-escalator-koshu-kaido@sk:level:busta-shinjuku-3f→sk:area:busta-3f-taxi"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:busta-escalator-koshu-kaido",
+      "verticalKind": "escalator",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:busta-escalator-koshu-kaido@sk:level:busta-shinjuku-3f",
+      "to": "sk:vertical:busta-escalator-koshu-kaido@sk:level:busta-shinjuku-4f",
+      "id": "sk:vertical:busta-escalator-koshu-kaido@sk:level:busta-shinjuku-3f→sk:vertical:busta-escalator-koshu-kaido@sk:level:busta-shinjuku-4f"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:busta-escalator-koshu-kaido",
+      "verticalKind": "escalator",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:busta-escalator-koshu-kaido@sk:level:busta-shinjuku-3f",
+      "to": "sk:vertical:busta-escalator-koshu-kaido@sk:level:jr-east-shinjuku-2f",
+      "id": "sk:vertical:busta-escalator-koshu-kaido@sk:level:busta-shinjuku-3f→sk:vertical:busta-escalator-koshu-kaido@sk:level:jr-east-shinjuku-2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:busta-escalator-koshu-kaido",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:busta-escalator-koshu-kaido@sk:level:busta-shinjuku-4f",
+      "to": "sk:area:busta-4f-area-c",
+      "id": "sk:vertical:busta-escalator-koshu-kaido@sk:level:busta-shinjuku-4f→sk:area:busta-4f-area-c"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:busta-escalator-koshu-kaido",
+      "verticalKind": "escalator",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:busta-escalator-koshu-kaido@sk:level:busta-shinjuku-4f",
+      "to": "sk:vertical:busta-escalator-koshu-kaido@sk:level:busta-shinjuku-3f",
+      "id": "sk:vertical:busta-escalator-koshu-kaido@sk:level:busta-shinjuku-4f→sk:vertical:busta-escalator-koshu-kaido@sk:level:busta-shinjuku-3f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:busta-escalator-koshu-kaido",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:busta-escalator-koshu-kaido@sk:level:jr-east-shinjuku-2f",
+      "to": "sk:area:jr-2f-koshu-kaido-unpaid",
+      "id": "sk:vertical:busta-escalator-koshu-kaido@sk:level:jr-east-shinjuku-2f→sk:area:jr-2f-koshu-kaido-unpaid"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:busta-escalator-koshu-kaido",
+      "verticalKind": "escalator",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:busta-escalator-koshu-kaido@sk:level:jr-east-shinjuku-2f",
+      "to": "sk:vertical:busta-escalator-koshu-kaido@sk:level:busta-shinjuku-3f",
+      "id": "sk:vertical:busta-escalator-koshu-kaido@sk:level:jr-east-shinjuku-2f→sk:vertical:busta-escalator-koshu-kaido@sk:level:busta-shinjuku-3f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:busta-escalator-miraina-tower",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:busta-escalator-miraina-tower@sk:level:busta-shinjuku-3f",
+      "to": "sk:area:busta-3f-east-walkway",
+      "id": "sk:vertical:busta-escalator-miraina-tower@sk:level:busta-shinjuku-3f→sk:area:busta-3f-east-walkway"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:busta-escalator-miraina-tower",
+      "verticalKind": "escalator",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:busta-escalator-miraina-tower@sk:level:busta-shinjuku-3f",
+      "to": "sk:vertical:busta-escalator-miraina-tower@sk:level:busta-shinjuku-4f",
+      "id": "sk:vertical:busta-escalator-miraina-tower@sk:level:busta-shinjuku-3f→sk:vertical:busta-escalator-miraina-tower@sk:level:busta-shinjuku-4f"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:busta-escalator-miraina-tower",
+      "verticalKind": "escalator",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:busta-escalator-miraina-tower@sk:level:busta-shinjuku-3f",
+      "to": "sk:vertical:busta-escalator-miraina-tower@sk:level:jr-east-shinjuku-2f",
+      "id": "sk:vertical:busta-escalator-miraina-tower@sk:level:busta-shinjuku-3f→sk:vertical:busta-escalator-miraina-tower@sk:level:jr-east-shinjuku-2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:busta-escalator-miraina-tower",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:busta-escalator-miraina-tower@sk:level:busta-shinjuku-4f",
+      "to": "sk:area:busta-4f-hall",
+      "id": "sk:vertical:busta-escalator-miraina-tower@sk:level:busta-shinjuku-4f→sk:area:busta-4f-hall"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:busta-escalator-miraina-tower",
+      "verticalKind": "escalator",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:busta-escalator-miraina-tower@sk:level:busta-shinjuku-4f",
+      "to": "sk:vertical:busta-escalator-miraina-tower@sk:level:busta-shinjuku-3f",
+      "id": "sk:vertical:busta-escalator-miraina-tower@sk:level:busta-shinjuku-4f→sk:vertical:busta-escalator-miraina-tower@sk:level:busta-shinjuku-3f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:busta-escalator-miraina-tower",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:busta-escalator-miraina-tower@sk:level:jr-east-shinjuku-2f",
+      "to": "sk:area:jr-2f-miraina-tower-unpaid",
+      "id": "sk:vertical:busta-escalator-miraina-tower@sk:level:jr-east-shinjuku-2f→sk:area:jr-2f-miraina-tower-unpaid"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:busta-escalator-miraina-tower",
+      "verticalKind": "escalator",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:busta-escalator-miraina-tower@sk:level:jr-east-shinjuku-2f",
+      "to": "sk:vertical:busta-escalator-miraina-tower@sk:level:busta-shinjuku-3f",
+      "id": "sk:vertical:busta-escalator-miraina-tower@sk:level:jr-east-shinjuku-2f→sk:vertical:busta-escalator-miraina-tower@sk:level:busta-shinjuku-3f"
+    },
+    {
+      "kind": "vertical-approach",
       "elementId": "sk:vertical:busta-escalator-new-south-direct-4f",
       "verticalKind": "escalator",
       "levelChange": 0,
       "stepFree": null,
       "connection": "verified",
       "from": "sk:vertical:busta-escalator-new-south-direct-4f@sk:level:busta-shinjuku-4f",
-      "to": "sk:area:busta-4f",
-      "id": "sk:vertical:busta-escalator-new-south-direct-4f@sk:level:busta-shinjuku-4f→sk:area:busta-4f"
+      "to": "sk:area:busta-4f-south-walkway",
+      "id": "sk:vertical:busta-escalator-new-south-direct-4f@sk:level:busta-shinjuku-4f→sk:area:busta-4f-south-walkway"
     },
     {
       "kind": "vertical",
@@ -13670,8 +15151,8 @@
       "stepFree": null,
       "connection": "verified",
       "from": "sk:vertical:busta-escalator-new-south@sk:level:busta-shinjuku-3f",
-      "to": "sk:area:busta-3f",
-      "id": "sk:vertical:busta-escalator-new-south@sk:level:busta-shinjuku-3f→sk:area:busta-3f"
+      "to": "sk:area:busta-3f-deck",
+      "id": "sk:vertical:busta-escalator-new-south@sk:level:busta-shinjuku-3f→sk:area:busta-3f-deck"
     },
     {
       "kind": "vertical",
@@ -13703,8 +15184,8 @@
       "stepFree": null,
       "connection": "verified",
       "from": "sk:vertical:busta-escalator-new-south@sk:level:busta-shinjuku-4f",
-      "to": "sk:area:busta-4f",
-      "id": "sk:vertical:busta-escalator-new-south@sk:level:busta-shinjuku-4f→sk:area:busta-4f"
+      "to": "sk:area:busta-4f-south-walkway",
+      "id": "sk:vertical:busta-escalator-new-south@sk:level:busta-shinjuku-4f→sk:area:busta-4f-south-walkway"
     },
     {
       "kind": "vertical",
@@ -13738,6 +15219,127 @@
       "from": "sk:vertical:busta-escalator-new-south@sk:level:jr-east-shinjuku-2f",
       "to": "sk:vertical:busta-escalator-new-south@sk:level:busta-shinjuku-3f",
       "id": "sk:vertical:busta-escalator-new-south@sk:level:jr-east-shinjuku-2f→sk:vertical:busta-escalator-new-south@sk:level:busta-shinjuku-3f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:busta-escalator-south-east",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:busta-escalator-south-east@sk:level:busta-shinjuku-3f",
+      "to": "sk:area:busta-3f-deck",
+      "id": "sk:vertical:busta-escalator-south-east@sk:level:busta-shinjuku-3f→sk:area:busta-3f-deck"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:busta-escalator-south-east",
+      "verticalKind": "escalator",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:busta-escalator-south-east@sk:level:busta-shinjuku-3f",
+      "to": "sk:vertical:busta-escalator-south-east@sk:level:busta-shinjuku-4f",
+      "id": "sk:vertical:busta-escalator-south-east@sk:level:busta-shinjuku-3f→sk:vertical:busta-escalator-south-east@sk:level:busta-shinjuku-4f"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:busta-escalator-south-east",
+      "verticalKind": "escalator",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:busta-escalator-south-east@sk:level:busta-shinjuku-3f",
+      "to": "sk:vertical:busta-escalator-south-east@sk:level:jr-east-shinjuku-2f",
+      "id": "sk:vertical:busta-escalator-south-east@sk:level:busta-shinjuku-3f→sk:vertical:busta-escalator-south-east@sk:level:jr-east-shinjuku-2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:busta-escalator-south-east",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:busta-escalator-south-east@sk:level:busta-shinjuku-4f",
+      "to": "sk:area:busta-4f-south-walkway",
+      "id": "sk:vertical:busta-escalator-south-east@sk:level:busta-shinjuku-4f→sk:area:busta-4f-south-walkway"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:busta-escalator-south-east",
+      "verticalKind": "escalator",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:busta-escalator-south-east@sk:level:busta-shinjuku-4f",
+      "to": "sk:vertical:busta-escalator-south-east@sk:level:busta-shinjuku-3f",
+      "id": "sk:vertical:busta-escalator-south-east@sk:level:busta-shinjuku-4f→sk:vertical:busta-escalator-south-east@sk:level:busta-shinjuku-3f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:busta-escalator-south-east",
+      "verticalKind": "escalator",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:busta-escalator-south-east@sk:level:jr-east-shinjuku-2f",
+      "to": "sk:area:jr-2f-new-south-unpaid",
+      "id": "sk:vertical:busta-escalator-south-east@sk:level:jr-east-shinjuku-2f→sk:area:jr-2f-new-south-unpaid"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:busta-escalator-south-east",
+      "verticalKind": "escalator",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:busta-escalator-south-east@sk:level:jr-east-shinjuku-2f",
+      "to": "sk:vertical:busta-escalator-south-east@sk:level:busta-shinjuku-3f",
+      "id": "sk:vertical:busta-escalator-south-east@sk:level:jr-east-shinjuku-2f→sk:vertical:busta-escalator-south-east@sk:level:busta-shinjuku-3f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:busta-stairs-south-east",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:busta-stairs-south-east@sk:level:busta-shinjuku-3f",
+      "to": "sk:area:busta-3f-deck",
+      "id": "sk:vertical:busta-stairs-south-east@sk:level:busta-shinjuku-3f→sk:area:busta-3f-deck"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:busta-stairs-south-east",
+      "verticalKind": "stairs",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:busta-stairs-south-east@sk:level:busta-shinjuku-3f",
+      "to": "sk:vertical:busta-stairs-south-east@sk:level:jr-east-shinjuku-2f",
+      "id": "sk:vertical:busta-stairs-south-east@sk:level:busta-shinjuku-3f→sk:vertical:busta-stairs-south-east@sk:level:jr-east-shinjuku-2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:busta-stairs-south-east",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:busta-stairs-south-east@sk:level:jr-east-shinjuku-2f",
+      "to": "sk:area:jr-2f-new-south-unpaid",
+      "id": "sk:vertical:busta-stairs-south-east@sk:level:jr-east-shinjuku-2f→sk:area:jr-2f-new-south-unpaid"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:busta-stairs-south-east",
+      "verticalKind": "stairs",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:busta-stairs-south-east@sk:level:jr-east-shinjuku-2f",
+      "to": "sk:vertical:busta-stairs-south-east@sk:level:busta-shinjuku-3f",
+      "id": "sk:vertical:busta-stairs-south-east@sk:level:jr-east-shinjuku-2f→sk:vertical:busta-stairs-south-east@sk:level:busta-shinjuku-3f"
     },
     {
       "kind": "vertical-approach",

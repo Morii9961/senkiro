@@ -1469,7 +1469,7 @@
       "existence": "verified",
       "geometryConfidence": "schematic",
       "asOf": "2026-11",
-      "notes": "Above the JR 2F concourse of 新南改札 / 甲州街道改札 / ミライナタワー改札.",
+      "notes": "Above the JR 2F concourse of 新南改札 / 甲州街道改札 / ミライナタワー改札. The Busta site calls it 高速バスおりばフロア.",
       "operatorId": "sk:operator:busta-shinjuku",
       "label": "3F",
       "ordinal": 2,
@@ -1499,6 +1499,7 @@
       "existence": "verified",
       "geometryConfidence": "schematic",
       "asOf": "2026-11",
+      "notes": "The Busta site calls it 高速バスのりばフロア.",
       "operatorId": "sk:operator:busta-shinjuku",
       "label": "4F",
       "ordinal": 3,
@@ -2507,7 +2508,8 @@
       },
       "provenance": {
         "sourceIds": [
-          "src:jreast-floormap-2f"
+          "src:jreast-floormap-2f",
+          "src:busta-floor-maps"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-11"
@@ -2518,14 +2520,15 @@
       "existence": "verified",
       "geometryConfidence": "schematic",
       "asOf": "2026-08",
+      "notes": "The strip along 甲州街道 on the north side of the JR block. The Busta 2F map draws it from the lift and escalator at the north-west corner to those at the north-east corner; the JR map shows only the part in front of the gate.",
       "levelId": "sk:level:jr-east-shinjuku-2f",
       "fareZone": "unpaid",
       "footprint": [
         {
           "x0": 24,
           "x1": 26.5,
-          "z0": -4,
-          "z1": 2
+          "z0": -16.5,
+          "z1": 14
         }
       ],
       "anchor": {
@@ -2546,7 +2549,8 @@
       "provenance": {
         "sourceIds": [
           "src:jreast-floormap-2f",
-          "src:jreast-floormap-all"
+          "src:jreast-floormap-all",
+          "src:busta-floor-maps"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-11"
@@ -2557,15 +2561,15 @@
       "existence": "verified",
       "geometryConfidence": "schematic",
       "asOf": "2026-08",
-      "notes": "The JR maps label \"Suicaのペンギン広場\" and lifts / escalators to バスタ新宿 on this side.",
+      "notes": "The JR maps label \"Suicaのペンギン広場\" and lifts / escalators to バスタ新宿 on this side. The Busta 2F map calls it 歩行者広場 and draws it along the whole south side, as far as the stairs towards タカシマヤ タイムズスクエア at the south-east corner.",
       "levelId": "sk:level:jr-east-shinjuku-2f",
       "fareZone": "unpaid",
       "footprint": [
         {
           "x0": 31.5,
           "x1": 35.5,
-          "z0": -6,
-          "z1": 6
+          "z0": -19.5,
+          "z1": 8
         }
       ],
       "anchor": {
@@ -2585,7 +2589,8 @@
       },
       "provenance": {
         "sourceIds": [
-          "src:jreast-floormap-2f"
+          "src:jreast-floormap-2f",
+          "src:busta-floor-maps"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-11"
@@ -2596,11 +2601,12 @@
       "existence": "verified",
       "geometryConfidence": "schematic",
       "asOf": "2026-08",
+      "notes": "The Busta 2F map draws this side running north to the lift and escalator at the north-east corner of the block.",
       "levelId": "sk:level:jr-east-shinjuku-2f",
       "fareZone": "unpaid",
       "footprint": [
         {
-          "x0": 26.5,
+          "x0": 24,
           "x1": 31.5,
           "z0": -19.5,
           "z1": -16.5
@@ -4937,13 +4943,13 @@
     },
     {
       "kind": "concourse",
-      "id": "sk:area:busta-3f",
+      "id": "sk:area:busta-3f-taxi",
       "externalIds": {},
       "names": {
-        "ja": "バスタ新宿 3F（タクシーのりば・高速バス降車場）",
+        "ja": "タクシー乗車場・降車場",
         "ja_kana": null,
-        "en": "Busta Shinjuku 3F (taxi stand, expressway bus drop-off)",
-        "zh": "Busta 新宿 3F（出租车乘车处·高速巴士下车处）"
+        "en": "Taxi stand and taxi drop-off",
+        "zh": "出租车乘车处·下车处"
       },
       "provenance": {
         "sourceIds": [
@@ -4958,31 +4964,31 @@
       "existence": "verified",
       "geometryConfidence": "schematic",
       "asOf": "2026-11",
-      "notes": "One area for the whole floor. The Busta map also labels 東京都観光案内所 and a 歩行者デッキ on this floor.",
+      "notes": "The walkway along the north (甲州街道) side of 3F: the map prints タクシー乗車場 on its western part and タクシー降車場 further east.",
       "levelId": "sk:level:busta-shinjuku-3f",
       "fareZone": "unpaid",
       "footprint": [
         {
-          "x0": 25,
-          "x1": 35.5,
-          "z0": -19.5,
-          "z1": 12
+          "x0": 24,
+          "x1": 25.6,
+          "z0": -15.4,
+          "z1": 14
         }
       ],
       "anchor": {
-        "x": 30,
-        "z": -4
+        "x": 24.8,
+        "z": 0
       }
     },
     {
       "kind": "concourse",
-      "id": "sk:area:busta-4f",
+      "id": "sk:area:busta-3f-west-walkway",
       "externalIds": {},
       "names": {
-        "ja": "バスタ新宿 4F（高速バスのりば A〜D）",
+        "ja": "3F 西側通路",
         "ja_kana": null,
-        "en": "Busta Shinjuku 4F (expressway bus boarding, areas A–D)",
-        "zh": "Busta 新宿 4F（高速巴士乘车处 A～D）"
+        "en": "3F west walkway",
+        "zh": "3F 西侧通道"
       },
       "provenance": {
         "sourceIds": [
@@ -4997,20 +5003,416 @@
       "existence": "verified",
       "geometryConfidence": "schematic",
       "asOf": "2026-11",
-      "notes": "One area for the whole floor. The Busta map divides the boarding bays into A (A1–A3), B (B4–B6), C (C7–C9) and D (D10–D12).",
+      "notes": "Unnamed on the floor map; the name here only says where it is. The strip drawn along the west edge of 3F, from the north-west lift down to 東京都観光案内所.",
+      "levelId": "sk:level:busta-shinjuku-3f",
+      "fareZone": "unpaid",
+      "footprint": [
+        {
+          "x0": 25.6,
+          "x1": 32.6,
+          "z0": 11.6,
+          "z1": 14
+        }
+      ],
+      "anchor": {
+        "x": 29,
+        "z": 12.8
+      }
+    },
+    {
+      "kind": "concourse",
+      "id": "sk:area:busta-3f-bus-drop-off-centre",
+      "externalIds": {},
+      "names": {
+        "ja": "高速バス降車場（中央）",
+        "ja_kana": null,
+        "en": "Expressway bus drop-off (centre island)",
+        "zh": "高速巴士下车处（中央）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "The island in the middle of the roadway that the map labels 高速バス降車場. \"（中央）\" is added here to tell it from the second 高速バス降車場 beside the deck.",
+      "levelId": "sk:level:busta-shinjuku-3f",
+      "fareZone": "unpaid",
+      "footprint": [
+        {
+          "x0": 28,
+          "x1": 30,
+          "z0": -9,
+          "z1": 8.6
+        }
+      ],
+      "anchor": {
+        "x": 29,
+        "z": 0
+      }
+    },
+    {
+      "kind": "concourse",
+      "id": "sk:area:busta-3f-deck",
+      "externalIds": {},
+      "names": {
+        "ja": "歩行者デッキ・高速バス降車場",
+        "ja_kana": null,
+        "en": "Pedestrian deck and expressway bus drop-off",
+        "zh": "步行平台·高速巴士下车处"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "The south side of 3F: the map prints 高速バス降車場 along the roadway and 歩行者デッキ behind it, with a dashed line between the two. Toilets and a 授乳室 are drawn at its west end.",
+      "levelId": "sk:level:busta-shinjuku-3f",
+      "fareZone": "unpaid",
+      "footprint": [
+        {
+          "x0": 32.6,
+          "x1": 35.5,
+          "z0": -16.5,
+          "z1": 8
+        },
+        {
+          "x0": 32.6,
+          "x1": 33.6,
+          "z0": 8,
+          "z1": 14
+        }
+      ],
+      "anchor": {
+        "x": 34,
+        "z": -2
+      }
+    },
+    {
+      "kind": "concourse",
+      "id": "sk:area:busta-3f-tourist-information",
+      "externalIds": {},
+      "names": {
+        "ja": "東京都観光案内所",
+        "ja_kana": null,
+        "en": "Tokyo Tourist Information Center",
+        "zh": "东京都观光咨询处"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "Drawn in the south-west corner of 3F, opening onto the deck. Only the Japanese name is on the map; the other two are this model's renderings.",
+      "levelId": "sk:level:busta-shinjuku-3f",
+      "fareZone": "unpaid",
+      "footprint": [
+        {
+          "x0": 33.6,
+          "x1": 35.5,
+          "z0": 8,
+          "z1": 14
+        }
+      ],
+      "anchor": {
+        "x": 34.6,
+        "z": 11
+      }
+    },
+    {
+      "kind": "concourse",
+      "id": "sk:area:busta-3f-east-walkway",
+      "externalIds": {},
+      "names": {
+        "ja": "3F 東側通路（ミライナタワー側）",
+        "ja_kana": null,
+        "en": "3F east walkway (Miraina Tower side)",
+        "zh": "3F 东侧通道（Miraina Tower 侧）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "Unnamed on the floor map; the name here only says where it is. The strip along the east edge of 3F with a lift and escalators; the map prints \"▶ ミライナタワー\" at its edge. The roadway leaves the building south of it, so it does not reach the deck on this floor.",
+      "levelId": "sk:level:busta-shinjuku-3f",
+      "fareZone": "unpaid",
+      "footprint": [
+        {
+          "x0": 24,
+          "x1": 31.4,
+          "z0": -19.5,
+          "z1": -15.4
+        }
+      ],
+      "anchor": {
+        "x": 28,
+        "z": -17.4
+      }
+    },
+    {
+      "kind": "concourse",
+      "id": "sk:area:busta-4f-area-a",
+      "externalIds": {},
+      "names": {
+        "ja": "高速バスのりば Aエリア（A1〜A3）",
+        "ja_kana": null,
+        "en": "Expressway bus boarding, Area A (A1–A3)",
+        "zh": "高速巴士乘车处 A区（A1～A3）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "The 4F map prints \"A エリア A1▸A3\" on the tongue of walkway that runs west from the hall, labelled 高速バス乗車場. The walkway beside the bays is the area; the bays stand on the roadway.",
       "levelId": "sk:level:busta-shinjuku-4f",
       "fareZone": "unpaid",
       "footprint": [
         {
-          "x0": 25,
-          "x1": 35.5,
-          "z0": -19.5,
-          "z1": 12
+          "x0": 31.6,
+          "x1": 32.6,
+          "z0": -10.6,
+          "z1": 7
         }
       ],
       "anchor": {
-        "x": 30,
-        "z": -4
+        "x": 32.1,
+        "z": 0.8
+      }
+    },
+    {
+      "kind": "concourse",
+      "id": "sk:area:busta-4f-area-b",
+      "externalIds": {},
+      "names": {
+        "ja": "高速バスのりば Bエリア（B4〜B6）",
+        "ja_kana": null,
+        "en": "Expressway bus boarding, Area B (B4–B6)",
+        "zh": "高速巴士乘车处 B区（B4～B6）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "The 4F map prints \"B エリア B4▸B6\" on the east side, in front of the waiting rooms. The walkway beside the bays is the area; the bays stand on the roadway.",
+      "levelId": "sk:level:busta-shinjuku-4f",
+      "fareZone": "unpaid",
+      "footprint": [
+        {
+          "x0": 25.4,
+          "x1": 32.6,
+          "z0": -12.6,
+          "z1": -10.6
+        }
+      ],
+      "anchor": {
+        "x": 28.5,
+        "z": -11.6
+      }
+    },
+    {
+      "kind": "concourse",
+      "id": "sk:area:busta-4f-area-c",
+      "externalIds": {},
+      "names": {
+        "ja": "高速バスのりば Cエリア（C7〜C9）",
+        "ja_kana": null,
+        "en": "Expressway bus boarding, Area C (C7–C9)",
+        "zh": "高速巴士乘车处 C区（C7～C9）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "The 4F map prints \"C エリア C7▸C9\" on the north side, labelled 高速バス乗車場 (甲州街道). The walkway beside the bays is the area; the bays stand on the roadway.",
+      "levelId": "sk:level:busta-shinjuku-4f",
+      "fareZone": "unpaid",
+      "footprint": [
+        {
+          "x0": 24,
+          "x1": 25.4,
+          "z0": -12.6,
+          "z1": 14
+        }
+      ],
+      "anchor": {
+        "x": 24.7,
+        "z": 0.4
+      }
+    },
+    {
+      "kind": "concourse",
+      "id": "sk:area:busta-4f-area-d",
+      "externalIds": {},
+      "names": {
+        "ja": "高速バスのりば Dエリア（D10〜D12）",
+        "ja_kana": null,
+        "en": "Expressway bus boarding, Area D (D10–D12)",
+        "zh": "高速巴士乘车处 D区（D10～D12）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "The 4F map prints \"D エリア D10▸D12\" on the west side. The walkway beside the bays is the area; the bays stand on the roadway.",
+      "levelId": "sk:level:busta-shinjuku-4f",
+      "fareZone": "unpaid",
+      "footprint": [
+        {
+          "x0": 25.4,
+          "x1": 33.4,
+          "z0": 11.6,
+          "z1": 14
+        }
+      ],
+      "anchor": {
+        "x": 29.4,
+        "z": 12.8
+      }
+    },
+    {
+      "kind": "concourse",
+      "id": "sk:area:busta-4f-hall",
+      "externalIds": {},
+      "names": {
+        "ja": "4F 待合室・発券カウンター",
+        "ja_kana": null,
+        "en": "4F waiting room and ticket counters",
+        "zh": "4F 候车室·售票柜台"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "The east side of 4F. Read from the map by matching its pictograms to the legend on the page: three 待合室 blocks behind Area B; a counter strip with 有人発券窓口 between two 自動発券機; 土産品; an インフォメーションカウンター, an ATM, a コンビニエンスストア and コインロッカー towards the south; toilets, a 授乳室 and a 女子更衣室 in the north-east corner. One area stands for all of them: none is a separate room in this model.",
+      "levelId": "sk:level:busta-shinjuku-4f",
+      "fareZone": "unpaid",
+      "footprint": [
+        {
+          "x0": 24,
+          "x1": 33.4,
+          "z0": -19.5,
+          "z1": -12.6
+        }
+      ],
+      "anchor": {
+        "x": 28.6,
+        "z": -16
+      }
+    },
+    {
+      "kind": "concourse",
+      "id": "sk:area:busta-4f-south-walkway",
+      "externalIds": {},
+      "names": {
+        "ja": "4F 南側通路",
+        "ja_kana": null,
+        "en": "4F south walkway",
+        "zh": "4F 南侧通道"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "Unnamed on the floor map; the name here only says where it is. The walkway along the south edge of 4F, where the lifts and escalators from the 2F 歩行者広場 arrive (\"2F直結\"); toilets, a 授乳室 and コインロッカー are drawn on it.",
+      "levelId": "sk:level:busta-shinjuku-4f",
+      "fareZone": "unpaid",
+      "footprint": [
+        {
+          "x0": 33.4,
+          "x1": 35.5,
+          "z0": -19.5,
+          "z1": 14
+        }
+      ],
+      "anchor": {
+        "x": 34.4,
+        "z": -2
       }
     },
     {
@@ -6794,6 +7196,366 @@
       "connection": "verified",
       "stepFree": true,
       "hasSteps": false
+    },
+    {
+      "kind": "passage-link",
+      "id": "sk:passage:busta-4f-hall-to-area-b",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "Area B is the walkway in front of the waiting rooms. Drawn as one continuous floor on the map; whether there is a step or a door on the way was not read.",
+      "fromAreaId": "sk:area:busta-4f-hall",
+      "toAreaId": "sk:area:busta-4f-area-b",
+      "connection": "verified",
+      "stepFree": null,
+      "hasSteps": null
+    },
+    {
+      "kind": "passage-link",
+      "id": "sk:passage:busta-4f-area-b-to-area-a",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "The tongue of Area A leaves the east side at its south end. Drawn as one continuous floor on the map; whether there is a step or a door on the way was not read.",
+      "fromAreaId": "sk:area:busta-4f-area-b",
+      "toAreaId": "sk:area:busta-4f-area-a",
+      "connection": "verified",
+      "stepFree": null,
+      "hasSteps": null
+    },
+    {
+      "kind": "passage-link",
+      "id": "sk:passage:busta-4f-area-b-to-area-c",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "The north-east corner, where the north walkway meets the east side. Drawn as one continuous floor on the map; whether there is a step or a door on the way was not read.",
+      "fromAreaId": "sk:area:busta-4f-area-b",
+      "toAreaId": "sk:area:busta-4f-area-c",
+      "connection": "verified",
+      "stepFree": null,
+      "hasSteps": null
+    },
+    {
+      "kind": "passage-link",
+      "id": "sk:passage:busta-4f-hall-to-area-c",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "The north-east corner, beside the lift and the toilets. Drawn as one continuous floor on the map; whether there is a step or a door on the way was not read.",
+      "fromAreaId": "sk:area:busta-4f-hall",
+      "toAreaId": "sk:area:busta-4f-area-c",
+      "connection": "verified",
+      "stepFree": null,
+      "hasSteps": null
+    },
+    {
+      "kind": "passage-link",
+      "id": "sk:passage:busta-4f-area-c-to-area-d",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "The north-west corner, beside the lift and the escalator. Drawn as one continuous floor on the map; whether there is a step or a door on the way was not read.",
+      "fromAreaId": "sk:area:busta-4f-area-c",
+      "toAreaId": "sk:area:busta-4f-area-d",
+      "connection": "verified",
+      "stepFree": null,
+      "hasSteps": null
+    },
+    {
+      "kind": "passage-link",
+      "id": "sk:passage:busta-4f-area-d-to-south-walkway",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "The south-west corner. Drawn as one continuous floor on the map; whether there is a step or a door on the way was not read.",
+      "fromAreaId": "sk:area:busta-4f-area-d",
+      "toAreaId": "sk:area:busta-4f-south-walkway",
+      "connection": "verified",
+      "stepFree": null,
+      "hasSteps": null
+    },
+    {
+      "kind": "passage-link",
+      "id": "sk:passage:busta-4f-hall-to-south-walkway",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "The south-east corner, past the インフォメーションカウンター. Drawn as one continuous floor on the map; whether there is a step or a door on the way was not read.",
+      "fromAreaId": "sk:area:busta-4f-hall",
+      "toAreaId": "sk:area:busta-4f-south-walkway",
+      "connection": "verified",
+      "stepFree": null,
+      "hasSteps": null
+    },
+    {
+      "kind": "passage-link",
+      "id": "sk:passage:busta-3f-taxi-to-west-walkway",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "The north-west corner, beside the lift and the escalator. Drawn as one continuous floor on the map; whether there is a step or a door on the way was not read.",
+      "fromAreaId": "sk:area:busta-3f-taxi",
+      "toAreaId": "sk:area:busta-3f-west-walkway",
+      "connection": "verified",
+      "stepFree": null,
+      "hasSteps": null
+    },
+    {
+      "kind": "passage-link",
+      "id": "sk:passage:busta-3f-taxi-to-east-walkway",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "The north-east corner: the walkway is read as continuing past the head of the roadway loop to the lift. Drawn as one continuous floor on the map; whether there is a step or a door on the way was not read.",
+      "fromAreaId": "sk:area:busta-3f-taxi",
+      "toAreaId": "sk:area:busta-3f-east-walkway",
+      "connection": "verified",
+      "stepFree": null,
+      "hasSteps": null
+    },
+    {
+      "kind": "passage-link",
+      "id": "sk:passage:busta-3f-west-walkway-to-deck",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "The south-west corner, beside the toilets. Drawn as one continuous floor on the map; whether there is a step or a door on the way was not read.",
+      "fromAreaId": "sk:area:busta-3f-west-walkway",
+      "toAreaId": "sk:area:busta-3f-deck",
+      "connection": "verified",
+      "stepFree": null,
+      "hasSteps": null
+    },
+    {
+      "kind": "passage-link",
+      "id": "sk:passage:busta-3f-deck-to-tourist-information",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "東京都観光案内所 opens onto the deck. Drawn as one continuous floor on the map; whether there is a step or a door on the way was not read.",
+      "fromAreaId": "sk:area:busta-3f-deck",
+      "toAreaId": "sk:area:busta-3f-tourist-information",
+      "connection": "verified",
+      "stepFree": null,
+      "hasSteps": null
+    },
+    {
+      "kind": "passage-link",
+      "id": "sk:passage:busta-3f-west-walkway-to-bus-drop-off-centre",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "The pedestrian crossing (white stripes) drawn across the roadway at the west end of the island. A crossing of the bus and taxi roadway, not a corridor.",
+      "fromAreaId": "sk:area:busta-3f-west-walkway",
+      "toAreaId": "sk:area:busta-3f-bus-drop-off-centre",
+      "connection": "verified",
+      "stepFree": null,
+      "hasSteps": null
     },
     {
       "kind": "passage-link",
@@ -9948,13 +10710,13 @@
     },
     {
       "kind": "entrance",
-      "id": "sk:entrance:busta-4f-bus-boarding",
+      "id": "sk:entrance:busta-4f-bay-a1",
       "externalIds": {},
       "names": {
-        "ja": "高速バスのりば（A〜Dエリア）",
+        "ja": "A1 のりば",
         "ja_kana": null,
-        "en": "Expressway bus boarding (areas A–D)",
-        "zh": "高速巴士乘车处（A～D区）"
+        "en": "Bay A1",
+        "zh": "A1 乘车位"
       },
       "provenance": {
         "sourceIds": [
@@ -9969,22 +10731,431 @@
       "existence": "verified",
       "geometryConfidence": "schematic",
       "asOf": "2026-11",
+      "notes": "Which services leave from this bay is not on the floor map: the terminal announces the bay for each departure.",
       "levelId": "sk:level:busta-shinjuku-4f",
-      "areaId": "sk:area:busta-4f",
+      "areaId": "sk:area:busta-4f-area-a",
       "position": {
-        "x": 28,
-        "z": 2
+        "x": 31.6,
+        "z": 5.6
       },
-      "leadsToJa": "高速バス・空港バス",
-      "leadsToEn": "expressway and airport buses",
-      "stepFree": true
+      "leadsToJa": "高速バス",
+      "leadsToEn": "expressway buses",
+      "stepFree": null
+    },
+    {
+      "kind": "entrance",
+      "id": "sk:entrance:busta-4f-bay-a2",
+      "externalIds": {},
+      "names": {
+        "ja": "A2 のりば",
+        "ja_kana": null,
+        "en": "Bay A2",
+        "zh": "A2 乘车位"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "Which services leave from this bay is not on the floor map: the terminal announces the bay for each departure.",
+      "levelId": "sk:level:busta-shinjuku-4f",
+      "areaId": "sk:area:busta-4f-area-a",
+      "position": {
+        "x": 31.6,
+        "z": 0.8
+      },
+      "leadsToJa": "高速バス",
+      "leadsToEn": "expressway buses",
+      "stepFree": null
+    },
+    {
+      "kind": "entrance",
+      "id": "sk:entrance:busta-4f-bay-a3",
+      "externalIds": {},
+      "names": {
+        "ja": "A3 のりば",
+        "ja_kana": null,
+        "en": "Bay A3",
+        "zh": "A3 乘车位"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "Which services leave from this bay is not on the floor map: the terminal announces the bay for each departure.",
+      "levelId": "sk:level:busta-shinjuku-4f",
+      "areaId": "sk:area:busta-4f-area-a",
+      "position": {
+        "x": 31.6,
+        "z": -3.8
+      },
+      "leadsToJa": "高速バス",
+      "leadsToEn": "expressway buses",
+      "stepFree": null
+    },
+    {
+      "kind": "entrance",
+      "id": "sk:entrance:busta-4f-bay-b4",
+      "externalIds": {},
+      "names": {
+        "ja": "B4 のりば",
+        "ja_kana": null,
+        "en": "Bay B4",
+        "zh": "B4 乘车位"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "Which services leave from this bay is not on the floor map: the terminal announces the bay for each departure.",
+      "levelId": "sk:level:busta-shinjuku-4f",
+      "areaId": "sk:area:busta-4f-area-b",
+      "position": {
+        "x": 30.6,
+        "z": -10.6
+      },
+      "leadsToJa": "高速バス",
+      "leadsToEn": "expressway buses",
+      "stepFree": null
+    },
+    {
+      "kind": "entrance",
+      "id": "sk:entrance:busta-4f-bay-b5",
+      "externalIds": {},
+      "names": {
+        "ja": "B5 のりば",
+        "ja_kana": null,
+        "en": "Bay B5",
+        "zh": "B5 乘车位"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "Which services leave from this bay is not on the floor map: the terminal announces the bay for each departure.",
+      "levelId": "sk:level:busta-shinjuku-4f",
+      "areaId": "sk:area:busta-4f-area-b",
+      "position": {
+        "x": 28.4,
+        "z": -10.6
+      },
+      "leadsToJa": "高速バス",
+      "leadsToEn": "expressway buses",
+      "stepFree": null
+    },
+    {
+      "kind": "entrance",
+      "id": "sk:entrance:busta-4f-bay-b6",
+      "externalIds": {},
+      "names": {
+        "ja": "B6 のりば",
+        "ja_kana": null,
+        "en": "Bay B6",
+        "zh": "B6 乘车位"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "Which services leave from this bay is not on the floor map: the terminal announces the bay for each departure.",
+      "levelId": "sk:level:busta-shinjuku-4f",
+      "areaId": "sk:area:busta-4f-area-b",
+      "position": {
+        "x": 26.4,
+        "z": -10.6
+      },
+      "leadsToJa": "高速バス",
+      "leadsToEn": "expressway buses",
+      "stepFree": null
+    },
+    {
+      "kind": "entrance",
+      "id": "sk:entrance:busta-4f-bay-c7",
+      "externalIds": {},
+      "names": {
+        "ja": "C7 のりば",
+        "ja_kana": null,
+        "en": "Bay C7",
+        "zh": "C7 乘车位"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "Which services leave from this bay is not on the floor map: the terminal announces the bay for each departure.",
+      "levelId": "sk:level:busta-shinjuku-4f",
+      "areaId": "sk:area:busta-4f-area-c",
+      "position": {
+        "x": 25.4,
+        "z": -4.3
+      },
+      "leadsToJa": "高速バス",
+      "leadsToEn": "expressway buses",
+      "stepFree": null
+    },
+    {
+      "kind": "entrance",
+      "id": "sk:entrance:busta-4f-bay-c8",
+      "externalIds": {},
+      "names": {
+        "ja": "C8 のりば",
+        "ja_kana": null,
+        "en": "Bay C8",
+        "zh": "C8 乘车位"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "Which services leave from this bay is not on the floor map: the terminal announces the bay for each departure.",
+      "levelId": "sk:level:busta-shinjuku-4f",
+      "areaId": "sk:area:busta-4f-area-c",
+      "position": {
+        "x": 25.4,
+        "z": 0.3
+      },
+      "leadsToJa": "高速バス",
+      "leadsToEn": "expressway buses",
+      "stepFree": null
+    },
+    {
+      "kind": "entrance",
+      "id": "sk:entrance:busta-4f-bay-c9",
+      "externalIds": {},
+      "names": {
+        "ja": "C9 のりば",
+        "ja_kana": null,
+        "en": "Bay C9",
+        "zh": "C9 乘车位"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "Which services leave from this bay is not on the floor map: the terminal announces the bay for each departure.",
+      "levelId": "sk:level:busta-shinjuku-4f",
+      "areaId": "sk:area:busta-4f-area-c",
+      "position": {
+        "x": 25.4,
+        "z": 4.9
+      },
+      "leadsToJa": "高速バス",
+      "leadsToEn": "expressway buses",
+      "stepFree": null
+    },
+    {
+      "kind": "entrance",
+      "id": "sk:entrance:busta-4f-bay-d10",
+      "externalIds": {},
+      "names": {
+        "ja": "D10 のりば",
+        "ja_kana": null,
+        "en": "Bay D10",
+        "zh": "D10 乘车位"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "Which services leave from this bay is not on the floor map: the terminal announces the bay for each departure.",
+      "levelId": "sk:level:busta-shinjuku-4f",
+      "areaId": "sk:area:busta-4f-area-d",
+      "position": {
+        "x": 26.5,
+        "z": 11.6
+      },
+      "leadsToJa": "高速バス",
+      "leadsToEn": "expressway buses",
+      "stepFree": null
+    },
+    {
+      "kind": "entrance",
+      "id": "sk:entrance:busta-4f-bay-d11",
+      "externalIds": {},
+      "names": {
+        "ja": "D11 のりば",
+        "ja_kana": null,
+        "en": "Bay D11",
+        "zh": "D11 乘车位"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "Which services leave from this bay is not on the floor map: the terminal announces the bay for each departure.",
+      "levelId": "sk:level:busta-shinjuku-4f",
+      "areaId": "sk:area:busta-4f-area-d",
+      "position": {
+        "x": 28.9,
+        "z": 11.6
+      },
+      "leadsToJa": "高速バス",
+      "leadsToEn": "expressway buses",
+      "stepFree": null
+    },
+    {
+      "kind": "entrance",
+      "id": "sk:entrance:busta-4f-bay-d12",
+      "externalIds": {},
+      "names": {
+        "ja": "D12 のりば",
+        "ja_kana": null,
+        "en": "Bay D12",
+        "zh": "D12 乘车位"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "Which services leave from this bay is not on the floor map: the terminal announces the bay for each departure.",
+      "levelId": "sk:level:busta-shinjuku-4f",
+      "areaId": "sk:area:busta-4f-area-d",
+      "position": {
+        "x": 31.3,
+        "z": 11.6
+      },
+      "leadsToJa": "高速バス",
+      "leadsToEn": "expressway buses",
+      "stepFree": null
+    },
+    {
+      "kind": "entrance",
+      "id": "sk:entrance:busta-4f-miraina-tower-side",
+      "externalIds": {},
+      "names": {
+        "ja": "ミライナタワー方面（4F）",
+        "ja_kana": null,
+        "en": "Towards Miraina Tower (4F)",
+        "zh": "往 Miraina Tower（4F）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "Printed as \"▶ ミライナタワー\" at the east edge of the 4F map. What lies beyond the edge is not drawn.",
+      "levelId": "sk:level:busta-shinjuku-4f",
+      "areaId": "sk:area:busta-4f-hall",
+      "position": {
+        "x": 29.6,
+        "z": -19.5
+      },
+      "leadsToJa": "ミライナタワー",
+      "leadsToEn": "Miraina Tower",
+      "stepFree": null
     },
     {
       "kind": "entrance",
       "id": "sk:entrance:busta-3f-taxi",
       "externalIds": {},
       "names": {
-        "ja": "タクシーのりば",
+        "ja": "タクシー乗車場",
         "ja_kana": null,
         "en": "Taxi stand",
         "zh": "出租车乘车处"
@@ -10003,14 +11174,149 @@
       "geometryConfidence": "schematic",
       "asOf": "2026-11",
       "levelId": "sk:level:busta-shinjuku-3f",
-      "areaId": "sk:area:busta-3f",
+      "areaId": "sk:area:busta-3f-taxi",
       "position": {
-        "x": 28,
-        "z": -8
+        "x": 25.6,
+        "z": 3
       },
-      "leadsToJa": "タクシー乗車場・高速バス降車場",
-      "leadsToEn": "taxi stand; expressway bus drop-off",
-      "stepFree": true
+      "leadsToJa": "タクシー",
+      "leadsToEn": "taxis",
+      "stepFree": null
+    },
+    {
+      "kind": "entrance",
+      "id": "sk:entrance:busta-3f-taxi-drop-off",
+      "externalIds": {},
+      "names": {
+        "ja": "タクシー降車場",
+        "ja_kana": null,
+        "en": "Taxi drop-off",
+        "zh": "出租车下车处"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "levelId": "sk:level:busta-shinjuku-3f",
+      "areaId": "sk:area:busta-3f-taxi",
+      "position": {
+        "x": 25.6,
+        "z": -4.8
+      },
+      "leadsToJa": "タクシー",
+      "leadsToEn": "taxis",
+      "stepFree": null
+    },
+    {
+      "kind": "entrance",
+      "id": "sk:entrance:busta-3f-bus-drop-off-centre",
+      "externalIds": {},
+      "names": {
+        "ja": "高速バス降車場（中央）",
+        "ja_kana": null,
+        "en": "Expressway bus drop-off (centre island)",
+        "zh": "高速巴士下车处（中央）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "Where arriving buses set passengers down, on the island. \"（中央）\" is added here.",
+      "levelId": "sk:level:busta-shinjuku-3f",
+      "areaId": "sk:area:busta-3f-bus-drop-off-centre",
+      "position": {
+        "x": 30,
+        "z": 1.4
+      },
+      "leadsToJa": "高速バス（到着）",
+      "leadsToEn": "arriving expressway buses",
+      "stepFree": null
+    },
+    {
+      "kind": "entrance",
+      "id": "sk:entrance:busta-3f-bus-drop-off-deck",
+      "externalIds": {},
+      "names": {
+        "ja": "高速バス降車場（歩行者デッキ側）",
+        "ja_kana": null,
+        "en": "Expressway bus drop-off (deck side)",
+        "zh": "高速巴士下车处（步行平台侧）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "Where arriving buses set passengers down, along the deck. \"（歩行者デッキ側）\" is added here.",
+      "levelId": "sk:level:busta-shinjuku-3f",
+      "areaId": "sk:area:busta-3f-deck",
+      "position": {
+        "x": 32.6,
+        "z": 1
+      },
+      "leadsToJa": "高速バス（到着）",
+      "leadsToEn": "arriving expressway buses",
+      "stepFree": null
+    },
+    {
+      "kind": "entrance",
+      "id": "sk:entrance:busta-3f-miraina-tower-side",
+      "externalIds": {},
+      "names": {
+        "ja": "ミライナタワー方面（3F）",
+        "ja_kana": null,
+        "en": "Towards Miraina Tower (3F)",
+        "zh": "往 Miraina Tower（3F）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "Printed as \"▶ ミライナタワー\" at the east edge of the 3F map. What lies beyond the edge is not drawn.",
+      "levelId": "sk:level:busta-shinjuku-3f",
+      "areaId": "sk:area:busta-3f-east-walkway",
+      "position": {
+        "x": 28.6,
+        "z": -19.5
+      },
+      "leadsToJa": "ミライナタワー",
+      "leadsToEn": "Miraina Tower",
+      "stepFree": null
     },
     {
       "kind": "entrance",
@@ -16801,15 +18107,15 @@
           "areaId": "sk:area:jr-2f-new-south-unpaid",
           "position": {
             "x": 33,
-            "z": -3.4
+            "z": -5.4
           }
         },
         {
           "levelId": "sk:level:busta-shinjuku-4f",
-          "areaId": "sk:area:busta-4f",
+          "areaId": "sk:area:busta-4f-south-walkway",
           "position": {
-            "x": 33,
-            "z": -0.6
+            "x": 33.9,
+            "z": -11.8
           }
         }
       ],
@@ -16844,7 +18150,7 @@
       "existence": "verified",
       "geometryConfidence": "schematic",
       "asOf": "2026-11",
-      "notes": "Drawn on the Busta 2F map with the callout \"4F 高速バス / 3F タクシー\". Stands for every escalator of this pair drawn on the floor map; count and running direction were not recorded.",
+      "notes": "The escalators west of the 4F直結 one: 2F 歩行者広場 → 3F 歩行者デッキ → 4F south walkway. The 2F callout names both floors. Stands for every escalator of this pair drawn on the floor map; count and running direction were not recorded.",
       "verticalKind": "escalator",
       "operatorLabel": null,
       "stops": [
@@ -16852,24 +18158,24 @@
           "levelId": "sk:level:jr-east-shinjuku-2f",
           "areaId": "sk:area:jr-2f-new-south-unpaid",
           "position": {
-            "x": 33.4,
-            "z": 4.8
+            "x": 33.6,
+            "z": 1.6
           }
         },
         {
           "levelId": "sk:level:busta-shinjuku-3f",
-          "areaId": "sk:area:busta-3f",
+          "areaId": "sk:area:busta-3f-deck",
           "position": {
-            "x": 33.4,
-            "z": 7.2
+            "x": 34.2,
+            "z": -1.2
           }
         },
         {
           "levelId": "sk:level:busta-shinjuku-4f",
-          "areaId": "sk:area:busta-4f",
+          "areaId": "sk:area:busta-4f-south-walkway",
           "position": {
-            "x": 33.4,
-            "z": 9.6
+            "x": 34.2,
+            "z": -5.6
           }
         }
       ],
@@ -16879,13 +18185,13 @@
     },
     {
       "kind": "vertical",
-      "id": "sk:vertical:busta-elevator-new-south",
+      "id": "sk:vertical:busta-escalator-south-east",
       "externalIds": {},
       "names": {
-        "ja": "エレベーター（新南改札側 2F ⇔ 3F ⇔ 4F）",
+        "ja": null,
         "ja_kana": null,
-        "en": "Elevator (new-south side, 2F ⇔ 3F ⇔ 4F)",
-        "zh": "电梯（新南改札側 2F ⇔ 3F ⇔ 4F）"
+        "en": null,
+        "zh": null
       },
       "provenance": {
         "sourceIds": [
@@ -16901,48 +18207,48 @@
       "existence": "verified",
       "geometryConfidence": "schematic",
       "asOf": "2026-11",
-      "notes": "Drawn on the Busta 2F map with the callout \"4F 高速バス / 3F タクシー\".",
-      "verticalKind": "elevator",
+      "notes": "The escalators at the south-east corner, beside the wide stairs towards タカシマヤ タイムズスクエア. The 2F callout names both floors. Stands for every escalator of this pair drawn on the floor map; count and running direction were not recorded.",
+      "verticalKind": "escalator",
       "operatorLabel": null,
       "stops": [
         {
           "levelId": "sk:level:jr-east-shinjuku-2f",
           "areaId": "sk:area:jr-2f-new-south-unpaid",
           "position": {
-            "x": 34.4,
-            "z": 2.4
+            "x": 34.6,
+            "z": -17.8
           }
         },
         {
           "levelId": "sk:level:busta-shinjuku-3f",
-          "areaId": "sk:area:busta-3f",
+          "areaId": "sk:area:busta-3f-deck",
           "position": {
-            "x": 34.4,
-            "z": 2.4
+            "x": 34.8,
+            "z": -13.8
           }
         },
         {
           "levelId": "sk:level:busta-shinjuku-4f",
-          "areaId": "sk:area:busta-4f",
+          "areaId": "sk:area:busta-4f-south-walkway",
           "position": {
-            "x": 34.4,
-            "z": 2.4
+            "x": 33.9,
+            "z": -15.8
           }
         }
       ],
-      "directionNote": null,
+      "directionNote": "Running direction is not recorded on the floor map.",
       "hoursNote": null,
-      "aggregated": false
+      "aggregated": true
     },
     {
       "kind": "vertical",
-      "id": "sk:vertical:busta-elevator-koshu-kaido",
+      "id": "sk:vertical:busta-escalator-koshu-kaido",
       "externalIds": {},
       "names": {
-        "ja": "エレベーター（甲州街道側 2F ⇔ 3F ⇔ 4F）",
+        "ja": null,
         "ja_kana": null,
-        "en": "Elevator (koshu-kaido side, 2F ⇔ 3F ⇔ 4F)",
-        "zh": "电梯（甲州街道側 2F ⇔ 3F ⇔ 4F）"
+        "en": null,
+        "zh": null
       },
       "provenance": {
         "sourceIds": [
@@ -16958,7 +18264,169 @@
       "existence": "verified",
       "geometryConfidence": "schematic",
       "asOf": "2026-11",
-      "notes": "Drawn on the Busta 2F map with the callout \"4F 高速バス / 3F タクシー\".",
+      "notes": "The escalators at the north-west corner, on the 甲州街道 side. Stands for every escalator of this pair drawn on the floor map; count and running direction were not recorded.",
+      "verticalKind": "escalator",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:jr-east-shinjuku-2f",
+          "areaId": "sk:area:jr-2f-koshu-kaido-unpaid",
+          "position": {
+            "x": 24.8,
+            "z": 10.6
+          }
+        },
+        {
+          "levelId": "sk:level:busta-shinjuku-3f",
+          "areaId": "sk:area:busta-3f-taxi",
+          "position": {
+            "x": 24.6,
+            "z": 6.4
+          }
+        },
+        {
+          "levelId": "sk:level:busta-shinjuku-4f",
+          "areaId": "sk:area:busta-4f-area-c",
+          "position": {
+            "x": 24.6,
+            "z": 9
+          }
+        }
+      ],
+      "directionNote": "Running direction is not recorded on the floor map.",
+      "hoursNote": null,
+      "aggregated": true
+    },
+    {
+      "kind": "vertical",
+      "id": "sk:vertical:busta-escalator-miraina-tower",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps",
+          "src:jreast-floormap-2f"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "The escalators on the east (ミライナタワー) side: one at the north-east corner on 2F, two on 3F, one on 4F. Stands for every escalator of this pair drawn on the floor map; count and running direction were not recorded.",
+      "verticalKind": "escalator",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:jr-east-shinjuku-2f",
+          "areaId": "sk:area:jr-2f-miraina-tower-unpaid",
+          "position": {
+            "x": 24.8,
+            "z": -18.6
+          }
+        },
+        {
+          "levelId": "sk:level:busta-shinjuku-3f",
+          "areaId": "sk:area:busta-3f-east-walkway",
+          "position": {
+            "x": 27.6,
+            "z": -18.2
+          }
+        },
+        {
+          "levelId": "sk:level:busta-shinjuku-4f",
+          "areaId": "sk:area:busta-4f-hall",
+          "position": {
+            "x": 30.2,
+            "z": -18.4
+          }
+        }
+      ],
+      "directionNote": "Running direction is not recorded on the floor map.",
+      "hoursNote": null,
+      "aggregated": true
+    },
+    {
+      "kind": "vertical",
+      "id": "sk:vertical:busta-stairs-south-east",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "The wide flight drawn at the south-east corner of the 3F deck and, on the 2F map, beside the escalator towards タカシマヤ タイムズスクエア.",
+      "verticalKind": "stairs",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:jr-east-shinjuku-2f",
+          "areaId": "sk:area:jr-2f-new-south-unpaid",
+          "position": {
+            "x": 35,
+            "z": -18.8
+          }
+        },
+        {
+          "levelId": "sk:level:busta-shinjuku-3f",
+          "areaId": "sk:area:busta-3f-deck",
+          "position": {
+            "x": 35.1,
+            "z": -15.6
+          }
+        }
+      ],
+      "directionNote": null,
+      "hoursNote": null,
+      "aggregated": true
+    },
+    {
+      "kind": "vertical",
+      "id": "sk:vertical:busta-elevator-koshu-kaido",
+      "externalIds": {},
+      "names": {
+        "ja": "エレベーター（甲州街道側・北西 2F ⇔ 3F ⇔ 4F）",
+        "ja_kana": null,
+        "en": "Elevator (Koshu-kaido side, north-west, 2F ⇔ 3F ⇔ 4F)",
+        "zh": "电梯（甲州街道側・北西 2F ⇔ 3F ⇔ 4F）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps",
+          "src:jreast-floormap-2f"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "Drawn on the Busta 2F map with the callout \"4F 高速バス / 3F タクシー\", and at the same place on the 3F and 4F maps.",
       "verticalKind": "elevator",
       "operatorLabel": null,
       "stops": [
@@ -16966,24 +18434,24 @@
           "levelId": "sk:level:jr-east-shinjuku-2f",
           "areaId": "sk:area:jr-2f-koshu-kaido-unpaid",
           "position": {
-            "x": 25.8,
-            "z": 1
+            "x": 24.8,
+            "z": 12.6
           }
         },
         {
           "levelId": "sk:level:busta-shinjuku-3f",
-          "areaId": "sk:area:busta-3f",
+          "areaId": "sk:area:busta-3f-taxi",
           "position": {
-            "x": 25.8,
-            "z": 1
+            "x": 24.8,
+            "z": 12.6
           }
         },
         {
           "levelId": "sk:level:busta-shinjuku-4f",
-          "areaId": "sk:area:busta-4f",
+          "areaId": "sk:area:busta-4f-area-c",
           "position": {
-            "x": 25.8,
-            "z": 1
+            "x": 24.8,
+            "z": 12.6
           }
         }
       ],
@@ -16996,10 +18464,10 @@
       "id": "sk:vertical:busta-elevator-miraina-tower",
       "externalIds": {},
       "names": {
-        "ja": "エレベーター（ミライナタワー側 2F ⇔ 3F ⇔ 4F）",
+        "ja": "エレベーター（ミライナタワー側・北東 2F ⇔ 3F ⇔ 4F）",
         "ja_kana": null,
-        "en": "Elevator (miraina-tower side, 2F ⇔ 3F ⇔ 4F)",
-        "zh": "电梯（ミライナタワー側 2F ⇔ 3F ⇔ 4F）"
+        "en": "Elevator (Miraina Tower side, north-east, 2F ⇔ 3F ⇔ 4F)",
+        "zh": "电梯（ミライナタワー側・北東 2F ⇔ 3F ⇔ 4F）"
       },
       "provenance": {
         "sourceIds": [
@@ -17015,7 +18483,7 @@
       "existence": "verified",
       "geometryConfidence": "schematic",
       "asOf": "2026-11",
-      "notes": "Drawn on the Busta 2F map with the callout \"4F 高速バス / 3F タクシー\".",
+      "notes": "Drawn on the Busta 2F map with the callout \"4F 高速バス / 3F タクシー\", and at the same place on the 3F and 4F maps.",
       "verticalKind": "elevator",
       "operatorLabel": null,
       "stops": [
@@ -17023,24 +18491,138 @@
           "levelId": "sk:level:jr-east-shinjuku-2f",
           "areaId": "sk:area:jr-2f-miraina-tower-unpaid",
           "position": {
-            "x": 30.4,
+            "x": 25.4,
             "z": -17.6
           }
         },
         {
           "levelId": "sk:level:busta-shinjuku-3f",
-          "areaId": "sk:area:busta-3f",
+          "areaId": "sk:area:busta-3f-east-walkway",
           "position": {
-            "x": 30.4,
+            "x": 25.4,
             "z": -17.6
           }
         },
         {
           "levelId": "sk:level:busta-shinjuku-4f",
-          "areaId": "sk:area:busta-4f",
+          "areaId": "sk:area:busta-4f-hall",
           "position": {
-            "x": 30.4,
+            "x": 25.4,
             "z": -17.6
+          }
+        }
+      ],
+      "directionNote": null,
+      "hoursNote": null,
+      "aggregated": false
+    },
+    {
+      "kind": "vertical",
+      "id": "sk:vertical:busta-elevator-new-south",
+      "externalIds": {},
+      "names": {
+        "ja": "エレベーター（新南改札側・西 2F ⇔ 3F ⇔ 4F）",
+        "ja_kana": null,
+        "en": "Elevator (New South Gate side, west, 2F ⇔ 3F ⇔ 4F)",
+        "zh": "电梯（新南改札側・西 2F ⇔ 3F ⇔ 4F）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps",
+          "src:jreast-floormap-2f"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "Drawn on the Busta 2F map with the callout \"4F 高速バス / 3F タクシー\", and at the same place on the 3F and 4F maps.",
+      "verticalKind": "elevator",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:jr-east-shinjuku-2f",
+          "areaId": "sk:area:jr-2f-new-south-unpaid",
+          "position": {
+            "x": 34.6,
+            "z": 5.2
+          }
+        },
+        {
+          "levelId": "sk:level:busta-shinjuku-3f",
+          "areaId": "sk:area:busta-3f-deck",
+          "position": {
+            "x": 34.6,
+            "z": 5.2
+          }
+        },
+        {
+          "levelId": "sk:level:busta-shinjuku-4f",
+          "areaId": "sk:area:busta-4f-south-walkway",
+          "position": {
+            "x": 34.6,
+            "z": 5.2
+          }
+        }
+      ],
+      "directionNote": null,
+      "hoursNote": null,
+      "aggregated": false
+    },
+    {
+      "kind": "vertical",
+      "id": "sk:vertical:busta-elevator-new-south-east",
+      "externalIds": {},
+      "names": {
+        "ja": "エレベーター（新南改札側・東 2F ⇔ 3F ⇔ 4F）",
+        "ja_kana": null,
+        "en": "Elevator (New South Gate side, east, 2F ⇔ 3F ⇔ 4F)",
+        "zh": "电梯（新南改札側・東 2F ⇔ 3F ⇔ 4F）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps",
+          "src:jreast-floormap-2f"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "Drawn on the Busta 2F map with the callout \"4F 高速バス / 3F タクシー\", and at the same place on the 3F and 4F maps.",
+      "verticalKind": "elevator",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:jr-east-shinjuku-2f",
+          "areaId": "sk:area:jr-2f-new-south-unpaid",
+          "position": {
+            "x": 34.6,
+            "z": -8.6
+          }
+        },
+        {
+          "levelId": "sk:level:busta-shinjuku-3f",
+          "areaId": "sk:area:busta-3f-deck",
+          "position": {
+            "x": 34.6,
+            "z": -8.6
+          }
+        },
+        {
+          "levelId": "sk:level:busta-shinjuku-4f",
+          "areaId": "sk:area:busta-4f-south-walkway",
+          "position": {
+            "x": 34.6,
+            "z": -8.6
           }
         }
       ],
@@ -18803,7 +20385,7 @@
     {
       "id": "uc-busta-ground",
       "description": "バスタ新宿 3F / 4F ⇄ サザンテラス, タカシマヤ タイムズスクエア, and the street.",
-      "reason": "Only the lifts and escalators that the Busta 2F drawing ties to the outside of the JR gates are modelled."
+      "reason": "Only the lifts, escalators and stairs that the Busta floor maps draw between 2F, 3F and 4F are modelled. The maps print \"サザンテラス方面\", \"タカシマヤ タイムズスクエア方面\" and \"ミライナタワー\" as directions only."
     }
   ],
   "generatedAt": "2026-11-11"
