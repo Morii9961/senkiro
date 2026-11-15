@@ -545,6 +545,23 @@ test.describe('language and theme', () => {
   });
 });
 
+test.describe('display options', () => {
+  test('the edge of the paid area can be switched off and on again', async ({ page }) => {
+    const errors = await open(page);
+    await waitForScene(page);
+    await pickFloor(page, 'floor-B1F');
+    const withEdge = (await settled(page)).triangles;
+    await page.getByTestId('tab-display').click();
+    const toggle = page.getByTestId('fare-boundary');
+    await expect(toggle).toBeChecked();
+    await toggle.uncheck();
+    await expect.poll(async () => (await stats(page))!.triangles).toBeLessThan(withEdge);
+    await toggle.check();
+    await expect.poll(async () => (await stats(page))!.triangles).toBe(withEdge);
+    expect(errors).toEqual([]);
+  });
+});
+
 test.describe('honesty about data', () => {
   test('operations: example mode is labelled as synthetic; live data without the development proxy says so', async ({ page }) => {
     const errors = await open(page);

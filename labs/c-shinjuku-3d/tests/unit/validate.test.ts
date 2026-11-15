@@ -3,6 +3,7 @@ import { stationModelInput } from '../../data/manual/index';
 import { RETRIEVED_AT, sources as manualSources } from '../../data/manual/sources';
 import type { Passage, StationModel, VerticalFacility } from '../../src/domain/types';
 import { validateModel } from '../../src/domain/validate';
+import { auditSpans } from '../../scripts/check-verticals';
 import { loadModel, loadSources } from './helpers';
 
 const rules = (model: StationModel) => validateModel(model, loadSources()).map((i) => i.rule);
@@ -124,5 +125,21 @@ describe('data validation', () => {
     const north = model.areas.find((x) => x.id === 'sk:area:jr-b1f-north-concourse')!;
     north.footprint[0]!.x0 = -17; // push into the free passage
     expect(rules(model)).toContain('geometry');
+  });
+});
+
+describe('span check of stairs and escalators (scripts/check-verticals.ts prints the full list)', () => {
+  const rows = auditSpans(loadModel());
+
+  it('every flight has a horizontal run and both its ends inside the areas they belong to', () => {
+    expect(rows.length).toBeGreaterThan(100);
+    expect(rows.filter((r) => r.flags.some((f) => f === 'no-run' || f.startsWith('stop-outside'))).map((r) => r.id)).toEqual([]);
+  });
+
+  it('no flight between adjacent floors is drawn steeper than the limit; the steep ones span several floors in one run', () => {
+    const steep = rows.filter((r) => r.flags.includes('steep'));
+    const model = loadModel();
+    const byId = new Map(model.verticals.map((v) => [v.id, v]));
+    expect(steep.filter((r) => !byId.get(r.id)!.declaredNonAdjacent).map((r) => r.id)).toEqual([]);
   });
 });
