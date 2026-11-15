@@ -354,6 +354,7 @@ export function App() {
     const zones = [...new Set(model.areas.filter((a) => a.kind !== 'platform').map((a) => a.fareZone))];
     return zones.map((zone) => {
       if (zone === 'unpaid') return { zone, label: t('legendUnpaid') };
+      if (zone === 'roadway') return { zone, label: t('legendRoadway') };
       const op = model.operators.find((o) => o.id === `sk:operator:${zone.replace('paid:', '')}`);
       return { zone, label: `${t('paid')}（${op ? (pickName(op.names, lang) ?? '') : ''}）` };
     });

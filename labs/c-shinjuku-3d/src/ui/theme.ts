@@ -157,6 +157,7 @@ export const PALETTES: Record<ThemeName, Palette> = {
 /** Floor colour of a fare zone ("unpaid" or "paid:<operator>"). */
 export function zoneColor(p: Palette, zone: string): string {
   if (zone === 'unpaid') return p.floorUnpaid;
+  if (zone === 'roadway') return mix(p.trackBed, p.floorUnpaid, 0.25);
   return p.floorPaid[zone.replace('paid:', '')] ?? p.floorPaidDefault;
 }
 

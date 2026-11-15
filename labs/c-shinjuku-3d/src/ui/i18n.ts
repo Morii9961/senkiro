@@ -57,6 +57,7 @@ const dict = {
   showVerticals: { ja: '階段・エスカレーター', en: 'Stairs & escalators', zh: '楼梯与扶梯' },
   showBlocks: { ja: '未確認エリア（抽象ブロック）', en: 'Unverified areas (abstract blocks)', zh: '未核实区域（抽象体块）' },
   legend: { ja: '凡例', en: 'Legend', zh: '图例' },
+  legendRoadway: { ja: "車路（歩行者は通れません）", en: "Roadway (not for pedestrians)", zh: "车道（行人不可通行）" },
   legendUnpaid: { ja: "改札外", en: "Unpaid area", zh: "检票口外" },
   legendPlatform: { ja: 'ホーム', en: 'Platform', zh: '站台' },
   legendGate: { ja: '改札口', en: 'Gate', zh: '检票口' },

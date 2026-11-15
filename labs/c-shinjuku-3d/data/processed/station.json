@@ -5183,6 +5183,120 @@
     },
     {
       "kind": "concourse",
+      "id": "sk:area:busta-3f-roadway",
+      "externalIds": {},
+      "names": {
+        "ja": "車路（バス・タクシー）",
+        "ja_kana": null,
+        "en": "Roadway (buses and taxis)",
+        "zh": "车道（巴士·出租车）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "Unnamed on the floor map; the name here only says where it is. The grey roadway of the 3F map, with lanes marked タクシー, バス専用 and 高速バス専用; it leaves the building at the south-east. Not a place to walk: nothing in the model connects to it.",
+      "levelId": "sk:level:busta-shinjuku-3f",
+      "fareZone": "roadway",
+      "footprint": [
+        {
+          "x0": 25.6,
+          "x1": 28,
+          "z0": -15.4,
+          "z1": 11.6
+        },
+        {
+          "x0": 28,
+          "x1": 30,
+          "z0": 8.6,
+          "z1": 11.6
+        },
+        {
+          "x0": 28,
+          "x1": 30,
+          "z0": -15.4,
+          "z1": -9
+        },
+        {
+          "x0": 30,
+          "x1": 32.6,
+          "z0": -15.4,
+          "z1": 11.6
+        },
+        {
+          "x0": 31.4,
+          "x1": 32.6,
+          "z0": -19.5,
+          "z1": -15.4
+        }
+      ],
+      "anchor": {
+        "x": 26.8,
+        "z": -2
+      }
+    },
+    {
+      "kind": "concourse",
+      "id": "sk:area:busta-4f-roadway",
+      "externalIds": {},
+      "names": {
+        "ja": "車路（高速バス）",
+        "ja_kana": null,
+        "en": "Roadway (expressway buses)",
+        "zh": "车道（高速巴士）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:busta-floor-maps"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-12"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-11",
+      "notes": "Unnamed on the floor map; the name here only says where it is. The grey roadway of the 4F map that the bays A1–D12 stand on, with a planted island and parking bays in the middle. Not a place to walk: nothing in the model connects to it.",
+      "levelId": "sk:level:busta-shinjuku-4f",
+      "fareZone": "roadway",
+      "footprint": [
+        {
+          "x0": 25.4,
+          "x1": 31.6,
+          "z0": -10.6,
+          "z1": 11.6
+        },
+        {
+          "x0": 31.6,
+          "x1": 32.6,
+          "z0": 7,
+          "z1": 11.6
+        },
+        {
+          "x0": 32.6,
+          "x1": 33.4,
+          "z0": -10.6,
+          "z1": 11.6
+        }
+      ],
+      "anchor": {
+        "x": 28.4,
+        "z": 0.5
+      }
+    },
+    {
+      "kind": "concourse",
       "id": "sk:area:busta-4f-area-a",
       "externalIds": {},
       "names": {
@@ -5249,7 +5363,7 @@
       "footprint": [
         {
           "x0": 25.4,
-          "x1": 32.6,
+          "x1": 33.4,
           "z0": -12.6,
           "z1": -10.6
         }

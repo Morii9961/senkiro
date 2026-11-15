@@ -484,6 +484,8 @@ export const BU = {
   areaB: 'sk:area:busta-4f-area-b',
   areaC: 'sk:area:busta-4f-area-c',
   areaD: 'sk:area:busta-4f-area-d',
+  road3: 'sk:area:busta-3f-roadway',
+  road4: 'sk:area:busta-4f-roadway',
   hall4: 'sk:area:busta-4f-hall',
   south4: 'sk:area:busta-4f-south-walkway',
 };
@@ -493,8 +495,10 @@ const bustaLevels: Level[] = [
   level(BU.l4, BUSTA, '4F', 3, 12, bustaProv, bustaCommon, 'The Busta site calls it 高速バスのりばフロア.'),
 ];
 
-// Both floors are a ring of walkways round a roadway. Only the walkways are areas: the roadway, the
-// bus bays themselves and the planted islands are not places a person walks, and are not modelled.
+// Both floors are a ring of walkways round a roadway. The walkways are ordinary areas. The roadway is one
+// area per floor in the zone "roadway": it is drawn, nothing connects to it, and no route crosses it
+// (the one marked pedestrian crossing on 3F is a passage between two walkways). The bus bays and the
+// planted islands inside the roadway are not drawn separately.
 // North is 甲州街道 (x = 24), east is ミライナタワー (z = -19.5).
 const NO_NAME = 'Unnamed on the floor map; the name here only says where it is.';
 const boardingArea = (id: string, letter: string, bays: string, footprint: PlanRect[], anchor: PlanPoint, where: string): Area =>
@@ -523,9 +527,15 @@ const bustaAreas: Area[] = [
   concourse(BU.east3, BU.l3, 'unpaid', names('3F 東側通路（ミライナタワー側）', '3F east walkway (Miraina Tower side)', '3F 东侧通道（Miraina Tower 侧）'),
     [rect(24, 31.4, -19.5, -15.4)], pt(28, -17.4), bustaProv, bustaCommon,
     `${NO_NAME} The strip along the east edge of 3F with a lift and escalators; the map prints "▶ ミライナタワー" at its edge. The roadway leaves the building south of it, so it does not reach the deck on this floor.`),
+  concourse(BU.road3, BU.l3, 'roadway', names('車路（バス・タクシー）', 'Roadway (buses and taxis)', '车道（巴士·出租车）'),
+    [rect(25.6, 28, -15.4, 11.6), rect(28, 30, 8.6, 11.6), rect(28, 30, -15.4, -9), rect(30, 32.6, -15.4, 11.6), rect(31.4, 32.6, -19.5, -15.4)], pt(26.8, -2), bustaProv, bustaCommon,
+    `${NO_NAME} The grey roadway of the 3F map, with lanes marked タクシー, バス専用 and 高速バス専用; it leaves the building at the south-east. Not a place to walk: nothing in the model connects to it.`),
   // ---- 4F ----
+  concourse(BU.road4, BU.l4, 'roadway', names('車路（高速バス）', 'Roadway (expressway buses)', '车道（高速巴士）'),
+    [rect(25.4, 31.6, -10.6, 11.6), rect(31.6, 32.6, 7, 11.6), rect(32.6, 33.4, -10.6, 11.6)], pt(28.4, 0.5), bustaProv, bustaCommon,
+    `${NO_NAME} The grey roadway of the 4F map that the bays A1–D12 stand on, with a planted island and parking bays in the middle. Not a place to walk: nothing in the model connects to it.`),
   boardingArea(BU.areaA, 'A', 'A1〜A3', [rect(31.6, 32.6, -10.6, 7)], pt(32.1, 0.8), 'on the tongue of walkway that runs west from the hall, labelled 高速バス乗車場'),
-  boardingArea(BU.areaB, 'B', 'B4〜B6', [rect(25.4, 32.6, -12.6, -10.6)], pt(28.5, -11.6), 'on the east side, in front of the waiting rooms'),
+  boardingArea(BU.areaB, 'B', 'B4〜B6', [rect(25.4, 33.4, -12.6, -10.6)], pt(28.5, -11.6), 'on the east side, in front of the waiting rooms'),
   boardingArea(BU.areaC, 'C', 'C7〜C9', [rect(24, 25.4, -12.6, 14)], pt(24.7, 0.4), 'on the north side, labelled 高速バス乗車場 (甲州街道)'),
   boardingArea(BU.areaD, 'D', 'D10〜D12', [rect(25.4, 33.4, 11.6, 14)], pt(29.4, 12.8), 'on the west side'),
   concourse(BU.hall4, BU.l4, 'unpaid', names('4F 待合室・発券カウンター', '4F waiting room and ticket counters', '4F 候车室·售票柜台'),

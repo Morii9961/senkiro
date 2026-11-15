@@ -43,11 +43,21 @@ describe('provenance and honesty rules', () => {
     }
   });
 
-  it('every area is either paid or unpaid, and every platform is paid', () => {
+  it('every area is paid, unpaid or a roadway; every platform is paid; a roadway joins nothing', () => {
     for (const a of model.areas) {
-      expect(a.fareZone === 'unpaid' || a.fareZone.startsWith('paid:'), a.id).toBe(true);
-      if (a.kind === 'platform') expect(a.fareZone, a.id).not.toBe('unpaid');
+      expect(a.fareZone === 'unpaid' || a.fareZone === 'roadway' || a.fareZone.startsWith('paid:'), a.id).toBe(true);
+      if (a.kind === 'platform') expect(a.fareZone.startsWith('paid:'), a.id).toBe(true);
     }
+    // the only roadways are the two floors of Busta 新宿, and nothing leads onto them
+    const roads = model.areas.filter((a) => a.fareZone === 'roadway').map((a) => a.id);
+    expect(roads).toEqual(['sk:area:busta-3f-roadway', 'sk:area:busta-4f-roadway']);
+    const touching = [
+      ...model.passages.flatMap((p) => [p.fromAreaId, p.toAreaId]),
+      ...model.entrances.map((e) => e.areaId),
+      ...model.verticals.flatMap((v) => v.stops.map((st) => st.areaId)),
+      ...model.gates.flatMap((g) => g.sides.map((sd) => ('areaId' in sd ? sd.areaId : ''))),
+    ];
+    for (const r of roads) expect(touching, r).not.toContain(r);
   });
 
   it('nothing is left as an abstract block; whatever would be one must be marked unverified and synthetic', () => {

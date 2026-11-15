@@ -108,11 +108,15 @@ export type StepFree = boolean | null;
 /**
  * Fare zone. Paid zones are per operator because a transfer gate separates
  * the JR paid area from the Keio paid area.
+ *
+ * "roadway" is not a fare zone at all: it marks an area that is drawn because the source draws it,
+ * but that people do not walk on — the bus and taxi roadway of Busta Shinjuku. Such an area has no
+ * passage, gate, entrance or stair, so no route ever crosses it.
  */
-export type FareZone = 'unpaid' | `paid:${string}`;
+export type FareZone = 'unpaid' | 'roadway' | `paid:${string}`;
 
 export function isPaid(zone: FareZone): boolean {
-  return zone !== 'unpaid';
+  return zone.startsWith('paid:');
 }
 
 // ---------------------------------------------------------------------------
