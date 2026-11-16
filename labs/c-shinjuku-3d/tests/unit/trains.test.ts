@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { demoFixture } from '../../src/timetable/demoFixture';
 import type { TimetableRecord } from '../../src/timetable/types';
 import {
-  APPROACH_SECONDS, ASSUMED_DWELL_SECONDS, DEPART_SECONDS, NOMINAL_CAR_LENGTH, TERMINATING_HOLD_SECONDS, buildTrainPlans, trainStateAt, trainStatesAt,
+  APPROACH_SECONDS, ASSUMED_DWELL_SECONDS, DEPART_SECONDS, NOMINAL_CAR_LENGTH, SHORT_STOP_SECONDS, TERMINATING_HOLD_SECONDS, buildTrainPlans, trainStateAt, trainStatesAt,
 } from '../../src/trains/simulate';
 import { physicalTrackKey, trackLine } from '../../src/trains/trackGeometry';
 import { allTrackRunKeys, modelTrackKeys, trackRun } from '../../src/trains/trackRuns';
@@ -232,6 +232,17 @@ describe('train simulation', () => {
     const e01 = plansOf([rec({ trip_id: 'c', station_id: 'toei:shinjuku-nishiguchi:E01', operator_id: 'toei', line_id: 'toei:oedo', platform_id: 'toei:shinjuku-nishiguchi:E01:1' })]);
     expect(e01.plans.map((p) => p.platformAreaId)).toEqual(['sk:platform:toei-shinjuku-nishiguchi-1-2']);
     expect(e01.plans[0]!.vehicle).toMatchObject({ cars: 8, carsBasis: 'line-fact' });
+  });
+
+  it('a stop printed as the same minute is drawn as a short stop inside that minute, and says so', () => {
+    const [plan] = plansOf([rec({ arrival_time_local: '08:00', departure_time_local: '08:00' })]).plans;
+    expect(plan!.shortStopAssumed).toBe(true);
+    expect(plan!.arrive).toBe(T);
+    expect(plan!.depart).toBe(T + SHORT_STOP_SECONDS);
+    expect(Math.max(...[5, 10, 15, 20].map((s) => trainStateAt(plan!, T + s)?.doors ?? 0))).toBeGreaterThan(0);
+    // times with seconds, or a real dwell, are drawn as given
+    expect(plansOf([rec({ arrival_time_local: '08:00:00', departure_time_local: '08:00:00' })]).plans[0]!.shortStopAssumed).toBe(false);
+    expect(plansOf([rec({ arrival_time_local: '08:00', departure_time_local: '08:01' })]).plans[0]!.depart).toBe(T + 60);
   });
 
   it('filters by the kind of day', () => {

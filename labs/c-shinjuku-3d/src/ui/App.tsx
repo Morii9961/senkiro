@@ -20,6 +20,7 @@ import { buildLabels, routePoints, type LabelChip, type ViewOptions } from './sc
 import { trackRange } from './scene/labels';
 import { SCENE_THEMES } from './sceneTheme';
 import { loadTimetableData } from '../providers/timetableProvider';
+import { LINE_REGISTRY, lineEntry } from '../timetable/registry';
 import { parseServiceTime, serviceClockAt, type CalendarDayType } from '../timetable/time';
 import { demoClock, nowClock, rebase, type SimClock } from '../trains/clock';
 import { buildTrainPlans, type TrainPlan } from '../trains/simulate';
@@ -134,6 +135,19 @@ export function App() {
   const [selectedTrain, setSelectedTrain] = useState<string | null>(null);
   const trainPlans = useMemo(() => buildTrainPlans(model, timetable.records, { dayType }), [model, timetable, dayType]);
   const lineColor = useMemo(() => new Map(model.railLines.map((l) => [l.id, l.displayColor])), [model]);
+  // the lines the timetable covers, named as the model names them; every other line shows no train
+  const trainCoverage = useMemo(() => {
+    if (timetable.dataset.kind === 'demo-fixture') return null;
+    const order = LINE_REGISTRY.map((l) => l.line_id);
+    return [...timetable.coveredLineIds]
+      .sort((a, b) => order.indexOf(a) - order.indexOf(b))
+      .map((id) => {
+        const entry = lineEntry(id);
+        const rl = model.railLines.find((l) => l.id === entry?.modelLineIds[0]);
+        return rl ? (pickName(rl.names, lang) ?? entry?.name_ja ?? id) : (entry?.name_ja ?? id);
+      })
+      .join(lang === 'en' ? ', ' : '、');
+  }, [timetable, model, lang]);
   const trainShown = useCallback((p: TrainPlan) => !hiddenTrains.has(p.id) && trainPasses(p, trainFilter), [hiddenTrains, trainFilter]);
   const selectedPlan = selectedTrain ? (trainPlans.plans.find((p) => p.id === selectedTrain) ?? null) : null;
 
@@ -587,6 +601,7 @@ export function App() {
             clock={clock}
             clockRef={clockRef}
             demoData={timetable.dataset.kind === 'demo-fixture'}
+            coverage={trainCoverage}
             trainsOn={trainsOn}
             dayType={dayType}
             onClock={setClock}

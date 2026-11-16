@@ -22,6 +22,12 @@ export const APPROACH_SECONDS = 40;
 export const DEPART_SECONDS = 36;
 /** Dwell drawn before the departure when the timetable gives no arrival time. */
 export const ASSUMED_DWELL_SECONDS = 30;
+/**
+ * A timetable printed to the minute gives the same minute for arrival and departure when the stop is
+ * shorter than a minute. Such a stop is drawn this long, starting at the printed minute — inside the
+ * minute both times name — and the card says the dwell is schematic.
+ */
+export const SHORT_STOP_SECONDS = 25;
 /** How long a terminating train (no departure time) stays before it is taken off the display. */
 export const TERMINATING_HOLD_SECONDS = 60;
 const DOOR_MOVE_SECONDS = 3;
@@ -58,6 +64,8 @@ export interface TrainPlan {
   depart: number | null;
   /** True when the timetable had no arrival time and the dwell is a display assumption. */
   arrivalAssumed: boolean;
+  /** True when arrival and departure are the same printed minute and the stop is drawn SHORT_STOP_SECONDS long. */
+  shortStopAssumed: boolean;
   /** When the train enters and leaves the display. */
   enter: number;
   leave: number;
@@ -130,6 +138,9 @@ export function buildTrainPlans(model: StationModel, records: TimetableRecord[],
       continue;
     }
     const arrive = arr ?? dep! - ASSUMED_DWELL_SECONDS;
+    const minuteOnly = (t: string | null) => t != null && /^\d{1,2}:\d{2}$/.test(t.trim());
+    const shortStop = arr != null && dep === arr && minuteOnly(record.arrival_time_local) && minuteOnly(record.departure_time_local);
+    const depart = shortStop ? arr + SHORT_STOP_SECONDS : dep;
     const vehicle = resolveVehicle(record);
     const { length, carLength } = trainLength(line, vehicle.cars, vehicle.spec.carLengthM);
     const run = trackRun(track.platform.id, track.trackNumber);
@@ -146,10 +157,11 @@ export function buildTrainPlans(model: StationModel, records: TimetableRecord[],
       modelLineId: lineEntry(record.line_id)?.modelLineIds[0] ?? null,
       vehicle,
       arrive,
-      depart: dep,
+      depart,
       arrivalAssumed: arr == null,
+      shortStopAssumed: shortStop,
       enter: moves ? arrive - APPROACH_SECONDS : arrive,
-      leave: dep == null ? arrive + TERMINATING_HOLD_SECONDS : moves ? dep + DEPART_SECONDS : dep,
+      leave: depart == null ? arrive + TERMINATING_HOLD_SECONDS : moves ? depart + DEPART_SECONDS : depart,
       approachSeconds: APPROACH_SECONDS,
       length,
       carLength,

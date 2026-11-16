@@ -44,6 +44,8 @@ export function TrainBar(props: {
   clock: SimClock;
   clockRef: RefObject<SimClock>;
   demoData: boolean;
+  /** Names of the lines the timetable covers; null with the demo fixture. */
+  coverage: string | null;
   trainsOn: boolean;
   dayType: CalendarDayType;
   onClock(c: SimClock): void;
@@ -63,6 +65,11 @@ export function TrainBar(props: {
         {props.demoData && (
           <span className="demo-badge" data-testid="demo-badge" title={t('trainDemoNote')}>
             {t('trainDemoBadge')}
+          </span>
+        )}
+        {!props.demoData && props.coverage && (
+          <span className="coverage-badge" data-testid="coverage-badge">
+            {t('trainCoverage', { lines: props.coverage })}
           </span>
         )}
       </p>
@@ -170,7 +177,36 @@ export function TrainSection(props: {
       <h3>{t('trainSim')}</h3>
       <p className={`notice ${demo ? 'warn' : ''}`} data-testid="train-data-note">
         {demo ? t('trainDemoNote') : t('trainRealNote', { files: data.files.join(', ') })}
+        {data.localFiles.length > 0 && (
+          <>
+            {' '}
+            <strong data-testid="train-local-note">
+              {data.localFiles.join(', ')}: {t('trainLocalOnly')}
+            </strong>
+          </>
+        )}
       </p>
+      {!demo && (
+        <div className="train-sources" data-testid="train-sources">
+          <p className="muted small">{t('trainSources')}</p>
+          <ul className="muted small">
+            {data.dataset.sources.map((s) => (
+              <li key={s.id}>
+                {s.url ? (
+                  <a href={s.url} target="_blank" rel="noreferrer">
+                    {s.title}
+                  </a>
+                ) : (
+                  s.title
+                )}
+                {s.publisher ? ` · ${s.publisher}` : ''}
+                {s.license ? ` · ${s.license}` : ''}
+                {s.retrievedAt ? ` · ${s.retrievedAt}` : ''}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       <p className="muted small">{t('trainSimNote')}</p>
       <dl className="mini-facts">
         <div>
@@ -278,6 +314,8 @@ export function TrainCard(props: {
     return s == null ? null : formatClockTime(s, /:\d\d:\d\d$/.test(text ?? '') && s % 60 !== 0);
   };
   const unknown = <span className="muted">{t('unknown')}</span>;
+  // "本站终到" only when the timetable's destination is this station; a train that runs on into another line's timetable has no departure here either
+  const terminatesHere = r.departure_time_local == null && r.destination_text != null && station != null && station.name_ja.replace(/\s+/g, '').endsWith(`${r.destination_text}駅`);
 
   const facts: { key: string; label: string; value: ReactNode }[] = [
     { key: 'op', label: t('tfOperator'), value: operator ? pickName(operator.names, lang) : r.operator_id },
@@ -288,7 +326,17 @@ export function TrainCard(props: {
       key: 'arr', label: t('tfArrival'),
       value: r.arrival_time_local ? time(r.arrival_time_local) : <span className="muted">{plan.arrivalAssumed ? t('tfArrivalAssumed') : t('unknown')}</span>,
     },
-    { key: 'dep', label: t('tfDeparture'), value: r.departure_time_local ? time(r.departure_time_local) : <span className="muted">{t('tfTerminates')}</span> },
+    {
+      key: 'dep', label: t('tfDeparture'),
+      value: r.departure_time_local ? (
+        <>
+          {time(r.departure_time_local)}
+          {plan.shortStopAssumed && <span className="muted" data-testid="train-short-stop"> · {t('tfShortStop')}</span>}
+        </>
+      ) : (
+        <span className="muted">{terminatesHere ? t('tfTerminates') : t('tfNoDeparture')}</span>
+      ),
+    },
     { key: 'pf', label: t('tfPlatform'), value: `${station?.name_ja ?? r.station_id} · ${t('trackN', { n: plan.trackNumber })}` },
     {
       key: 'veh', label: t('tfVehicle'),
@@ -319,10 +367,13 @@ export function TrainCard(props: {
       value: (
         <>
           {demo ? t('trainDemoBadge') : (source?.title ?? r.source_id)}
+          {!demo && source?.publisher ? ` · ${source.publisher}` : ''}
+          {!demo && source?.license ? ` · ${source.license}` : ''}
           {source?.retrievedAt ? ` · ${source.retrievedAt}` : data.dataset.generatedAt ? ` · ${data.dataset.generatedAt}` : ''}
         </>
       ),
     },
+    ...(r.remarks && !demo ? [{ key: 'rem', label: t('tfRemarks'), value: <span className="muted" data-testid="train-remarks">{r.remarks}</span> }] : []),
   ];
 
   return (
