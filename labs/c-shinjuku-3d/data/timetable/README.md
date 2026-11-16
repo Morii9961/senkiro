@@ -1,10 +1,28 @@
-# data/timetable — 时刻表交接目录
+# data/timetable — 时刻表目录
 
 把时刻表文件（`.csv` 和/或 `.json`）放进本目录，重新构建后三维场景就按它驱动列车；
-本目录没有可用记录时，页面改用 **Demo Fixture**（`src/timetable/demoFixture.ts`
+本目录（以及下面的本地目录）没有可用记录时，页面改用 **Demo Fixture**（`src/timetable/demoFixture.ts`
 生成的固定间隔假数据），并在界面上明确标注。两者不会混用。
 
-本原型不生成、不维护任何运营时刻；这里只定义接口。
+## 本目录里有什么（会提交、会随仓库公开）
+
+只放许可允许再分发的数据，每个来源都要在 `data/manual/sources.ts` 里有 SourceRecord，且
+`redistribution: 'yes'`（`npm run data:build` 会检查）。
+
+| 文件 | 内容 | 来源与许可 |
+| --- | --- | --- |
+| `toei-odpt.csv`、`toei-odpt.sources.json` | 都营新宿线（新宿 S01、新宿三丁目 S02）、都营大江户线（新宿 E27、新宿西口 E01）的停站记录，平日 + 土休日 | 東京都交通局・公共交通オープンデータ協議会「東京都交通局 列車時刻表」「東京都交通局 駅情報」（CC BY 4.0）を加工して作成。由 `npx tsx scripts/fetch-timetable-odpt.ts` 从 ODPT 免密钥公开接口生成；加工内容：只取四站、03:00 前写成 24:xx、按下一站和方向牌加番线、加站名 |
+
+## 本地目录 `data/raw/timetable/`（不提交）
+
+条款不允许再分发的时刻表放在这里（整个 `data/raw/` 被 `.gitignore` 忽略）。本机构建时一并读入，
+界面标“仅本地（不可再分发，不在仓库中）”；别人克隆仓库后不会有这些数据。
+
+- `jreast-shinjuku.csv`：由 `npx tsx scripts/fetch-timetable-jreast.ts` 从 JR 东日本「駅の時刻表」读取的新宿站 JR 时刻
+  （成田特快、中央线特急、湘南新宿线、东武直通特急等）。JR 东日本网站利用规约谢绝复制与再分发，
+  这是项目方决定的本地私人使用（2026-11-16），绝不提交。
+
+`direction_id`：JR 新宿的记录可写 `southbound` / `northbound`（按前后停车站），列车在通过式番线上按此方向进出。
 
 ## 文件
 

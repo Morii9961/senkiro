@@ -245,6 +245,19 @@ describe('train simulation', () => {
     expect(plansOf([rec({ arrival_time_local: '08:00', departure_time_local: '08:01' })]).plans[0]!.depart).toBe(T + 60);
   });
 
+  it('a JR trip that names its direction runs that way, also on the limited-express tracks 5・6 whose direction the track table leaves open', () => {
+    const nex = rec({ line_id: 'jr-east:narita-express', platform_id: 'jr-east:shinjuku:6', direction_id: 'southbound' });
+    const tobu = rec({ trip_id: 't2', line_id: 'jr-east:tobu-through-limited-express', platform_id: 'jr-east:shinjuku:5', direction_id: 'northbound' });
+    const plain = rec({ trip_id: 't3', platform_id: 'jr-east:shinjuku:5', direction_id: null });
+    const [a, b, c] = plansOf([nex, tobu, plain]).plans.sort((x, y) => x.record.trip_id.localeCompare(y.record.trip_id));
+    expect(a!.run?.departs).toBe(1);
+    expect(b!.run?.departs).toBe(-1);
+    expect(c!.run?.departs).toBeNull();
+    // a southbound train ends its run coming from the north (smaller x)
+    const arriving = plansOf([rec({ platform_id: 'jr-east:shinjuku:10', direction_id: 'southbound', departure_time_local: null })]).plans[0]!;
+    expect(trainStateAt(arriving, arriving.arrive - 10)!.along).toBeLessThan(arriving.stopAt);
+  });
+
   it('filters by the kind of day', () => {
     const records = [base, rec({ trip_id: 'h', service_date_type: 'holiday' })];
     expect(buildTrainPlans(model, records, { dayType: 'weekday' }).plans.map((p) => p.record.trip_id)).toEqual(['t1']);

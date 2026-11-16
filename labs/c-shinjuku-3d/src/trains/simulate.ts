@@ -143,7 +143,7 @@ export function buildTrainPlans(model: StationModel, records: TimetableRecord[],
     const depart = shortStop ? arr + SHORT_STOP_SECONDS : dep;
     const vehicle = resolveVehicle(record);
     const { length, carLength } = trainLength(line, vehicle.cars, vehicle.spec.carLengthM);
-    const run = trackRun(track.platform.id, track.trackNumber);
+    const run = runOfTrip(record, trackRun(track.platform.id, track.trackNumber));
     const stopAt = (line.lo + line.hi) / 2;
     const moves = run?.departs != null;
     plans.push({
@@ -194,6 +194,19 @@ export function buildTrainPlans(model: StationModel, records: TimetableRecord[],
 
   plans.sort((a, b) => a.enter - b.enter);
   return { plans, unplaced };
+}
+
+/**
+ * A JR Shinjuku record may name its own direction of travel ('southbound' / 'northbound', read from the
+ * train's next or previous stop). On a through track that decides the way the train runs, also where the
+ * track table leaves it open (5・6: limited expresses of both directions) or names the more frequent
+ * direction only. JR platforms lie north–south in the model: +1 is south.
+ */
+export function runOfTrip(record: TimetableRecord, run: TrackRun | null): TrackRun | null {
+  if (!run || run.kind !== 'through' || !record.station_id.startsWith('jr-east:')) return run;
+  const d = record.direction_id === 'southbound' ? 1 : record.direction_id === 'northbound' ? -1 : null;
+  if (d == null || d === run.departs) return run;
+  return { ...run, departs: d, note: `${run.note} This trip runs ${record.direction_id}, as its own stop list shows.` };
 }
 
 function stationInModel(model: StationModel, stationId: string): boolean {
