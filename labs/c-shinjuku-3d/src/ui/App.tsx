@@ -9,7 +9,7 @@ import { loadStationData } from '../providers/stationDataProvider';
 import { Icon } from './atoms';
 import { FloorPicker } from './FloorPicker';
 import { LANGS, makeT, type Lang, type StrKey } from './i18n';
-import { makeNamer, pickName } from './naming';
+import { isAlightingOnly, makeNamer, pickName } from './naming';
 import { FacilityCard, hasCard } from './panels/FacilityCard';
 import { OpsPanel, type OpsMode } from './panels/OpsPanel';
 import { DisplayPanel, HelpDialog, InfoPanel } from './panels/OtherPanels';
@@ -181,7 +181,7 @@ export function App() {
     for (const a of model.areas) {
       if (a.kind !== 'platform') continue;
       const lines = namer.linesOf(a).map((l) => pickName(l.names, lang) ?? '');
-      out.push({ id: a.id, group: 'platform', label: at(a.stationId, `${t('platformTitle', { n: trackRange(a.tracks.map((x) => x.number)) })}　${lines.join(sep)}`) });
+      out.push({ id: a.id, group: 'platform', label: at(a.stationId, `${t('platformTitle', { n: trackRange(a.tracks.map((x) => x.number)) })}${isAlightingOnly(a) ? t('alightingOnly') : ''}　${lines.join(sep)}`) });
     }
     for (const g of model.gates) {
       if (g.sides.some((s) => 'blockId' in s)) continue; // the far side is outside the verified model

@@ -18,6 +18,7 @@ export type PrimRole =
   | 'area'
   | 'bridge'
   | 'wall'
+  | 'pilaster'
   | 'platform-edge'
   | 'line-band'
   | 'track'

@@ -3114,13 +3114,13 @@
           ],
           "side": "z-",
           "platformDoors": {
-            "status": "planned",
+            "status": "installed",
             "since": "2026-11-25",
             "sourceIds": [
               "src:wikipedia-ja-shinjuku-station",
               "src:tetsudo-com-column-1526"
             ],
-            "note": "スリットフレームホームドア。2026年11月25日使用開始予定（Wikipediaの年表）。"
+            "note": "スリットフレームホームドア。2026年11月25日使用開始（Wikipediaの年表では予定）。公開がこの日以降になるため、2026-11-16 に「あり」として記載。"
           }
         },
         {
@@ -3216,13 +3216,13 @@
           ],
           "side": "z+",
           "platformDoors": {
-            "status": "planned",
+            "status": "installed",
             "since": "2026-11-25",
             "sourceIds": [
               "src:wikipedia-ja-shinjuku-station",
               "src:tetsudo-com-column-1526"
             ],
-            "note": "スリットフレームホームドア。2026年11月25日使用開始予定（Wikipediaの年表）。"
+            "note": "スリットフレームホームドア。2026年11月25日使用開始（Wikipediaの年表では予定）。公開がこの日以降になるため、2026-11-16 に「あり」として記載。"
           }
         }
       ]
@@ -3717,7 +3717,7 @@
       "existence": "verified",
       "geometryConfidence": "schematic",
       "asOf": "2026-03",
-      "notes": "The west platform. The 降車専用ホーム drawn between tracks 2 and 3 is for alighting only and is not modelled. Keio: \"③ホーム京王八王子寄りの階段を昇ると京王新線・都営新宿線④⑤ホームにつながります\".",
+      "notes": "The west platform. The 降車専用ホーム between tracks 2 and 3 is a platform of its own (see keio-shinjuku-alighting). Keio: \"③ホーム京王八王子寄りの階段を昇ると京王新線・都営新宿線④⑤ホームにつながります\".",
       "levelId": "sk:level:keio-shinjuku-b2f",
       "fareZone": "paid:keio",
       "footprint": [
@@ -3761,6 +3761,70 @@
         ],
         "note": "ホームは京王八王子方（南）にしか延ばせず、車止め方向へ延ばす計画は改札側（北）。車止めは北端。"
       }
+    },
+    {
+      "kind": "platform",
+      "id": "sk:platform:keio-shinjuku-alighting",
+      "externalIds": {},
+      "names": {
+        "ja": "降車専用ホーム（2・3番線）",
+        "ja_kana": null,
+        "en": "Alighting-only platform (tracks 2–3)",
+        "zh": "下车专用站台（2·3号线）"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:keio-station-map",
+          "src:keio-layer-map",
+          "src:wikipedia-ja-shinjuku-station",
+          "src:wadattsu-keio-shinjuku"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-16"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:keio-shinjuku",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-03",
+      "notes": "The middle of the three platforms: alighting only, shared by tracks 2 and 3 (Keio drawing; Wikipedia 新宿駅). Reached by stairs only, from the 京王西口 / 京王百貨店口 end; there is no way from it to ルミネ口 (わだっつ鉄道ちゃんねる). Its width and position between the tracks are schematic.",
+      "levelId": "sk:level:keio-shinjuku-b2f",
+      "fareZone": "paid:keio",
+      "footprint": [
+        {
+          "x0": 2,
+          "x1": 30,
+          "z0": 31.3,
+          "z1": 32.3
+        }
+      ],
+      "anchor": {
+        "x": 12,
+        "z": 31.8
+      },
+      "tracks": [
+        {
+          "number": "2",
+          "services": [
+            {
+              "railLineId": "sk:line:keio-keio",
+              "towardsJa": "降車ホーム",
+              "towardsEn": "alighting only"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "services": [
+            {
+              "railLineId": "sk:line:keio-keio",
+              "towardsJa": "降車ホーム",
+              "towardsEn": "alighting only"
+            }
+          ]
+        }
+      ]
     },
     {
       "kind": "concourse",
@@ -16046,7 +16110,8 @@
       "provenance": {
         "sourceIds": [
           "src:keio-station-map",
-          "src:keio-layer-map"
+          "src:keio-layer-map",
+          "src:wadattsu-keio-shinjuku"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-12"
@@ -16078,9 +16143,18 @@
           }
         }
       ],
-      "directionNote": "The Keio map prints time-dependent directions for some escalators (e.g. \"平日10:00まで昇り／10:00から降り\"). Not modelled.",
+      "directionNote": "京王の構内図に時間帯別の向きが印刷されている（例「平日10:00まで昇り／10:00から降り」）。わだっつ鉄道ちゃんねるも同じ（休日は終日下り）。",
       "hoursNote": null,
-      "aggregated": true
+      "aggregated": true,
+      "escalatorDirection": {
+        "direction": "scheduled",
+        "schedule": "始発〜10:00 上り、10:00〜 下り。休日は終日下り",
+        "sourceIds": [
+          "src:keio-station-map",
+          "src:wadattsu-keio-shinjuku"
+        ],
+        "note": "京王の構内図に時間帯別の向きが印刷されている（例「平日10:00まで昇り／10:00から降り」）。わだっつ鉄道ちゃんねるも同じ（休日は終日下り）。"
+      }
     },
     {
       "kind": "vertical",
@@ -16193,7 +16267,9 @@
       "provenance": {
         "sourceIds": [
           "src:keio-station-map",
-          "src:keio-layer-map"
+          "src:keio-layer-map",
+          "src:wadattsu-keio-shinjuku",
+          "src:wikipedia-ja-shinjuku-station"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-12"
@@ -16225,9 +16301,19 @@
           }
         }
       ],
-      "directionNote": "Keio map: \"※17:00まで昇り 17:00から降り\". Not modelled.",
+      "directionNote": "京王の構内図「※17:00まで昇り 17:00から降り」。Wikipedia、わだっつ鉄道ちゃんねるも同じ。",
       "hoursNote": null,
-      "aggregated": true
+      "aggregated": true,
+      "escalatorDirection": {
+        "direction": "scheduled",
+        "schedule": "17:00まで上り、17:00から下り",
+        "sourceIds": [
+          "src:keio-station-map",
+          "src:wadattsu-keio-shinjuku",
+          "src:wikipedia-ja-shinjuku-station"
+        ],
+        "note": "京王の構内図「※17:00まで昇り 17:00から降り」。Wikipedia、わだっつ鉄道ちゃんねるも同じ。"
+      }
     },
     {
       "kind": "vertical",
@@ -16291,7 +16377,8 @@
       "provenance": {
         "sourceIds": [
           "src:keio-station-map",
-          "src:keio-layer-map"
+          "src:keio-layer-map",
+          "src:wadattsu-keio-shinjuku"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-12"
@@ -16323,9 +16410,18 @@
           }
         }
       ],
-      "directionNote": "The Keio map prints time-dependent directions for some escalators (e.g. \"平日10:00まで昇り／10:00から降り\"). Not modelled.",
+      "directionNote": "京王の構内図に時間帯別の向きが印刷されている（例「平日10:00まで昇り／10:00から降り」）。わだっつ鉄道ちゃんねるも同じ（休日は終日下り）。",
       "hoursNote": null,
-      "aggregated": true
+      "aggregated": true,
+      "escalatorDirection": {
+        "direction": "scheduled",
+        "schedule": "始発〜10:00 上り、10:00〜 下り。休日は終日下り",
+        "sourceIds": [
+          "src:keio-station-map",
+          "src:wadattsu-keio-shinjuku"
+        ],
+        "note": "京王の構内図に時間帯別の向きが印刷されている（例「平日10:00まで昇り／10:00から降り」）。わだっつ鉄道ちゃんねるも同じ（休日は終日下り）。"
+      }
     },
     {
       "kind": "vertical",
@@ -16438,7 +16534,9 @@
       "provenance": {
         "sourceIds": [
           "src:keio-station-map",
-          "src:keio-layer-map"
+          "src:keio-layer-map",
+          "src:wadattsu-keio-shinjuku",
+          "src:wikipedia-ja-shinjuku-station"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-12"
@@ -16470,7 +16568,66 @@
           }
         }
       ],
-      "directionNote": "Keio map: \"※17:00まで昇り 17:00から降り\". Not modelled.",
+      "directionNote": "京王の構内図「※17:00まで昇り 17:00から降り」。Wikipedia、わだっつ鉄道ちゃんねるも同じ。",
+      "hoursNote": null,
+      "aggregated": true,
+      "escalatorDirection": {
+        "direction": "scheduled",
+        "schedule": "17:00まで上り、17:00から下り",
+        "sourceIds": [
+          "src:keio-station-map",
+          "src:wadattsu-keio-shinjuku",
+          "src:wikipedia-ja-shinjuku-station"
+        ],
+        "note": "京王の構内図「※17:00まで昇り 17:00から降り」。Wikipedia、わだっつ鉄道ちゃんねるも同じ。"
+      }
+    },
+    {
+      "kind": "vertical",
+      "id": "sk:vertical:keio-stairs-concourse-to-alighting-platform",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:keio-station-map",
+          "src:wadattsu-keio-shinjuku"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-16"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": "sk:station:keio-shinjuku",
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-03",
+      "notes": "The 降車専用ホーム is left by stairs only: three staircases near cars 7–10 (the 京王西口 / 京王百貨店口 end), drawn here as one at a schematic position. No escalator or lift serves it (わだっつ鉄道ちゃんねる).",
+      "verticalKind": "stairs",
+      "operatorLabel": null,
+      "stops": [
+        {
+          "levelId": "sk:level:keio-shinjuku-b1f",
+          "areaId": "sk:area:keio-b1f-concourse",
+          "position": {
+            "x": 6,
+            "z": 31.8
+          }
+        },
+        {
+          "levelId": "sk:level:keio-shinjuku-b2f",
+          "areaId": "sk:platform:keio-shinjuku-alighting",
+          "position": {
+            "x": 8.5,
+            "z": 31.8
+          }
+        }
+      ],
+      "directionNote": null,
       "hoursNote": null,
       "aggregated": true
     },

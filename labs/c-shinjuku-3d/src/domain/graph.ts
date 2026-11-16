@@ -219,7 +219,7 @@ export function buildGraph(model: StationModel): StationGraph {
         connection: 'verified' as const,
       };
       const run = vf.verticalKind === 'escalator' ? vf.escalatorDirection?.direction : undefined;
-      if (run && la && lb && la.elevation !== lb.elevation) {
+      if ((run === 'up' || run === 'down') && la && lb && la.elevation !== lb.elevation) {
         // a one-way escalator: only from its lower stop to its upper one ('up'), or the reverse ('down')
         const [lower, upper] = la.elevation < lb.elevation ? [stopIds[i]!, stopIds[i + 1]!] : [stopIds[i + 1]!, stopIds[i]!];
         if (run === 'up') addEdge({ ...edge, from: lower, to: upper });

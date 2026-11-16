@@ -356,7 +356,8 @@ describe('consistency of the whole walking graph (scripts/check-routes.ts runs i
 });
 
 describe('one-way escalators (only where a source says so)', () => {
-  const oneWay = model.verticals.filter((v) => v.escalatorDirection);
+  const oneWay = model.verticals.filter((v) => v.escalatorDirection?.direction === 'up' || v.escalatorDirection?.direction === 'down');
+  const switching = model.verticals.filter((v) => v.escalatorDirection?.direction === 'scheduled');
 
   it('have their walking edge in the running direction only', () => {
     expect(oneWay.length).toBeGreaterThan(0);
@@ -370,6 +371,18 @@ describe('one-way escalators (only where a source says so)', () => {
         expect(up ? to.levelOrdinal > from.levelOrdinal : to.levelOrdinal < from.levelOrdinal).toBe(true);
       }
     }
+  });
+
+  it('an escalator that switches by time of day stays usable both ways (the planner has no clock)', () => {
+    expect(switching.length).toBeGreaterThan(0);
+    for (const v of switching) expect(graph.edges.filter((e) => e.kind === 'vertical' && e.elementId === v.id)).toHaveLength(2 * (v.stops.length - 1));
+  });
+
+  it('the alighting-only Keio platform is left by stairs only, towards the 京王西口 end', () => {
+    const out = mustFind('sk:platform:keio-shinjuku-alighting', 'sk:gate:keio-west-gate');
+    expect(out.legs[0]!.elementId).toBe('sk:vertical:keio-stairs-concourse-to-alighting-platform');
+    const lift = findRoute(graph, 'sk:platform:keio-shinjuku-alighting', 'sk:gate:keio-west-gate', { mode: 'elevator-only' });
+    expect(lift.found).toBe(false);
   });
 
   it('a route down to the Yamanote platform from the south concourse does not ride the up-only escalator', () => {

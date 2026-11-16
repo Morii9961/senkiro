@@ -62,6 +62,9 @@ const table: Record<string, TrackRun> = {
   [`${P}keio-shinjuku-1-2#1`]: run('terminal', SOUTH, KEIO_END),
   [`${P}keio-shinjuku-1-2#2`]: run('terminal', SOUTH, KEIO_END),
   [`${P}keio-shinjuku-3#3`]: run('terminal', SOUTH, KEIO_END),
+  // the alighting-only platform between tracks 2 and 3: its faces are the same tracks, drawn at the boarding platforms
+  [`${P}keio-shinjuku-alighting#2`]: run('terminal', null, 'Alighting face of track 2; trains are drawn at the boarding platform beside it.'),
+  [`${P}keio-shinjuku-alighting#3`]: run('terminal', null, 'Alighting face of track 3; trains are drawn at the boarding platform beside it.'),
   ...Object.fromEntries(
     [['2-3', '2'], ['2-3', '3'], ['4-5', '4'], ['4-5', '5'], ['6', '6'], ['7', '7'], ['8-9', '8'], ['8-9', '9'], ['10', '10']].map(([pf, n]) => [
       `${P}odakyu-shinjuku-${pf}#${n}`,

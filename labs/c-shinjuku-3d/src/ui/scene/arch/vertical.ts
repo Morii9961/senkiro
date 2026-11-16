@@ -292,7 +292,7 @@ export function buildVerticals(ctx: Ctx): void {
     }
     // a one-way escalator (only when a source says so): chevrons on the treads pointing the way it runs
     const runs = v.escalatorDirection?.direction;
-    if (runs) {
+    if (runs === 'up' || runs === 'down') {
       const arrow = c.style(v.id, p.tactile, vis)!;
       for (const k of [0.3, 0.55, 0.8]) {
         const [tip, tail] = runs === 'up' ? [k + 0.07, k - 0.05] : [k - 0.07, k + 0.05];

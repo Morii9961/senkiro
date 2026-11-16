@@ -41,7 +41,12 @@ describe('track running table', () => {
         // the centre line lies outside the platform slab, within a track's width of its edge
         expect(line!.centre < lo || line!.centre > hi, a.id).toBe(true);
         expect(Math.min(Math.abs(line!.centre - lo), Math.abs(line!.centre - hi))).toBeLessThan(0.5);
-        expect(line!.clipLo).toBeLessThan(line!.lo);
+        // the track runs on past both ends, except at the head of a terminus, where it stops at the buffer stop
+        const head = a.terminus?.end;
+        if (head === 'x-' || head === 'z-') expect(line!.clipLo).toBe(line!.lo);
+        else expect(line!.clipLo).toBeLessThan(line!.lo);
+        if (head === 'x+' || head === 'z+') expect(line!.clipHi).toBe(line!.hi);
+        else expect(line!.clipHi).toBeGreaterThan(line!.hi);
       }
     }
   });

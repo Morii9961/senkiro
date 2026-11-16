@@ -31,6 +31,14 @@ import type { Ctx } from './context';
 
 const WALL_T = 0.1;
 const SHADOW_REACH = 0.7;
+/**
+ * Pilasters: square piers set into the low walls at every corner, at both jambs of every opening and at
+ * most this far apart along a long wall. They stand in the wall line only, never out on the floor, so they
+ * cannot hide a route. Drawn by rule: where real columns stand is not known (no public source gives it).
+ */
+const PILASTER_STEP = 5;
+const PILASTER_W = 0.18;
+const PILASTER_RISE = 0.14;
 
 export function levelBounds(ctx: Pick<Ctx, 'model'>, levelId: string, pad = 1.6): PlanRect {
   const rects = ctx.model.areas.filter((a) => a.levelId === levelId).flatMap((a) => a.footprint);
@@ -163,7 +171,23 @@ export function buildAreas(ctx: Ctx): void {
     // low walls along the outline, with a baked contact shadow at their foot
     const wall = ctx.style(area.id, p.wall, vis);
     if (!wall) continue;
-    for (const e of wallEdges(ctx, area)) {
+    const edges = wallEdges(ctx, area);
+    const pilaster = ctx.style(area.id, mix(p.wall, p.column, 0.45), vis)!;
+    const placed = new Set<string>();
+    for (const e of edges) {
+      const n = Math.max(1, Math.ceil((e.hi - e.lo) / PILASTER_STEP));
+      for (let i = 0; i <= n; i++) {
+        const along = e.lo + ((e.hi - e.lo) * i) / n;
+        const across = e.at + e.inward * (0.01 + WALL_T / 2);
+        const [px, pz] = e.axis === 'x' ? [along, across] : [across, along];
+        const key = `${px.toFixed(1)}|${pz.toFixed(1)}`;
+        if (placed.has(key)) continue;
+        placed.add(key);
+        const h = PILASTER_W / 2;
+        ctx.add(area.id, 'pilaster', 'wall', box(px - h, px + h, top, top + WALL_HEIGHT + PILASTER_RISE, pz - h, pz + h), pilaster, { shade: [0.75, 1], pickable: false });
+      }
+    }
+    for (const e of edges) {
       const near = e.at + e.inward * 0.01;
       const far = e.at + e.inward * (0.01 + WALL_T);
       const [n0, n1] = near < far ? [near, far] : [far, near];

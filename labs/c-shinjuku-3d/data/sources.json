@@ -884,6 +884,23 @@
     "usedInData": true
   },
   {
+    "id": "src:wadattsu-keio-shinjuku",
+    "title": "【新宿駅】京王線ホームの階段・エスカレーター・エレベーターに近い降車位置情報（わだっつ鉄道ちゃんねる）",
+    "publisher": "わだっつ鉄道ちゃんねる (wadattsu261.com, a personal site)",
+    "url": "https://wadattsu261.com/content/shinjuku-keiohome-info/",
+    "retrievedAt": "2026-11-16",
+    "license": "All rights reserved — no open licence is stated. Site terms were not reviewed.",
+    "licenseUrl": null,
+    "commercialUse": "unknown",
+    "redistribution": "no",
+    "shareAlike": "unknown",
+    "attributionText": "わだっつ鉄道ちゃんねる",
+    "notes": "Pages 1 and 2 read by an AI agent with a web fetch tool on 2026-11-16 (dated 2020-11-12, updated 2024-12-08). Used for: the 降車専用ホーム is reached by stairs only (\"降車専用ホームからは、階段のみでの移動となります\"), three staircases near cars 7–10, i.e. the 京王西口 / 京王百貨店口 end, and no way to ルミネ口; the escalators to the boarding platforms run up from the first train to 10:00 and down after (all day down on holidays) on the 京王西口 side, and up until 17:00 and down after on the ルミネ口 side. A personal site, not Keio; the two pages disagree on which side the alighting doors open.",
+    "accessedVia": "Read by an AI agent with a web fetch tool on 2026-11-16.",
+    "sourceDate": "2024-12-08",
+    "usedInData": true
+  },
+  {
     "id": "src:senkiro-lab-schematic",
     "title": "SENKIRO Lab schematic layout (this prototype)",
     "publisher": "SENKIRO Lab",

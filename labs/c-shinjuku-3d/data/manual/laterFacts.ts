@@ -20,6 +20,8 @@ const ECOMO = 'src:ecomo-rakuraku-stations';
 const TETSUDO = 'src:tetsudo-com-column-1526';
 const TN_KEIO = 'src:trafficnews-keio-shinjuku-2024';
 const TN_SEIBU = 'src:trafficnews-seibu-shinjuku-2018';
+const WADATTSU_KEIO = 'src:wadattsu-keio-shinjuku';
+const KEIO_MAP = 'src:keio-station-map';
 
 type Doors = NonNullable<PlatformTrack['platformDoors']>;
 type Terminus = NonNullable<Platform['terminus']>;
@@ -31,6 +33,12 @@ const planned = (since: string | null, sourceIds: string[], note: string): Doors
 
 const JR_NONE = '2026年3月時点で新宿駅（JR）にホームドアはない（改札内コンコース工事のため）。';
 const JR_FY2028 = `${JR_NONE}2028年度末までに設置予定（山手線・中央・総武線各駅停車・埼京線・湘南新宿ライン）。`;
+/**
+ * JR 13・16番線: the Wikipedia timeline gives 2026-11-25 as the (scheduled) first day of use. On 2026-11-16 the
+ * project owner decided to enter it as installed, because this prototype will not be published before that date.
+ * The date is still the scheduled one; nobody has seen the doors in use.
+ */
+const JR_1316 = 'スリットフレームホームドア。2026年11月25日使用開始（Wikipediaの年表では予定）。公開がこの日以降になるため、2026-11-16 に「あり」として記載。';
 const OD_NONE = '可動式ホーム柵は地上4・5番線と地下8・9番線のみ。このホームは未設置。';
 
 /** Platform doors per platform and face (track number as printed). Faces not listed are unknown. */
@@ -38,12 +46,12 @@ export const PLATFORM_DOORS: Record<string, Record<string, Doors>> = {
   'sk:platform:jr-east-shinjuku-1-2': { '1': none([TETSUDO], JR_FY2028), '2': none([TETSUDO], JR_FY2028) },
   'sk:platform:jr-east-shinjuku-3-4': { '3': none([TETSUDO], JR_FY2028), '4': none([TETSUDO], JR_FY2028) },
   'sk:platform:jr-east-shinjuku-13-14': {
-    '13': planned('2026-11-25', [WP, TETSUDO], 'スリットフレームホームドア。2026年11月25日使用開始予定（Wikipediaの年表）。'),
+    '13': installed('2026-11-25', [WP, TETSUDO], JR_1316),
     '14': none([TETSUDO], JR_FY2028),
   },
   'sk:platform:jr-east-shinjuku-15-16': {
     '15': none([TETSUDO], JR_FY2028),
-    '16': planned('2026-11-25', [WP, TETSUDO], 'スリットフレームホームドア。2026年11月25日使用開始予定（Wikipediaの年表）。'),
+    '16': installed('2026-11-25', [WP, TETSUDO], JR_1316),
   },
   'sk:platform:odakyu-shinjuku-2-3': { '2': none([ECOMO], OD_NONE), '3': none([ECOMO], OD_NONE) },
   'sk:platform:odakyu-shinjuku-4-5': {
@@ -139,6 +147,30 @@ export const ESCALATOR_DIRECTIONS: Record<string, EscalatorRun> = {
     direction: 'up',
     sourceIds: [WP],
     note: '2・3番ホームから南口改札への上りのみ（幅の狭いタイプ）。',
+  },
+  'sk:vertical:keio-escalator-concourse-to-platform-1-2': {
+    direction: 'scheduled',
+    schedule: '始発〜10:00 上り、10:00〜 下り。休日は終日下り',
+    sourceIds: [KEIO_MAP, WADATTSU_KEIO],
+    note: '京王の構内図に時間帯別の向きが印刷されている（例「平日10:00まで昇り／10:00から降り」）。わだっつ鉄道ちゃんねるも同じ（休日は終日下り）。',
+  },
+  'sk:vertical:keio-escalator-concourse-to-platform-3': {
+    direction: 'scheduled',
+    schedule: '始発〜10:00 上り、10:00〜 下り。休日は終日下り',
+    sourceIds: [KEIO_MAP, WADATTSU_KEIO],
+    note: '京王の構内図に時間帯別の向きが印刷されている（例「平日10:00まで昇り／10:00から降り」）。わだっつ鉄道ちゃんねるも同じ（休日は終日下り）。',
+  },
+  'sk:vertical:keio-escalator-lumine-landing-to-platform-1-2': {
+    direction: 'scheduled',
+    schedule: '17:00まで上り、17:00から下り',
+    sourceIds: [KEIO_MAP, WADATTSU_KEIO, WP],
+    note: '京王の構内図「※17:00まで昇り 17:00から降り」。Wikipedia、わだっつ鉄道ちゃんねるも同じ。',
+  },
+  'sk:vertical:keio-escalator-lumine-landing-to-platform-3': {
+    direction: 'scheduled',
+    schedule: '17:00まで上り、17:00から下り',
+    sourceIds: [KEIO_MAP, WADATTSU_KEIO, WP],
+    note: '京王の構内図「※17:00まで昇り 17:00から降り」。Wikipedia、わだっつ鉄道ちゃんねるも同じ。',
   },
   'sk:vertical:tokyo-metro-escalator-east-gates-to-platform': {
     direction: 'up',

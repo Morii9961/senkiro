@@ -2401,6 +2401,18 @@
       }
     },
     {
+      "id": "sk:platform:keio-shinjuku-alighting",
+      "kind": "area",
+      "elementId": "sk:platform:keio-shinjuku-alighting",
+      "levelId": "sk:level:keio-shinjuku-b2f",
+      "levelOrdinal": -2,
+      "zone": "paid:keio",
+      "position": {
+        "x": 12,
+        "z": 31.8
+      }
+    },
+    {
       "id": "sk:platform:odakyu-shinjuku-10",
       "kind": "area",
       "elementId": "sk:platform:odakyu-shinjuku-10",
@@ -4990,6 +5002,30 @@
       "position": {
         "x": 35.95,
         "z": 54.6
+      }
+    },
+    {
+      "id": "sk:vertical:keio-stairs-concourse-to-alighting-platform@sk:level:keio-shinjuku-b1f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:keio-stairs-concourse-to-alighting-platform",
+      "levelId": "sk:level:keio-shinjuku-b1f",
+      "levelOrdinal": -1,
+      "zone": "paid:keio",
+      "position": {
+        "x": 6,
+        "z": 31.8
+      }
+    },
+    {
+      "id": "sk:vertical:keio-stairs-concourse-to-alighting-platform@sk:level:keio-shinjuku-b2f",
+      "kind": "vertical-stop",
+      "elementId": "sk:vertical:keio-stairs-concourse-to-alighting-platform",
+      "levelId": "sk:level:keio-shinjuku-b2f",
+      "levelOrdinal": -2,
+      "zone": "paid:keio",
+      "position": {
+        "x": 8.5,
+        "z": 31.8
       }
     },
     {
@@ -8962,6 +8998,17 @@
       "from": "sk:area:keio-b1f-concourse",
       "to": "sk:vertical:keio-escalator-concourse-to-platform-3@sk:level:keio-shinjuku-b1f",
       "id": "sk:area:keio-b1f-concourse→sk:vertical:keio-escalator-concourse-to-platform-3@sk:level:keio-shinjuku-b1f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:keio-stairs-concourse-to-alighting-platform",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:keio-b1f-concourse",
+      "to": "sk:vertical:keio-stairs-concourse-to-alighting-platform@sk:level:keio-shinjuku-b1f",
+      "id": "sk:area:keio-b1f-concourse→sk:vertical:keio-stairs-concourse-to-alighting-platform@sk:level:keio-shinjuku-b1f"
     },
     {
       "kind": "vertical-approach",
@@ -13989,6 +14036,17 @@
       "from": "sk:platform:keio-shinjuku-3",
       "to": "sk:vertical:keio-stairs-platform-3-to-new-line@sk:level:keio-shinjuku-b2f",
       "id": "sk:platform:keio-shinjuku-3→sk:vertical:keio-stairs-platform-3-to-new-line@sk:level:keio-shinjuku-b2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:keio-stairs-concourse-to-alighting-platform",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:platform:keio-shinjuku-alighting",
+      "to": "sk:vertical:keio-stairs-concourse-to-alighting-platform@sk:level:keio-shinjuku-b2f",
+      "id": "sk:platform:keio-shinjuku-alighting→sk:vertical:keio-stairs-concourse-to-alighting-platform@sk:level:keio-shinjuku-b2f"
     },
     {
       "kind": "passage",
@@ -19192,6 +19250,50 @@
       "from": "sk:vertical:keio-new-line-stairs-shintoshin-gate-to-b4f@sk:level:keio-new-line-shinjuku-b4f",
       "to": "sk:vertical:keio-new-line-stairs-shintoshin-gate-to-b4f@sk:level:keio-new-line-shinjuku-b1f",
       "id": "sk:vertical:keio-new-line-stairs-shintoshin-gate-to-b4f@sk:level:keio-new-line-shinjuku-b4f→sk:vertical:keio-new-line-stairs-shintoshin-gate-to-b4f@sk:level:keio-new-line-shinjuku-b1f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:keio-stairs-concourse-to-alighting-platform",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:keio-stairs-concourse-to-alighting-platform@sk:level:keio-shinjuku-b1f",
+      "to": "sk:area:keio-b1f-concourse",
+      "id": "sk:vertical:keio-stairs-concourse-to-alighting-platform@sk:level:keio-shinjuku-b1f→sk:area:keio-b1f-concourse"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:keio-stairs-concourse-to-alighting-platform",
+      "verticalKind": "stairs",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:keio-stairs-concourse-to-alighting-platform@sk:level:keio-shinjuku-b1f",
+      "to": "sk:vertical:keio-stairs-concourse-to-alighting-platform@sk:level:keio-shinjuku-b2f",
+      "id": "sk:vertical:keio-stairs-concourse-to-alighting-platform@sk:level:keio-shinjuku-b1f→sk:vertical:keio-stairs-concourse-to-alighting-platform@sk:level:keio-shinjuku-b2f"
+    },
+    {
+      "kind": "vertical-approach",
+      "elementId": "sk:vertical:keio-stairs-concourse-to-alighting-platform",
+      "verticalKind": "stairs",
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:vertical:keio-stairs-concourse-to-alighting-platform@sk:level:keio-shinjuku-b2f",
+      "to": "sk:platform:keio-shinjuku-alighting",
+      "id": "sk:vertical:keio-stairs-concourse-to-alighting-platform@sk:level:keio-shinjuku-b2f→sk:platform:keio-shinjuku-alighting"
+    },
+    {
+      "kind": "vertical",
+      "elementId": "sk:vertical:keio-stairs-concourse-to-alighting-platform",
+      "verticalKind": "stairs",
+      "levelChange": 1,
+      "stepFree": false,
+      "connection": "verified",
+      "from": "sk:vertical:keio-stairs-concourse-to-alighting-platform@sk:level:keio-shinjuku-b2f",
+      "to": "sk:vertical:keio-stairs-concourse-to-alighting-platform@sk:level:keio-shinjuku-b1f",
+      "id": "sk:vertical:keio-stairs-concourse-to-alighting-platform@sk:level:keio-shinjuku-b2f→sk:vertical:keio-stairs-concourse-to-alighting-platform@sk:level:keio-shinjuku-b1f"
     },
     {
       "kind": "vertical-approach",

@@ -324,10 +324,12 @@ export interface VerticalFacility extends StationElementBase {
   /**
    * Running direction of an escalator, only when a source says so: 'up' runs
    * only from the lower stop to the upper one, 'down' only the other way. The
-   * walking graph then has the edge in that direction only. Absent = unknown,
-   * and the escalator is treated as usable both ways.
+   * walking graph then has the edge in that direction only. 'scheduled' = it
+   * switches by time of day (`schedule` says how); the route planner has no
+   * clock, so it stays usable both ways and the card shows the schedule.
+   * Absent = unknown, and the escalator is treated as usable both ways.
    */
-  escalatorDirection?: SourcedFact<{ direction: 'up' | 'down' }>;
+  escalatorDirection?: SourcedFact<{ direction: 'up' | 'down' | 'scheduled'; schedule?: string }>;
   hoursNote: string | null;
   /** True when one entry stands for several physical units of the same kind. */
   aggregated: boolean;

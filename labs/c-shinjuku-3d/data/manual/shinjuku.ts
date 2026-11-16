@@ -329,6 +329,7 @@ export const A = {
   keioHead: 'sk:area:keio-b2f-platform-head',
   keioP12: 'sk:platform:keio-shinjuku-1-2',
   keioP3: 'sk:platform:keio-shinjuku-3',
+  keioAlight: 'sk:platform:keio-shinjuku-alighting',
 };
 
 export function concourse(
@@ -496,6 +497,7 @@ const jrAreas: Area[] = [
 
 const keioProv = prov([S_KEIO, S_KEIO_LAYER], undefined, D2);
 const keioSvc = svc(L.keio, '京王八王子・高尾山口・橋本', 'for Keio-hachioji, Takaosanguchi, Hashimoto');
+const keioAlightSvc = svc(L.keio, '降車ホーム', 'alighting only');
 
 function keioPlatform(id: string, n: Names, footprint: PlanRect, anchor: PlanPoint, tracks: PlatformTrack[], notes: string): Platform {
   return {
@@ -537,7 +539,14 @@ const keioAreas: Area[] = [
     'The east island of the Keio drawing. Trains from 1–3 do not stop at 初台 / 幡ヶ谷 (printed on the Keio map).'),
   keioPlatform(A.keioP3, names('3番線ホーム', 'Platform 3', '3号站台'), rect(2, 30, 33, 34.6), pt(12, 33.8),
     [{ number: '3', services: [keioSvc], side: 'z-' }],
-    'The west platform. The 降車専用ホーム drawn between tracks 2 and 3 is for alighting only and is not modelled. Keio: "③ホーム京王八王子寄りの階段を昇ると京王新線・都営新宿線④⑤ホームにつながります".'),
+    'The west platform. The 降車専用ホーム between tracks 2 and 3 is a platform of its own (see keio-shinjuku-alighting). Keio: "③ホーム京王八王子寄りの階段を昇ると京王新線・都営新宿線④⑤ホームにつながります".'),
+  {
+    ...keioPlatform(A.keioAlight, names('降車専用ホーム（2・3番線）', 'Alighting-only platform (tracks 2–3)', '下车专用站台（2·3号线）'), rect(2, 30, 31.3, 32.3), pt(12, 31.8),
+      // the tracks are drawn by the two boarding platforms beside it; no side is recorded here, so they are not drawn twice
+      [{ number: '2', services: [keioAlightSvc] }, { number: '3', services: [keioAlightSvc] }],
+      'The middle of the three platforms: alighting only, shared by tracks 2 and 3 (Keio drawing; Wikipedia 新宿駅). Reached by stairs only, from the 京王西口 / 京王百貨店口 end; there is no way from it to ルミネ口 (わだっつ鉄道ちゃんねる). Its width and position between the tracks are schematic.'),
+    provenance: prov([S_KEIO, S_KEIO_LAYER, 'src:wikipedia-ja-shinjuku-station', 'src:wadattsu-keio-shinjuku'], undefined, '2026-11-16'),
+  },
 ];
 
 const areas: Area[] = [...jrAreas, ...jrPlatforms, ...keioAreas];
@@ -925,6 +934,10 @@ const otherVerticals: VerticalFacility[] = [
         keioProv, { common: keioCommon, notes: AGG_ESC, direction: 'Keio map: "※17:00まで昇り 17:00から降り". Not modelled.' }),
     ];
   }),
+  vertical('keio-stairs-concourse-to-alighting-platform', 'stairs', unnamed,
+    [{ levelId: LV.keioB1, areaId: A.keioPaid, at: pt(6, 31.8) }, { levelId: LV.keioB2, areaId: A.keioAlight, at: pt(8.5, 31.8) }],
+    prov([S_KEIO, 'src:wadattsu-keio-shinjuku'], undefined, '2026-11-16'),
+    { common: keioCommon, notes: 'The 降車専用ホーム is left by stairs only: three staircases near cars 7–10 (the 京王西口 / 京王百貨店口 end), drawn here as one at a schematic position. No escalator or lift serves it (わだっつ鉄道ちゃんねる).' }),
   vertical('keio-stairs-temporary-gate-landing-to-platform-1-2', 'stairs', unnamed,
     [{ levelId: LV.keioB1, areaId: A.keioRinjiPaid, at: pt(7.8, 25.6) }, { levelId: LV.keioB2, areaId: A.keioP12, at: pt(7.8, 29.3) }],
     prov([S_KEIO_LAYER], undefined, D2), { common: keioCommon, notes: 'Marked Ⓓ "臨時口へ" on the platform level.' }),

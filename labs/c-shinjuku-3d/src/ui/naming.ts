@@ -46,6 +46,11 @@ const CIRCLED: Record<string, string> = {
   A: 'Ⓐ', B: 'Ⓑ', C: 'Ⓒ', D: 'Ⓓ', E: 'Ⓔ', F: 'Ⓕ', G: 'Ⓖ', H: 'Ⓗ', I: 'Ⓘ', J: 'Ⓙ', K: 'Ⓚ', L: 'Ⓛ', M: 'Ⓜ', N: 'Ⓝ', O: 'Ⓞ',
 };
 
+/** A platform where every face is for alighting only (its track numbers repeat those of the boarding platforms). */
+export function isAlightingOnly(a: Platform): boolean {
+  return a.tracks.length > 0 && a.tracks.every((x) => x.services.length > 0 && x.services.every((sv) => sv.towardsJa === '降車ホーム'));
+}
+
 export function makeNamer(model: StationModel, lang: Lang, t: T): Namer {
   const areas = new Map(model.areas.map((a) => [a.id, a]));
   const gates = new Map(model.gates.map((g) => [g.id, g]));
@@ -78,7 +83,10 @@ export function makeNamer(model: StationModel, lang: Lang, t: T): Namer {
 
   const platformNumbers = (a: Platform): string => {
     const range = trackRange(a.tracks.map((x) => x.number));
-    return lang === 'en' ? `Tracks ${range}` : lang === 'zh' ? `${range} 号站台` : `${range}番線`;
+    // a platform where every face is for alighting only says so: its numbers repeat those of the boarding platforms
+    const alighting = isAlightingOnly(a);
+    const tail = alighting ? t('alightingOnly') : '';
+    return (lang === 'en' ? `Tracks ${range}` : lang === 'zh' ? `${range} 号站台` : `${range}番線`) + tail;
   };
 
   const areaShort = (id: string): string => {

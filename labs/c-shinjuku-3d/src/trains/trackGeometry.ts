@@ -9,8 +9,11 @@ export const TRACK_W = 0.62;
 export const TRACK_GAP = 0.04;
 /** How far the drawn track continues past each end of the platform. */
 export const TRACK_STUB = 1.6;
-/** At the head of a terminus (when a source names it) the track stops this far past the platform, at a buffer stop. */
-export const TRACK_HEAD_STUB = 0.35;
+/**
+ * At the head of a terminus (when a source names it) the track stops at the end of the platform, at a
+ * buffer stop: in this model the head concourse begins right there, so the track does not run on.
+ */
+export const TRACK_HEAD_STUB = 0;
 
 /** -1 / +1 when the low / high end of this edge is the head of a terminus, else 0. */
 export function headEnd(platform: Platform, e: PlatformEdge): -1 | 0 | 1 {

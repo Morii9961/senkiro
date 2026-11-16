@@ -652,7 +652,7 @@ describe('platform doors and buffer stops (only where a source says so)', () => 
     }
   });
 
-  it('buffer stops stand only at the head a source names, just beyond the platform', () => {
+  it('buffer stops stand only at the head a source names, at the end of the platform', () => {
     for (const area of model.areas) {
       if (area.kind !== 'platform') continue;
       const stops = prims.filter((q) => q.elementId === area.id && q.role === 'buffer-stop');
@@ -661,10 +661,33 @@ describe('platform doors and buffer stops (only where a source says so)', () => 
       const r = area.footprint[0]!;
       for (const q of stops) {
         const x = (q.a[0] + q.b[0]) / 2;
-        if (area.terminus.end === 'x-') expect(x).toBeLessThan(r.x0);
-        if (area.terminus.end === 'x+') expect(x).toBeGreaterThan(r.x1);
-        expect(Math.abs(area.terminus.end === 'x-' ? r.x0 - x : x - r.x1)).toBeLessThan(0.5);
+        // on the last stretch of track alongside the platform end, not out in the head concourse
+        if (area.terminus.end === 'x-') expect(x).toBeGreaterThanOrEqual(r.x0);
+        if (area.terminus.end === 'x+') expect(x).toBeLessThanOrEqual(r.x1);
+        expect(Math.abs(area.terminus.end === 'x-' ? x - r.x0 : r.x1 - x)).toBeLessThan(0.3);
       }
+    }
+  });
+});
+
+describe('pilasters (drawn by rule)', () => {
+  const prims = buildPrims(model, view());
+  const piers = prims.filter((q) => q.role === 'pilaster');
+
+  it('stand in the wall line of their area, never out on the floor, and stay within a budget', () => {
+    expect(piers.length).toBeGreaterThan(50);
+    expect(piers.length).toBeLessThan(1500);
+    for (const q of piers) {
+      const area = areaById.get(q.elementId!)!;
+      const c = { x: (q.a[0] + q.b[0]) / 2, z: (q.a[2] + q.b[2]) / 2 };
+      // on the outline: inside the footprint but within a wall's thickness of an edge
+      const edgeDist = Math.min(...outlineEdges(area.footprint).map((e) => {
+        const along = e.axis === 'x' ? c.x : c.z;
+        const across = e.axis === 'x' ? c.z : c.x;
+        return along >= e.lo - 1e-6 && along <= e.hi + 1e-6 ? Math.abs(across - e.at) : Infinity;
+      }));
+      expect(edgeDist).toBeLessThan(0.12);
+      expect(area.kind).not.toBe('platform');
     }
   });
 });

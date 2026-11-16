@@ -173,7 +173,8 @@ describe('details added later (platform doors, termini, one-way escalators)', ()
     const doors = platforms.flatMap((p) => (p.kind === 'platform' ? p.tracks.filter((t) => t.platformDoors) : []));
     expect(doors.length).toBeGreaterThan(20);
     expect(platforms.filter((p) => p.kind === 'platform' && p.terminus)).toHaveLength(10);
-    expect(model.verticals.filter((v) => v.escalatorDirection)).toHaveLength(4);
+    expect(model.verticals.filter((v) => v.escalatorDirection?.direction === 'up')).toHaveLength(4);
+    expect(model.verticals.filter((v) => v.escalatorDirection?.direction === 'scheduled')).toHaveLength(4);
     expect(rules(model)).toEqual([]);
   });
 

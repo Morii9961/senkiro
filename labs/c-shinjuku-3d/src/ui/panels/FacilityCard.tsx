@@ -138,7 +138,15 @@ export function FacilityCard(props: {
     if (vertical.hoursNote) facts.push({ key: 'hours', label: t('fHours'), value: vertical.hoursNote });
     if (vertical.verticalKind === 'escalator') {
       const runs = vertical.escalatorDirection?.direction;
-      facts.push({ key: 'dir', label: t('fDirection'), value: runs ? <strong>{t(runs === 'up' ? 'escalatorUp' : 'escalatorDown')}</strong> : t('escalatorDirectionUnknown') });
+      const value =
+        runs === 'up' || runs === 'down' ? (
+          <strong>{t(runs === 'up' ? 'escalatorUp' : 'escalatorDown')}</strong>
+        ) : runs === 'scheduled' ? (
+          t('escalatorScheduled', { schedule: vertical.escalatorDirection!.schedule ?? t('unknown') })
+        ) : (
+          t('escalatorDirectionUnknown')
+        );
+      facts.push({ key: 'dir', label: t('fDirection'), value });
     }
     if (vertical.aggregated && vertical.verticalKind !== 'elevator') facts.push({ key: 'agg', label: t('fNote'), value: t('aggregatedNote') });
   }

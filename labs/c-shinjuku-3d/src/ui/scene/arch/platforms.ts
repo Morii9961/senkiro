@@ -96,6 +96,7 @@ export function buildPlatforms(ctx: Ctx): void {
         const lo = head === -1 ? e.lo - TRACK_HEAD_STUB : e.lo - TRACK_STUB;
         const hi = head === 1 ? e.hi + TRACK_HEAD_STUB : e.hi + TRACK_STUB;
         if (head !== 0) {
+          // the buffer stop stands on the last stretch of track, alongside the end of the platform
           const at = head === -1 ? lo : hi;
           const [b0, b1] = head === -1 ? [at, at + 0.14] : [at - 0.14, at];
           ctx.add(area.id, 'buffer-stop', 'metal', oriented(e.axis, b0, b1, t0 + e.out * 0.08, t1 - e.out * 0.08, y + 0.03, y + 0.28), dim(mix(p.trackBed, p.platformEdge, 0.25)), { shade: [0.75, 1], pickable: false });

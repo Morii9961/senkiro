@@ -139,8 +139,11 @@ test.describe('routes', () => {
     // track numbers repeat between operators, so every platform is listed with its lines
     const yamanote = to.locator('option', { hasText: '山手線' });
     expect(await yamanote.count()).toBeGreaterThanOrEqual(2);
-    // the Keio Line has two platforms (tracks 1·2 and track 3); the Keio New Line is a different line
-    await expect(to.locator('optgroup').first().locator('option', { hasText: /京王線/ })).toHaveCount(2);
+    // the Keio Line has two boarding platforms (tracks 1·2 and track 3) and the alighting-only one between them,
+    // which says so in its name; the Keio New Line is a different line
+    const keio = to.locator('optgroup').first().locator('option', { hasText: /京王線/ });
+    await expect(keio).toHaveCount(3);
+    await expect(keio.filter({ hasText: '降車専用' })).toHaveCount(1);
     await page.getByTestId('route-from').selectOption('sk:gate:jr-south-gate');
     await to.selectOption('sk:platform:jr-east-shinjuku-15-16');
     await expect(page.getByTestId('route-legs').locator('li').first()).toBeVisible();
