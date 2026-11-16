@@ -577,6 +577,18 @@
       }
     },
     {
+      "id": "sk:area:metro-promenade",
+      "kind": "area",
+      "elementId": "sk:area:metro-promenade",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "levelOrdinal": -1,
+      "zone": "unpaid",
+      "position": {
+        "x": -25.7,
+        "z": -26
+      }
+    },
+    {
       "id": "sk:area:nishiguchi-b1f-passage",
       "kind": "area",
       "elementId": "sk:area:nishiguchi-b1f-passage",
@@ -9694,6 +9706,28 @@
     },
     {
       "kind": "passage",
+      "elementId": "sk:passage:metro-promenade-to-sanchome-concourse",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:metro-promenade",
+      "to": "sk:area:sanchome-marunouchi-b1f-concourse",
+      "id": "sk:area:metro-promenade→sk:area:sanchome-marunouchi-b1f-concourse"
+    },
+    {
+      "kind": "passage",
+      "elementId": "sk:passage:marunouchi-shinjuku-concourse-to-metro-promenade",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:metro-promenade",
+      "to": "sk:area:tokyo-metro-b1f-concourse",
+      "id": "sk:area:metro-promenade→sk:area:tokyo-metro-b1f-concourse"
+    },
+    {
+      "kind": "passage",
       "elementId": "sk:passage:marunouchi-concourse-to-nishiguchi-b1f-passage",
       "verticalKind": null,
       "levelChange": 0,
@@ -10508,14 +10542,14 @@
     },
     {
       "kind": "passage",
-      "elementId": "sk:passage:marunouchi-shinjuku-concourse-to-sanchome-concourse",
+      "elementId": "sk:passage:metro-promenade-to-sanchome-concourse",
       "verticalKind": null,
       "levelChange": 0,
       "stepFree": null,
-      "connection": "inferred",
+      "connection": "verified",
       "from": "sk:area:sanchome-marunouchi-b1f-concourse",
-      "to": "sk:area:tokyo-metro-b1f-concourse",
-      "id": "sk:area:sanchome-marunouchi-b1f-concourse→sk:area:tokyo-metro-b1f-concourse"
+      "to": "sk:area:metro-promenade",
+      "id": "sk:area:sanchome-marunouchi-b1f-concourse→sk:area:metro-promenade"
     },
     {
       "kind": "entrance-approach",
@@ -11300,6 +11334,17 @@
     },
     {
       "kind": "passage",
+      "elementId": "sk:passage:marunouchi-shinjuku-concourse-to-metro-promenade",
+      "verticalKind": null,
+      "levelChange": 0,
+      "stepFree": null,
+      "connection": "verified",
+      "from": "sk:area:tokyo-metro-b1f-concourse",
+      "to": "sk:area:metro-promenade",
+      "id": "sk:area:tokyo-metro-b1f-concourse→sk:area:metro-promenade"
+    },
+    {
+      "kind": "passage",
       "elementId": "sk:passage:marunouchi-concourse-to-nishiguchi-b1f-passage",
       "verticalKind": null,
       "levelChange": 0,
@@ -11308,17 +11353,6 @@
       "from": "sk:area:tokyo-metro-b1f-concourse",
       "to": "sk:area:nishiguchi-b1f-passage",
       "id": "sk:area:tokyo-metro-b1f-concourse→sk:area:nishiguchi-b1f-passage"
-    },
-    {
-      "kind": "passage",
-      "elementId": "sk:passage:marunouchi-shinjuku-concourse-to-sanchome-concourse",
-      "verticalKind": null,
-      "levelChange": 0,
-      "stepFree": null,
-      "connection": "inferred",
-      "from": "sk:area:tokyo-metro-b1f-concourse",
-      "to": "sk:area:sanchome-marunouchi-b1f-concourse",
-      "id": "sk:area:tokyo-metro-b1f-concourse→sk:area:sanchome-marunouchi-b1f-concourse"
     },
     {
       "kind": "passage",

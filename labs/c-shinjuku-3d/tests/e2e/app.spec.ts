@@ -193,9 +193,9 @@ test.describe('routes', () => {
     await to.selectOption('sk:platform:tokyo-metro-shinjuku-sanchome-3-4');
     await expect(page.getByTestId('route-legs').locator('li').first()).toBeVisible();
     await expect(page.getByTestId('route-legs')).toContainText('副都心線');
-    // the walk between the two stations rests on signage only, and the route says so
-    await expect(page.getByTestId('route-result').locator('.warn')).toBeVisible();
-    await expect(page.getByTestId('route-legs').locator('.tag-warn')).toHaveCount(1);
+    // the walk between the two stations goes through the メトロプロムナード, a passage from a source: no warning
+    await expect(page.getByTestId('route-legs')).toContainText('メトロプロムナード');
+    await expect(page.getByTestId('route-legs').locator('.tag-warn')).toHaveCount(0);
     expect(await page.getByTestId('route-result').innerText()).not.toMatch(/\d+\s?(m|メートル|分|min)\b/);
 
     await to.selectOption('sk:platform:toei-shinjuku-nishiguchi-1-2');

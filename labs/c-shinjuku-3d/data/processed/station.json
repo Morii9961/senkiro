@@ -6353,6 +6353,45 @@
     },
     {
       "kind": "passage",
+      "id": "sk:area:metro-promenade",
+      "externalIds": {},
+      "names": {
+        "ja": "メトロプロムナード",
+        "ja_kana": null,
+        "en": "Metro Promenade",
+        "zh": "Metro Promenade 地下通道"
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:wikipedia-ja-metro-promenade"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-16"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-08",
+      "notes": "The pedestrian underground passage between the 丸ノ内線 新宿駅 and 新宿三丁目駅 under 新宿通り, open since 1959 (Wikipedia). Drawn straight between the two concourses; its length and width are schematic, and the shops and side exits along it are not drawn.",
+      "levelId": "sk:level:tokyo-metro-shinjuku-sanchome-b1f",
+      "fareZone": "unpaid",
+      "footprint": [
+        {
+          "x0": -27,
+          "x1": -24.4,
+          "z0": -30,
+          "z1": -22
+        }
+      ],
+      "anchor": {
+        "x": -25.7,
+        "z": -26
+      }
+    },
+    {
+      "kind": "passage",
       "id": "sk:area:sanchome-marunouchi-b1f-concourse",
       "externalIds": {},
       "names": {
@@ -8627,7 +8666,7 @@
     },
     {
       "kind": "passage-link",
-      "id": "sk:passage:marunouchi-shinjuku-concourse-to-sanchome-concourse",
+      "id": "sk:passage:marunouchi-shinjuku-concourse-to-metro-promenade",
       "externalIds": {},
       "names": {
         "ja": null,
@@ -8637,23 +8676,53 @@
       },
       "provenance": {
         "sourceIds": [
-          "src:tokyo-metro-shinjuku-map",
-          "src:tokyo-metro-shinjuku-sanchome-map",
-          "src:toei-shinjuku-sanchome-map"
+          "src:wikipedia-ja-metro-promenade",
+          "src:tokyo-metro-shinjuku-map"
         ],
         "dataNature": "manual-verified",
-        "lastVerifiedAt": "2026-11-12"
+        "lastVerifiedAt": "2026-11-16"
       },
       "validFrom": null,
       "validTo": null,
       "stationId": null,
       "existence": "verified",
-      "geometryConfidence": "unknown",
-      "asOf": "2025-11",
-      "notes": "INFERRED from signage text only: the 新宿 drawing prints \"新宿三丁目方面\" at the east end of its B1F passage (exits A6 / B6), and the 新宿三丁目 drawings print \"新宿駅方面\" at the west end of the Marunouchi Line concourse, where exits with the same numbers A6 and B6 are drawn. Neither drawing shows the passage between the two in one piece; its length and any steps on the way are unknown.",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-08",
+      "notes": "The east end of the 丸ノ内線 新宿駅 B1F passage (exits A6 / B6, printed \"新宿三丁目方面\") opens into the メトロプロムナード.",
       "fromAreaId": "sk:area:tokyo-metro-b1f-concourse",
+      "toAreaId": "sk:area:metro-promenade",
+      "connection": "verified",
+      "stepFree": null,
+      "hasSteps": null
+    },
+    {
+      "kind": "passage-link",
+      "id": "sk:passage:metro-promenade-to-sanchome-concourse",
+      "externalIds": {},
+      "names": {
+        "ja": null,
+        "ja_kana": null,
+        "en": null,
+        "zh": null
+      },
+      "provenance": {
+        "sourceIds": [
+          "src:wikipedia-ja-metro-promenade",
+          "src:tokyo-metro-shinjuku-sanchome-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-16"
+      },
+      "validFrom": null,
+      "validTo": null,
+      "stationId": null,
+      "existence": "verified",
+      "geometryConfidence": "schematic",
+      "asOf": "2026-08",
+      "notes": "The メトロプロムナード reaches the west end of the 新宿三丁目 丸ノ内線 concourse (printed \"新宿駅方面\"). Whether there are steps on the way was not read.",
+      "fromAreaId": "sk:area:metro-promenade",
       "toAreaId": "sk:area:sanchome-marunouchi-b1f-concourse",
-      "connection": "inferred",
+      "connection": "verified",
       "stepFree": null,
       "hasSteps": null
     },

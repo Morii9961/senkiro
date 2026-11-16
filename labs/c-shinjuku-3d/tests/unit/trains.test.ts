@@ -7,6 +7,7 @@ import {
 import { physicalTrackKey, trackLine } from '../../src/trains/trackGeometry';
 import { allTrackRunKeys, modelTrackKeys, trackRun } from '../../src/trains/trackRuns';
 import { FORMATION_FACTS, GENERIC_VEHICLE, LINE_VEHICLE_RULES, VEHICLES, resolveVehicle, vehicleBySeries } from '../../src/trains/vehicles';
+import { buildTrainParts, doorCentres } from '../../src/trains/parts';
 import { loadModel, loadSources } from './helpers';
 
 const model = loadModel();
@@ -96,10 +97,12 @@ describe('vehicle rules', () => {
 
     // several types share the line: one of them, marked representative, and no car count
     const odakyu = resolveVehicle(rec({ station_id: 'odakyu:shinjuku', operator_id: 'odakyu', line_id: 'odakyu:odawara' }));
-    expect(odakyu).toMatchObject({ basis: 'line-rule', status: 'representative', seriesLabel: '3000形', cars: null });
+    expect(odakyu).toMatchObject({ basis: 'line-rule', status: 'representative', seriesLabel: '3000形', cars: 10, carsBasis: 'line-fact' });
 
-    const none = resolveVehicle(rec({ line_id: 'jr-east:narita-express' }));
-    expect(none).toMatchObject({ basis: 'none', status: 'unknown', cars: null });
+    // the through limited express to Tobu: two types share it, so none is chosen (its length, 6 cars, is known)
+    const none = resolveVehicle(rec({ line_id: 'jr-east:tobu-through-limited-express' }));
+    expect(none).toMatchObject({ basis: 'none', status: 'unknown', cars: 6 });
+    expect(resolveVehicle(rec({ line_id: 'jr-east:narita-express' }))).toMatchObject({ basis: 'line-rule', status: 'verified', seriesLabel: 'E259系', cars: 6 });
     expect(none.spec).toBe(GENERIC_VEHICLE);
 
     const notInLibrary = resolveVehicle(rec({ vehicle_series: '8000形', vehicle_assignment_status: 'representative' }));
@@ -107,10 +110,14 @@ describe('vehicle rules', () => {
     expect(notInLibrary.spec).toBe(GENERIC_VEHICLE);
   });
 
-  it('never assumes a number of cars: only the trip or a sourced fact gives one', () => {
-    expect(resolveVehicle(rec({ station_id: 'odakyu:shinjuku', line_id: 'odakyu:odawara' })).cars).toBeNull();
-    expect(resolveVehicle(rec({ line_id: 'jr-east:shonan-shinjuku' })).cars).toBeNull();
-    expect(resolveVehicle(rec({ line_id: 'jr-east:chuo-limited-express' }))).toMatchObject({ status: 'verified', seriesLabel: 'E353系', cars: null });
+  it('never assumes a number of cars: only the trip or a sourced fact (a representative length, where the line runs several) gives one', () => {
+    // a line the library has no fact for stays unknown
+    expect(resolveVehicle(rec({ line_id: 'x:not-a-line' })).cars).toBeNull();
+    // representative lengths are facts with a source, and say so
+    for (const f of FORMATION_FACTS.filter((x) => x.representative)) expect(f.sourceIds.length).toBeGreaterThan(0);
+    expect(resolveVehicle(rec({ station_id: 'odakyu:shinjuku', line_id: 'odakyu:odawara' })).cars).toBe(10);
+    expect(resolveVehicle(rec({ line_id: 'jr-east:shonan-shinjuku' }))).toMatchObject({ cars: 10, seriesLabel: 'E231系1000番台' });
+    expect(resolveVehicle(rec({ line_id: 'jr-east:chuo-limited-express' }))).toMatchObject({ status: 'verified', seriesLabel: 'E353系', cars: 9 });
     expect(resolveVehicle(rec({ line_id: 'jr-east:saikyo' }))).toMatchObject({ cars: 10, carsBasis: 'line-fact' });
     // the trip's own figure wins over a fact about the line
     expect(resolveVehicle(rec({ formation_length: 10 }))).toMatchObject({ cars: 10, carsBasis: 'trip' });
@@ -200,11 +207,11 @@ describe('train simulation', () => {
     expect(trainStateAt(p, T + 60)).toBeNull();
   });
 
-  it('draws the cars the data gives and fits them to the platform; unknown stays undivided', () => {
+  it('draws the cars the data gives and fits them to the platform; an unknown length stays unknown', () => {
     const eleven = plansOf([rec({ formation_length: 11 })]).plans[0]!;
     expect(eleven.carLength).toBeCloseTo(NOMINAL_CAR_LENGTH);
     expect(eleven.length).toBeCloseTo(11 * NOMINAL_CAR_LENGTH);
-    const unknown = plansOf([rec({ line_id: 'jr-east:shonan-shinjuku', platform_id: 'jr-east:shinjuku:13' })]).plans[0]!;
+    const unknown = plansOf([rec({ line_id: 'x:not-a-line', platform_id: 'jr-east:shinjuku:13' })]).plans[0]!;
     expect(unknown.carLength).toBeNull();
     const oedo = plansOf([rec({ station_id: 'toei:shinjuku:E27', operator_id: 'toei', line_id: 'toei:oedo', platform_id: 'toei:shinjuku:E27:6' })]).plans[0]!;
     expect(oedo.vehicle.cars).toBe(8);
@@ -256,5 +263,34 @@ describe('train simulation', () => {
     expect(trainStatesAt(plans, 3.5 * 3600)).toEqual([]);
     expect(trainStatesAt(plans, 12 * 3600).length).toBeGreaterThan(5);
     for (const s of trainStatesAt(plans, 12 * 3600)) expect(s.liveState).toBe('scheduled');
+  });
+});
+
+describe('train shapes', () => {
+  const spec = (id: string) => VEHICLES.find((v) => v.id === id)!;
+
+  it('a train of unknown length is still drawn as cars, with doors', () => {
+    const parts = buildTrainParts({ spec: GENERIC_VEHICLE, cars: null, length: 8 * NOMINAL_CAR_LENGTH, accent: '#888888' });
+    expect(parts.filter((p) => p.leaf).length).toBe(8 * GENERIC_VEHICLE.doorsPerSide * 2);
+  });
+
+  it('every type in the library has a livery and its doors line up with the platform-door positions', () => {
+    for (const v of VEHICLES) {
+      expect(v.livery, v.id).toBeTruthy();
+      const parts = buildTrainParts({ spec: v, cars: 10, length: 10 * NOMINAL_CAR_LENGTH, accent: '#888888' });
+      const leaves = parts.filter((p) => p.leaf === 1).map((p) => p.a0);
+      const doors = doorCentres({ spec: v, cars: 10, length: 10 * NOMINAL_CAR_LENGTH });
+      expect(leaves.map((a) => a.toFixed(4))).toEqual(doors.map((d) => d.a.toFixed(4)));
+    }
+  });
+
+  it('the Chuo Line rapid train has two bilevel cars in a 12-car train, and the Oedo Line cars are smaller', () => {
+    const e233 = buildTrainParts({ spec: spec('jr-east:E233'), cars: 12, length: 12 * NOMINAL_CAR_LENGTH, accent: '#888888' });
+    const tops = new Set(e233.filter((p) => p.c0 < 0 && p.c1 > 0 && p.u0 > 0.1 && p.u0 < 0.13).map((p) => p.u1.toFixed(3)));
+    expect(tops.size).toBe(2);
+    const oedo = buildTrainParts({ spec: spec('toei:12-600'), cars: 8, length: 8 * NOMINAL_CAR_LENGTH, accent: '#888888' });
+    const std = buildTrainParts({ spec: spec('toei:10-300'), cars: 8, length: 8 * NOMINAL_CAR_LENGTH, accent: '#888888' });
+    const height = (ps: typeof oedo) => Math.max(...ps.map((p) => p.u1));
+    expect(height(oedo)).toBeLessThan(height(std));
   });
 });

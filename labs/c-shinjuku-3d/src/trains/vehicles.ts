@@ -7,17 +7,46 @@
  *   2. a rule for the line, where a source says which type runs on it;
  *   3. otherwise the neutral generic train, marked `unknown`.
  * The number of cars comes from the trip's `formation_length`, or from a
- * sourced fact about the line at this station — otherwise it is unknown and
- * the train is drawn as one undivided body.
+ * sourced fact about the line at this station (a representative length where
+ * the line runs several) — otherwise it is unknown, and the train is divided
+ * into cars of the nominal length only as a drawing (the card says unknown).
  *
- * The 3D models are simplified shapes made for this prototype: proportions,
- * the number of doors and where the accent colour sits are schematic, and
+ * The 3D models are simplified shapes made for this prototype: body, bands,
+ * door leaves and a flat, rounded or sloped cab, after the descriptions in
+ * the sources (`Livery`). Proportions and door counts are schematic, and
  * every colour is an approximation, not an operator's colour value.
  */
 import { lineEntry } from '../timetable/registry';
 import type { TimetableRecord, VehicleAssignmentStatus } from '../timetable/types';
 
-export type FrontShape = 'flat' | 'slant';
+export type FrontShape = 'flat' | 'rounded' | 'slant';
+
+/** A horizontal band along both sides of every car, between two heights of the car frame (floor 0.1, roof 0.6). */
+export interface Band {
+  u0: number;
+  u1: number;
+  color: string;
+}
+
+/**
+ * How a type looks from outside, simplified: body colour, the bands along the sides, the door
+ * leaves, the cab face and a dark band over the window row where the type has one. Colours are
+ * approximations of what the sources describe in words; they are not operator colour values.
+ */
+export interface Livery {
+  body: string;
+  bands: Band[];
+  doors?: string;
+  /** Lower part of the cab face. */
+  front: string;
+  /** A band across the cab face below the windscreen, if the type has one. */
+  frontBand?: string;
+  /** A dark band over the whole window row (e.g. E259系). */
+  windowBand?: string;
+  roof?: string;
+  sourceIds: string[];
+  note: string;
+}
 
 export interface VehicleSpec {
   id: string;
@@ -33,6 +62,17 @@ export interface VehicleSpec {
   accent: 'doors-and-front' | 'belt' | 'body' | 'none';
   front: FrontShape;
   doorsPerSide: number;
+  /** Exterior; without it the old scheme applies (body colour plus the line colour where `accent` says). */
+  livery?: Livery;
+  /** Length of one car in metres when it is not the usual 20 m (18 m 丸ノ内線, 16.5 m 大江戸線). */
+  carLengthM?: number;
+  /** Width and height relative to a standard car, for smaller cars (大江戸線 mini-metro, 都営新宿線 narrow body). */
+  size?: { width: number; height: number };
+  /**
+   * Bilevel cars, counted from the −a end of the train (the north end in this model) starting at 0,
+   * drawn only when the train has at least 10 cars.
+   */
+  bilevelCars?: number[];
   sourceIds: string[];
   /** What was and was not checked about this model. */
   note: string;
@@ -212,6 +252,121 @@ export const VEHICLES: readonly VehicleSpec[] = [
   },
 ];
 
+
+const B = (u0: number, u1: number, color: string): Band => ({ u0, u1, color });
+const BELOW = [0.3, 0.355] as const;
+const ABOVE = [0.545, 0.6] as const;
+const LIVERY_NOTE = 'Colours are approximations of the description, not colour values.';
+
+/** Exteriors per type (2026-11-16, Wikipedia pages of each type; see src:wikipedia-ja-train-pages). */
+const LIVERIES: Record<string, Pick<VehicleSpec, 'livery' | 'front' | 'carLengthM' | 'size' | 'bilevelCars'>> = {
+  'jr-east:E235': {
+    front: 'flat',
+    livery: { body: '#dfe3e7', bands: [B(ABOVE[0], ABOVE[1], '#8dc21f')], doors: '#8dc21f', front: '#8dc21f', roof: '#6f767f', sourceIds: ['src:wikipedia-ja-train-pages'],
+      note: 'The line colour 黄緑6号 is painted on the side doors and the panel above them, and on the cab face with a gradient; the face is flat and has no through door.' },
+  },
+  'jr-east:E233': {
+    front: 'flat',
+    bilevelCars: [3, 4],
+    livery: { body: '#dfe2e6', bands: [B(BELOW[0], BELOW[1], '#ec5a24'), B(ABOVE[0], ABOVE[1], '#ec5a24')], front: '#25292e', frontBand: '#ec5a24', roof: '#6f767f', sourceIds: ['src:wikipedia-ja-train-pages'],
+      note: 'Stainless body with orange-vermilion bands (the Chuo Line colour, read from a summary of the page). Since 2025 the 12-car trains carry two bilevel green cars, the 4th and 5th from the Tokyo end (summary of the page, not checked word for word); Tokyo is the north end of the platforms here.' },
+  },
+  'jr-east:E233-7000': {
+    front: 'flat',
+    livery: { body: '#dfe2e6', bands: [B(BELOW[0], BELOW[1], '#00a984'), B(ABOVE[0], ABOVE[1], '#00a984')], front: '#25292e', frontBand: '#00a984', roof: '#6f767f', sourceIds: ['src:wikipedia-ja-train-pages'],
+      note: 'The E233系 carries a band in the colour of its line; for the 埼京線 that is green. The exact stripe of the 7000番台 was not read from the page (only its sign colour), so the line colour is used.' },
+  },
+  'jr-east:E231': {
+    front: 'flat',
+    livery: { body: '#dfe2e6', bands: [B(BELOW[0], BELOW[1], '#f8c400'), B(ABOVE[0], ABOVE[1], '#f8c400')], front: '#2a2e33', frontBand: '#f8c400', roof: '#6f767f', sourceIds: ['src:wikipedia-ja-train-pages'],
+      note: 'The 500番台 of the 中央・総武緩行線 carries canary-yellow bands (summary of the page).' },
+  },
+  'jr-east:E231-1000': {
+    front: 'flat',
+    livery: { body: '#dfe2e6', bands: [B(0.3, 0.328, '#f08a1d'), B(0.328, 0.356, '#21894b')], front: '#2a2e33', frontBand: '#f08a1d', roof: '#6f767f', sourceIds: ['src:wikipedia-ja-train-pages'],
+      note: 'The 近郊形 1000番台 carries the 湘南 colours, yellow-orange and green (summary of the page). Its two bilevel green cars are not drawn: which end they sit at was not established.' },
+  },
+  'jr-east:E353': {
+    front: 'slant',
+    livery: { body: '#f1f2f4', bands: [B(0.32, 0.34, '#6b4f9e')], windowBand: '#5d6168', front: '#1f2226', roof: '#8b9097', sourceIds: ['src:wikipedia-ja-train-pages'],
+      note: 'Alpine white with a thin あずさバイオレット stripe; the face is stream black and the window surround castle grey. The nose is drawn as a simple slope.' },
+  },
+  'jr-east:E259': {
+    front: 'slant',
+    livery: { body: '#f4f5f6', bands: [], windowBand: '#1e2226', front: '#f4f5f6', frontBand: '#1e2226', roof: '#c4161c', sourceIds: ['src:wikipedia-ja-train-pages'],
+      note: 'White, with a black band from the bottom of the windows to the roof edge and a red roof.' },
+  },
+  'tokyo-metro:2000': {
+    front: 'rounded',
+    carLengthM: 18,
+    livery: { body: '#e50037', bands: [B(0.535, 0.552, '#ffffff')], front: '#e50037', roof: '#7a8189', sourceIds: ['src:wikipedia-ja-train-pages'],
+      note: 'Glowing scarlet all over, with a sine-wave motif on the upper body (drawn as a thin white line); 18 m cars.' },
+  },
+  'tokyo-metro:10000': {
+    front: 'rounded',
+    livery: { body: '#c9cdd2', bands: [B(0.292, 0.302, '#ffffff'), B(0.302, 0.352, '#8f6434'), B(0.352, 0.362, '#c9a24b')], front: '#c9cdd2', frontBand: '#8f6434', roof: '#7a8189', sourceIds: ['src:wikipedia-ja-train-pages'],
+      note: 'Brown (the 副都心線 colour) with thin gold and white lines; curved 3D front glass.' },
+  },
+  'toei:10-300': {
+    front: 'flat',
+    size: { width: 0.94, height: 1 },
+    livery: { body: '#d5d9dd', bands: [B(0.3, 0.352, '#7cc142'), B(0.352, 0.364, '#213b7a')], front: '#c9cdd2', frontBand: '#7cc142', roof: '#7a8189', sourceIds: ['src:wikipedia-ja-train-pages'],
+      note: 'Stainless, with a thick leaf-green band and a thin dark-blue one; a narrow body (2,770 mm) for the 新宿線 loading gauge.' },
+  },
+  'toei:12-600': {
+    front: 'flat',
+    carLengthM: 16.5,
+    size: { width: 0.84, height: 0.86 },
+    livery: { body: '#c9cdd2', bands: [B(0.3, 0.33, '#d1007a'), B(0.55, 0.575, '#7b1e3a')], front: '#c9cdd2', frontBand: '#d1007a', roof: '#7a8189', sourceIds: ['src:wikipedia-ja-train-pages'],
+      note: 'Unpainted aluminium with magenta and wine-red lines; mini-metro cars (16.5 m long, 2,490 mm wide, 3,140 mm high), drawn smaller.' },
+  },
+  'odakyu:3000': {
+    front: 'flat',
+    livery: { body: '#cdd1d5', bands: [B(BELOW[0], BELOW[1], '#1c4fa0')], front: '#c3c8ce', frontBand: '#1c4fa0', roof: '#7a8189', sourceIds: ['src:wikipedia-ja-train-pages'],
+      note: 'Dull-finished stainless with a silver front and a blue band below the windscreen. The page does not state the colour of the side band; the blue of the front is used.' },
+  },
+  'keio:9000': {
+    front: 'flat',
+    livery: { body: '#d6dade', bands: [B(0.15, 0.19, '#e4005a'), B(0.19, 0.23, '#1d47a2')], front: '#efe9d6', roof: '#7a8189', sourceIds: ['src:wikipedia-ja-train-pages'],
+      note: 'Stainless with 京王レッド and 京王ブルー bands along the lower body; the front is painted ivory.' },
+  },
+  'seibu:30000': {
+    front: 'rounded',
+    livery: { body: '#c9cdd2', bands: [B(0.12, 0.18, '#2f7fd0'), B(0.18, 0.24, '#5bbf5c')], front: '#f3f4f5', frontBand: '#2f7fd0', roof: '#7a8189', sourceIds: ['src:wikipedia-ja-train-pages'],
+      note: 'Unpainted aluminium sides with a blue-to-green gradient band along the lower body (drawn as two bands); a white, egg-shaped front with one large window.' },
+  },
+};
+
+const MORE_VEHICLES: VehicleSpec[] = [
+  {
+    id: 'jr-east:E233-7000', series: 'E233系7000番台', operatorId: 'jr-east',
+    names: { ja: 'E233系7000番台', en: 'E233-7000 series', zh: 'E233 系 7000 番台' },
+    aliases: ['e233-7000'], body: '#dfe2e6', roof: '#6f767f', accent: 'belt', front: 'flat', doorsPerSide: 4,
+    sourceIds: ['src:jreast-train-e233', 'src:wikipedia-ja-train-pages'],
+    note: `The 埼京線 sets of the E233系. ${SCHEMATIC}`,
+  },
+  {
+    id: 'jr-east:E231-1000', series: 'E231系1000番台', operatorId: 'jr-east',
+    names: { ja: 'E231系1000番台', en: 'E231-1000 series', zh: 'E231 系 1000 番台' },
+    aliases: ['e231-1000'], body: '#dfe2e6', roof: '#6f767f', accent: 'belt', front: 'flat', doorsPerSide: 4,
+    sourceIds: ['src:jreast-train-e231', 'src:wikipedia-ja-train-pages'],
+    note: `The 近郊形 sets of the E231系 (湘南新宿ライン, 10 cars plus a 5-car set). ${SCHEMATIC}`,
+  },
+  {
+    id: 'jr-east:E259', series: 'E259系', operatorId: 'jr-east',
+    names: { ja: 'E259系', en: 'E259 series', zh: 'E259 系' },
+    aliases: ['e259'], body: '#f4f5f6', roof: '#c4161c', accent: 'none', front: 'slant', doorsPerSide: 1,
+    sourceIds: ['src:wikipedia-ja-train-pages'],
+    note: `The 成田エクスプレス train: 6-car sets, run as 6 + 6 = 12 cars between Tokyo and Narita Airport. ${SCHEMATIC}`,
+  },
+];
+
+for (const v of MORE_VEHICLES) (VEHICLES as VehicleSpec[]).push(v);
+for (const v of VEHICLES as VehicleSpec[]) {
+  const l = LIVERIES[v.id];
+  if (l) Object.assign(v, l);
+}
+
 function normaliseSeries(s: string): string {
   return s.toLowerCase().replace(/系|series|形/g, '').replace(/\s+/g, '').trim();
 }
@@ -253,7 +408,7 @@ export const LINE_VEHICLE_RULES: readonly LineVehicleRule[] = [
     note: 'JR East lists 中央線快速 under the E233系, which carries the green cars introduced in March 2025. Whether every trip uses it was not checked.',
   },
   {
-    line_id: 'jr-east:saikyo', vehicleId: 'jr-east:E233', status: 'representative', sourceIds: ['src:jreast-train-e233', 'src:wadattsu-saikyo-cars'],
+    line_id: 'jr-east:saikyo', vehicleId: 'jr-east:E233-7000', status: 'representative', sourceIds: ['src:jreast-train-e233', 'src:wadattsu-saikyo-cars'],
     note: 'JR East lists 埼京線 under the E233系. Trains of other companies run through on this line; the type of a given trip was not checked.',
   },
   {
@@ -269,7 +424,7 @@ export const LINE_VEHICLE_RULES: readonly LineVehicleRule[] = [
     note: 'The Toei-owned trains of the line. Keio trains run through as well; the type of a given trip was not checked.',
   },
   {
-    line_id: 'jr-east:shonan-shinjuku', vehicleId: 'jr-east:E231', status: 'representative', sourceIds: ['src:jreast-train-e231','src:jreast-train-e233'],
+    line_id: 'jr-east:shonan-shinjuku', vehicleId: 'jr-east:E231-1000', status: 'representative', sourceIds: ['src:jreast-train-e231','src:jreast-train-e233'],
     note: 'JR East lists 湘南新宿ライン under both the E231系 and the E233系; the type and the length (10 or 15 cars) of a given trip were not checked.',
   },
   {
@@ -298,7 +453,11 @@ export const LINE_VEHICLE_RULES: readonly LineVehicleRule[] = [
   },
   {
     line_id: 'tokyo-metro:fukutoshin', vehicleId: 'tokyo-metro:10000', status: 'representative', sourceIds: ['src:response-metro-17000'],
-    note: 'Described as the main fleet of the line in 2020. The 17000系 and the trains of five other companies run through as well; trains are 8 or 10 cars, so no length is assumed.',
+    note: 'Described as the main fleet of the line in 2020. The 17000系 and the trains of five other companies run through as well; trains are 8 or 10 cars.',
+  },
+  {
+    line_id: 'jr-east:narita-express', vehicleId: 'jr-east:E259', status: 'verified', sourceIds: ['src:wikipedia-ja-train-pages'],
+    note: 'The E259系 is the 成田エクスプレス train.',
   },
 ];
 
@@ -306,6 +465,8 @@ export interface FormationFact {
   station_id: string;
   line_id: string;
   cars: number;
+  /** The line runs several lengths and this one is drawn as representative. */
+  representative?: boolean;
   sourceIds: string[];
   note: string;
 }
@@ -351,6 +512,43 @@ export const FORMATION_FACTS: readonly FormationFact[] = [
   {
     station_id: 'toei:shinjuku:E27', line_id: 'toei:oedo', cars: 8, sourceIds: ['src:toei-shinjuku-map'],
     note: 'The のりかえ・出口案内 table under the Toei 立体図 numbers the cars of the Oedo Line from 1 to 8.',
+  },
+  // representative lengths: the line runs several lengths; the one drawn is named below, and a trip that says otherwise wins
+  {
+    station_id: 'odakyu:shinjuku', line_id: 'odakyu:odawara', cars: 10, representative: true, sourceIds: ['src:wikipedia-ja-train-pages'],
+    note: 'The 3000形 comes in 6-, 8- and 10-car sets (6 + 4 and similar couplings run too). 10 cars are drawn as the representative length.',
+  },
+  {
+    station_id: 'keio:shinjuku', line_id: 'keio:keio', cars: 10, representative: true, sourceIds: ['src:wikipedia-ja-train-pages'],
+    note: 'Of the 28 sets of the 9000系, 20 are 10-car and 8 are 8-car. 10 cars are drawn as the representative length.',
+  },
+  {
+    station_id: 'keio:shinjuku-newline', line_id: 'keio:keio-new', cars: 10, representative: true, sourceIds: ['src:wikipedia-ja-train-pages', 'src:tetsudoch-toei-shinjuku-10cars'],
+    note: 'The 10-car 9000系 sets are the ones that run through to the 都営新宿線, which has been all 10-car since 2022.',
+  },
+  {
+    station_id: 'seibu:seibu-shinjuku', line_id: 'seibu:shinjuku', cars: 8, representative: true, sourceIds: ['src:wikipedia-ja-train-pages'],
+    note: 'Of the 30 sets of the 30000系, 18 are 8-car, 6 are 10-car and 6 are 2-car (run coupled). 8 cars are drawn as the most common set; 10-car trains run as well.',
+  },
+  {
+    station_id: 'tokyo-metro:shinjuku-sanchome:F13', line_id: 'tokyo-metro:fukutoshin', cars: 10, representative: true, sourceIds: ['src:wikipedia-ja-train-pages'],
+    note: 'The 10000系 is a 10-car train; some sets can be shortened to 8 cars, and 8-car trains run local services.',
+  },
+  {
+    station_id: 'jr-east:shinjuku', line_id: 'jr-east:shonan-shinjuku', cars: 10, representative: true, sourceIds: ['src:wikipedia-ja-train-pages'],
+    note: 'The E231系1000番台 runs as a 10-car set, with a 5-car set added for 15 cars (summary of the page). 10 cars are drawn.',
+  },
+  {
+    station_id: 'jr-east:shinjuku', line_id: 'jr-east:chuo-limited-express', cars: 9, representative: true, sourceIds: ['src:wikipedia-ja-train-pages', 'src:trafficnews-e353-azusa-kaiji'],
+    note: 'The E353系 is a 9-car basic set with a 3-car set added for 12 cars. 9 cars are drawn.',
+  },
+  {
+    station_id: 'jr-east:shinjuku', line_id: 'jr-east:narita-express', cars: 6, representative: true, sourceIds: ['src:wikipedia-ja-train-pages'],
+    note: 'The E259系 is a 6-car set; two sets run coupled as 12 cars. 6 cars are drawn.',
+  },
+  {
+    station_id: 'jr-east:shinjuku', line_id: 'jr-east:tobu-through-limited-express', cars: 6, sourceIds: ['src:wikipedia-ja-nikko-train'],
+    note: 'Both trains of the through service (東武100系 and JR 253系1000番台) are 6-car sets. Which type runs a given trip is not established, so the generic train is drawn.',
   },
 ];
 

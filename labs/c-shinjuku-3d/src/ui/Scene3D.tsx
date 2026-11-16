@@ -22,6 +22,7 @@ import {
 import { OPAQUE_MATERIALS, buildOutlines, elementAtFace, mergeDecals, mergePrims, partition, type MergedMesh } from './scene/geometry';
 import type { MaterialKind } from './scene/prims';
 import type { SceneTheme } from './sceneTheme';
+import { PlatformDoorLayer } from './trains/PlatformDoorLayer';
 import { TrainLayer } from './trains/TrainLayer';
 import type { SimClock } from '../trains/clock';
 import type { TrainPlan } from '../trains/simulate';
@@ -553,6 +554,7 @@ function SceneContent({
         <meshStandardMaterial vertexColors transparent depthWrite={false} {...FINISH.glass} />
       </mesh>
       {trains && <TrainLayer model={model} view={view} {...trains} />}
+      <PlatformDoorLayer model={model} view={view} trains={trains} />
       {/* the route twice: solid where it is in view, faint where something stands in front of it */}
       <mesh geometry={routeMesh.geometry} renderOrder={4} raycast={() => null}>
         <meshBasicMaterial vertexColors toneMapped={false} />

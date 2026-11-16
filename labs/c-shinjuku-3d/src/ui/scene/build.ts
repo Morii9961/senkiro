@@ -10,6 +10,7 @@ import type { PlanRect, StationModel } from '../../domain/types';
 import { createContext } from './arch/context';
 import { buildBlocks, buildEntrances, buildFareBoundary, buildGates } from './arch/gates';
 import { buildPlatforms } from './arch/platforms';
+import { buildTrackLinks } from './arch/trackLinks';
 import { buildBuses, buildServices } from './arch/services';
 import { buildAreas, buildLinks, buildShells } from './arch/slabs';
 import { buildOpeningGuards, buildVerticals, computeHoles } from './arch/vertical';
@@ -33,6 +34,7 @@ export function buildScene(model: StationModel, opts: ViewOptions): SceneParts {
   buildShells(ctx);
   buildAreas(ctx);
   buildPlatforms(ctx);
+  buildTrackLinks(ctx);
   buildLinks(ctx);
   buildGates(ctx);
   buildFareBoundary(ctx);

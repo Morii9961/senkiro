@@ -248,11 +248,10 @@ describe('route search behaviour', () => {
   });
 
   it('marks legs that rest on inferred connections, and can be told to avoid them', () => {
-    // two links rest on signage only: outside JR 中央西改札 ⇄ the front of the Odakyu underground gate,
-    // and the Marunouchi Line passage of 新宿 ⇄ the concourse of 新宿三丁目
+    // one link rests on signage only: outside JR 中央西改札 ⇄ the front of the Odakyu underground gate.
+    // (The Marunouchi Line passage of 新宿 ⇄ 新宿三丁目 is the メトロプロムナード now, from a source.)
     expect(model.passages.filter((p) => p.connection === 'inferred').map((p) => p.id)).toEqual([
       'sk:passage:jr-central-west-outside-to-odakyu-west-underground',
-      'sk:passage:marunouchi-shinjuku-concourse-to-sanchome-concourse',
     ]);
     const odakyuFront = 'sk:area:odakyu-b1f-west-underground-gate-unpaid';
     const r = mustFind('sk:entrance:jr-central-west-outside', odakyuFront);
@@ -267,16 +266,17 @@ describe('route search behaviour', () => {
     }
   });
 
-  it('walks from 新宿 to the 新宿三丁目 stations, and says that the way rests on signage', () => {
+  it('walks from 新宿 to the 新宿三丁目 stations through the メトロプロムナード', () => {
     const fukutoshin = 'sk:platform:tokyo-metro-shinjuku-sanchome-3-4';
     const toei = 'sk:platform:toei-shinjuku-sanchome-1-2';
     const r = mustFind(NODE.platform13_14, fukutoshin);
-    expect(r.inferredLegs).toBe(1);
+    expect(r.inferredLegs).toBe(0);
+    expect(r.legs.some((l) => l.toAreaId === 'sk:area:metro-promenade' || l.fromAreaId === 'sk:area:metro-promenade')).toBe(true);
     // out of the JR gates and in through Tokyo Metro's: two gate lines, never the Marunouchi Line of 新宿 in between
     expect(r.cost.gatePasses).toBe(2);
     expect(r.nodeIds.map((id) => nodeById.get(id)!.zone)).not.toContain('paid:toei');
-    // without the inferred passage the two stations are not connected on foot in this model
-    expect(findRoute(graph, NODE.platform13_14, fukutoshin, { allowInferred: false }).found).toBe(false);
+    // the way does not rest on any inferred link any more
+    expect(findRoute(graph, NODE.platform13_14, fukutoshin, { allowInferred: false }).found).toBe(true);
     // 丸ノ内線 → 副都心線 inside the gates: platform to platform, no gate at all
     expect(mustFind('sk:platform:tokyo-metro-shinjuku-sanchome-1-2', fukutoshin).cost.gatePasses).toBe(0);
     // 副都心線 → 都営新宿線 means leaving one operator's gates and entering the other's

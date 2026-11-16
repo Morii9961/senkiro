@@ -11,10 +11,9 @@
  * keeps both edge markings, since nothing says which edge is used. Whether a
  * platform is a terminal (buffer stops) is not in the data and is not drawn.
  *
- * Platform doors are drawn along a face only where a source says they are
- * installed (`PlatformTrack.platformDoors`), and buffer stops only at the end
- * a source names as the head of a terminus (`Platform.terminus`). How the
- * door panels are spaced and what the buffer stops look like is drawn by rule.
+ * Buffer stops stand only at the end a source names as the head of a terminus
+ * (`Platform.terminus`); what they look like is drawn by rule. Platform doors
+ * are drawn by src/ui/trains/PlatformDoorLayer.tsx.
  *
  * The columns, boards and benches are decoration drawn by rule: their number,
  * spacing and look say nothing about the real station. A board carries, on each
@@ -26,9 +25,6 @@ import { PLATFORM_TOP, box } from '../prims';
 import type { Ctx } from './context';
 
 const COLUMN_STEP = 4;
-/** Platform doors: one panel and one doorway per unit along the edge (spacing drawn by rule), and their height. */
-const DOOR_UNIT = 1.1;
-const DOOR_H = 0.26;
 
 
 type Side = TrackSide;
@@ -77,17 +73,7 @@ export function buildPlatforms(ctx: Ctx): void {
           ctx.add(area.id, 'line-band', 'accent', oriented(e.axis, e.lo, e.hi, e.at, e.at + e.out * 0.03, y1 - h, y1), dim(c));
         });
 
-        // platform doors (waist-high panels with gaps at the doorways), only where a source says they are installed
-        if (track.platformDoors?.status === 'installed') {
-          const door = dim(mix(p.platformEdge, p.gateBody, 0.35));
-          const n = Math.max(2, Math.floor((e.hi - e.lo) / DOOR_UNIT));
-          const unit = (e.hi - e.lo) / n;
-          for (let i = 0; i < n; i++) {
-            const a0 = e.lo + i * unit + unit * 0.2;
-            const a1 = e.lo + (i + 1) * unit - unit * 0.2;
-            ctx.add(area.id, 'platform-door', 'metal', oriented(e.axis, a0, a1, e.at + inw * 0.085, e.at + inw * 0.12, top, top + DOOR_H), door, { shade: [0.8, 1], pickable: false });
-          }
-        }
+        // platform doors are not drawn here: src/ui/trains/PlatformDoorLayer.tsx draws them, lined up with the trains' doors
 
         // track bed and rails; at the head of a terminus the track stops just past the platform, at a buffer stop
         const t0 = e.at + e.out * TRACK_GAP;

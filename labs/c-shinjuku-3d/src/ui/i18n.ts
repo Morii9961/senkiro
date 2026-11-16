@@ -350,7 +350,7 @@ const dict = {
   tfCars: { ja: "両数", en: "Cars", zh: "编组" },
   tfCarsN: { ja: "{n}両", en: "{n} cars", zh: "{n} 节" },
   tfCarsFromLine: { ja: "路線の資料による", en: "from a source about the line", zh: "据线路资料" },
-  tfCarsUnknown: { ja: "不明（長さは模式的）", en: "unknown (length is schematic)", zh: "未知（长度为示意）" },
+  tfCarsUnknown: { ja: "不明（長さと車両の区切りは模式的）", en: "unknown (length and car division are schematic)", zh: "未知（长度与分节为示意）" },
   tfTrainNumber: { ja: "列車番号", en: "Train number", zh: "车次" },
   tfNoTrainNumber: { ja: "出典なし", en: "no source", zh: "无来源" },
   tfState: { ja: "状態", en: "State", zh: "状态" },

@@ -94,10 +94,11 @@ export interface PlanOptions {
   dayType: CalendarDayType | null;
 }
 
-function trainLength(line: TrackLine, cars: number | null): { length: number; carLength: number | null } {
+export function trainLength(line: TrackLine, cars: number | null, carLengthM = 20): { length: number; carLength: number | null } {
   const room = Math.max(1, line.hi - line.lo - PLATFORM_MARGIN * 2);
   if (cars == null) return { length: Math.min(room * UNKNOWN_LENGTH_SHARE, NOMINAL_CAR_LENGTH * 8), carLength: null };
-  const carLength = Math.min(NOMINAL_CAR_LENGTH, room / cars);
+  // shorter cars (18 m, 16.5 m) are drawn shorter
+  const carLength = Math.min((NOMINAL_CAR_LENGTH * carLengthM) / 20, room / cars);
   return { length: carLength * cars, carLength };
 }
 
@@ -130,7 +131,7 @@ export function buildTrainPlans(model: StationModel, records: TimetableRecord[],
     }
     const arrive = arr ?? dep! - ASSUMED_DWELL_SECONDS;
     const vehicle = resolveVehicle(record);
-    const { length, carLength } = trainLength(line, vehicle.cars);
+    const { length, carLength } = trainLength(line, vehicle.cars, vehicle.spec.carLengthM);
     const run = trackRun(track.platform.id, track.trackNumber);
     const stopAt = (line.lo + line.hi) / 2;
     const moves = run?.departs != null;

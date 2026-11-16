@@ -56,6 +56,7 @@ export const SC = {
   tB1: 'sk:level:toei-shinjuku-sanchome-b1f',
   tB2: 'sk:level:toei-shinjuku-sanchome-b2f',
   maruConc: 'sk:area:sanchome-marunouchi-b1f-concourse',
+  promenade: 'sk:area:metro-promenade',
   maruPaidWest: 'sk:area:sanchome-marunouchi-b1f-paid-west',
   maruPaidMid: 'sk:area:sanchome-marunouchi-b1f-paid-mid',
   maruPaidEast: 'sk:area:sanchome-marunouchi-b1f-paid-east',
@@ -80,6 +81,9 @@ const levels: Level[] = [
 
 const areas: Area[] = [
   // --- Marunouchi Line (M09) ------------------------------------------------------------
+  passageArea(SC.promenade, SC.lB1, 'unpaid', names('メトロプロムナード', 'Metro Promenade', 'Metro Promenade 地下通道'),
+    [rect(-27, -24.4, -30, -22)], pt(-25.7, -26), prov(['src:wikipedia-ja-metro-promenade'], undefined, '2026-11-16'), { stationId: null, asOf: '2026-08', geometryConfidence: 'schematic' },
+    'The pedestrian underground passage between the 丸ノ内線 新宿駅 and 新宿三丁目駅 under 新宿通り, open since 1959 (Wikipedia). Drawn straight between the two concourses; its length and width are schematic, and the shops and side exits along it are not drawn.'),
   passageArea(SC.maruConc, SC.lB1, 'unpaid', names('新宿三丁目駅 丸ノ内線 改札外コンコース（B1F）', 'Shinjuku-sanchome: Marunouchi Line concourse (outside gates, B1F)', '新宿三丁目站 丸之内线站厅（检票口外，B1F）'),
     [rect(-27, -24.4, -66, -30)], pt(-25.7, -47), bothProv, metroCommon,
     `Unnamed on the drawings; the label is descriptive. The B1F floor above the platform, with the exits A1–A6 on one side and B2–B9 on the other and three groups of gates. Its west end is printed "新宿駅方面". ${OBLIQUE}`),
@@ -235,10 +239,15 @@ const verticals: VerticalFacility[] = [
     toeiProv, { common: toeiCommon, notes: `${TOEI_TABLE} shows a lift at car 4. Toei lists two lifts for the station; the other is at exit C6.` }),
 ];
 
+const PROMENADE_COMMON: Common = { stationId: null, asOf: '2026-08', geometryConfidence: 'schematic' };
+
 const passages: Passage[] = [
-  link('marunouchi-shinjuku-concourse-to-sanchome-concourse', EXT_IDS.ME.conc, SC.maruConc, p2([S_METRO_SJ, S_METRO_SC, S_TOEI_SC]), null,
-    { inferred: true, common: { stationId: null, asOf: '2025-11', geometryConfidence: 'unknown' },
-      notes: 'INFERRED from signage text only: the 新宿 drawing prints "新宿三丁目方面" at the east end of its B1F passage (exits A6 / B6), and the 新宿三丁目 drawings print "新宿駅方面" at the west end of the Marunouchi Line concourse, where exits with the same numbers A6 and B6 are drawn. Neither drawing shows the passage between the two in one piece; its length and any steps on the way are unknown.' }),
+  // メトロプロムナード: "丸ノ内線新宿駅と新宿三丁目駅の間にある歩行者専用の地下連絡通路" (Wikipedia). It replaces the link that was
+  // inferred from the "新宿三丁目方面" / "新宿駅方面" signs at the two ends.
+  link('marunouchi-shinjuku-concourse-to-metro-promenade', EXT_IDS.ME.conc, SC.promenade, prov(['src:wikipedia-ja-metro-promenade', S_METRO_SJ], undefined, '2026-11-16'), null,
+    { common: PROMENADE_COMMON, notes: 'The east end of the 丸ノ内線 新宿駅 B1F passage (exits A6 / B6, printed "新宿三丁目方面") opens into the メトロプロムナード.' }),
+  link('metro-promenade-to-sanchome-concourse', SC.promenade, SC.maruConc, prov(['src:wikipedia-ja-metro-promenade', S_METRO_SC], undefined, '2026-11-16'), null,
+    { common: PROMENADE_COMMON, notes: 'The メトロプロムナード reaches the west end of the 新宿三丁目 丸ノ内線 concourse (printed "新宿駅方面"). Whether there are steps on the way was not read.' }),
 ];
 
 const railLines: RailLine[] = [

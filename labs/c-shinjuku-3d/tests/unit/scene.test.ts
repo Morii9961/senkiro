@@ -22,6 +22,7 @@ import {
 import { MAX_POLAR, MIN_DISTANCE, MIN_POLAR, focusPose, homePose, mixPose, targetLimits } from '../../src/ui/scene/camera';
 import { outlineEdges, unionRects } from '../../src/ui/scene/prims';
 import { PALETTES } from '../../src/ui/theme';
+import { buildPlatformDoors, openingStates } from '../../src/trains/platformDoors';
 import { loadGraph, loadModel } from './helpers';
 
 /**
@@ -636,19 +637,27 @@ describe('guards round floor openings', () => {
 describe('platform doors and buffer stops (only where a source says so)', () => {
   const prims = buildPrims(model, view());
 
-  it('door panels stand only along faces with installed doors', () => {
+  it('platform doors stand only along faces with installed doors, and their openings meet the doors of the train', () => {
+    const sets = buildPlatformDoors(model);
+    expect(prims.some((q) => q.role === 'platform-door')).toBe(false);
     for (const area of model.areas) {
       if (area.kind !== 'platform') continue;
-      const panels = prims.filter((q) => q.elementId === area.id && q.role === 'platform-door');
-      const installed = area.tracks.filter((t) => t.side && t.platformDoors?.status === 'installed');
-      expect(panels.length > 0).toBe(installed.length > 0);
-      const r = area.footprint[0]!;
-      const alongX = r.x1 - r.x0 >= r.z1 - r.z0;
-      const edgeAt = (side: string) => ({ 'z-': r.z0, 'z+': r.z1, 'x-': r.x0, 'x+': r.x1 })[side]!;
-      for (const q of panels) {
-        const across = alongX ? (q.a[2] + q.b[2]) / 2 : (q.a[0] + q.b[0]) / 2;
-        expect(Math.min(...installed.map((t) => Math.abs(edgeAt(t.side!) - across)))).toBeLessThan(0.2);
+      for (const t of area.tracks) {
+        const installed = !!t.side && t.platformDoors?.status === 'installed';
+        expect(sets.some((s) => s.platformId === area.id && s.trackNumber === t.number), `${area.id}#${t.number}`).toBe(installed);
       }
+    }
+    for (const set of sets) {
+      // every leaf sits within its opening, and openings do not overlap
+      for (const p of set.parts.filter((q) => q.leaf)) {
+        const o = set.openings[p.opening!]!;
+        expect(p.a0).toBeGreaterThanOrEqual(o.a - o.half - 1e-6);
+        expect(p.a1).toBeLessThanOrEqual(o.a + o.half + 1e-6);
+      }
+      for (let i = 1; i < set.openings.length; i++) expect(set.openings[i]!.a - set.openings[i]!.half).toBeGreaterThanOrEqual(set.openings[i - 1]!.a + set.openings[i - 1]!.half - 1e-6);
+      // a train standing with its doors open opens every opening; with its doors shut, none
+      expect(openingStates(set, [{ doors: 1, doorAs: set.openings.map((o) => o.a) }]).every((x) => x === 1)).toBe(true);
+      expect(openingStates(set, [{ doors: 0, doorAs: set.openings.map((o) => o.a) }]).every((x) => x === 0)).toBe(true);
     }
   });
 
