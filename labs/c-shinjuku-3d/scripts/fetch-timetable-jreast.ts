@@ -35,11 +35,13 @@ const cacheDir = resolve(root, 'data/raw/jreast-cache');
 const outDir = resolve(root, 'data/raw/timetable');
 const BASE = 'https://timetables.jreast.co.jp/';
 const SHINJUKU = '0866';
-const MIN_INTERVAL_MS = 1100;
+/** At least this long between two requests; `--interval=<ms>` slows it down further (never below 1.1 s). */
+const MIN_INTERVAL_MS = Math.max(1100, Number(/--interval=(\d+)/.exec(process.argv.join(' '))?.[1] ?? 0));
 const USER_AGENT = 'SENKIRO-Lab-local-timetable-reader/0.1 (private use, 1 request per second)';
 export const JREAST_SOURCE_ID = 'local:jreast-station-timetables';
 
-const offline = process.argv.includes('--offline');
+/** Set by --offline, or after the first network failure: the site is then left alone and only the cache is used. */
+let offline = process.argv.includes('--offline');
 let lastFetch = 0;
 let fetched = 0;
 let cached = 0;
@@ -54,10 +56,19 @@ async function page(path: string): Promise<string | null> {
   const wait = lastFetch + MIN_INTERVAL_MS - Date.now();
   if (wait > 0) await new Promise((r) => setTimeout(r, wait));
   lastFetch = Date.now();
-  const res = await fetch(BASE + path, { headers: { 'user-agent': USER_AGENT } });
+  let res: Response;
+  try {
+    res = await fetch(BASE + path, { headers: { 'user-agent': USER_AGENT } });
+  } catch (e) {
+    // the site refused or dropped the connection: stop asking it, finish from the cache
+    console.warn(`network failure on ${path} (${(e as Error).cause ?? e}); no further requests this run`);
+    offline = true;
+    return null;
+  }
   fetched++;
   if (!res.ok) {
-    console.warn(`HTTP ${res.status} for ${path}`);
+    console.warn(`HTTP ${res.status} for ${path}; no further requests this run`);
+    offline = true;
     return null;
   }
   const html = await res.text();
