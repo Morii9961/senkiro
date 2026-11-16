@@ -176,3 +176,72 @@ export function parseTrainPage(html: string): TrainColumn[] {
   }
   return columns;
 }
+
+export interface DigitalColumn {
+  number: string | null;
+  name: string | null;
+  /** 運転日 as printed (平日 / 全日 / 土曜・休日 …). */
+  operatingDay: string | null;
+  article: string | null;
+  first: string | null;
+  end: string | null;
+  /** Times by station: arrival (着) and departure (発 or a row without a mark); HH:MM. */
+  calls: { station: string; arr: string | null; dep: string | null }[];
+  /** Track by station, from the 「<station>番線」 rows. */
+  platforms: Record<string, string>;
+}
+
+export interface DigitalTimetable {
+  title: string;
+  /** 'weekday' or 'holiday' as the page heading says. */
+  day: 'weekday' | 'holiday' | null;
+  columns: DigitalColumn[];
+}
+
+const hhmm = (s: string): string | null => {
+  const m = /^(\d{1,2})(\d{2})$/.exec(s.trim());
+  return m ? `${m[1]!.padStart(2, '0')}:${m[2]}` : null;
+};
+
+/** A line timetable of the site's 「デジタル時刻表」 (timetable-v/<line><u|d><1|2>.html): every train of the line in one table. */
+export function parseDigitalTimetable(html: string): DigitalTimetable {
+  const title = textOf(/<h2[^>]*>([\s\S]*?)<\/h2>/.exec(html)?.[1] ?? '');
+  const heading = /<h3 class="(weekday|holiday)"/.exec(html)?.[1] as 'weekday' | 'holiday' | undefined;
+  const table = /<table class="paper_table">([\s\S]*?)<\/table>/.exec(html)?.[1] ?? '';
+  let columns: DigitalColumn[] = [];
+  for (const row of table.match(/<tr[\s\S]*?<\/tr>/g) ?? []) {
+    const cls = /<tr class="([^"]*)"/.exec(row)?.[1] ?? '';
+    const th1 = textOf(/<th class="table_th01">([\s\S]*?)<\/th>/.exec(row)?.[1] ?? '');
+    const th2 = textOf(/<th class="table_th02">([\s\S]*?)<\/th>/.exec(row)?.[1] ?? '');
+    const tds = (row.match(/<td[\s\S]*?<\/td>/g) ?? []).map(textOf);
+    if (cls === 'tableTr_trainNumber') {
+      columns = tds.map((n) => ({ number: n || null, name: null, operatingDay: null, article: null, first: null, end: null, calls: [], platforms: {} }));
+      continue;
+    }
+    const set = (key: 'name' | 'operatingDay' | 'article' | 'first' | 'end') => tds.forEach((v, i) => columns[i] && (columns[i]![key] = v || null));
+    if (cls === 'tableTr_trainName') set('name');
+    else if (cls === 'tableTr_operatingDay') set('operatingDay');
+    else if (cls === 'tableTr_article') set('article');
+    else if (cls === 'tableTr_firstTrain') set('first');
+    else if (cls === 'tableTr_end') set('end');
+    else if (cls === '' && th1) {
+      const pf = /^(.+)番線$/.exec(th1);
+      tds.forEach((v, i) => {
+        const col = columns[i];
+        if (!col) return;
+        if (pf) {
+          const n = halfWidth(v).replace(/[()（）\s]/g, '');
+          if (n) col.platforms[pf[1]!] = n;
+          return;
+        }
+        const t = hhmm(halfWidth(v));
+        if (!t) return;
+        let call = col.calls.find((c) => c.station === th1);
+        if (!call) col.calls.push((call = { station: th1, arr: null, dep: null }));
+        if (th2 === '着') call.arr = t;
+        else call.dep = t;
+      });
+    }
+  }
+  return { title, day: heading ?? null, columns };
+}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { halfWidth, parseLineList, parseStationTimetable, parseTrainPage } from '../../scripts/jreast/parse';
+import { halfWidth, parseDigitalTimetable, parseLineList, parseStationTimetable, parseTrainPage } from '../../scripts/jreast/parse';
 
 // Minimal pages written for this test in the structure of the JR East timetable site. They are not
 // copies of any page of the site (whose content may not be reproduced) and every time in them is made up.
@@ -67,5 +67,26 @@ describe('JR East timetable page readers (local-only fetch script)', () => {
     // the second train only calls at 乙: no call is made up for 甲
     expect(b!.calls).toEqual([{ station: '乙', code: '0002', arr: null, dep: '05:12', platform: '3' }]);
     expect(halfWidth('１６番線')).toBe('16番線');
+  });
+
+  it('reads a line timetable: one column per train, times by station, and the track row of a station', () => {
+    const DIGITAL = `<h2>線B 上り (甲－乙)</h2><h3 class="weekday">平日</h3><table class="paper_table">
+<tr class="tableTr_trainNumber"><th class="table_th01">列車番号</th><th class="table_th02"></th><td>1M</td><td>3M</td></tr>
+<tr class="tableTr_trainName"><th class="table_th01"><span>列車名</span></th><th class="table_th02"></th><td><span class="trainName">特急 テスト2号</td><td><span class="trainName">普通</td></tr>
+<tr class="tableTr_operatingDay"><th class="table_th01">運転日</th><th class="table_th02"></th><td>平日</td><td>全日</td></tr>
+<tr><th class="table_th01"><span class="v_scale">甲</span></th><th class="table_th02">発</th><td>0700</td><td>0705</td></tr>
+<tr><th class="table_th01"><span class="v_scale">新宿</span></th><th class="table_th02">着</th><td>0759</td><td>レ</td></tr>
+<tr><th class="table_th01"><span class="v_scale">新宿番線</span></th><th class="table_th02"></th><td>(７)</td><td></td></tr>
+<tr class="tableTr_end"><th class="table_th01">終着</th><th class="table_th02"></th><td><span class="e_trainText">新宿</span></td><td><span class="e_trainText">乙</span></td></tr>
+</table>`;
+    const t = parseDigitalTimetable(DIGITAL);
+    expect(t.title).toBe('線B 上り (甲－乙)');
+    expect(t.day).toBe('weekday');
+    expect(t.columns.map((c) => [c.number, c.name, c.operatingDay, c.end])).toEqual([['1M', '特急 テスト2号', '平日', '新宿'], ['3M', '普通', '全日', '乙']]);
+    expect(t.columns[0]!.calls).toEqual([{ station: '甲', arr: null, dep: '07:00' }, { station: '新宿', arr: '07:59', dep: null }]);
+    expect(t.columns[0]!.platforms).toEqual({ 新宿: '7' });
+    // a train that passes (レ) gets no call and no track
+    expect(t.columns[1]!.calls).toEqual([{ station: '甲', arr: null, dep: '07:05' }]);
+    expect(t.columns[1]!.platforms).toEqual({});
   });
 });

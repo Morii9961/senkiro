@@ -21,18 +21,20 @@
  * 立川 / 八王子: 中央本線 上り, 池袋 / 渋谷: 湘南新宿ライン). Every train's
  * stop list is read for its Shinjuku times, track and train number.
  */
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { recordsToCsv } from '../src/timetable/adapter';
 import { parseServiceTime } from '../src/timetable/time';
 import type { TimetableRecord, TimetableSource } from '../src/timetable/types';
-import { parseLineList, parseStationTimetable, parseTrainPage, type TrainColumn } from './jreast/parse';
+import { parseDigitalTimetable, parseLineList, parseStationTimetable, parseTrainPage, type DigitalColumn, type TrainColumn } from './jreast/parse';
 import { serviceTimeOf } from '../src/timetable/odpt';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const cacheDir = resolve(root, 'data/raw/jreast-cache');
 const outDir = resolve(root, 'data/raw/timetable');
+/** Line timetables (デジタル時刻表) saved by hand from a browser, as .html files: read when present. */
+const savedDir = resolve(root, 'data/raw/jreast-saved');
 const BASE = 'https://timetables.jreast.co.jp/';
 const SHINJUKU = '0866';
 /** At least this long between two requests; `--interval=<ms>` slows it down further (never below 1.1 s). */
@@ -109,7 +111,7 @@ const UPSTREAM: { name: string; label: string; line: RegExp; direction: RegExp }
 
 /** Neighbours of JR Shinjuku that tell the direction of a call: south = 代々木 / 渋谷 side, north = 大久保 / 新大久保 / 池袋 side. */
 const SOUTH = new Set(['代々木', '渋谷', '四ツ谷', '御茶ノ水', '神田', '東京', '品川', '大崎', '恵比寿', '原宿', '武蔵小杉', '横浜', '大船']);
-const NORTH = new Set(['大久保', '新大久保', '池袋', '中野', '三鷹', '吉祥寺', '荻窪', '国分寺', '立川', '八王子', '高尾', '赤羽', '浦和', '大宮', '新宿三丁目']);
+const NORTH = new Set(['大久保', '新大久保', '池袋', '中野', '三鷹', '吉祥寺', '荻窪', '国分寺', '立川', '八王子', '高尾', '赤羽', '浦和', '大宮', '新宿三丁目', '東中野', '高田馬場', '目白', '板橋', '十条', '武蔵浦和', '大月', '甲府']);
 
 function lineOf(col: TrainColumn, pageLine: string): string | null {
   const name = col.name ?? '';
@@ -141,6 +143,40 @@ function destinationOf(col: TrainColumn, page: TrainColumn[]): string | null {
     cur = next;
   }
   return end;
+}
+
+/** The line of a train in a line timetable, from the page title and the train name. */
+function lineOfDigital(col: DigitalColumn, title: string): string | null {
+  const name = col.name ?? '';
+  if (/成田エクスプレス/.test(name)) return 'jr-east:narita-express';
+  if (/あずさ|かいじ|富士回遊|はちおうじ|おうめ/.test(name)) return 'jr-east:chuo-limited-express';
+  if (/日光|きぬがわ/.test(name)) return 'jr-east:tobu-through-limited-express';
+  if (/特急/.test(name)) return 'jr-east:other-limited-express';
+  if (/^山手線/.test(title)) return 'jr-east:yamanote';
+  if (/^中央・総武線/.test(title)) return 'jr-east:chuo-sobu-local';
+  if (/^中央線快速|^中央本線/.test(title)) return 'jr-east:chuo-rapid';
+  if (/^埼京線/.test(title)) return 'jr-east:saikyo';
+  if (/^湘南新宿ライン/.test(title)) return 'jr-east:shonan-shinjuku';
+  return null;
+}
+
+/**
+ * Lines with a single track per direction at JR Shinjuku, from the station model (track services and
+ * their direction signs): a line timetable without a track row can still be placed for these.
+ */
+const SINGLE_TRACK: Record<string, { southbound: string; northbound: string }> = {
+  'jr-east:yamanote': { southbound: '14', northbound: '15' },
+  'jr-east:chuo-sobu-local': { southbound: '13', northbound: '16' },
+};
+
+function directionOfCalls(calls: { station: string }[], i: number): 'southbound' | 'northbound' | null {
+  const next = calls[i + 1]?.station;
+  const prev = calls[i - 1]?.station;
+  if (next && SOUTH.has(next)) return 'southbound';
+  if (next && NORTH.has(next)) return 'northbound';
+  if (prev && NORTH.has(prev)) return 'southbound';
+  if (prev && SOUTH.has(prev)) return 'northbound';
+  return null;
 }
 
 function directionOf(col: TrainColumn, i: number): 'southbound' | 'northbound' | null {
@@ -268,6 +304,83 @@ async function main() {
     }
   }
 
+  // line timetables saved by hand: one per line, direction and kind of day, with the Shinjuku times and track of every train
+  const savedFiles = existsSync(savedDir) ? readdirSync(savedDir).filter((f) => /\.html?$/i.test(f)).sort() : [];
+  const byTrain = new Map(records.map((r) => [`${r.service_date_type}|${r.train_number}`, r]));
+  let fromSaved = 0;
+  let filled = 0;
+  const savedTitles: string[] = [];
+  for (const f of savedFiles) {
+    const page = parseDigitalTimetable(readFileSync(resolve(savedDir, f), 'utf8'));
+    if (!page.day || page.columns.length === 0) {
+      console.warn(`${f}: not a line timetable page (no table or no day heading); skipped`);
+      continue;
+    }
+    savedTitles.push(`${page.title} (${page.day === 'weekday' ? '平日' : '土曜・休日'})`);
+    const day = page.day === 'weekday' ? 'weekday' : 'saturday-holiday';
+    for (const col of page.columns) {
+      const i = col.calls.findIndex((c) => c.station === '新宿');
+      if (i < 0 || !col.number) continue;
+      const line = lineOfDigital(col, page.title);
+      if (!line) continue;
+      const call = col.calls[i]!;
+      const direction = directionOfCalls(col.calls, i);
+      let platform: string | null = col.platforms['新宿'] ?? null;
+      let platformRemark: string | null = null;
+      const single = SINGLE_TRACK[line];
+      if (!platform && direction && single) {
+        platform = single[direction];
+        platformRemark = 'Track from the only platform of this line and direction (station drawing).';
+      }
+      const key = `${day}|${col.number}`;
+      const known = byTrain.get(key);
+      if (known) {
+        // a stop list read earlier wins; the line timetable only fills what it lacks
+        let changed = false;
+        if (!known.arrival_time_local && call.arr) {
+          known.arrival_time_local = serviceTimeOf(call.arr);
+          changed = true;
+        }
+        if (!known.departure_time_local && call.dep) {
+          known.departure_time_local = serviceTimeOf(call.dep);
+          changed = true;
+        }
+        if (!known.platform_id && platform) {
+          known.platform_id = `jr-east:shinjuku:${platform}`;
+          changed = true;
+        }
+        if (changed) filled++;
+        continue;
+      }
+      const end = col.end ? col.end : (col.calls.at(-1)?.station ?? null);
+      const rec: TimetableRecord = {
+        station_id: 'jr-east:shinjuku',
+        operator_id: 'jr-east',
+        line_id: line,
+        platform_id: platform ? `jr-east:shinjuku:${platform}` : null,
+        direction_id: direction,
+        service_date_type: day,
+        trip_id: `jreast-v:${f.replace(/\.html?$/i, '')}:${col.number}`,
+        train_number: col.number,
+        arrival_time_local: serviceTimeOf(call.arr ?? undefined),
+        departure_time_local: serviceTimeOf(call.dep ?? undefined),
+        destination_text: end,
+        service_class: col.name ? (/^特急/.test(col.name) ? '特急' : col.name) : null,
+        vehicle_series: null,
+        formation_length: null,
+        vehicle_assignment_status: 'unknown',
+        source_id: JREAST_SOURCE_ID,
+        valid_from: null,
+        valid_until: null,
+        remarks: [col.name, col.operatingDay ? `運転日: ${col.operatingDay}` : null, col.article, platform ? platformRemark : 'No track in the line timetable; not drawn.'].filter(Boolean).join(' · ') || null,
+      };
+      records.push(rec);
+      byTrain.set(key, rec);
+      fromSaved++;
+    }
+  }
+  if (savedFiles.length) console.log(`saved line timetables: ${savedFiles.length} files, ${fromSaved} trains added, ${filled} completed`);
+
   const time = (r: TimetableRecord) => parseServiceTime(r.departure_time_local ?? r.arrival_time_local) ?? 0;
   records.sort((a, b) => a.line_id.localeCompare(b.line_id) || a.service_date_type.localeCompare(b.service_date_type) || time(a) - time(b) || a.trip_id.localeCompare(b.trip_id));
 
@@ -276,12 +389,12 @@ async function main() {
   const upstreamMissing = UPSTREAM.filter((u) => !upstream.some((t) => t.label === u.label)).map((u) => u.label);
   const source: TimetableSource = {
     id: JREAST_SOURCE_ID,
-    title: `JR東日本 駅の時刻表（新宿駅ほか, ${edition} 版）— ローカル専用${missing || upstreamMissing.length ? `・一部のみ（未取得: 列車 ${missing} 本${upstreamMissing.length ? `、${upstreamMissing.join('・')}` : ''}）` : ''}`,
+    title: `JR東日本 駅の時刻表（新宿駅ほか, ${edition} 版）— ローカル専用${savedTitles.length ? `・保存した路線時刻表 ${savedTitles.length} 枚` : ''}${missing || (upstreamMissing.length && !savedTitles.length) ? `・一部のみ（未取得: 停車駅一覧 ${missing} 本${upstreamMissing.length && !savedTitles.length ? `、${upstreamMissing.join('・')}` : ''}）` : ''}`,
     publisher: 'East Japan Railway Company (timetables.jreast.co.jp)',
     url: `${BASE}timetable/list${SHINJUKU}.html`,
     retrievedAt,
     license: 'Not licensed for redistribution (jreast.co.jp terms of use, section 2). Local private use only; not in the repository.',
-    notes: `Read by scripts/fetch-timetable-jreast.ts, ${fetched + cached} pages (${fetched} from the network this run). Tables: ${[...new Set([...timetables, ...upstream].map((t) => t.label))].join(', ')}. Times, tracks, train numbers, types and names as printed in each train's stop list; times before 03:00 written as 24:xx; direction from the next / previous stop.`,
+    notes: `Read by scripts/fetch-timetable-jreast.ts, ${fetched + cached} pages (${fetched} from the network this run). Tables: ${[...new Set([...timetables, ...upstream].map((t) => t.label))].join(', ')}. Line timetables saved by hand: ${savedTitles.join(', ') || 'none'}. Times, tracks, train numbers, types and names as printed in each train's stop list; times before 03:00 written as 24:xx; direction from the next / previous stop.`,
   };
   writeFileSync(resolve(outDir, 'jreast-shinjuku.csv'), recordsToCsv(records));
   writeFileSync(resolve(outDir, 'jreast-shinjuku.sources.json'), JSON.stringify({ generatedAt: retrievedAt, sources: [source] }, null, 2) + '\n');
