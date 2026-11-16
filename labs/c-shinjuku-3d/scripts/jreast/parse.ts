@@ -245,3 +245,15 @@ export function parseDigitalTimetable(html: string): DigitalTimetable {
   }
   return { title, day: heading ?? null, columns };
 }
+
+/**
+ * A train that runs only on dates the timetable lists (「◆ 12月29日運転」) is not a train of every weekday or
+ * every Saturday / holiday, so it is left out of those timetables. A train that runs every such day up to a
+ * date (「2月28日までの土曜・休日…運転」, 「2月26日まで＜除く…＞運転」) or is cancelled on a few dates is kept.
+ */
+export function dateLimited(operatingDay: string | null | undefined): boolean {
+  // 「平日運転」「土曜・休日運転」 name a kind of day, not dates
+  const t = (operatingDay ?? '').replace(/\s+/g, '').replace(/(平日|土曜・休日|土休日|毎日|全日)運転/g, '');
+  if (!/運転/.test(t) || !/[0-9０-９]+(月|日)/.test(t)) return false;
+  return !/まで(の(土曜・休日|土休日|平日|毎日)|＜除く)/.test(t);
+}

@@ -26,6 +26,9 @@
   例如 `https://timetables.jreast.co.jp/2611/timetable-v/223u1.html`，`1` = 平日、`2` = 土曜・休日）。页面里每班车在新宿的
   到发时刻和「新宿番線」都有，脚本按「日别 + 车次」与停车站页合并；表里没有番线时，只有山手线（14/15）和中央・総武線各停
   （13/16）按“该方向唯一的站台”补，其余不补、不上轨。
+- `npx tsx scripts/fetch-timetable-jreast.ts --digital --interval=20000`：只取这 28 张数字时刻表（每 20 秒一页），存进
+  `data/raw/jreast-saved/` 再离线重建；`--only-upstream=東京` 只读东京站的成田特快发车表及其停车站页。只在列出日期开行的
+  临时列车不放进平日 / 土休日时刻表。
 - `npx tsx scripts/timetable-coverage.ts`：逐个站台面列出平日 / 周日的班次数和来源，0 / 0 就是没有任何时刻表。
 
 `direction_id`：JR 新宿的记录可写 `southbound` / `northbound`（按前后停车站），列车在通过式番线上按此方向进出。

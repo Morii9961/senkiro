@@ -139,14 +139,17 @@ export function App() {
   const trainCoverage = useMemo(() => {
     if (timetable.dataset.kind === 'demo-fixture') return null;
     const order = LINE_REGISTRY.map((l) => l.line_id);
-    return [...timetable.coveredLineIds]
+    const known = timetable.coveredLineIds.filter((id) => lineEntry(id));
+    const names = [...known]
       .sort((a, b) => order.indexOf(a) - order.indexOf(b))
       .map((id) => {
         const entry = lineEntry(id);
         const rl = model.railLines.find((l) => l.id === entry?.modelLineIds[0]);
         return rl ? (pickName(rl.names, lang) ?? entry?.name_ja ?? id) : (entry?.name_ja ?? id);
-      })
-      .join(lang === 'en' ? ', ' : '、');
+      });
+    // trains of a line the registry does not list (e.g. limited expresses such as 「湘南」 on the JR tracks)
+    if (known.length < timetable.coveredLineIds.length) names.push(makeT(lang)('trainOtherLines'));
+    return names.join(lang === 'en' ? ', ' : '、');
   }, [timetable, model, lang]);
   const trainShown = useCallback((p: TrainPlan) => !hiddenTrains.has(p.id) && trainPasses(p, trainFilter), [hiddenTrains, trainFilter]);
   const selectedPlan = selectedTrain ? (trainPlans.plans.find((p) => p.id === selectedTrain) ?? null) : null;

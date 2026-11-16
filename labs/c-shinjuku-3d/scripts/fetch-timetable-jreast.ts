@@ -10,6 +10,9 @@
  *
  *   npx tsx scripts/fetch-timetable-jreast.ts                 priority lines
  *   npx tsx scripts/fetch-timetable-jreast.ts --offline       only pages already in the cache
+ *   npx tsx scripts/fetch-timetable-jreast.ts --digital --interval=20000
+ *                         only the line timetables (デジタル時刻表) of the JR lines at Shinjuku, one page
+ *                         per 20 s, into data/raw/jreast-saved/; then the records are rebuilt from the cache
  *
  * Polite by construction: one page per second at most, a plain client name,
  * and every page kept in data/raw/jreast-cache/ so that nothing is read twice.
@@ -27,7 +30,7 @@ import { fileURLToPath } from 'node:url';
 import { recordsToCsv } from '../src/timetable/adapter';
 import { parseServiceTime } from '../src/timetable/time';
 import type { TimetableRecord, TimetableSource } from '../src/timetable/types';
-import { parseDigitalTimetable, parseLineList, parseStationTimetable, parseTrainPage, type DigitalColumn, type TrainColumn } from './jreast/parse';
+import { dateLimited, parseDigitalTimetable, parseLineList, parseStationTimetable, parseTrainPage, type DigitalColumn, type TrainColumn } from './jreast/parse';
 import { serviceTimeOf } from '../src/timetable/odpt';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -44,6 +47,8 @@ export const JREAST_SOURCE_ID = 'local:jreast-station-timetables';
 
 /** Set by --offline, or after the first network failure: the site is then left alone and only the cache is used. */
 let offline = process.argv.includes('--offline');
+/** `--only-upstream=東京,…`: read only these upstream stations' tables and the stop lists they link to; every other stop list only from the cache. */
+const onlyUpstream = /--only-upstream=(\S+)/.exec(process.argv.join(' '))?.[1]?.split(',') ?? null;
 let lastFetch = 0;
 let fetched = 0;
 let cached = 0;
@@ -153,8 +158,8 @@ function lineOfDigital(col: DigitalColumn, title: string): string | null {
   if (/日光|きぬがわ/.test(name)) return 'jr-east:tobu-through-limited-express';
   if (/特急/.test(name)) return 'jr-east:other-limited-express';
   if (/^山手線/.test(title)) return 'jr-east:yamanote';
-  if (/^中央・総武線/.test(title)) return 'jr-east:chuo-sobu-local';
-  if (/^中央線快速|^中央本線/.test(title)) return 'jr-east:chuo-rapid';
+  if (/^中央・総武線|^中央線・総武線/.test(title)) return 'jr-east:chuo-sobu-local';
+  if (/^中央線快速|^中央線（快速）|^中央本線/.test(title)) return 'jr-east:chuo-rapid';
   if (/^埼京線/.test(title)) return 'jr-east:saikyo';
   if (/^湘南新宿ライン/.test(title)) return 'jr-east:shonan-shinjuku';
   return null;
@@ -196,6 +201,23 @@ async function main() {
   if (!listHtml) throw new Error('could not read the Shinjuku line list');
   const edition = /\.\.\/(\d{4})\/timetable\//.exec(listHtml)?.[1] ?? 'unknown';
 
+  if (process.argv.includes('--digital')) {
+    // the line timetables linked from the Shinjuku list, plus the two reverse directions that end at Shinjuku
+    const codes = new Set([...listHtml.matchAll(/timetable-v\/(\w+)\.html/g)].map((m) => m[1]!));
+    for (const c of ['223u1', '223u2', '023u1', '023u2']) codes.add(c);
+    mkdirSync(savedDir, { recursive: true });
+    for (const code of [...codes].sort()) {
+      const target = resolve(savedDir, `${code}.html`);
+      if (existsSync(target)) continue;
+      const html = await page(`${edition}/timetable-v/${code}.html`);
+      if (html && /paper_table/.test(html)) writeFileSync(target, html);
+      else if (html) console.warn(`${code}: no line timetable on the page; not saved`);
+      if (offline) break;
+    }
+    console.log(`line timetables in data/raw/jreast-saved/: ${readdirSync(savedDir).filter((f) => /\.html?$/i.test(f)).length}`);
+    offline = true; // build the records from what is now on disk; no stop lists are requested in this mode
+  }
+
   /** Station timetable pages to read: path → day type and the line it is for. */
   const timetables: { path: string; day: DayType; line: string; label: string }[] = [];
   const addFromList = (html: string, from: string, w: { label: string; line: RegExp; direction: RegExp }) => {
@@ -227,9 +249,11 @@ async function main() {
   // station codes from the stop lists already read, to find the upstream stations' line lists
   const codes = new Map<string, string>();
   const parsed = new Map<string, TrainColumn[]>();
+  const upstreamPages = new Set<string>();
   const readTrains = async () => {
     for (const p of trainPages.keys()) {
       if (parsed.has(p)) continue;
+      if (onlyUpstream && !upstreamPages.has(p) && !existsSync(resolve(cacheDir, p))) continue;
       const html = await page(p);
       if (!html) continue;
       const cols = parseTrainPage(html);
@@ -240,7 +264,7 @@ async function main() {
   await readTrains();
 
   const upstream: typeof timetables = [];
-  for (const u of UPSTREAM) {
+  for (const u of UPSTREAM.filter((x) => !onlyUpstream || onlyUpstream.includes(x.name))) {
     const code = codes.get(u.name);
     if (!code) {
       console.warn(`no station code for ${u.name}; trains ending at Shinjuku from there are missing`);
@@ -253,7 +277,17 @@ async function main() {
     addFromList(html, path, u);
     upstream.push(...timetables.slice(before));
   }
-  await readTimetables(upstream);
+  {
+    const before = new Set(trainPages.keys());
+    await readTimetables(upstream);
+    for (const p of trainPages.keys()) if (!before.has(p)) upstreamPages.add(p);
+    // stop lists linked from both a Shinjuku and an upstream table also count as upstream ones
+    for (const t of upstream) {
+      const html = await page(t.path);
+      if (!html) continue;
+      for (const e of parseStationTimetable(html).entries) if (e.href) upstreamPages.add(join(t.path, e.href));
+    }
+  }
   await readTrains();
 
   // one record per train column that calls at 新宿, per kind of day
@@ -264,6 +298,10 @@ async function main() {
     for (const col of parsed.get(p) ?? []) {
       const i = col.calls.findIndex((c) => c.station === '新宿');
       if (i < 0) continue;
+      if (dateLimited(col.days.join(' '))) {
+        skipped.set('date-limited (runs only on listed dates)', (skipped.get('date-limited (runs only on listed dates)') ?? 0) + 1);
+        continue;
+      }
       const line = lineOf(col, info.line);
       if (!line) {
         skipped.set(`${col.type ?? '?'} on ${info.line}`, (skipped.get(`${col.type ?? '?'} on ${info.line}`) ?? 0) + 1);
@@ -323,6 +361,10 @@ async function main() {
       if (i < 0 || !col.number) continue;
       const line = lineOfDigital(col, page.title);
       if (!line) continue;
+      if (dateLimited(col.operatingDay)) {
+        skipped.set('date-limited (runs only on listed dates)', (skipped.get('date-limited (runs only on listed dates)') ?? 0) + 1);
+        continue;
+      }
       const call = col.calls[i]!;
       const direction = directionOfCalls(col.calls, i);
       let platform: string | null = col.platforms['新宿'] ?? null;

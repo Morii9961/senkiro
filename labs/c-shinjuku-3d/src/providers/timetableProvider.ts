@@ -30,7 +30,7 @@ export interface TimetableData {
   files: string[];
   /** The subset of `files` that came from the git-ignored local folder. */
   localFiles: string[];
-  /** Canonical line ids that have at least one usable record, in registry order. */
+  /** Canonical line ids with at least one usable record that names a track (so that a train can be drawn). */
   coveredLineIds: string[];
 }
 
@@ -42,7 +42,7 @@ export interface TimetableFileSet {
 }
 
 function coveredLines(records: TimetableRecord[]): string[] {
-  const ids = new Set(records.map((r) => lineEntry(r.line_id)?.line_id ?? r.line_id));
+  const ids = new Set(records.filter((r) => r.platform_id != null).map((r) => lineEntry(r.line_id)?.line_id ?? r.line_id));
   return [...ids];
 }
 

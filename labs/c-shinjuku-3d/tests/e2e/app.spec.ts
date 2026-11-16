@@ -653,7 +653,7 @@ test.describe('train simulation', () => {
     await expect(page.getByTestId('demo-badge')).toHaveCount(0);
     await expect(page.getByTestId('coverage-badge')).toContainText('都营新宿线');
     await expect(page.getByTestId('coverage-badge')).toContainText('都营大江户线');
-    await expect(page.getByTestId('coverage-badge')).toContainText('其他线路没有可用的时刻表');
+    await expect(page.getByTestId('coverage-badge')).toContainText('其他线路没有可用的时刻表或不知道番线');
     await expect(page.getByTestId('sim-time')).toContainText('12:01:40');
     await page.getByTestId('tab-ops').click();
     await expect(page.getByTestId('train-data-note')).toContainText('toei-odpt.csv');

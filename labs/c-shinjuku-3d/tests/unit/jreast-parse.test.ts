@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { halfWidth, parseDigitalTimetable, parseLineList, parseStationTimetable, parseTrainPage } from '../../scripts/jreast/parse';
+import { dateLimited, halfWidth, parseDigitalTimetable, parseLineList, parseStationTimetable, parseTrainPage } from '../../scripts/jreast/parse';
 
 // Minimal pages written for this test in the structure of the JR East timetable site. They are not
 // copies of any page of the site (whose content may not be reproduced) and every time in them is made up.
@@ -88,5 +88,14 @@ describe('JR East timetable page readers (local-only fetch script)', () => {
     // a train that passes (レ) gets no call and no track
     expect(t.columns[1]!.calls).toEqual([{ station: '甲', arr: null, dep: '07:05' }]);
     expect(t.columns[1]!.platforms).toEqual({});
+  });
+
+  it('leaves out only trains that run on listed dates', () => {
+    for (const regular of ['平日', '全日', '土曜・休日運転', '平日運転 / １１月７日は運休', '◆ 11月7日は運休', '◆ 2月26日まで＜除く、土曜・休日と12月30日～1月3日＞運転', '◆ 2月28日までの土曜・休日と12月30日～1月3日運転']) {
+      expect(dateLimited(regular), regular).toBe(false);
+    }
+    for (const limited of ['◆ 12月29日運転', '◆ 11月21・22日運転', '◆ 12月26日～1月3・10・11日・2月21・23・28日運転', '１月３１日運転']) {
+      expect(dateLimited(limited), limited).toBe(true);
+    }
   });
 });
