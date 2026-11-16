@@ -23,15 +23,38 @@ export interface SceneLabel {
   position: Vec3;
   /** 0 always · 1 far · 2 medium · 3 close */
   tier: 0 | 1 | 2 | 3;
+  /**
+   * Shown only while the scale's tier is at most this: station names belong to
+   * the overview and step aside once gates and halls are named. Absent = no limit.
+   */
+  maxZoom?: 0 | 1 | 2 | 3;
+  /** Part of the route on show (or its selected element): drawn with a ring in the route colour. */
+  onRoute?: boolean;
   /** Higher wins when labels collide. */
   priority: number;
-  variant: 'level' | 'platform' | 'gate' | 'area' | 'entrance' | 'lift' | 'block' | 'route-start' | 'route-end';
+  variant: 'level' | 'station' | 'platform' | 'gate' | 'area' | 'entrance' | 'lift' | 'vertical' | 'block' | 'route-start' | 'route-end';
 }
 
 export interface LabelTexts {
   unverified: string;
   start: string;
   goal: string;
+  /** Short name of a station for the overview; absent = no station names. */
+  station?: (stationId: string) => string;
+  /** Kind of an element ("階段", "エスカレーター"); absent = stairs and escalators are not labelled. */
+  kind?: (id: string) => string;
+}
+
+/** Busta Shinjuku is no station of the model, but it is the landmark people look for; its areas share this id prefix. */
+const BUSTA_PREFIX = 'sk:area:busta-';
+
+/**
+ * A named entrance that is one of the station's main exits: its printed name ends in 口
+ * (東口, 西口（地下）, 正面口（地上）…), unlike numbered exits ("出口 A9") and bus bays ("C8 のりば").
+ * A display rule only: it decides how early a name appears, not what the entrance is.
+ */
+export function isMainExitName(ja: string | null): boolean {
+  return ja !== null && /口(（[^）]*）)?$/.test(ja);
 }
 
 export function trackRange(numbers: string[]): string {
@@ -56,6 +79,30 @@ export function buildLabels(
   const single = opts.focusOrdinals !== null && opts.focusOrdinals.size === 1 && !opts.route;
   const tierOf = (id: string, tier: SceneLabel['tier']): SceneLabel['tier'] =>
     onRoute.has(id) || id === opts.selectedId ? 0 : single ? (Math.max(1, tier - 1) as SceneLabel['tier']) : tier;
+  const marked = (id: string) => (onRoute.has(id) || id === opts.selectedId ? { onRoute: true } : {});
+  const floorOfLevel = new Map<string, { label: string; ordinal: number }>();
+  for (const f of floorsOf(model)) for (const id of f.levelIds) floorOfLevel.set(id, { label: f.label, ordinal: f.ordinal });
+
+  // Overview: one name per station (and Busta), over the middle of what it has on the floors in view.
+  // Far away these, the floors and the platform numbers are all there is; closer in they step aside.
+  if (texts.station) {
+    const groups = new Map<string, { text: string; areas: typeof model.areas }>();
+    for (const st of model.stations) groups.set(st.id, { text: texts.station(st.id), areas: [] });
+    groups.set('busta', { text: texts.station('busta'), areas: [] });
+    for (const area of model.areas) {
+      if (!visible(area.levelId)) continue;
+      const g = area.stationId ? groups.get(area.stationId) : area.id.startsWith(BUSTA_PREFIX) ? groups.get('busta') : undefined;
+      g?.areas.push(area);
+    }
+    for (const [id, g] of groups) {
+      if (g.areas.length === 0 || !g.text) continue;
+      const rects = g.areas.flatMap((a) => a.footprint);
+      const x = (Math.min(...rects.map((r) => r.x0)) + Math.max(...rects.map((r) => r.x1))) / 2;
+      const z = (Math.min(...rects.map((r) => r.z0)) + Math.max(...rects.map((r) => r.z1))) / 2;
+      const y = Math.max(...g.areas.map((a) => yOf(a.levelId)));
+      labels.push({ key: `station:${id}`, elementId: null, text: g.text, position: [x, y + 2.4, z], tier: 1, maxZoom: 1, priority: 70, variant: 'station' });
+    }
+  }
 
   // one label per floor, not per operator level
   for (const floor of floorsOf(model)) {
@@ -86,6 +133,7 @@ export function buildLabels(
         tier: tierOf(area.id, 1),
         priority: 60 + boost(area.id),
         variant: 'platform',
+        ...marked(area.id),
       });
     } else if (area.names.ja !== null) {
       labels.push({
@@ -93,9 +141,10 @@ export function buildLabels(
         elementId: null,
         text: name(area.id),
         position: [area.anchor.x, y + SLAB_TOP + 0.5, area.anchor.z],
-        tier: tierOf(area.id, 3),
-        priority: 20 + boost(area.id),
+        tier: tierOf(area.id, area.kind === 'passage' ? 2 : 3),
+        priority: (area.kind === 'passage' ? 25 : 20) + boost(area.id),
         variant: 'area',
+        ...marked(area.id),
       });
     }
   }
@@ -107,9 +156,10 @@ export function buildLabels(
       elementId: gate.id,
       text: name(gate.id),
       position: [gate.position.x, yOf(gate.levelId) + SLAB_TOP + 1.3, gate.position.z],
-      tier: tierOf(gate.id, 2),
-      priority: 50 + boost(gate.id),
+      tier: tierOf(gate.id, gate.gateKind === 'transfer' ? 2 : 3),
+      priority: (gate.gateKind === 'transfer' ? 55 : 50) + boost(gate.id),
       variant: 'gate',
+      ...marked(gate.id),
     });
   }
 
@@ -120,9 +170,10 @@ export function buildLabels(
       elementId: ent.id,
       text: name(ent.id),
       position: [ent.position.x, yOf(ent.levelId) + SLAB_TOP + 1.5, ent.position.z],
-      tier: tierOf(ent.id, ent.names.ja ? 2 : 3),
-      priority: (ent.names.ja ? 45 : 15) + boost(ent.id),
+      tier: tierOf(ent.id, isMainExitName(ent.names.ja) ? 2 : 3),
+      priority: (isMainExitName(ent.names.ja) ? 45 : ent.names.ja ? 35 : 15) + boost(ent.id),
       variant: 'entrance',
+      ...marked(ent.id),
     });
   }
 
@@ -154,7 +205,32 @@ export function buildLabels(
       tier: tierOf(v.id, 3),
       priority: 30 + boost(v.id),
       variant: 'lift',
+      ...marked(v.id),
     });
+  }
+
+  // Close in: stairs and escalators, named by kind and the floors they join, over the middle of the run.
+  if (texts.kind) {
+    for (const v of model.verticals) {
+      if (v.verticalKind === 'elevator' || v.stops.length < 2) continue;
+      if (!v.stops.every((s) => visible(s.levelId))) continue;
+      const byHeight = [...v.stops].sort((a, b) => yOf(a.levelId) - yOf(b.levelId));
+      const lo = byHeight[0]!;
+      const hi = byHeight.at(-1)!;
+      const fLo = floorOfLevel.get(lo.levelId);
+      const fHi = floorOfLevel.get(hi.levelId);
+      const span = fLo && fHi && fLo.label !== fHi.label ? ` ${fLo.label}–${fHi.label}` : '';
+      labels.push({
+        key: `vertical:${v.id}`,
+        elementId: v.id,
+        text: `${texts.kind(v.id)}${span}`,
+        position: [(lo.position.x + hi.position.x) / 2, (yOf(lo.levelId) + yOf(hi.levelId)) / 2 + SLAB_TOP + 0.8, (lo.position.z + hi.position.z) / 2],
+        tier: tierOf(v.id, 3),
+        priority: 12 + boost(v.id),
+        variant: 'vertical',
+        ...marked(v.id),
+      });
+    }
   }
 
   if (opts.showBlocks) {
@@ -181,14 +257,24 @@ export function buildLabels(
   return labels;
 }
 
+/** Scale (screen pixels per model unit) at which tiers 1, 2 and 3 come in. */
+const TIER_SCALES = [2.6, 7.5, 15] as const;
+/** A tier change needs the scale this far past its threshold, so that a zoom resting near one does not make labels blink. */
+const TIER_HYSTERESIS = 0.07;
+
 /**
  * Highest label tier shown at a given drawing scale (screen pixels per model
- * unit at the orbit target): far away only floors, platforms and whatever the
- * route touches; closer in, gates and named entrances; closest, everything.
+ * unit at the orbit target): far away only floors, station names, platform
+ * numbers and whatever the route touches; at medium range transfer gates,
+ * main exits and the connecting corridors; close in, every gate, hall, exit,
+ * stair and escalator. Given the tier shown so far, a threshold must be
+ * passed by a margin before the tier changes.
  */
-export function maxTierForScale(pxPerUnit: number): 0 | 1 | 2 | 3 {
-  if (pxPerUnit < 2.6) return 0;
-  if (pxPerUnit < 7.5) return 1;
-  if (pxPerUnit < 15) return 2;
-  return 3;
+export function maxTierForScale(pxPerUnit: number, previous?: 0 | 1 | 2 | 3): 0 | 1 | 2 | 3 {
+  let tier = 0;
+  TIER_SCALES.forEach((at, i) => {
+    const k = previous === undefined ? 1 : previous > i ? 1 - TIER_HYSTERESIS : 1 + TIER_HYSTERESIS;
+    if (pxPerUnit >= at * k) tier = i + 1;
+  });
+  return tier as 0 | 1 | 2 | 3;
 }

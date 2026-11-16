@@ -56,6 +56,35 @@ export interface Ctx {
   ): void;
 }
 
+/**
+ * A baked soft shadow on the floor under something that stands on it: the footprint at full strength
+ * and a band around it fading out over `reach`. `quad` is the footprint, corners in order round it.
+ * Five flat quads in the decal mesh; no light is computed.
+ */
+export function pushSoftShadow(ctx: Pick<Ctx, 'decals' | 'p'>, quad: [number, number][], y: number, reach: number, strength: number): void {
+  const a = strength * ctx.p.contactShadow;
+  const color = ctx.p.shadow;
+  const n = quad.length;
+  const unitFrom = (from: [number, number], to: [number, number]): [number, number] => {
+    const dx = to[0] - from[0];
+    const dz = to[1] - from[1];
+    const l = Math.hypot(dx, dz) || 1;
+    return [dx / l, dz / l];
+  };
+  // each corner pushed out along both of its edges
+  const outer = quad.map((c, i) => {
+    const e1 = unitFrom(quad[(i + n - 1) % n]!, c);
+    const e2 = unitFrom(quad[(i + 1) % n]!, c);
+    return [c[0] + (e1[0] + e2[0]) * reach, c[1] + (e1[1] + e2[1]) * reach] as [number, number];
+  });
+  const v = (q: [number, number]): [number, number, number] => [q[0], y, q[1]];
+  ctx.decals.push({ corners: [v(quad[0]!), v(quad[1]!), v(quad[2]!), v(quad[3]!)], alphas: [a, a, a, a], color });
+  for (let i = 0; i < n; i++) {
+    const j = (i + 1) % n;
+    ctx.decals.push({ corners: [v(quad[i]!), v(quad[j]!), v(outer[j]!), v(outer[i]!)], alphas: [a, a, 0, 0], color });
+  }
+}
+
 export function routeElementIds(route: Route | null): Set<string> {
   const ids = new Set<string>();
   if (!route) return ids;

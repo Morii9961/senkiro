@@ -299,7 +299,7 @@ export function App() {
     [model, lang],
   );
   const labels = useMemo(
-    () => buildLabels(model, view, namer.name, lineChip, { unverified: t('unverified'), start: t('from'), goal: t('to') }, routePts),
+    () => buildLabels(model, view, namer.name, lineChip, { unverified: t('unverified'), start: t('from'), goal: t('to'), station: namer.stationShort, kind: namer.short }, routePts),
     [model, view, namer, lineChip, t, routePts],
   );
 

@@ -19,7 +19,7 @@ export type { Decal, Prim, Vec3, ViewOptions } from './prims';
 export { EXPLODE_GAIN, LEVEL_SCALE, levelY, elevationY } from './prims';
 export { routeElementIds } from './arch/context';
 export { areasTouch } from './arch/slabs';
-export { buildLabels, maxTierForScale, type SceneLabel, type LabelChip } from './labels';
+export { buildLabels, isMainExitName, maxTierForScale, type SceneLabel, type LabelChip } from './labels';
 export { buildRoutePrims, routePoints, routeBox, pathInside, segmentInside, sharedEdgeMidpoint, type RoutePoint } from './routeLine';
 
 export interface SceneParts {

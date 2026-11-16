@@ -32,7 +32,27 @@ export interface Namer {
    * Lists that mix the stations (the route pickers) show it, so that equal names can be told apart.
    */
   place(stationId: string | null | undefined): string | null;
+  /** Short name of a station (or 'busta') for the overview labels of the 3D view. */
+  stationShort(stationId: string): string;
 }
+
+/**
+ * Short station names for the overview labels: the line or operator and the station, as the station
+ * names in the data say them, without the long bracketed parts. Display only.
+ */
+const STATION_SHORT: Record<string, { ja: string; en: string; zh: string }> = {
+  'sk:station:jr-east-shinjuku': { ja: 'JR 新宿駅', en: 'JR Shinjuku', zh: 'JR 新宿站' },
+  'sk:station:odakyu-shinjuku': { ja: '小田急線 新宿駅', en: 'Odakyu Shinjuku', zh: '小田急线 新宿站' },
+  'sk:station:keio-shinjuku': { ja: '京王線 新宿駅', en: 'Keio Shinjuku', zh: '京王线 新宿站' },
+  'sk:station:keio-new-line-shinjuku': { ja: '京王新線・都営新宿線 新宿駅', en: 'Keio New Line / Toei Shinjuku Line', zh: '京王新线·都营新宿线 新宿站' },
+  'sk:station:toei-oedo-shinjuku': { ja: '大江戸線 新宿駅', en: 'Oedo Line Shinjuku', zh: '大江户线 新宿站' },
+  'sk:station:tokyo-metro-shinjuku': { ja: '丸ノ内線 新宿駅', en: 'Marunouchi Line Shinjuku', zh: '丸之内线 新宿站' },
+  'sk:station:seibu-shinjuku': { ja: '西武新宿駅', en: 'Seibu-Shinjuku', zh: '西武新宿站' },
+  'sk:station:tokyo-metro-shinjuku-sanchome': { ja: '新宿三丁目駅（メトロ）', en: 'Shinjuku-sanchome (Metro)', zh: '新宿三丁目站（东京地铁）' },
+  'sk:station:toei-shinjuku-sanchome': { ja: '新宿三丁目駅（都営）', en: 'Shinjuku-sanchome (Toei)', zh: '新宿三丁目站（都营）' },
+  'sk:station:toei-shinjuku-nishiguchi': { ja: '新宿西口駅', en: 'Shinjuku-nishiguchi', zh: '新宿西口站' },
+  busta: { ja: 'バスタ新宿', en: 'Busta Shinjuku', zh: 'Busta 新宿' },
+};
 
 /** Short place names of the neighbouring stations, as their operators write them. */
 const NEIGHBOUR_PLACE: Record<string, { ja: string; en: string; zh: string }> = {
@@ -179,7 +199,14 @@ export function makeNamer(model: StationModel, lang: Lang, t: T): Namer {
 
   const place = (stationId: string | null | undefined): string | null => (stationId ? (NEIGHBOUR_PLACE[stationId]?.[lang] ?? null) : null);
 
-  return { name, short, level, kind, linesOf, lineName, place };
+  const stationShort = (stationId: string): string => {
+    const s = STATION_SHORT[stationId];
+    if (s) return s[lang];
+    const st = model.stations.find((x) => x.id === stationId);
+    return st ? (pickName(st.names, lang) ?? stationId) : stationId;
+  };
+
+  return { name, short, level, kind, linesOf, lineName, place, stationShort };
 }
 
 export function circled(letter: string): string {

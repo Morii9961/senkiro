@@ -11,6 +11,7 @@ import {
   buildScene,
   levelY,
   maxTierForScale,
+  isMainExitName,
   routeBox,
   routePoints,
   sceneBox,
@@ -316,10 +317,45 @@ describe('labels', () => {
   });
 
   it('shows more label tiers as the drawing gets larger', () => {
-    const tiers = [1, 3, 7, 10, 14, 30].map(maxTierForScale);
+    const tiers = [1, 3, 7, 10, 14, 30].map((x) => maxTierForScale(x));
     expect(tiers).toEqual([...tiers].sort((a, b) => a - b));
     expect(tiers[0]).toBe(0);
     expect(tiers.at(-1)).toBe(3);
+  });
+
+  it('a tier changes only once the scale is past its threshold by a margin (no blinking near one)', () => {
+    // just above the threshold of tier 2: coming from tier 1 it stays 1, coming from tier 2 it stays 2
+    expect(maxTierForScale(7.7, 1)).toBe(1);
+    expect(maxTierForScale(7.3, 2)).toBe(2);
+    // well past it, both agree
+    expect(maxTierForScale(8.5, 1)).toBe(2);
+    expect(maxTierForScale(6.5, 2)).toBe(1);
+  });
+
+  it('names stations in the overview only, and names stairs and escalators only close in', () => {
+    const full = buildLabels(model, view(), (id) => id, chip, { ...texts, station: (id) => `ST ${id}`, kind: () => 'KIND' });
+    const stations = full.filter((l) => l.variant === 'station');
+    // every station with areas, and Busta
+    expect(stations.length).toBe(model.stations.length + 1);
+    expect(stations.every((l) => l.tier === 1 && l.maxZoom === 1)).toBe(true);
+    const verticals = full.filter((l) => l.variant === 'vertical');
+    expect(verticals.length).toBe(model.verticals.filter((v) => v.verticalKind !== 'elevator').length);
+    expect(verticals.every((l) => l.tier === 3 && l.text.startsWith('KIND'))).toBe(true);
+    // a stair between two floors says which floors
+    expect(verticals.some((l) => /KIND B?\d+F–B?\d+F/.test(l.text))).toBe(true);
+    // without the texts there are neither
+    expect(labels.some((l) => l.variant === 'station' || l.variant === 'vertical')).toBe(false);
+  });
+
+  it('main exits and transfer gates come in at medium range, ticket gates and numbered exits close in', () => {
+    expect(isMainExitName('東口')).toBe(true);
+    expect(isMainExitName('西口（地下）')).toBe(true);
+    expect(isMainExitName('出口 A9')).toBe(false);
+    expect(isMainExitName('C8 のりば')).toBe(false);
+    for (const g of model.gates) expect(labels.find((l) => l.elementId === g.id)!.tier).toBe(g.gateKind === 'transfer' ? 2 : 3);
+    const main = model.entrances.filter((e) => isMainExitName(e.names.ja));
+    expect(main.length).toBeGreaterThanOrEqual(5);
+    for (const e of main) expect(labels.find((l) => l.elementId === e.id)!.tier).toBe(2);
   });
 
   it('a route puts its own elements in the always-visible tier and marks its two ends', () => {
@@ -328,6 +364,7 @@ describe('labels', () => {
     const routed = buildLabels(model, view({ route }), (id) => id, chip, texts, pts);
     const gate = routed.find((l) => l.elementId === route.legs.find((leg) => leg.kind === 'gate')!.elementId)!;
     expect(gate.tier).toBe(0);
+    expect(gate.onRoute).toBe(true);
     expect(routed.find((l) => l.variant === 'route-start')?.text).toBe('START');
     expect(routed.find((l) => l.variant === 'route-end')?.text).toBe('GOAL');
   });

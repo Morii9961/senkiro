@@ -18,7 +18,7 @@
 import type { PlanRect, VerticalFacility, VerticalStop } from '../../../domain/types';
 import { mix } from '../../theme';
 import { box, unit, type Vec3, type Visibility } from '../prims';
-import type { Ctx } from './context';
+import { pushSoftShadow, type Ctx } from './context';
 
 const STAIR_W = 0.8;
 const ESC_W = 0.5;
@@ -174,6 +174,8 @@ export function buildVerticals(ctx: Ctx): void {
     if (!glass) return;
     c.add(v.id, 'elevator', 'glass', box(x - LIFT_R, x + LIFT_R, y0, y1, z - LIFT_R, z + LIFT_R), glass, { outline: vis === 'ghost' });
     if (vis !== 'full') return;
+    // a soft shadow where the shaft stands on its lowest floor
+    pushSoftShadow(c, [[x - LIFT_R, z - LIFT_R], [x + LIFT_R, z - LIFT_R], [x + LIFT_R, z + LIFT_R], [x - LIFT_R, z + LIFT_R]], y0 + 0.014, 0.22, 0.28);
     const frame = c.style(v.id, p.elevatorFrame, vis)!;
     for (const sx of [-1, 1]) {
       for (const sz of [-1, 1]) {
@@ -209,6 +211,25 @@ export function buildVerticals(ctx: Ctx): void {
       c.add(v.id, 'elevator', 'metal', face(-0.18, -0.005, y + 0.04, y + 0.6, 0.02, 0.032), door);
       c.add(v.id, 'elevator', 'metal', face(0.005, 0.18, y + 0.04, y + 0.6, 0.02, 0.032), door);
       c.add(v.id, 'elevator', 'accent', face(-0.1, 0.1, y + 0.61, y + 0.655, 0.02, 0.034), car);
+    }
+  }
+
+  /**
+   * A strip on the floor just beyond the foot and the head of a flight, in the tactile yellow, so that
+   * where it starts and ends is clear at a glance. `out` is how far beyond the end it begins. Drawn by
+   * rule; whether tactile paving lies there is not recorded.
+   */
+  function landingMarks(c: Ctx, v: VerticalFacility, lo: VerticalStop, up: VerticalStop, vis: Visibility, width: number, out: number) {
+    const s = c.style(v.id, p.tactile, vis);
+    if (!s || vis !== 'full') return;
+    const { yL, yU, dx, dz } = ends(c, lo, up);
+    for (const [x, z, y, dir] of [
+      [lo.position.x, lo.position.z, yL, -1],
+      [up.position.x, up.position.z, yU, 1],
+    ] as const) {
+      const a: Vec3 = [x + dx * dir * out, y + 0.008, z + dz * dir * out];
+      const b: Vec3 = [x + dx * dir * (out + 0.12), y + 0.008, z + dz * dir * (out + 0.12)];
+      c.add(v.id, 'landing-mark', 'accent', { a, b, width, thickness: 0.012 }, s, { pickable: false });
     }
   }
 
@@ -251,6 +272,7 @@ export function buildVerticals(ctx: Ctx): void {
     for (let n = 0; n < half; n++) tread((k0 * n) / half, (k0 * (n + 1)) / half, yL + rise * (n + 1));
     c.add(v.id, 'stairs', 'concrete', { a: P(k0, yM - 0.05), b: P(k1, yM - 0.05), width: STAIR_W + 0.08, thickness: 0.1 }, s, { shade: [0.78, 1] });
     for (let n = 0; n < half; n++) tread(k1 + ((1 - k1) * n) / half, k1 + ((1 - k1) * (n + 1)) / half, yM + rise * (n + 1));
+    landingMarks(c, v, lo, up, vis, STAIR_W, 0.1);
 
     const rail = c.style(v.id, p.stairsSide, vis)!;
     const stringer = c.style(v.id, mix(p.stairs, p.stairsSide, 0.45), vis)!;
@@ -308,6 +330,7 @@ export function buildVerticals(ctx: Ctx): void {
         c.add(v.id, 'escalator', 'dark', box(q[0] - 0.035, q[0] + 0.035, q[1] + 0.02, q[1] + 0.44, q[2] - 0.035, q[2] + 0.035), rail);
       }
     }
+    landingMarks(c, v, lo, up, vis, ESC_W + 0.1, 0.48);
     // landing plates at the foot and the head
     for (const [x, z, y, dir] of [
       [lo.position.x, lo.position.z, yL, -1],

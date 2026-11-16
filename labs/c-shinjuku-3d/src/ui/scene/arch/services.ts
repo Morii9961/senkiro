@@ -17,7 +17,7 @@
 import type { Entrance } from '../../../domain/types';
 import { mix } from '../../theme';
 import { SLAB_TOP, box, outlineEdges } from '../prims';
-import type { Ctx } from './context';
+import { pushSoftShadow, type Ctx } from './context';
 
 /** A staffed counter is drawn low, a bank of machines taller and lighter, so that the two read apart. */
 const HEIGHT = { 'ticket-counter': 0.3, 'ticket-machines': 0.52, information: 0.3, 'waiting-room': 0.3 } as const;
@@ -41,6 +41,7 @@ export function buildServices(ctx: Ctx): void {
     if (!sv.iconOnly) {
       // a counter or a bank of machines: a low block with a strip of the service colour on top
       ctx.add(sv.id, 'service', 'metal', box(r.x0, r.x1, top, top + h, r.z0, r.z1), body, { shade: [0.7, 1], pickable: false });
+      pushSoftShadow(ctx, [[r.x0, r.z0], [r.x1, r.z0], [r.x1, r.z1], [r.x0, r.z1]], top + 0.014, 0.2, 0.3);
       ctx.add(sv.id, 'service', 'accent', box(r.x0, r.x1, top + h, top + h + 0.03, r.z0, r.z1), accent, { pickable: false });
       continue;
     }
@@ -88,6 +89,8 @@ export function buildBuses(ctx: Ctx): void {
     const glass = ctx.style(null, p.busWindow, vis)!;
     // body on a little clearance, a window band round it, and a roof a shade lighter
     ctx.add(null, 'bus', 'metal', at(a0, a1, y + 0.06, y + BUS_H, n0, n1), body, { shade: [0.7, 1], pickable: false });
+    const q = (u: number, w: number): [number, number] => (edge!.axis === 'x' ? [u, w] : [w, u]);
+    pushSoftShadow(ctx, [q(a0, n0), q(a1, n0), q(a1, n1), q(a0, n1)], y + 0.014, 0.28, 0.36);
     ctx.add(null, 'bus', 'dark', at(a0 - 0.01, a1 + 0.01, y + 0.36, y + 0.52, n0 - 0.01, n1 + 0.01), glass, { pickable: false });
     ctx.add(null, 'bus', 'metal', at(a0 + 0.08, a1 - 0.08, y + BUS_H, y + BUS_H + 0.05, n0 + 0.06, n1 - 0.06), ctx.style(null, mix(p.bus, p.background, 0.3), vis)!, { pickable: false });
   }

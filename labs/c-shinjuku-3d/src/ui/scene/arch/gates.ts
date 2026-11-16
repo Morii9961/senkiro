@@ -14,7 +14,7 @@ import type { Area, Gate, PlanPoint } from '../../../domain/types';
 import { nearestInFootprint } from '../../../domain/validate';
 import { mix, zoneColor } from '../../theme';
 import { SLAB_TOP, box, elevationY, outlineEdges, unit, type Vec3 } from '../prims';
-import type { Ctx } from './context';
+import { pushSoftShadow, type Ctx } from './context';
 
 const GATE_HALF = 0.85;
 const MACHINES = 4;
@@ -100,6 +100,23 @@ export function buildGates(ctx: Ctx): void {
     const reader = ctx.style(gate.id, mix(p.platformEdge, p.gateBody, 0.15), vis)!;
     const flap = ctx.style(gate.id, mix(accentColor, p.platformEdge, 0.3), vis)!;
     const lane = (2 * GATE_HALF) / MACHINES;
+    // a soft shadow under the row of machines, so that it stands on the floor
+    if (vis === 'full') {
+      const al = 0.31;
+      const ac = GATE_HALF + 0.06;
+      pushSoftShadow(
+        ctx,
+        [
+          [x - dx * al - nx * ac, z - dz * al - nz * ac],
+          [x + dx * al - nx * ac, z + dz * al - nz * ac],
+          [x + dx * al + nx * ac, z + dz * al + nz * ac],
+          [x - dx * al + nx * ac, z - dz * al + nz * ac],
+        ],
+        top + 0.014,
+        0.24,
+        0.3,
+      );
+    }
     for (let i = 0; i <= MACHINES; i++) {
       const off = -GATE_HALF + i * lane;
       const cx = x + nx * off;

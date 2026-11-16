@@ -15,6 +15,7 @@ export type MaterialKind = 'floor' | 'wall' | 'concrete' | 'metal' | 'dark' | 'a
 export type PrimRole =
   | 'shell'
   | 'shell-edge'
+  | 'plate-tie'
   | 'area'
   | 'bridge'
   | 'wall'
@@ -35,6 +36,7 @@ export type PrimRole =
   | 'stairs'
   | 'escalator'
   | 'escalator-arrow'
+  | 'landing-mark'
   | 'platform-door'
   | 'buffer-stop'
   | 'opening-guard'

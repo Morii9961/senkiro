@@ -108,6 +108,8 @@ const FINISH: Partial<Record<MaterialKind, { roughness: number; metalness: numbe
 };
 
 const FLY_MS = 650;
+/** Priority bonus of a label that was on screen in the last frame (less than the gap between two kinds of label). */
+const STICKY = 4;
 
 export function Scene3D(props: Props) {
   const labelLayer = useRef<HTMLDivElement>(null);
@@ -157,7 +159,7 @@ export function Scene3D(props: Props) {
       </Canvas>
       <div className="labels" ref={labelLayer} aria-hidden={!props.showLabels} hidden={!props.showLabels}>
         {props.labels.map((l) => (
-          <span key={l.key} className={`label label-${l.variant}`} data-key={l.key} data-tier={l.tier} style={HIDDEN}>
+          <span key={l.key} className={`label label-${l.variant}`} data-key={l.key} data-tier={l.tier} data-route={l.onRoute ? '' : undefined} style={HIDDEN}>
             <span className="label-text">{l.text}</span>
             {l.chips?.map((c, i) => (
               <span key={i} className="label-chip" style={{ ['--c' as string]: c.color, color: inkOn(c.color) }}>
@@ -410,7 +412,9 @@ function SceneContent({
   // --- labels: level of detail by scale, then greedy collision culling ----------------
   const labelIndex = useMemo(() => new Map(labels.map((l) => [l.key, l])), [labels]);
   const labelSizes = useRef(new Map<string, { w: number; h: number }>());
-  const lastTier = useRef(-1);
+  const lastTier = useRef<0 | 1 | 2 | 3 | undefined>(undefined);
+  /** Labels shown in the last frame: they keep their place against equals, so that small camera moves do not swap them. */
+  const shownKeys = useRef(new Set<string>());
   useEffect(() => {
     labelSizes.current.clear();
   }, [labels]);
@@ -435,7 +439,7 @@ function SceneContent({
     const layer = labelLayer.current;
     if (layer && showLabels) {
       const pxPerUnit = size.height / (2 * Math.tan((FOV * Math.PI) / 360) * Math.max(1, distance));
-      const maxTier = maxTierForScale(pxPerUnit);
+      const maxTier = maxTierForScale(pxPerUnit, lastTier.current);
       if (maxTier !== lastTier.current) {
         // far away the platform labels shrink to numbers and dots (CSS), so sizes change
         lastTier.current = maxTier;
@@ -445,7 +449,7 @@ function SceneContent({
       const items: { el: HTMLElement; label: SceneLabel; x: number; y: number; w: number; h: number }[] = [];
       for (const el of Array.from(layer.children) as HTMLElement[]) {
         const label = labelIndex.get(el.dataset.key ?? '');
-        if (!label || label.tier > maxTier) {
+        if (!label || label.tier > maxTier || (label.maxZoom !== undefined && maxTier > label.maxZoom)) {
           el.style.display = 'none';
           continue;
         }
@@ -462,7 +466,10 @@ function SceneContent({
         }
         items.push({ el, label, x: (v.x * 0.5 + 0.5) * size.width, y: (-v.y * 0.5 + 0.5) * size.height, w: sz.w, h: sz.h });
       }
-      items.sort((a, b) => b.label.priority - a.label.priority);
+      const was = shownKeys.current;
+      const rank = (it: (typeof items)[number]) => it.label.priority + (was.has(it.label.key) ? STICKY : 0);
+      items.sort((a, b) => rank(b) - rank(a));
+      const now = new Set<string>();
       const placed: LabelRect[] = [];
       for (const it of items) {
         const r: LabelRect = { x0: it.x - it.w / 2 - 3, x1: it.x + it.w / 2 + 3, y0: it.y - it.h - 2, y1: it.y + 2, elementId: it.label.elementId };
@@ -472,11 +479,13 @@ function SceneContent({
           continue;
         }
         placed.push(r);
+        now.add(it.label.key);
         shown += 1;
         it.el.style.display = '';
         it.el.style.transform = `translate(${Math.round(it.x - it.w / 2)}px, ${Math.round(it.y - it.h)}px)`;
       }
       labelRects.current = placed;
+      shownKeys.current = now;
     } else {
       labelRects.current = [];
     }
