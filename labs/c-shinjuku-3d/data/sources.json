@@ -901,6 +901,23 @@
     "usedInData": true
   },
   {
+    "id": "src:wadattsu-shinjuku-other",
+    "title": "降車位置情報（JR 埼京線・中央線快速の新宿駅、都営大江戸線 新宿西口駅）（わだっつ鉄道ちゃんねる）",
+    "publisher": "わだっつ鉄道ちゃんねる (wadattsu261.com, a personal site)",
+    "url": "https://wadattsu261.com/content/shinjukunishiguchi-toeioedohome-info/",
+    "retrievedAt": "2026-11-16",
+    "license": "All rights reserved — no open licence is stated. Site terms were not reviewed.",
+    "licenseUrl": null,
+    "commercialUse": "unknown",
+    "redistribution": "no",
+    "shareAlike": "unknown",
+    "attributionText": "わだっつ鉄道ちゃんねる",
+    "notes": "Three pages read by an AI agent with a web fetch tool on 2026-11-16: 新宿西口 (大江戸線), 新宿 埼京線 1–4番線 (https://wadattsu261.com/content/shinjuku-saikyohome-no1-2-info/) and 新宿 中央線 (https://wadattsu261.com/content/shinjuku-chuohome-info/). Only explicit running-direction statements are used: at 新宿西口 the escalator beside the stairs at car 5 between the B3F gate level and the platform runs down all day (\"併設のエスカレーターは、終日下り運転\"); at 新宿 3・4番線 the escalator at car 2 towards 東南改札・南改札 runs down from the first train until about 09:00. A third statement (an escalator beside the car-10 stairs of 9・10番線 runs up from the B1F gates) could not be tied to one escalator group of the model and is not used. Bare \"上りエスカレーター\" labels on these pages are not taken as one-way.",
+    "accessedVia": "Read by an AI agent with a web fetch tool on 2026-11-16.",
+    "sourceDate": null,
+    "usedInData": true
+  },
+  {
     "id": "src:senkiro-lab-schematic",
     "title": "SENKIRO Lab schematic layout (this prototype)",
     "publisher": "SENKIRO Lab",

@@ -174,7 +174,8 @@ describe('details added later (platform doors, termini, one-way escalators)', ()
     expect(doors.length).toBeGreaterThan(20);
     expect(platforms.filter((p) => p.kind === 'platform' && p.terminus)).toHaveLength(10);
     expect(model.verticals.filter((v) => v.escalatorDirection?.direction === 'up')).toHaveLength(4);
-    expect(model.verticals.filter((v) => v.escalatorDirection?.direction === 'scheduled')).toHaveLength(4);
+    expect(model.verticals.filter((v) => v.escalatorDirection?.direction === 'down')).toHaveLength(1);
+    expect(model.verticals.filter((v) => v.escalatorDirection?.direction === 'scheduled')).toHaveLength(5);
     expect(rules(model)).toEqual([]);
   });
 

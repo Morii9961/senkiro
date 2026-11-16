@@ -405,7 +405,7 @@ ODPT 两个数据集能否用于 SENKIRO，是留给人决定的**待决事项**
 | `sk:vertical:jr-stairs-2f-south-to-platform-1-2` | stairs | （無名） | `src:jreast-floormap-1f`<br>`src:jreast-floormap-2f` | 2026-08 | verified | schematic | manual-verified |
 | `sk:vertical:jr-escalator-2f-south-to-platform-1-2` | escalator | （無名） | `src:jreast-floormap-1f`<br>`src:jreast-floormap-2f` | 2026-08 | verified | schematic | manual-verified |
 | `sk:vertical:jr-stairs-2f-south-to-platform-3-4` | stairs | （無名） | `src:jreast-floormap-1f`<br>`src:jreast-floormap-2f` | 2026-08 | verified | schematic | manual-verified |
-| `sk:vertical:jr-escalator-2f-south-to-platform-3-4` | escalator | （無名） | `src:jreast-floormap-1f`<br>`src:jreast-floormap-2f` | 2026-08 | verified | schematic | manual-verified |
+| `sk:vertical:jr-escalator-2f-south-to-platform-3-4` | escalator | （無名） | `src:jreast-floormap-1f`<br>`src:jreast-floormap-2f`<br>`src:wadattsu-shinjuku-other` | 2026-08, 不明 | verified | schematic | manual-verified |
 | `sk:vertical:jr-stairs-2f-south-to-platform-7-8` | stairs | （無名） | `src:jreast-floormap-1f`<br>`src:jreast-floormap-2f` | 2026-08 | verified | schematic | manual-verified |
 | `sk:vertical:jr-escalator-2f-south-to-platform-7-8` | escalator | （無名） | `src:jreast-floormap-1f`<br>`src:jreast-floormap-2f` | 2026-08 | verified | schematic | manual-verified |
 | `sk:vertical:jr-stairs-2f-south-to-platform-9-10` | stairs | （無名） | `src:jreast-floormap-1f`<br>`src:jreast-floormap-2f` | 2026-08 | verified | schematic | manual-verified |
@@ -543,7 +543,7 @@ ODPT 两个数据集能否用于 SENKIRO，是留给人决定的**待决事项**
 | `sk:vertical:nishiguchi-stairs-car-2` | stairs | （無名） | `src:toei-shinjuku-nishiguchi-map` | 不明 | verified | schematic | manual-verified |
 | `sk:vertical:nishiguchi-escalator-car-2` | escalator | （無名） | `src:toei-shinjuku-nishiguchi-map` | 不明 | verified | schematic | manual-verified |
 | `sk:vertical:nishiguchi-stairs-car-5` | stairs | （無名） | `src:toei-shinjuku-nishiguchi-map` | 不明 | verified | schematic | manual-verified |
-| `sk:vertical:nishiguchi-escalator-car-5` | escalator | （無名） | `src:toei-shinjuku-nishiguchi-map` | 不明 | verified | schematic | manual-verified |
+| `sk:vertical:nishiguchi-escalator-car-5` | escalator | （無名） | `src:toei-shinjuku-nishiguchi-map`<br>`src:wadattsu-shinjuku-other` | 不明 | verified | schematic | manual-verified |
 | `sk:vertical:nishiguchi-elevator-concourse-to-platform` | elevator | エレベーター（改札内 B3F ⇔ ホーム B4F） | `src:toei-shinjuku-nishiguchi-map` | 不明 | verified | schematic | manual-verified |
 | `sk:vertical:nishiguchi-stairs-car-7` | stairs | （無名） | `src:toei-shinjuku-nishiguchi-map` | 不明 | verified | schematic | manual-verified |
 | `sk:vertical:nishiguchi-escalator-car-7` | escalator | （無名） | `src:toei-shinjuku-nishiguchi-map` | 不明 | verified | schematic | manual-verified |

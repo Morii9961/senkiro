@@ -22,6 +22,7 @@ const TN_KEIO = 'src:trafficnews-keio-shinjuku-2024';
 const TN_SEIBU = 'src:trafficnews-seibu-shinjuku-2018';
 const WADATTSU_KEIO = 'src:wadattsu-keio-shinjuku';
 const KEIO_MAP = 'src:keio-station-map';
+const WADATTSU_OTHER = 'src:wadattsu-shinjuku-other';
 
 type Doors = NonNullable<PlatformTrack['platformDoors']>;
 type Terminus = NonNullable<Platform['terminus']>;
@@ -171,6 +172,17 @@ export const ESCALATOR_DIRECTIONS: Record<string, EscalatorRun> = {
     schedule: '17:00まで上り、17:00から下り',
     sourceIds: [KEIO_MAP, WADATTSU_KEIO, WP],
     note: '京王の構内図「※17:00まで昇り 17:00から降り」。Wikipedia、わだっつ鉄道ちゃんねるも同じ。',
+  },
+  'sk:vertical:nishiguchi-escalator-car-5': {
+    direction: 'down',
+    sourceIds: [WADATTSU_OTHER],
+    note: '5号車の階段に併設のエスカレーターは終日下り運転（改札階 B3F → ホーム B4F）。',
+  },
+  'sk:vertical:jr-escalator-2f-south-to-platform-3-4': {
+    direction: 'scheduled',
+    schedule: '始発〜9:00頃は下り（改札階→ホーム）、それ以外は上り',
+    sourceIds: [WADATTSU_OTHER],
+    note: '3・4番線の2号車付近、東南改札・南改札方面のエスカレーター。始電〜9:00頃は下り運転、ほかの時間は上りエスカレーターとして案内されている。この組の他のエスカレーターについては書かれていない。',
   },
   'sk:vertical:tokyo-metro-escalator-east-gates-to-platform': {
     direction: 'up',

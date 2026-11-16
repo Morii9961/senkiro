@@ -13943,7 +13943,8 @@
       "provenance": {
         "sourceIds": [
           "src:jreast-floormap-1f",
-          "src:jreast-floormap-2f"
+          "src:jreast-floormap-2f",
+          "src:wadattsu-shinjuku-other"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-11"
@@ -13975,9 +13976,17 @@
           }
         }
       ],
-      "directionNote": "Running direction is not recorded on the floor map.",
+      "directionNote": "3・4番線の2号車付近、東南改札・南改札方面のエスカレーター。始電〜9:00頃は下り運転、ほかの時間は上りエスカレーターとして案内されている。この組の他のエスカレーターについては書かれていない。",
       "hoursNote": null,
-      "aggregated": true
+      "aggregated": true,
+      "escalatorDirection": {
+        "direction": "scheduled",
+        "schedule": "始発〜9:00頃は下り（改札階→ホーム）、それ以外は上り",
+        "sourceIds": [
+          "src:wadattsu-shinjuku-other"
+        ],
+        "note": "3・4番線の2号車付近、東南改札・南改札方面のエスカレーター。始電〜9:00頃は下り運転、ほかの時間は上りエスカレーターとして案内されている。この組の他のエスカレーターについては書かれていない。"
+      }
     },
     {
       "kind": "vertical",
@@ -20878,7 +20887,8 @@
       },
       "provenance": {
         "sourceIds": [
-          "src:toei-shinjuku-nishiguchi-map"
+          "src:toei-shinjuku-nishiguchi-map",
+          "src:wadattsu-shinjuku-other"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-12"
@@ -20910,9 +20920,16 @@
           }
         }
       ],
-      "directionNote": "Running direction is not recorded on the floor map.",
+      "directionNote": "5号車の階段に併設のエスカレーターは終日下り運転（改札階 B3F → ホーム B4F）。",
       "hoursNote": null,
-      "aggregated": true
+      "aggregated": true,
+      "escalatorDirection": {
+        "direction": "down",
+        "sourceIds": [
+          "src:wadattsu-shinjuku-other"
+        ],
+        "note": "5号車の階段に併設のエスカレーターは終日下り運転（改札階 B3F → ホーム B4F）。"
+      }
     },
     {
       "kind": "vertical",

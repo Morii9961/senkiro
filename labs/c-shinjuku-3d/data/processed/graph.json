@@ -19769,17 +19769,6 @@
       "id": "sk:vertical:nishiguchi-escalator-car-5@sk:level:toei-shinjuku-nishiguchi-b4f→sk:platform:toei-shinjuku-nishiguchi-1-2"
     },
     {
-      "kind": "vertical",
-      "elementId": "sk:vertical:nishiguchi-escalator-car-5",
-      "verticalKind": "escalator",
-      "levelChange": 1,
-      "stepFree": false,
-      "connection": "verified",
-      "from": "sk:vertical:nishiguchi-escalator-car-5@sk:level:toei-shinjuku-nishiguchi-b4f",
-      "to": "sk:vertical:nishiguchi-escalator-car-5@sk:level:toei-shinjuku-nishiguchi-b3f",
-      "id": "sk:vertical:nishiguchi-escalator-car-5@sk:level:toei-shinjuku-nishiguchi-b4f→sk:vertical:nishiguchi-escalator-car-5@sk:level:toei-shinjuku-nishiguchi-b3f"
-    },
-    {
       "kind": "vertical-approach",
       "elementId": "sk:vertical:nishiguchi-escalator-car-7",
       "verticalKind": "escalator",
