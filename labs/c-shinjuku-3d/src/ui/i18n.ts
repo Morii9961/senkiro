@@ -287,6 +287,7 @@ const dict = {
   escalatorDirectionUnknown: { ja: "運転方向は資料に記載がありません", en: "Running direction is not on the sources", zh: "资料上没有标运行方向" },
   aggregatedNote: { ja: "この区間にある複数の階段・エスカレーターを 1 つにまとめて表示しています", en: "Stands for all stairs / escalators between these two places", zh: "这两处之间的多部楼梯／扶梯在这里合并显示为一个" },
   blockNote: { ja: "このエリアは公式資料で確認できていません。位置・大きさ・階は仮のものです。", en: "This area has not been verified against official sources. Its position, size and floor are placeholders.", zh: "该区域尚未对照官方资料核实，位置、大小和楼层都是占位。" },
+  cardLaterSources: { ja: "ホームドア・車止め・運転方向の資料: {list}", en: "Platform doors, buffer stops and direction from: {list}", zh: "站台门·车挡·运行方向的资料：{list}" },
   cardSource: { ja: "資料: {op} 構内図（{date} 現在）", en: "Source: {op} floor map (as of {date})", zh: "资料：{op} 构内图（{date}）" },
   cardSourceUnverified: { ja: "資料: 未確認", en: "Source: unverified", zh: "资料：未核实" },
   cardGeometryVerified: { ja: "位置は実測", en: "surveyed position", zh: "位置为实测" },

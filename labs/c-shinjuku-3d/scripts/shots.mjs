@@ -3,7 +3,7 @@
 //
 //   node scripts/shots.mjs <name> [query] [WxH] [steps]
 //   steps: comma-separated  click:<testid> | css:<selector> | select:<testid>=<value> | wait:<ms> | key:<Key>
-//          | drag:<dx>x<dy> | wheel:<deltaY> | wheelat:<fx>x<fy>:<deltaY> | set:<testid>=<value> | hover:<testid>
+//          | drag:<dx>x<dy> | wheel:<deltaY> | wheelat:<fx>x<fy>:<deltaY> | clickat:<fx>x<fy> | set:<testid>=<value> | hover:<testid>
 //
 // Needs a server: BASE_URL (default http://localhost:5183). DPR=2 takes a sharper (larger) image.
 import { mkdirSync } from 'node:fs';
@@ -61,6 +61,11 @@ for (const step of steps.split(',').filter(Boolean)) {
     const box = await page.locator('canvas').boundingBox();
     await page.mouse.move(box.x + box.width * fx, box.y + box.height * fy);
     await page.mouse.wheel(0, Number(delta));
+  } else if (op === 'clickat') {
+    // clickat:<fx>x<fy> — click at a fractional position of the canvas (picks what is drawn there)
+    const [fx, fy] = arg.split('x').map(Number);
+    const box = await page.locator('canvas').boundingBox();
+    await page.mouse.click(box.x + box.width * fx, box.y + box.height * fy);
   } else throw new Error(`unknown step ${step}`);
   await page.waitForTimeout(250);
 }

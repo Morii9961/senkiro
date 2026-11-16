@@ -10,7 +10,7 @@
 import type { ReactNode } from 'react';
 import { floorLabel } from '../../domain/floors';
 import type { BoundOverlay, RunningStatus } from '../../domain/overlay';
-import type { StationElementBase, StationModel, StepFree } from '../../domain/types';
+import type { SourceRecord, StationElementBase, StationModel, StepFree } from '../../domain/types';
 import { FloorChip, Icon, LineBadge, type Glyph } from '../atoms';
 import type { Lang, StrKey, T } from '../i18n';
 import { pickName, type Namer } from '../naming';
@@ -35,6 +35,13 @@ export function hasCard(model: StationModel, id: string): boolean {
   );
 }
 
+/** A publisher as one short name: "乗りものニュース (trafficnews.jp)" → "乗りものニュース"; Wikipedia records → "Wikipedia". */
+function shortPublisher(s: SourceRecord): string {
+  if (s.publisher.startsWith('Wikipedia')) return 'Wikipedia';
+  const cut = s.publisher.indexOf(' (');
+  return cut > 0 ? s.publisher.slice(0, cut) : s.publisher;
+}
+
 function stepFreeLine(v: StepFree, t: T): string {
   return v === null ? t('stepFreeUnknown') : v ? t('stepFreeYes') : t('stepFreeNo');
 }
@@ -43,6 +50,8 @@ export function FacilityCard(props: {
   t: T;
   lang: Lang;
   model: StationModel;
+  /** Source records, to name the sources of details added later (platform doors, termini, escalator direction). */
+  sources?: SourceRecord[];
   namer: Namer;
   elementId: string;
   canRoute: boolean;
@@ -159,6 +168,14 @@ export function FacilityCard(props: {
     }
   }
 
+  // the sources of the details read later from other material: named by publisher, never by id
+  const laterIds = [
+    ...(platform ? platform.tracks.flatMap((tr) => tr.platformDoors?.sourceIds ?? []) : []),
+    ...(platform?.terminus?.sourceIds ?? []),
+    ...(vertical?.escalatorDirection?.sourceIds ?? []),
+  ];
+  const laterSources = [...new Set(laterIds.map((sid) => props.sources?.find((s) => s.id === sid)).filter((s): s is SourceRecord => !!s).map(shortPublisher))];
+
   const tracks = platform && props.bound ? props.bound.tracks.filter((tr) => tr.platformId === platform.id) : [];
   const title = platform ? t('platformTitle', { n: trackRange(platform.tracks.map((x) => x.number)) }) : namer.name(id);
 
@@ -258,6 +275,11 @@ export function FacilityCard(props: {
         {' · '}
         {el.geometryConfidence === 'verified' ? t('cardGeometryVerified') : t('cardGeometrySchematic')}
       </p>
+      {laterSources.length > 0 && (
+        <p className="card-source" data-testid="card-later-sources">
+          {t('cardLaterSources', { list: laterSources.join('、') })}
+        </p>
+      )}
     </aside>
   );
 }

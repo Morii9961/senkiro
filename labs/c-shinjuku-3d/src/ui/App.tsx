@@ -622,6 +622,7 @@ export function App() {
             t={t}
             lang={lang}
             model={model}
+            sources={sources}
             namer={namer}
             elementId={selectedId}
             canRoute={canRoute}
