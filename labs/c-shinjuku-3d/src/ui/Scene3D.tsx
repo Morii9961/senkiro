@@ -6,6 +6,7 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import type { StationGraph } from '../domain/graph';
 import type { StationModel } from '../domain/types';
 import { buildRoutePrims, buildScene, maxTierForScale, routeBox, routePoints, type RoutePoint, type SceneLabel, type ViewOptions } from './scene/build';
+import { SAME_MEANING_PX, sameMeaningKey } from './scene/labels';
 import {
   FOV,
   MAX_POLAR,
@@ -447,6 +448,8 @@ function SceneContent({
         labelSizes.current.clear();
       }
       const items: { el: HTMLElement; label: SceneLabel; x: number; y: number; w: number; h: number }[] = [];
+      // labels not measured yet are all shown first and measured afterwards, so that the browser lays out once, not once per label
+      const unmeasured: { el: HTMLElement; label: SceneLabel; x: number; y: number }[] = [];
       for (const el of Array.from(layer.children) as HTMLElement[]) {
         const label = labelIndex.get(el.dataset.key ?? '');
         if (!label || label.tier > maxTier || (label.maxZoom !== undefined && maxTier > label.maxZoom)) {
@@ -458,20 +461,33 @@ function SceneContent({
           el.style.display = 'none';
           continue;
         }
-        let sz = labelSizes.current.get(label.key);
+        const sx = (v.x * 0.5 + 0.5) * size.width;
+        const sy = (-v.y * 0.5 + 0.5) * size.height;
+        const sz = labelSizes.current.get(label.key);
         if (!sz) {
           el.style.display = '';
-          sz = { w: el.offsetWidth, h: el.offsetHeight };
-          labelSizes.current.set(label.key, sz);
+          unmeasured.push({ el, label, x: sx, y: sy });
+          continue;
         }
-        items.push({ el, label, x: (v.x * 0.5 + 0.5) * size.width, y: (-v.y * 0.5 + 0.5) * size.height, w: sz.w, h: sz.h });
+        items.push({ el, label, x: sx, y: sy, w: sz.w, h: sz.h });
+      }
+      for (const u of unmeasured) {
+        const sz = { w: u.el.offsetWidth, h: u.el.offsetHeight };
+        labelSizes.current.set(u.label.key, sz);
+        items.push({ ...u, ...sz });
       }
       const was = shownKeys.current;
       const rank = (it: (typeof items)[number]) => it.label.priority + (was.has(it.label.key) ? STICKY : 0);
       items.sort((a, b) => rank(b) - rank(a));
       const now = new Set<string>();
       const placed: LabelRect[] = [];
+      const meanings = new Map<string, { x: number; y: number }[]>();
       for (const it of items) {
+        const meaning = sameMeaningKey(it.label);
+        if (meaning && meanings.get(meaning)?.some((q) => Math.hypot(q.x - it.x, q.y - it.y) < SAME_MEANING_PX)) {
+          it.el.style.display = 'none';
+          continue;
+        }
         const r: LabelRect = { x0: it.x - it.w / 2 - 3, x1: it.x + it.w / 2 + 3, y0: it.y - it.h - 2, y1: it.y + 2, elementId: it.label.elementId };
         const clash = placed.some((q) => r.x0 < q.x1 && q.x0 < r.x1 && r.y0 < q.y1 && q.y0 < r.y1);
         if (clash) {
@@ -479,6 +495,7 @@ function SceneContent({
           continue;
         }
         placed.push(r);
+        if (meaning) meanings.set(meaning, [...(meanings.get(meaning) ?? []), { x: it.x, y: it.y }]);
         now.add(it.label.key);
         shown += 1;
         it.el.style.display = '';

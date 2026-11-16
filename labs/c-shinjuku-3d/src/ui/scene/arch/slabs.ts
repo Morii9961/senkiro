@@ -39,6 +39,34 @@ const SHADOW_REACH = 0.7;
 const PILASTER_STEP = 5;
 const PILASTER_W = 0.18;
 const PILASTER_RISE = 0.14;
+/**
+ * A beam (lintel) spans an opening in a wall line from the top of one jamb pilaster to the other, when the
+ * opening is a doorway rather than a whole open side: at least LINTEL_MIN and at most LINTEL_MAX wide.
+ * Drawn by rule, like the pilasters: no real beam is meant.
+ */
+const LINTEL_MIN = 0.4;
+const LINTEL_MAX = 3.2;
+const LINTEL_T = 0.1;
+
+/** Openings in the wall lines of one area that are doorway-sized: [axis, at, inward, from, to]. */
+export function doorwayGaps(edges: readonly Edge[]): { axis: 'x' | 'z'; at: number; inward: 1 | -1; lo: number; hi: number }[] {
+  const lines = new Map<string, Edge[]>();
+  for (const e of edges) {
+    const key = `${e.axis}|${e.at.toFixed(3)}|${e.inward}`;
+    const list = lines.get(key) ?? [];
+    list.push(e);
+    lines.set(key, list);
+  }
+  const out: { axis: 'x' | 'z'; at: number; inward: 1 | -1; lo: number; hi: number }[] = [];
+  for (const list of lines.values()) {
+    list.sort((a, b) => a.lo - b.lo);
+    for (let i = 0; i + 1 < list.length; i++) {
+      const gap = list[i + 1]!.lo - list[i]!.hi;
+      if (gap >= LINTEL_MIN && gap <= LINTEL_MAX) out.push({ axis: list[i]!.axis, at: list[i]!.at, inward: list[i]!.inward, lo: list[i]!.hi, hi: list[i + 1]!.lo });
+    }
+  }
+  return out;
+}
 
 export function levelBounds(ctx: Pick<Ctx, 'model'>, levelId: string, pad = 1.6): PlanRect {
   const rects = ctx.model.areas.filter((a) => a.levelId === levelId).flatMap((a) => a.footprint);
@@ -219,6 +247,14 @@ export function buildAreas(ctx: Ctx): void {
         const h = PILASTER_W / 2;
         ctx.add(area.id, 'pilaster', 'wall', box(px - h, px + h, top, top + WALL_HEIGHT + PILASTER_RISE, pz - h, pz + h), pilaster, { shade: [0.75, 1], pickable: false });
       }
+    }
+    // lintels: a beam over each doorway-sized opening, resting on the two jamb pilasters
+    const capTop = top + WALL_HEIGHT + PILASTER_RISE;
+    for (const g of doorwayGaps(edges)) {
+      const across = g.at + g.inward * (0.01 + WALL_T / 2);
+      const h = PILASTER_W / 2;
+      const geom = g.axis === 'x' ? box(g.lo, g.hi, capTop - LINTEL_T, capTop, across - h, across + h) : box(across - h, across + h, capTop - LINTEL_T, capTop, g.lo, g.hi);
+      ctx.add(area.id, 'lintel', 'wall', geom, pilaster, { shade: [0.82, 1], pickable: false });
     }
     for (const e of edges) {
       const near = e.at + e.inward * 0.01;

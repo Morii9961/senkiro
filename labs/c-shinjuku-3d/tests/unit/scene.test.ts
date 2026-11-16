@@ -22,6 +22,8 @@ import {
 } from '../../src/ui/scene/build';
 import { MAX_POLAR, MIN_DISTANCE, MIN_POLAR, focusPose, homePose, mixPose, targetLimits } from '../../src/ui/scene/camera';
 import { outlineEdges, unionRects } from '../../src/ui/scene/prims';
+import { sameMeaningKey } from '../../src/ui/scene/labels';
+import { doorwayGaps } from '../../src/ui/scene/arch/slabs';
 import { PALETTES } from '../../src/ui/theme';
 import { buildPlatformDoors, openingStates } from '../../src/trains/platformDoors';
 import { loadGraph, loadModel } from './helpers';
@@ -290,6 +292,25 @@ describe('floor slabs do not fight for the same depth', () => {
   });
 });
 
+describe('lintels', () => {
+  const prims = buildPrims(model, view());
+  it('span doorway-sized openings in a wall line only, never a whole open side', () => {
+    const gaps = doorwayGaps([
+      { axis: 'x', at: 0, lo: 0, hi: 4, inward: 1 },
+      { axis: 'x', at: 0, lo: 5, hi: 9, inward: 1 }, // a 1-unit doorway
+      { axis: 'x', at: 0, lo: 20, hi: 24, inward: 1 }, // an 11-unit open side
+      { axis: 'x', at: 3, lo: 4.5, hi: 6, inward: 1 }, // another line
+    ]);
+    expect(gaps).toEqual([{ axis: 'x', at: 0, inward: 1, lo: 4, hi: 5 }]);
+  });
+
+  it('are drawn in the model, and each rests within one area wall line', () => {
+    const lintels = prims.filter((q) => q.role === 'lintel');
+    expect(lintels.length).toBeGreaterThan(20);
+    for (const q of lintels) expect(Math.hypot(q.b[0] - q.a[0], q.b[2] - q.a[2])).toBeLessThanOrEqual(3.2 + 1e-6);
+  });
+});
+
 describe('labels', () => {
   const chip = (id: string) => ({ text: id, color: '#000000' });
   const texts = { unverified: 'UNVERIFIED', start: 'START', goal: 'GOAL' };
@@ -321,6 +342,16 @@ describe('labels', () => {
     expect(tiers).toEqual([...tiers].sort((a, b) => a - b));
     expect(tiers[0]).toBe(0);
     expect(tiers.at(-1)).toBe(3);
+  });
+
+  it('labels that say the same thing share a key; route labels never fold', () => {
+    const a = { key: 'a', elementId: 'x', text: '南口', position: [0, 0, 0] as [number, number, number], tier: 2 as const, priority: 45, variant: 'entrance' as const };
+    expect(sameMeaningKey(a)).toBe(sameMeaningKey({ ...a, key: 'b', elementId: 'y' }));
+    expect(sameMeaningKey(a)).not.toBe(sameMeaningKey({ ...a, text: '西口' }));
+    expect(sameMeaningKey({ ...a, onRoute: true })).toBeNull();
+    // platforms with the same numbers but other lines are different things
+    const p = { ...a, variant: 'platform' as const, text: '1·2', chips: [{ text: 'A', color: '#f00' }] };
+    expect(sameMeaningKey(p)).not.toBe(sameMeaningKey({ ...p, chips: [{ text: 'B', color: '#00f' }] }));
   });
 
   it('a tier changes only once the scale is past its threshold by a margin (no blinking near one)', () => {

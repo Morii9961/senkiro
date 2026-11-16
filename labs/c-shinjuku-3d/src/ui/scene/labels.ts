@@ -57,6 +57,19 @@ export function isMainExitName(ja: string | null): boolean {
   return ja !== null && /口(（[^）]*）)?$/.test(ja);
 }
 
+/**
+ * Two labels that say the same thing — same kind, same text, same line badges — are shown once when they
+ * fall close together on screen (two entrances both printed "南口", the two ends of one corridor).
+ * Labels of the route are never folded away.
+ */
+export function sameMeaningKey(l: SceneLabel): string | null {
+  if (l.variant === 'route-start' || l.variant === 'route-end' || l.onRoute) return null;
+  return `${l.variant}|${l.text}|${(l.chips ?? []).map((c) => c.color).join(',')}`;
+}
+
+/** Screen distance (px) within which two labels of the same meaning are folded into one. */
+export const SAME_MEANING_PX = 240;
+
 export function trackRange(numbers: string[]): string {
   return numbers.length > 2 ? `${numbers[0]}–${numbers.at(-1)}` : numbers.join('·');
 }

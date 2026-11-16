@@ -20,6 +20,7 @@ export type PrimRole =
   | 'bridge'
   | 'wall'
   | 'pilaster'
+  | 'lintel'
   | 'platform-edge'
   | 'line-band'
   | 'track'
