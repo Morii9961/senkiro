@@ -14,12 +14,18 @@ const STATION = `<h2>テスト駅　線A 北方面</h2><table><tbody>
 <div class="timetable_time" data-train="無印" data-dest="無印"><span class="txt_red"><span class="train">X</span>
 <a href="../../train/001/000011.html" class="time_link_red"><span class="minute">07</span></a></span></div>
 <div class="timetable_time" data-train="無印" data-dest="無印"><a href="../../train/001/000021.html"><span class="minute">41</span></a></div>
+</td></tr>
+<tr id="time_6"><td>6時</td><td>
+<div class="timetable_time" data-train="無印,X" data-dest="甲" data-misc="◆"><span class="txt_red"><span class="train">X</span>
+<a href="../../train/001/000031.html"><span class="minute"><span class="sp">03</span></span><span class="mark_etc">◆▲</span></a>
+<span class="dest">甲</span></span></div>
 </td></tr></tbody></table><p>列車種別・列車名 無印=普通 X=テスト</p>`;
 
-const TRAIN = `<table id="tbl_train" class="num_train_2"><tbody>
+const TRAIN = `<title>時刻表　停車駅一覧（特急テスト 1号（甲－乙－丙）／特急テスト 1号（乙－丙））：テスト</title><table id="tbl_train" class="num_train_2"><tbody>
 <tr class="train"><th>列車種別</th><td colspan="2">特急</td><td colspan="2">特急</td></tr>
 <tr class="train"><th>列車名</th><td colspan="2">テスト 1号</td><td colspan="2">テスト 1号</td></tr>
 <tr class="train"><th>列車番号</th><td colspan="2">1A</td><td colspan="2">2A</td></tr>
+<tr class="train"><th>併結運転</th><td colspan="2"><ul><li>乙－丙は2Aを併結</li></ul></td><td colspan="2"><ul><li>乙－丙は1Aに併結</li></ul></td></tr>
 <tr class="train"><th>運転日</th><td colspan="2"><ul><li><li>１月１日は運休</li></ul></td><td colspan="2"><ul><li></ul></td></tr>
 <tr class="label"><th class="eki">駅名</th><th class="jikoku">時刻</th><th class="bansen">番線</th><th class="jikoku">時刻</th><th class="bansen">番線</th></tr>
 <tr class="time"><th class="time"><a href="../../../timetable/list0001.html">甲</a></th>
@@ -41,15 +47,19 @@ describe('JR East timetable page readers (local-only fetch script)', () => {
     const t = parseStationTimetable(STATION);
     expect(t.title).toBe('テスト駅 線A 北方面');
     expect(t.entries).toEqual([
-      { hour: 5, minute: 7, mark: 'X', dest: '', href: '../../train/001/000011.html' },
-      { hour: 5, minute: 41, mark: '', dest: '', href: '../../train/001/000021.html' },
+      { hour: 5, minute: 7, mark: 'X', misc: '', dest: '', href: '../../train/001/000011.html' },
+      { hour: 5, minute: 41, mark: '', misc: '', dest: '', href: '../../train/001/000021.html' },
+      // a minute wrapped once more and followed by marks
+      { hour: 6, minute: 3, mark: 'X', misc: '◆▲', dest: '甲', href: '../../train/001/000031.html' },
     ]);
     expect(t.legend).toMatch(/X=テスト/);
   });
 
   it('reads one column per train, with the times, track and station code of each call it makes', () => {
     const [a, b] = parseTrainPage(TRAIN);
-    expect(a).toMatchObject({ type: '特急', name: 'テスト 1号', number: '1A', days: ['１月１日は運休'] });
+    expect(a).toMatchObject({ type: '特急', name: 'テスト 1号', number: '1A', days: ['１月１日は運休'], route: ['甲', '乙', '丙'] });
+    expect(b!.route).toEqual(['乙', '丙']);
+    expect(b!.coupling).toEqual(['乙－丙は1Aに併結']);
     expect(a!.calls).toEqual([
       { station: '甲', code: '0001', arr: null, dep: '05:00', platform: '12' },
       { station: '乙', code: '0002', arr: '05:10', dep: '05:11', platform: null },

@@ -54,6 +54,8 @@ export interface StationTimetableEntry {
   mark: string;
   /** Destination mark as printed, empty for the unmarked destination. */
   dest: string;
+  /** Other marks after the minute (◆, ▲ …), explained in the legend. */
+  misc: string;
   /** Link to the train's stop list, as written in the page (relative). */
   href: string | null;
 }
@@ -73,12 +75,15 @@ export function parseStationTimetable(html: string): StationTimetable {
     const hour = Number(row[1]);
     for (const cell of row[2]!.matchAll(/<div class="timetable_time"[\s\S]*?<\/div>/g)) {
       const c = cell[0];
-      const minute = /<span class="minute">\s*(\d{1,2})\s*<\/span>/.exec(c)?.[1];
+      // the minute may be wrapped once more (<span class="minute"><span class="sp">34</span></span>) and followed by marks (◆▲)
+      const minuteHtml = /<span class="minute">([\s\S]*?)(?:<span class="mark_etc">|<\/a>)/.exec(c)?.[1] ?? '';
+      const minute = /(\d{1,2})/.exec(textOf(minuteHtml))?.[1];
       if (minute == null) continue;
       entries.push({
         hour,
         minute: Number(minute),
         mark: textOf(/<span class="train">([\s\S]*?)<\/span>/.exec(c)?.[1] ?? ''),
+        misc: textOf(/<span class="mark_etc">([\s\S]*?)<\/span>/.exec(c)?.[1] ?? ''),
         dest: textOf(/<span class="dest(?:ination)?">([\s\S]*?)<\/span>/.exec(c)?.[1] ?? ''),
         href: /<a href="([^"]+)"/.exec(c)?.[1] ?? null,
       });
@@ -104,8 +109,23 @@ export interface TrainColumn {
   number: string | null;
   /** 運転日 notes, as printed. */
   days: string[];
+  /** 併結運転 notes, as printed (e.g. 東京－成田空港は2001Mに併結). */
+  coupling: string[];
+  /** The train's whole route as the page title gives it (e.g. 新宿－東京－成田空港), when it does. */
+  route: string[] | null;
   /** Calls in the order of the page, only stations where the column has a time. */
   calls: TrainCall[];
+}
+
+/** Routes per column from the page title: 「停車駅一覧（A 1号（甲－乙）／A 1号（丙－丁－戊））」. */
+function routesFromTitle(html: string): (string[] | null)[] {
+  const title = textOf(/<title>([\s\S]*?)<\/title>/.exec(html)?.[1] ?? '');
+  const inner = /停車駅一覧（([\s\S]*)）/.exec(title)?.[1];
+  if (!inner) return [];
+  return inner.split('／').map((part) => {
+    const m = /（([^（）]*)）\s*$/.exec(part);
+    return m ? m[1]!.split('－').map((x) => x.trim()).filter(Boolean) : null;
+  });
 }
 
 function cellsOf(row: string): string[] {
@@ -123,7 +143,10 @@ export function parseTrainPage(html: string): TrainColumn[] {
     if (cls === 'train') {
       const label = textOf(/<th[^>]*>([\s\S]*?)<\/th>/.exec(row)?.[1] ?? '');
       const cells = cellsOf(row);
-      if (columns.length === 0) columns = cells.map(() => ({ type: null, name: null, number: null, days: [], calls: [] }));
+      if (columns.length === 0) {
+        const routes = routesFromTitle(html);
+        columns = cells.map((_, i) => ({ type: null, name: null, number: null, days: [], coupling: [], route: routes.length === cells.length ? (routes[i] ?? null) : null, calls: [] }));
+      }
       cells.forEach((c, i) => {
         const col = columns[i];
         if (!col) return;
@@ -131,6 +154,7 @@ export function parseTrainPage(html: string): TrainColumn[] {
         if (label === '列車種別') col.type = v;
         else if (label === '列車名') col.name = v;
         else if (label === '列車番号') col.number = v;
+        else if (label === '併結運転') col.coupling = [...c.matchAll(/<li>([\s\S]*?)(?=<li>|<\/li>|<\/ul>)/g)].map((m) => textOf(m[1]!)).filter(Boolean);
         else if (label === '運転日') col.days = [...c.matchAll(/<li>([\s\S]*?)(?=<li>|<\/li>|<\/ul>)/g)].map((m) => textOf(m[1]!)).filter(Boolean);
       });
     } else if (cls === 'time') {

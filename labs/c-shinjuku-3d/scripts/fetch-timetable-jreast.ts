@@ -111,6 +111,27 @@ function lineOf(col: TrainColumn, pageLine: string): string | null {
   return null;
 }
 
+/**
+ * Where the train goes: the end of its whole route in the page title; when its own column ends where it
+ * is coupled to another train (「東京－成田空港は2001Mに併結」), the end of the coupled run.
+ */
+function destinationOf(col: TrainColumn, page: TrainColumn[]): string | null {
+  let end = col.route?.at(-1) ?? col.calls.at(-1)?.station ?? null;
+  for (const note of col.coupling) {
+    const m = /^(.+?)－(.+?)は/.exec(note);
+    if (m && m[1] === end) return m[2]!;
+  }
+  // a train that runs on under another number from where its column ends (2209M 新宿→東京, then 2009M 東京→成田空港)
+  let cur = col;
+  for (let hop = 0; hop < 3 && col.route == null; hop++) {
+    const next = page.find((c) => c !== cur && c.calls[0]?.station === end && c.calls[0]?.arr == null && c.name === cur.name);
+    if (!next) break;
+    end = next.calls.at(-1)?.station ?? end;
+    cur = next;
+  }
+  return end;
+}
+
 function directionOf(col: TrainColumn, i: number): 'southbound' | 'northbound' | null {
   const next = col.calls[i + 1]?.station;
   const prev = col.calls[i - 1]?.station;
@@ -221,7 +242,8 @@ async function main() {
           train_number: col.number,
           arrival_time_local: serviceTimeOf(call.arr ?? undefined),
           departure_time_local: serviceTimeOf(call.dep ?? undefined),
-          destination_text: last.station === '新宿' ? '新宿' : last.station,
+          // the end of the train's whole route (a Narita Express section ends its own column at 東京, where it is coupled for 成田空港)
+          destination_text: destinationOf(col, parsed.get(p) ?? []),
           service_class: col.type,
           vehicle_series: null,
           formation_length: null,
@@ -239,9 +261,11 @@ async function main() {
   records.sort((a, b) => a.line_id.localeCompare(b.line_id) || a.service_date_type.localeCompare(b.service_date_type) || time(a) - time(b) || a.trip_id.localeCompare(b.trip_id));
 
   const retrievedAt = new Date().toISOString().slice(0, 10);
+  const missing = [...trainPages.keys()].filter((p) => !parsed.has(p)).length;
+  const upstreamMissing = UPSTREAM.filter((u) => !upstream.some((t) => t.label === u.label)).map((u) => u.label);
   const source: TimetableSource = {
     id: JREAST_SOURCE_ID,
-    title: `JR東日本 駅の時刻表（新宿駅ほか, ${edition} 版）— ローカル専用`,
+    title: `JR東日本 駅の時刻表（新宿駅ほか, ${edition} 版）— ローカル専用${missing || upstreamMissing.length ? `・一部のみ（未取得: 列車 ${missing} 本${upstreamMissing.length ? `、${upstreamMissing.join('・')}` : ''}）` : ''}`,
     publisher: 'East Japan Railway Company (timetables.jreast.co.jp)',
     url: `${BASE}timetable/list${SHINJUKU}.html`,
     retrievedAt,
@@ -258,6 +282,7 @@ async function main() {
   }
   for (const [k, n] of [...summary].sort()) console.log(`${String(n).padStart(5)}  ${k}`);
   for (const [k, n] of skipped) console.log(`skipped ${n}: ${k}`);
+  if (missing || upstreamMissing.length) console.log(`incomplete: ${missing} stop lists not read; upstream tables not read: ${upstreamMissing.join(', ') || 'none'}`);
   console.log(`wrote ${records.length} records (local only) — ${fetched} pages fetched, ${cached} from cache`);
 }
 

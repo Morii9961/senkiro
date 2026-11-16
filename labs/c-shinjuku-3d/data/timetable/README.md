@@ -20,7 +20,8 @@
 
 - `jreast-shinjuku.csv`：由 `npx tsx scripts/fetch-timetable-jreast.ts` 从 JR 东日本「駅の時刻表」读取的新宿站 JR 时刻
   （成田特快、中央线特急、湘南新宿线、东武直通特急等）。JR 东日本网站利用规约谢绝复制与再分发，
-  这是项目方决定的本地私人使用（2026-11-16），绝不提交。
+  这是项目方决定的本地私人使用（2026-11-16），绝不提交。脚本会缓存读过的页面（`data/raw/jreast-cache/`），
+  `--offline` 只用缓存生成。2026-11-16 读了 137 页后站点断开了本机连接，数据只有一部分（V3-REPORT 第 19 节）。
 
 `direction_id`：JR 新宿的记录可写 `southbound` / `northbound`（按前后停车站），列车在通过式番线上按此方向进出。
 
