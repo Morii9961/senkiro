@@ -395,7 +395,10 @@ async function main() {
         if (changed) filled++;
         continue;
       }
-      const end = col.end ? col.end : (col.calls.at(-1)?.station ?? null);
+      let end = col.end ? col.end : (col.calls.at(-1)?.station ?? null);
+      // 山手線 is a loop: its line timetables are cut at 品川 / 五反田, which is where a column ends, not where the
+      // train is bound. Such trains are signed by direction (外回り 池袋・上野方面 / 内回り 渋谷・品川方面).
+      if (line === 'jr-east:yamanote' && (end === '品川' || end === '五反田') && direction) end = direction === 'northbound' ? '池袋・上野方面' : '渋谷・品川方面';
       const rec: TimetableRecord = {
         station_id: 'jr-east:shinjuku',
         operator_id: 'jr-east',
