@@ -1213,18 +1213,6 @@
       }
     },
     {
-      "id": "sk:entrance:jr-central-west-outside",
-      "kind": "entrance",
-      "elementId": "sk:entrance:jr-central-west-outside",
-      "levelId": "sk:level:jr-east-shinjuku-b1f",
-      "levelOrdinal": -1,
-      "zone": "unpaid",
-      "position": {
-        "x": -9,
-        "z": 17.85
-      }
-    },
-    {
       "id": "sk:entrance:jr-east-basement-passage",
       "kind": "entrance",
       "elementId": "sk:entrance:jr-east-basement-passage",
@@ -8467,21 +8455,10 @@
       "verticalKind": null,
       "levelChange": 0,
       "stepFree": null,
-      "connection": "inferred",
+      "connection": "verified",
       "from": "sk:area:jr-b1f-central-west-unpaid",
       "to": "sk:area:odakyu-b1f-west-underground-gate-unpaid",
       "id": "sk:area:jr-b1f-central-west-unpaid→sk:area:odakyu-b1f-west-underground-gate-unpaid"
-    },
-    {
-      "kind": "entrance-approach",
-      "elementId": "sk:entrance:jr-central-west-outside",
-      "verticalKind": null,
-      "levelChange": 0,
-      "stepFree": null,
-      "connection": "verified",
-      "from": "sk:area:jr-b1f-central-west-unpaid",
-      "to": "sk:entrance:jr-central-west-outside",
-      "id": "sk:area:jr-b1f-central-west-unpaid→sk:entrance:jr-central-west-outside"
     },
     {
       "kind": "gate-approach",
@@ -10271,7 +10248,7 @@
       "verticalKind": null,
       "levelChange": 0,
       "stepFree": null,
-      "connection": "inferred",
+      "connection": "verified",
       "from": "sk:area:odakyu-b1f-west-underground-gate-unpaid",
       "to": "sk:area:jr-b1f-central-west-unpaid",
       "id": "sk:area:odakyu-b1f-west-underground-gate-unpaid→sk:area:jr-b1f-central-west-unpaid"
@@ -11771,17 +11748,6 @@
       "from": "sk:entrance:busta-4f-miraina-tower-side",
       "to": "sk:area:busta-4f-hall",
       "id": "sk:entrance:busta-4f-miraina-tower-side→sk:area:busta-4f-hall"
-    },
-    {
-      "kind": "entrance-approach",
-      "elementId": "sk:entrance:jr-central-west-outside",
-      "verticalKind": null,
-      "levelChange": 0,
-      "stepFree": null,
-      "connection": "verified",
-      "from": "sk:entrance:jr-central-west-outside",
-      "to": "sk:area:jr-b1f-central-west-unpaid",
-      "id": "sk:entrance:jr-central-west-outside→sk:area:jr-b1f-central-west-unpaid"
     },
     {
       "kind": "entrance-approach",

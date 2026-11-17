@@ -1981,7 +1981,7 @@
       "existence": "verified",
       "geometryConfidence": "schematic",
       "asOf": "2026-08",
-      "notes": "Only the ticket office next to the gate is drawn on the JR B1F map. Drawn as a thin strip along the Odakyu concourse, which lies directly west of it.",
+      "notes": "Only the ticket office next to the gate is drawn on the JR B1F map. Drawn as a thin strip along the Odakyu concourse, which lies directly west of it; the map of the Odakyu notice of 2026-07-30 draws the walk from here to the front of 西口地下改札口.",
       "levelId": "sk:level:jr-east-shinjuku-b1f",
       "fareZone": "unpaid",
       "footprint": [
@@ -8463,8 +8463,9 @@
       },
       "provenance": {
         "sourceIds": [
-          "src:jreast-floormap-b1f",
-          "src:odakyu-shinjuku-map"
+          "src:odakyu-shinjuku-ic-gate-notice",
+          "src:odakyu-shinjuku-map",
+          "src:jreast-floormap-b1f"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-12"
@@ -8475,10 +8476,10 @@
       "existence": "verified",
       "geometryConfidence": "unknown",
       "asOf": "2026-08",
-      "notes": "INFERRED from signage text only: Odakyu prints a second \"JR線\" arrow beside its B1F gate line, on the side where JR draws 中央西改札. JR draws only a ticket office outside that gate, and the 新宿ターミナルマップ does not settle it.",
+      "notes": "The map of the Odakyu notice of 2026-07-30 draws an arrow from the space outside 西口地下改札口 down to \"JR中央西改札（6：00～終電）\", without passing another gate. The Odakyu floor plan prints \"JR線\" at the same corner, and the JR B1F map draws the unpaid side of 中央西改札 (ticket office) running that way. Until 2026-11-17 this link was marked as inferred from signage. Steps on the way were not read; the wheelchair route of the Odakyu plan does not use it.",
       "fromAreaId": "sk:area:jr-b1f-central-west-unpaid",
       "toAreaId": "sk:area:odakyu-b1f-west-underground-gate-unpaid",
-      "connection": "inferred",
+      "connection": "verified",
       "stepFree": null,
       "hasSteps": null
     },
@@ -10597,40 +10598,6 @@
       },
       "leadsToJa": "京王線へ／西口バスのりば／丸ノ内線",
       "leadsToEn": "to the Keio Line; West Exit bus stops; Marunouchi Line",
-      "stepFree": null
-    },
-    {
-      "kind": "entrance",
-      "id": "sk:entrance:jr-central-west-outside",
-      "externalIds": {},
-      "names": {
-        "ja": null,
-        "ja_kana": null,
-        "en": "Outside Central West Gate",
-        "zh": "中央西检票口外"
-      },
-      "provenance": {
-        "sourceIds": [
-          "src:jreast-floormap-b1f"
-        ],
-        "dataNature": "manual-verified",
-        "lastVerifiedAt": "2026-11-11"
-      },
-      "validFrom": null,
-      "validTo": null,
-      "stationId": "sk:station:jr-east-shinjuku",
-      "existence": "verified",
-      "geometryConfidence": "schematic",
-      "asOf": "2026-08",
-      "notes": "The JR B1F map does not draw what lies beyond the ticket office here. Destination unknown.",
-      "levelId": "sk:level:jr-east-shinjuku-b1f",
-      "areaId": "sk:area:jr-b1f-central-west-unpaid",
-      "position": {
-        "x": -9,
-        "z": 17.85
-      },
-      "leadsToJa": null,
-      "leadsToEn": null,
       "stepFree": null
     },
     {

@@ -247,23 +247,22 @@ describe('route search behaviour', () => {
     expect(direct.stops.map((st) => st.levelId)).toEqual(['sk:level:jr-east-shinjuku-2f', 'sk:level:busta-shinjuku-4f']);
   });
 
-  it('marks legs that rest on inferred connections, and can be told to avoid them', () => {
-    // one link rests on signage only: outside JR 中央西改札 ⇄ the front of the Odakyu underground gate.
-    // (The Marunouchi Line passage of 新宿 ⇄ 新宿三丁目 is the メトロプロムナード now, from a source.)
-    expect(model.passages.filter((p) => p.connection === 'inferred').map((p) => p.id)).toEqual([
-      'sk:passage:jr-central-west-outside-to-odakyu-west-underground',
-    ]);
+  it('rests on no inferred connection; outside JR 中央西改札 ⇄ the Odakyu underground gate is drawn by Odakyu', () => {
+    // The last link that rested on signage only is drawn on the map of the Odakyu notice of 2026-07-30.
+    // (The Marunouchi Line passage of 新宿 ⇄ 新宿三丁目 is the メトロプロムナード, from a source.)
+    expect(model.passages.filter((p) => p.connection === 'inferred').map((p) => p.id)).toEqual([]);
+    const link = model.passages.find((p) => p.id === 'sk:passage:jr-central-west-outside-to-odakyu-west-underground')!;
+    expect(link.provenance.sourceIds).toContain('src:odakyu-shinjuku-ic-gate-notice');
     const odakyuFront = 'sk:area:odakyu-b1f-west-underground-gate-unpaid';
-    const r = mustFind('sk:entrance:jr-central-west-outside', odakyuFront);
-    expect(r.inferredLegs).toBe(1);
+    // (the unnamed "exit" at the edge of the JR map that stood here is gone: the way on is known and modelled)
+    expect(model.entrances.some((e) => e.id === 'sk:entrance:jr-central-west-outside')).toBe(false);
+    const chuoWestOutside = 'sk:area:jr-b1f-central-west-unpaid';
+    const r = mustFind(chuoWestOutside, odakyuFront);
+    expect(r.inferredLegs).toBe(0);
     expect(r.cost.gatePasses).toBe(0);
-    // told to avoid inferred links, the search goes the long way round through the JR paid area
-    const strict = findRoute(graph, 'sk:entrance:jr-central-west-outside', odakyuFront, { allowInferred: false });
-    expect(strict.found).toBe(true);
-    if (strict.found) {
-      expect(strict.inferredLegs).toBe(0);
-      expect(strict.cost.gatePasses).toBeGreaterThan(r.cost.gatePasses);
-    }
+    // avoiding inferred links changes nothing now
+    const strict = findRoute(graph, chuoWestOutside, odakyuFront, { allowInferred: false });
+    expect(strict.found && strict.cost.gatePasses).toBe(0);
   });
 
   it('walks from 新宿 to the 新宿三丁目 stations through the メトロプロムナード', () => {

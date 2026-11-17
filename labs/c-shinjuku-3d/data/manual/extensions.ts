@@ -660,8 +660,7 @@ const publicEntrances: Entrance[] = [
 ];
 
 const crossCommon: Common = { stationId: null, asOf: '2026-08', geometryConfidence: 'unknown' };
-const inferred = (slug: string, from: string, to: string, srcs: string[], notes: string, stepFree: boolean | null = null): Passage =>
-  link(slug, from, to, p2(srcs), stepFree, { inferred: true, common: crossCommon, notes: `INFERRED from signage text only: ${notes}` });
+const S_OD_IC = 'src:odakyu-shinjuku-ic-gate-notice';
 /** A link between operators that the 新宿ターミナルマップ draws as walkable. */
 const drawn = (slug: string, from: string, to: string, srcs: string[], notes: string, stepFree: boolean | null = null): Passage =>
   link(slug, from, to, p2([S_TERMINAL, ...srcs]), stepFree, { common: pubCommon, notes: `${notes} ${TM_DATE}` });
@@ -683,8 +682,8 @@ const crossPassages: Passage[] = [
     'Outdoors: the pedestrian crossing over 甲州街道 drawn on the street-level sheet between 南口 and the side of 甲州街道改札 and バスタ新宿. A public road crossing, not a station passage.'),
   drawn('marunouchi-concourse-to-subnade', ME.conc, PUB.subnade, [S_METRO],
     'A passage with the stairs numbered 17–22 leaves メトロ通路 beside exits B10 / B11 and runs north into サブナード; Tokyo Metro prints "西武新宿線へ・サブナード方面" at B10 / B11.'),
-  inferred('jr-central-west-outside-to-odakyu-west-underground', A.chuoWestUnpaid, OD.plazaB1, [S_JR_B1, S_OD],
-    'Odakyu prints a second "JR線" arrow beside its B1F gate line, on the side where JR draws 中央西改札. JR draws only a ticket office outside that gate, and the 新宿ターミナルマップ does not settle it.'),
+  link('jr-central-west-outside-to-odakyu-west-underground', A.chuoWestUnpaid, OD.plazaB1, p2([S_OD_IC, S_OD, S_JR_B1]), null,
+    { common: crossCommon, notes: 'The map of the Odakyu notice of 2026-07-30 draws an arrow from the space outside 西口地下改札口 down to "JR中央西改札（6：00～終電）", without passing another gate. The Odakyu floor plan prints "JR線" at the same corner, and the JR B1F map draws the unpaid side of 中央西改札 (ticket office) running that way. Until 2026-11-17 this link was marked as inferred from signage. Steps on the way were not read; the wheelchair route of the Odakyu plan does not use it.' }),
   link('keio-mall-to-new-line-concourse', A.keioMall, NL.conc, p2([S_NL_LAYER, S_KEIO_LAYER]), true,
     { common: nlCommon, notes: `京王モール runs into the new-line passage on the Keio 階層図. ${NL_GREEN}` }),
   link('keio-lumine-gate-outside-to-new-line-concourse', A.keioLumineUnpaid, NL.conc, p2([S_NL_LAYER, S_KEIO_LAYER]), null,

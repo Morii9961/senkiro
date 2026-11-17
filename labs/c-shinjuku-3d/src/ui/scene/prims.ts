@@ -15,7 +15,6 @@ export type MaterialKind = 'floor' | 'wall' | 'concrete' | 'metal' | 'dark' | 'a
 export type PrimRole =
   | 'shell'
   | 'shell-edge'
-  | 'plate-tie'
   | 'area'
   | 'bridge'
   | 'wall'

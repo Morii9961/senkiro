@@ -115,10 +115,8 @@ export function buildShells(ctx: Ctx): void {
     plane.levelIds.push(level.id);
     planes.set(level.elevation, plane);
   }
-  const rectsOf = new Map([...planes.values()].map((pl) => [pl, plateRects(ctx.model, pl.levelIds)]));
-  for (const pl of planes.values()) {
-    const { vis, y } = pl;
-    const rects = rectsOf.get(pl)!;
+  for (const { vis, levelIds, y } of planes.values()) {
+    const rects = plateRects(ctx.model, levelIds);
     const outlineColor = mix(p.shell, p.background, vis === 'ghost' ? 0.75 : 0.35);
     for (const r of rects) {
       ctx.prims.push({
@@ -140,37 +138,6 @@ export function buildShells(ctx: Ctx): void {
       ctx.prims.push({ elementId: null, role: 'shell-edge', material: 'glass', a, b, width: 0, thickness: 0, color: p.shell, alpha: 0, outline: true, outlineColor, pickable: false });
     }
   }
-  buildPlateTies(ctx, [...planes.values()], rectsOf);
-}
-
-/**
- * Faint uprights from every corner of a floor plate up to the nearest plate
- * above that covers that corner. They tie a deep floor to the floors over it,
- * so that it reads as lying under them instead of floating in the air. Only
- * between floors drawn at full strength. A drawing aid, generated from the
- * plates: no column, wall or shaft of the real building is meant.
- */
-function buildPlateTies(ctx: Ctx, planes: { vis: 'full' | 'ghost'; y: number }[], rectsOf: Map<unknown, PlanRect[]>): void {
-  const { p } = ctx;
-  const full = planes.filter((pl) => pl.vis === 'full').sort((a, b) => a.y - b.y);
-  const covers = (rs: PlanRect[], x: number, z: number) => rs.some((r) => x >= r.x0 - 1e-6 && x <= r.x1 + 1e-6 && z >= r.z0 - 1e-6 && z <= r.z1 + 1e-6);
-  const outlineColor = mix(p.shell, p.background, 0.55);
-  full.forEach((pl, i) => {
-    const corners = new Map<string, [number, number]>();
-    for (const e of outlineEdges(rectsOf.get(pl)!)) {
-      for (const t of [e.lo, e.hi]) {
-        const xz: [number, number] = e.axis === 'x' ? [t, e.at] : [e.at, t];
-        corners.set(`${xz[0].toFixed(3)},${xz[1].toFixed(3)}`, xz);
-      }
-    }
-    for (const [x, z] of corners.values()) {
-      const above = full.slice(i + 1).find((q) => covers(rectsOf.get(q)!, x, z));
-      if (!above) continue;
-      const a: Vec3 = [x, pl.y - 0.2, z];
-      const b: Vec3 = [x, above.y - 0.3, z];
-      ctx.prims.push({ elementId: null, role: 'plate-tie', material: 'glass', a, b, width: 0, thickness: 0, color: p.shell, alpha: 0, outline: true, outlineColor, pickable: false });
-    }
-  });
 }
 
 function areaBaseColor(ctx: Ctx, area: Area): string {

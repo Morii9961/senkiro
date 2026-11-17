@@ -259,7 +259,7 @@ const dict = {
   stepsHint: { ja: "区間を押すと、その場所へ視点が移動します。", en: "Press a step to move the view there.", zh: "点某一步，视角会移到那一段。" },
   displayModel: { ja: "モデルの見え方", en: "Model", zh: "模型显示" },
   animateCamera: { ja: "視点をなめらかに移動する", en: "Animate camera moves", zh: "视角平滑移动" },
-  archNote: { ja: "壁・柱・開口部の梁・階段の段・吹抜けの柵・改札機・線路・ホームのベンチや番線標、階と階の間の細い縦線、階段・エスカレーター両端の黄色い帯は、エリアの形と接続関係から自動的に描いたものです。実際の位置や数を示すものではありません。", en: "Walls, columns, beams over openings, steps, guards round floor openings, gate machines, tracks, platform benches and track boards, the thin uprights between floors and the yellow strips at both ends of stairs and escalators are generated from the area outlines and connections. They do not show real positions or counts.", zh: "墙、柱、门洞上的梁、台阶、楼板开口护栏、闸机、轨道、站台上的长椅和番线牌、楼层之间的细竖线以及楼梯扶梯两端的黄色条是根据区域轮廓与连接关系自动画出来的，不代表实际的位置和数量。" },
+  archNote: { ja: "壁・柱・開口部の梁・階段の段・吹抜けの柵・改札機・線路・ホームのベンチや番線標、階段・エスカレーター両端の黄色い帯は、エリアの形と接続関係から自動的に描いたものです。実際の位置や数を示すものではありません。", en: "Walls, columns, beams over openings, steps, guards round floor openings, gate machines, tracks, platform benches and track boards and the yellow strips at both ends of stairs and escalators are generated from the area outlines and connections. They do not show real positions or counts.", zh: "墙、柱、门洞上的梁、台阶、楼板开口护栏、闸机、轨道、站台上的长椅和番线牌以及楼梯扶梯两端的黄色条是根据区域轮廓与连接关系自动画出来的，不代表实际的位置和数量。" },
   conditional: { ja: "条件付き", en: "conditional", zh: "有条件" },
   sourcesUnused: { ja: "確認したが使っていない資料（{n}）", en: "Checked but not used ({n})", zh: "查过但未使用的资料（{n}）" },
   helpRoute: { ja: "経路", en: "Routes", zh: "路线" },

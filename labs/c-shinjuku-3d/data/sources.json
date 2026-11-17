@@ -374,6 +374,23 @@
     "sourceDate": null
   },
   {
+    "retrievedAt": "2026-11-17",
+    "license": "All rights reserved — no open licence is stated. Site terms were not reviewed.",
+    "licenseUrl": null,
+    "commercialUse": "unknown",
+    "redistribution": "no",
+    "shareAlike": "unknown",
+    "accessedVia": null,
+    "usedInData": true,
+    "id": "src:odakyu-shinjuku-ic-gate-notice",
+    "title": "新宿駅中央地下JR線連絡改札口のICカード専用化について（お知らせ） | 小田急電鉄",
+    "publisher": "Odakyu Electric Railway (小田急電鉄)",
+    "url": "https://www.odakyu.jp/support/ho5toc000000c9lj-att/shinjuku-kaisatsu260730.pdf",
+    "attributionText": "Facts read from the 小田急電鉄 notice of 2026年7月30日 on the 新宿駅 中央地下JR線連絡改札口 and its map.",
+    "notes": "Dated 2026年7月30日; read on 2026-11-17. Page 1 announces that 中央地下JR線連絡改札口 becomes a gate for transport IC cards only from March 2027 (planned). The map on page 2 sends holders of tickets and magnetic passes out through 西口地下改札口 and draws two arrows on from the space outside it: one down to \"JR中央西改札（6：00～終電）\", one to \"JR西改札\". Source of the walkway between the space in front of 西口地下改札口 and the outside of JR 中央西改札. Viewed for reference only; never stored in the repository.",
+    "sourceDate": "2026-07-30"
+  },
+  {
     "retrievedAt": "2026-11-12",
     "license": "All rights reserved — no open licence is stated. Site terms were not reviewed.",
     "licenseUrl": null,
