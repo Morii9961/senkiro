@@ -34,7 +34,9 @@
   在模拟里合为一班（`mergeComplementaryPlans`）。
 - `legacy-seibu-metro.csv`：用户交来的 `timetable_events.csv`（雅虎路线信息层，未核实，放在 `data/raw/private-saved/`）里的西武新宿和丸之内线新宿；
   同一文件还被 `fetch-timetable-jreast.ts`、`import-private-timetables.ts` 用来补 JR 与小田急的番线（`scripts/legacy-events.ts`），只补空缺、不覆盖官方值。
-- `npx tsx scripts/timetable-coverage.ts`：逐个站台面列出平日 / 周日的班次数和来源，0 / 0 就是没有任何时刻表。
+- `data/raw/jreast-saved/trains/*.html`：手动保存的 JR 单班“停车站一览”页，按车次和新宿时刻补番线；`npx tsx scripts/list-jreast-train-urls.ts [去向记号]`
+  从 `data/raw/jreast-saved/stations/` 里手动保存的车站发车表列出单班页网址。需要保存的页面见本地 `data/raw/要保存的页面.md`。
+- `npx tsx scripts/timetable-coverage.ts`：逐条股道列出平日 / 周日的班次数和来源（同一股道两侧的番线号合成一行），0 / 0 就是没有任何时刻表。
 
 `direction_id`：JR 新宿的记录可写 `southbound` / `northbound`（按前后停车站），列车在通过式番线上按此方向进出。
 

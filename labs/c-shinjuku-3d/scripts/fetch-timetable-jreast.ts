@@ -424,6 +424,31 @@ async function main() {
   }
   if (savedFiles.length) console.log(`saved line timetables: ${savedFiles.length} files, ${fromSaved} trains added, ${filled} completed`);
 
+  // stop lists saved by hand (data/raw/jreast-saved/trains/*.html): the official track of a train the line timetables leave without one
+  const savedTrainsDir = resolve(savedDir, 'trains');
+  let savedFilled = 0;
+  if (existsSync(savedTrainsDir)) {
+    const byNumber = new Map<string, { arr: string | null; dep: string | null; platform: string }[]>();
+    for (const f of readdirSync(savedTrainsDir).filter((x) => /\.html?$/i.test(x))) {
+      for (const col of parseTrainPage(readFileSync(resolve(savedTrainsDir, f), 'utf8'))) {
+        const call = col.calls.find((c) => c.station === '新宿');
+        if (!call?.platform || !col.number) continue;
+        const list = byNumber.get(col.number) ?? [];
+        list.push({ arr: serviceTimeOf(call.arr ?? undefined), dep: serviceTimeOf(call.dep ?? undefined), platform: call.platform });
+        byNumber.set(col.number, list);
+      }
+    }
+    for (const r of records) {
+      if (r.platform_id || !r.train_number) continue;
+      const hit = (byNumber.get(r.train_number) ?? []).find((c) => (r.arrival_time_local ? c.arr === r.arrival_time_local : true) && (r.departure_time_local ? c.dep === r.departure_time_local : true));
+      if (!hit) continue;
+      r.platform_id = `jr-east:shinjuku:${hit.platform}`;
+      r.remarks = [r.remarks?.replace(/ ?· ?No track in the line timetable; not drawn\./, ''), 'Track from the train\'s stop list (saved by hand).'].filter(Boolean).join(' · ');
+      savedFilled++;
+    }
+    console.log(`saved stop lists: ${savedFilled} tracks filled`);
+  }
+
   // tracks the official line timetables do not give, from the legacy timetable the project owner handed over (when present)
   const legacy = loadLegacyRows(root);
   let legacyFilled = 0;
