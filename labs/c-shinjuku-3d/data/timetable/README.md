@@ -29,6 +29,9 @@
 - `npx tsx scripts/fetch-timetable-jreast.ts --digital --interval=20000`：只取这 28 张数字时刻表（每 20 秒一页），存进
   `data/raw/jreast-saved/` 再离线重建；`--only-upstream=東京` 只读东京站的成田特快发车表及其停车站页。只在列出日期开行的
   临时列车不放进平日 / 土休日时刻表。
+- `keio-shinjuku.csv`、`odakyu-shinjuku.csv`、`private-sources.json`：由 `npx tsx scripts/import-private-timetables.ts` 从用户交来的
+  CSV（放在 `data/raw/private-saved/`）生成。京王有逐班番线；小田急只有站台组，不上轨。京王新线 4 号站台的西行发车与都营的西行到站
+  在模拟里合为一班（`mergeComplementaryPlans`）。
 - `npx tsx scripts/timetable-coverage.ts`：逐个站台面列出平日 / 周日的班次数和来源，0 / 0 就是没有任何时刻表。
 
 `direction_id`：JR 新宿的记录可写 `southbound` / `northbound`（按前后停车站），列车在通过式番线上按此方向进出。

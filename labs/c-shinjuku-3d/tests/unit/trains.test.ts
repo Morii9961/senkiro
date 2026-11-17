@@ -258,6 +258,31 @@ describe('train simulation', () => {
     expect(trainStateAt(arriving, arriving.arrive - 10)!.along).toBeLessThan(arriving.stopAt);
   });
 
+  it('an arrival-only record and a departure-only record of the same train on one track are drawn as one train', () => {
+    // Toei's timetable ends with the arrival at 新線新宿; Keio's station timetable has the departure (destination written with U+FA10)
+    const arrival = rec({ station_id: 'toei:shinjuku:S01', operator_id: 'toei', line_id: 'toei:shinjuku', platform_id: 'toei:shinjuku:S01:4', trip_id: 'toei-1', train_number: '753T', arrival_time_local: '08:15', departure_time_local: null, destination_text: '笹塚', source_id: 'src:a' });
+    const departure = rec({ station_id: 'keio:shinjuku-newline', operator_id: 'keio', line_id: 'keio:keio-new', platform_id: 'keio:shinjuku-newline:4', trip_id: 'keio-1', arrival_time_local: null, departure_time_local: '08:16', destination_text: '笹\ufa10', source_id: 'src:b' });
+    const other = rec({ ...departure, trip_id: 'keio-2', departure_time_local: '08:40', destination_text: '橋本' });
+    const { plans } = plansOf([arrival, departure, other]);
+    expect(plans).toHaveLength(2);
+    const merged = plans.find((p) => p.record.trip_id === 'keio-1')!;
+    expect(merged.arrive).toBe(T + 15 * 60);
+    expect(merged.depart).toBe(T + 16 * 60);
+    expect(merged.arrivalAssumed).toBe(false);
+    expect(merged.record.arrival_time_local).toBe('08:15');
+    expect(merged.record.train_number).toBe('753T'); // the departure table has none; the arrival record's number is kept
+    expect(merged.record.remarks).toMatch(/toei-1/);
+    // a different destination is not merged
+    const far = plansOf([arrival, rec({ ...departure, destination_text: '橋本' })]).plans;
+    expect(far).toHaveLength(2);
+  });
+
+  it('on an east–west platform a trip that names its direction runs that way', () => {
+    const west = rec({ station_id: 'keio:shinjuku-newline', operator_id: 'keio', line_id: 'keio:keio-new', platform_id: 'keio:shinjuku-newline:5', direction_id: 'westbound' });
+    const [p] = plansOf([west]).plans;
+    expect(p!.run?.departs).toBe(1); // track 5 is signed 本八幡方面 (east); this train leaves west
+  });
+
   it('filters by the kind of day', () => {
     const records = [base, rec({ trip_id: 'h', service_date_type: 'holiday' })];
     expect(buildTrainPlans(model, records, { dayType: 'weekday' }).plans.map((p) => p.record.trip_id)).toEqual(['t1']);
