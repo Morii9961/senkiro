@@ -20,7 +20,6 @@ export interface Palette {
   /** Strength of the baked contact shadows, 1 = as authored. */
   contactShadow: number;
   /** Faint plate under each floor. */
-  shell: string;
   floorUnpaid: string;
   /** Paid floors, tinted per operator so that fare zones can be told apart. */
   floorPaid: Record<string, string>;
@@ -68,7 +67,6 @@ export const PALETTES: Record<ThemeName, Palette> = {
     ink: '#1d2733',
     outline: '#1d2733',
     contactShadow: 1,
-    shell: '#8f99a5',
     floorUnpaid: '#e2d5b7',
     floorPaid: {
       'jr-east': '#bfd8cf',
@@ -118,7 +116,6 @@ export const PALETTES: Record<ThemeName, Palette> = {
     ink: '#e6ebf2',
     outline: '#10141a',
     contactShadow: 1.45,
-    shell: '#77818e',
     floorUnpaid: '#d8cbac',
     floorPaid: {
       'jr-east': '#b2cfc4',

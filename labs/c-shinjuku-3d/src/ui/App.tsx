@@ -96,7 +96,6 @@ export function App() {
 
   const [floorMode, setFloorMode] = useState<FloorMode>('all');
   const [explode, setExplode] = useState(0.3);
-  const [shell, setShell] = useState(0.1);
   const [ghostOthers, setGhostOthers] = useState(true);
   const [showLabels, setShowLabels] = useState(true);
   const [showVerticals, setShowVerticals] = useState(true);
@@ -288,8 +287,8 @@ export function App() {
   }, [route, focusLeg, floorMode, ordinals, floors]);
 
   const view = useMemo<ViewOptions>(
-    () => ({ explode, focusOrdinals, ghostOthers, shellOpacity: shell, showVerticals, showBlocks, showFareBoundary, palette, route, focusLeg, selectedId, platformStatus }),
-    [explode, focusOrdinals, ghostOthers, shell, showVerticals, showBlocks, showFareBoundary, palette, route, focusLeg, selectedId, platformStatus],
+    () => ({ explode, focusOrdinals, ghostOthers, showVerticals, showBlocks, showFareBoundary, palette, route, focusLeg, selectedId, platformStatus }),
+    [explode, focusOrdinals, ghostOthers, showVerticals, showBlocks, showFareBoundary, palette, route, focusLeg, selectedId, platformStatus],
   );
   const lineChip = useCallback(
     (railLineId: string): LabelChip | null => {
@@ -684,7 +683,6 @@ export function App() {
               palette={palette}
               is3d={is3d}
               explode={explode}
-              shell={shell}
               ghostOthers={ghostOthers}
               showLabels={showLabels}
               showVerticals={showVerticals}
@@ -695,7 +693,6 @@ export function App() {
               animate={animate}
               fareZones={fareZones}
               onExplode={setExplode}
-              onShell={setShell}
               onGhost={setGhostOthers}
               onLabels={setShowLabels}
               onVerticals={setShowVerticals}

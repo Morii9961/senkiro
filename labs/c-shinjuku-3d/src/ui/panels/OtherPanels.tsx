@@ -12,7 +12,6 @@ export function DisplayPanel(props: {
   palette: Palette;
   is3d: boolean;
   explode: number;
-  shell: number;
   ghostOthers: boolean;
   showLabels: boolean;
   showVerticals: boolean;
@@ -23,7 +22,6 @@ export function DisplayPanel(props: {
   animate: boolean;
   fareZones: { zone: string; label: string }[];
   onExplode(v: number): void;
-  onShell(v: number): void;
   onGhost(v: boolean): void;
   onLabels(v: boolean): void;
   onVerticals(v: boolean): void;
@@ -55,12 +53,6 @@ export function DisplayPanel(props: {
             {t('explode')} <output>{Math.round(props.explode * 100)}%</output>
           </span>
           <input type="range" min={0} max={1} step={0.01} value={props.explode} disabled={!props.is3d} onChange={(e) => props.onExplode(Number(e.target.value))} data-testid="explode" />
-        </label>
-        <label>
-          <span>
-            {t('shell')} <output>{Math.round(props.shell * 100)}%</output>
-          </span>
-          <input type="range" min={0} max={1} step={0.01} value={props.shell} disabled={!props.is3d} onChange={(e) => props.onShell(Number(e.target.value))} data-testid="shell" />
         </label>
       </section>
       <section className="checks">

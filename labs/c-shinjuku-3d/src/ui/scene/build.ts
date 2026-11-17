@@ -11,7 +11,7 @@ import { createContext } from './arch/context';
 import { buildBlocks, buildEntrances, buildFareBoundary, buildGates } from './arch/gates';
 import { buildPlatforms } from './arch/platforms';
 import { buildBuses, buildServices } from './arch/services';
-import { buildAreas, buildLinks, buildShells } from './arch/slabs';
+import { buildAreas, buildLinks } from './arch/slabs';
 import { buildOpeningGuards, buildVerticals, computeHoles } from './arch/vertical';
 import { boundsOf, elevationY, levelY, type Decal, type Prim, type Vec3, type ViewOptions } from './prims';
 
@@ -30,7 +30,6 @@ export interface SceneParts {
 export function buildScene(model: StationModel, opts: ViewOptions): SceneParts {
   const ctx = createContext(model, opts);
   computeHoles(ctx);
-  buildShells(ctx);
   buildAreas(ctx);
   buildPlatforms(ctx);
   buildLinks(ctx);

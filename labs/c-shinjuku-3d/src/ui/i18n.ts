@@ -51,7 +51,6 @@ const dict = {
   levels: { ja: "階", en: "Floors", zh: "楼层" },
   allLevels: { ja: "全階", en: "All floors", zh: "全部楼层" },
   explode: { ja: "階の間隔", en: "Floor separation", zh: "楼层间距" },
-  shell: { ja: "階の下敷きの濃さ", en: "Floor plate opacity", zh: "楼层底板浓度" },
   ghostOthers: { ja: "選んでいない階を薄く残す", en: "Keep the other floors as ghosts", zh: "未选中的楼层保留为淡影" },
   showLabels: { ja: "名称ラベル", en: "Labels", zh: "名称标签" },
   showVerticals: { ja: '階段・エスカレーター', en: 'Stairs & escalators', zh: '楼梯与扶梯' },

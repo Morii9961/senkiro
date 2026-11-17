@@ -78,7 +78,10 @@ export function areasTouch(a: Area, b: Area): boolean {
   return a.footprint.some((ra) => b.footprint.some((rb) => rectsTouch(ra, rb)));
 }
 
-/** How far a floor plate reaches beyond the areas standing on it. */
+/**
+ * How far the outline of a floor reaches beyond the areas standing on it. No plate is drawn
+ * (the faint plates under each floor were removed on 2026-11-17); the outline places the floor tags.
+ */
 export const PLATE_PAD = 1.4;
 
 /**
@@ -95,49 +98,6 @@ export function plateRects(model: Ctx['model'], levelIds: readonly string[], pad
       .flatMap((a) => a.footprint)
       .map((r) => ({ x0: r.x0 - pad, x1: r.x1 + pad, z0: r.z0 - pad, z1: r.z1 + pad })),
   );
-}
-
-/**
- * Faint plate under each floor plane: it makes the floors read as planes when
- * they are pulled apart. Levels of different operators drawn at the same
- * height share one plate, so that plates never overlap in one plane.
- */
-export function buildShells(ctx: Ctx): void {
-  const { p, opts } = ctx;
-  if (opts.shellOpacity <= 0.004) return;
-  const planes = new Map<number, { vis: 'full' | 'ghost'; levelIds: string[]; y: number }>();
-  for (const level of ctx.model.levels) {
-    const v = ctx.vis(level.id);
-    if (v === 'hidden') continue;
-    if (!ctx.model.areas.some((a) => a.levelId === level.id)) continue;
-    const plane = planes.get(level.elevation) ?? { vis: 'ghost' as const, levelIds: [], y: ctx.yOf(level.id) };
-    if (v === 'full') plane.vis = 'full';
-    plane.levelIds.push(level.id);
-    planes.set(level.elevation, plane);
-  }
-  for (const { vis, levelIds, y } of planes.values()) {
-    const rects = plateRects(ctx.model, levelIds);
-    const outlineColor = mix(p.shell, p.background, vis === 'ghost' ? 0.75 : 0.35);
-    for (const r of rects) {
-      ctx.prims.push({
-        elementId: null,
-        role: 'shell',
-        material: 'glass',
-        ...box(r.x0, r.x1, y - 0.3, y - 0.2, r.z0, r.z1),
-        color: p.shell,
-        alpha: vis === 'ghost' ? Math.min(opts.shellOpacity * 0.2, 0.04) : opts.shellOpacity * 0.5,
-        outline: false,
-        outlineColor,
-        pickable: false,
-      });
-    }
-    // The outline of the whole plate, not of its pieces: a beam without width
-    // or thickness is nothing but its outline, which is drawn as a line.
-    for (const e of outlineEdges(rects)) {
-      const [a, b]: [Vec3, Vec3] = e.axis === 'x' ? [[e.lo, y - 0.2, e.at], [e.hi, y - 0.2, e.at]] : [[e.at, y - 0.2, e.lo], [e.at, y - 0.2, e.hi]];
-      ctx.prims.push({ elementId: null, role: 'shell-edge', material: 'glass', a, b, width: 0, thickness: 0, color: p.shell, alpha: 0, outline: true, outlineColor, pickable: false });
-    }
-  }
 }
 
 function areaBaseColor(ctx: Ctx, area: Area): string {

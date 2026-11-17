@@ -23,7 +23,7 @@ import {
 import { MAX_POLAR, MIN_DISTANCE, MIN_POLAR, focusPose, homePose, mixPose, targetLimits } from '../../src/ui/scene/camera';
 import { outlineEdges, unionRects } from '../../src/ui/scene/prims';
 import { sameMeaningKey } from '../../src/ui/scene/labels';
-import { doorwayGaps } from '../../src/ui/scene/arch/slabs';
+import { doorwayGaps, plateRects } from '../../src/ui/scene/arch/slabs';
 import { PALETTES } from '../../src/ui/theme';
 import { buildPlatformDoors, openingStates } from '../../src/trains/platformDoors';
 import { loadGraph, loadModel } from './helpers';
@@ -46,7 +46,6 @@ function view(over: Partial<ViewOptions> = {}): ViewOptions {
     explode: 0.3,
     focusOrdinals: null,
     ghostOthers: true,
-    shellOpacity: 0.3,
     showVerticals: true,
     showBlocks: true,
     palette: PALETTES.light,
@@ -125,22 +124,11 @@ describe('3D primitives ⇄ model', () => {
     const only = buildPrims(model, view({ focusOrdinals: new Set([-1]), ghostOthers: false, showBlocks: false }));
     const stray = only.filter((p) => p.role === 'area' && ordinalOf.get(areaById.get(p.elementId!)!.levelId) !== -1);
     expect(stray).toEqual([]);
-    // the plates lie in one plane per drawn height, shared by the operators whose floors lie in that plane
-    const plates = only.filter((p) => p.role === 'shell');
-    expect(new Set(plates.map((p) => p.a[1].toFixed(3))).size).toBe(new Set(model.levels.filter((l) => l.ordinal === -1).map((l) => l.elevation)).size);
-    // and every area of the floor stands on one
-    const plateRects = plates.map(planRect);
-    for (const a of model.areas) {
-      if (ordinalOf.get(a.levelId) !== -1) continue;
-      for (const r of a.footprint) {
-        for (const [x, z] of [[r.x0, r.z0], [r.x1, r.z0], [r.x0, r.z1], [r.x1, r.z1], [(r.x0 + r.x1) / 2, (r.z0 + r.z1) / 2]] as const) {
-          expect(plateRects.some((q) => x >= q.x0 - 1e-6 && x <= q.x1 + 1e-6 && z >= q.z0 - 1e-6 && z <= q.z1 + 1e-6), `${a.id} at ${x},${z}`).toBe(true);
-        }
-      }
-    }
+    // no plate is drawn under the floor any more
+    expect(only.some((p) => p.elementId === null && p.material === 'glass')).toBe(false);
   });
 
-  it('a floor plate follows the built shape instead of boxing it in', () => {
+  it('the outline of a floor follows the built shape instead of boxing it in', () => {
     // an L of two rectangles: the union keeps the area and has six outline corners, not four
     const l = unionRects([
       { x0: 0, x1: 10, z0: 0, z1: 2 },
@@ -159,19 +147,15 @@ describe('3D primitives ⇄ model', () => {
     const perimeter = outlineEdges(l).reduce((s, e) => s + e.hi - e.lo, 0);
     expect(perimeter).toBeCloseTo(2 * (10 + 9), 6);
 
-    // in the model: the plates of a floor cover far less than the box around them
-    const prims1 = buildPrims(model, view({ focusOrdinals: new Set([-1]), ghostOthers: false, showBlocks: false }));
-    const plates = prims1.filter((p) => p.role === 'shell').map(planRect);
-    const covered = plates.reduce((s, r) => s + (r.x1 - r.x0) * (r.z1 - r.z0), 0);
-    const x0 = Math.min(...plates.map((r) => r.x0));
-    const x1 = Math.max(...plates.map((r) => r.x1));
-    const z0 = Math.min(...plates.map((r) => r.z0));
-    const z1 = Math.max(...plates.map((r) => r.z1));
+    // in the model: the outline of B1F covers far less than the box around it
+    const b1 = model.levels.filter((lv) => lv.ordinal === -1).map((lv) => lv.id);
+    const rects = plateRects(model, b1);
+    const covered = rects.reduce((s, r) => s + (r.x1 - r.x0) * (r.z1 - r.z0), 0);
+    const x0 = Math.min(...rects.map((r) => r.x0));
+    const x1 = Math.max(...rects.map((r) => r.x1));
+    const z0 = Math.min(...rects.map((r) => r.z0));
+    const z1 = Math.max(...rects.map((r) => r.z1));
     expect(covered).toBeLessThan((x1 - x0) * (z1 - z0) * 0.75);
-    // the outline is drawn as lines only
-    const edges = prims1.filter((p) => p.role === 'shell-edge');
-    expect(edges.length).toBeGreaterThan(4);
-    expect(edges.every((p) => p.alpha === 0 && p.outline && p.width === 0 && p.thickness === 0)).toBe(true);
   });
 
   it('ghosted floors are drawn faintly and without furniture', () => {
@@ -275,7 +259,7 @@ describe('generated architecture agrees with the connections', () => {
 
 describe('floor slabs do not fight for the same depth', () => {
   it('no two horizontal slabs on a floor are coplanar and overlapping', () => {
-    const prims = buildPrims(model, view({ explode: 0 })).filter((p) => p.role === 'area' || p.role === 'shell' || p.role === 'bridge');
+    const prims = buildPrims(model, view({ explode: 0 })).filter((p) => p.role === 'area' || p.role === 'bridge');
     const tops = prims.map((p) => ({ p, top: p.a[1] + p.thickness / 2, ...planRect(p) }));
     const clashes: string[] = [];
     for (let i = 0; i < tops.length; i++) {

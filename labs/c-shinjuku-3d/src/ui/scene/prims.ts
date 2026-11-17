@@ -13,8 +13,6 @@ export type Vec3 = [number, number, number];
 export type MaterialKind = 'floor' | 'wall' | 'concrete' | 'metal' | 'dark' | 'accent' | 'glass';
 
 export type PrimRole =
-  | 'shell'
-  | 'shell-edge'
   | 'area'
   | 'bridge'
   | 'wall'
@@ -82,7 +80,6 @@ export interface ViewOptions {
   /** Draw the other floors faintly instead of hiding them. */
   ghostOthers: boolean;
   /** 0..1 */
-  shellOpacity: number;
   showVerticals: boolean;
   showBlocks: boolean;
   /** The kerb along the edge of the paid area; shown unless this is false. */
