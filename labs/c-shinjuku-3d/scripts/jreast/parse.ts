@@ -169,8 +169,8 @@ export function parseTrainPage(html: string): TrainColumn[] {
         const arr = times.find((t) => t[2] === '着')?.[1] ?? null;
         const dep = times.find((t) => t[2] === '発')?.[1] ?? null;
         if (arr == null && dep == null) continue;
-        const pf = halfWidth(textOf(pfCell));
-        columns[i]!.calls.push({ station, code, arr, dep, platform: pf || null });
+        const pf = /^\d+/.exec(halfWidth(textOf(pfCell)))?.[0] ?? null;
+        columns[i]!.calls.push({ station, code, arr, dep, platform: pf });
       }
     }
   }
@@ -233,7 +233,8 @@ export function parseDigitalTimetable(html: string): DigitalTimetable {
         const col = columns[i];
         if (!col) return;
         if (pf) {
-          const n = halfWidth(v).replace(/[()（）\s]/g, '');
+          // the cell may carry a note after the number (「(10) 12月12日はこの時刻に変更」): keep the number
+          const n = /^[(（]?\s*(\d+)/.exec(halfWidth(v).trim())?.[1];
           if (n) col.platforms[pf[1]!] = n;
           return;
         }

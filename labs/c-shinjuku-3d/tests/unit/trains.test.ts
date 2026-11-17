@@ -6,7 +6,7 @@ import {
 } from '../../src/trains/simulate';
 import { physicalTrackKey, trackLine } from '../../src/trains/trackGeometry';
 import { allTrackRunKeys, modelTrackKeys, trackRun } from '../../src/trains/trackRuns';
-import { FORMATION_FACTS, GENERIC_VEHICLE, LINE_VEHICLE_RULES, VEHICLES, resolveVehicle, vehicleBySeries } from '../../src/trains/vehicles';
+import { FORMATION_FACTS, GENERIC_VEHICLE, LINE_VEHICLE_RULES, SERVICE_VEHICLE_RULES, VEHICLES, resolveVehicle, vehicleBySeries } from '../../src/trains/vehicles';
 import { buildTrainParts, doorCentres } from '../../src/trains/parts';
 import { loadModel, loadSources } from './helpers';
 
@@ -315,6 +315,32 @@ describe('train simulation', () => {
     expect(trainStatesAt(plans, 3.5 * 3600)).toEqual([]);
     expect(trainStatesAt(plans, 12 * 3600).length).toBeGreaterThan(5);
     for (const s of trainStatesAt(plans, 12 * 3600)) expect(s.liveState).toBe('scheduled');
+  });
+});
+
+describe('vehicles by service', () => {
+  const od = (service_class: string) => resolveVehicle(rec({ station_id: 'odakyu:shinjuku', operator_id: 'odakyu', line_id: 'odakyu:odawara', service_class }));
+  it('the Romancecar services each get a Romancecar, and ふじさん its MSE', () => {
+    expect(od('特急ロマンスカー ふじさん')).toMatchObject({ basis: 'service-rule', status: 'verified', seriesLabel: '60000形', cars: 6 });
+    expect(od('特急ロマンスカー はこね')).toMatchObject({ seriesLabel: '70000形', status: 'representative', cars: 7 });
+    expect(od('特急ロマンスカー ホームウェイ')).toMatchObject({ seriesLabel: '30000形', status: 'representative' });
+    expect(od('快速急行')).toMatchObject({ basis: 'line-rule', seriesLabel: '3000形' });
+  });
+
+  it('京王ライナー, 小江戸 and 拝島ライナー, スペーシア日光 and きぬがわ get their own types', () => {
+    expect(resolveVehicle(rec({ station_id: 'keio:shinjuku', operator_id: 'keio', line_id: 'keio:keio', service_class: '京王ライナー' })).seriesLabel).toBe('5000系');
+    const seibu = (service_class: string) => resolveVehicle(rec({ station_id: 'seibu:seibu-shinjuku', operator_id: 'seibu', line_id: 'seibu:shinjuku', service_class }));
+    expect(seibu('特急')).toMatchObject({ seriesLabel: '10000系', cars: 7 });
+    expect(seibu('ライナー')).toMatchObject({ seriesLabel: '40000系', cars: 10 });
+    expect(seibu('急行').seriesLabel).toBe('30000系');
+    const tobu = (remarks: string) => resolveVehicle(rec({ line_id: 'jr-east:tobu-through-limited-express', service_class: '特急', remarks }));
+    expect(tobu('スペーシア日光 1号').seriesLabel).toBe('100系');
+    expect(tobu('スペーシアきぬがわ 3号').seriesLabel).toBe('100系');
+    expect(tobu('きぬがわ 3号').seriesLabel).toBe('253系1000番台');
+    for (const r of SERVICE_VEHICLE_RULES) {
+      expect(VEHICLES.some((v) => v.id === r.vehicleId), r.vehicleId).toBe(true);
+      for (const id of r.sourceIds) expect(sources.has(id), id).toBe(true);
+    }
   });
 });
 
