@@ -19,13 +19,14 @@
  *  - Odakyu: every departure, with no track — the CSV does not say which platform a train uses.
  * Times before 03:00 are written 24:xx. Arrivals are not in a departure table.
  */
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseCsv, recordsToCsv } from '../src/timetable/adapter';
 import { serviceTimeOf } from '../src/timetable/odpt';
 import type { TimetableRecord, TimetableSource } from '../src/timetable/types';
 import { LEGACY_REMARK, LEGACY_SOURCE_ID, legacyTrack, loadLegacyRows, type LegacyRow } from './legacy-events';
+import { METRO_SOURCE_ID, metroRecords, parseMetroText } from './metro-text';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const inDir = resolve(root, 'data/raw/private-saved');
@@ -101,8 +102,26 @@ function keio(): { records: TimetableRecord[]; skipped: number } {
 
 const ODAKYU_TRACKS = ['2', '3', '4', '5', '6', '7', '8', '9', '10'];
 
+/** Destinations written the same way: ヶ / ケ, and 「A + B」 / 「B・A」 for coupled trains. */
+const destKey = (s: string) => s.replace(/ヶ/g, 'ケ').split(/[+・]/).map((x) => x.trim()).filter(Boolean).sort().join('・');
+
+/**
+ * The second Odakyu table the project owner handed over (odakyu_shinjuku_down_{weekday,holiday}.csv, read from the
+ * same PDF by another tool). Where its destination differs from the first table, the first is kept — it agrees with
+ * the legacy timetable — and the difference is written into the remarks.
+ */
+function odakyuSecondOpinion(): Map<string, string> {
+  const m = new Map<string, string>();
+  for (const [f, day] of [['odakyu_shinjuku_down_weekday.csv', 'weekday'], ['odakyu_shinjuku_down_holiday.csv', 'saturday-holiday']] as const) {
+    if (!existsSync(resolve(inDir, f))) continue;
+    for (const r of rows(f)) m.set(`${day}|${serviceTimeOf(r['时刻'])}`, r['终点站'] ?? '');
+  }
+  return m;
+}
+
 function odakyu(legacy: LegacyRow[]): TimetableRecord[] {
   const seq = new Map<string, number>();
+  const second = odakyuSecondOpinion();
   return rows('odakyu_shinjuku_departures.csv').map((r) => {
     const day = dayOf(r.day_type!);
     const n = (seq.get(day) ?? 0) + 1;
@@ -134,6 +153,10 @@ function odakyu(legacy: LegacyRow[]): TimetableRecord[] {
           r.platform ? null : legacyTr ? LEGACY_REMARK : `No track for this train (the table gives only: ${r.platform_hint || 'nothing'}); not drawn.`,
           romancecar ? 'ロマンスカー' : null,
           truthy(r.coupled_split) ? '併結・分割あり' : null,
+          (() => {
+            const other = second.get(`${day}|${serviceTimeOf(r.time)}`);
+            return other && r.destination && destKey(other) !== destKey(r.destination) ? `UNCONFIRMED: another reading of the same PDF gives the destination 「${other}」` : null;
+          })(),
           r.kaisei || null,
         ]
           .filter(Boolean)
@@ -142,8 +165,30 @@ function odakyu(legacy: LegacyRow[]): TimetableRecord[] {
   });
 }
 
-/** 西武新宿 and 丸ノ内線 新宿: nothing but the legacy timetable has their trains. */
-function fromLegacy(legacy: LegacyRow[]): TimetableRecord[] {
+/** Tokyo Metro station timetables saved by hand as text (data/raw/private-saved/metro/*.txt). */
+function metro(): { records: TimetableRecord[]; covered: Set<string>; files: string[] } {
+  const dir = resolve(inDir, 'metro');
+  const records: TimetableRecord[] = [];
+  const covered = new Set<string>();
+  const files: string[] = [];
+  if (!existsSync(dir)) return { records, covered, files };
+  for (const f of readdirSync(dir).filter((x) => /\.txt$/i.test(x)).sort()) {
+    const t = parseMetroText(readFileSync(resolve(dir, f), 'utf8'));
+    if (!t) {
+      console.warn(`${f}: no timetable URL in the text; skipped`);
+      continue;
+    }
+    const rs = metroRecords(t);
+    if (!rs.length) continue;
+    files.push(f);
+    records.push(...rs);
+    for (const r of rs) if (r.platform_id) covered.add(`${r.station_id}|${r.platform_id.split(':').pop()}|${r.service_date_type}`);
+  }
+  return { records, covered, files };
+}
+
+/** 西武新宿 and 丸ノ内線 新宿: the legacy timetable, except where an official Tokyo Metro table covers the same station, track and day. */
+function fromLegacy(legacy: LegacyRow[], covered: Set<string>): TimetableRecord[] {
   const spec: Record<string, { station: string; operator: string; tracks: string[] }> = {
     'seibu:shinjuku': { station: 'seibu:seibu-shinjuku', operator: 'seibu', tracks: ['1', '2', '3'] },
     'tokyo-metro:marunouchi': { station: 'tokyo-metro:shinjuku:M08', operator: 'tokyo-metro', tracks: ['1', '2'] },
@@ -153,6 +198,7 @@ function fromLegacy(legacy: LegacyRow[]): TimetableRecord[] {
   for (const r of legacy) {
     const sp = spec[r.line_id];
     if (!sp || r.station_id !== sp.station || !r.departure) continue;
+    if (covered.has(`${sp.station}|${r.track}|${r.day}`)) continue;
     const k = `${r.line_id}|${r.day}`;
     const n = (seq.get(k) ?? 0) + 1;
     seq.set(k, n);
@@ -187,7 +233,8 @@ function main() {
   const legacy = loadLegacyRows(root);
   const k = keio();
   const o = odakyu(legacy);
-  const l = fromLegacy(legacy);
+  const m = metro();
+  const l = fromLegacy(legacy, m.covered);
   const today = new Date().toISOString().slice(0, 10);
   const sources: TimetableSource[] = [
     {
@@ -212,6 +259,17 @@ function main() {
   writeFileSync(resolve(outDir, 'keio-shinjuku.csv'), recordsToCsv(k.records));
   writeFileSync(resolve(outDir, 'odakyu-shinjuku.csv'), recordsToCsv(o));
   writeFileSync(resolve(outDir, 'legacy-seibu-metro.csv'), recordsToCsv(l));
+  writeFileSync(resolve(outDir, 'tokyometro.csv'), recordsToCsv(m.records));
+  if (m.files.length)
+    sources.push({
+      id: METRO_SOURCE_ID,
+      title: '東京メトロ 駅時刻表（transfer.tokyometro.jp、NAVITIME 提供）— ローカル専用',
+      publisher: '東京地下鉄; text copied from the pages by the project owner',
+      url: 'https://www.tokyometro.jp/station/shinjuku/timetable/index.html',
+      retrievedAt: '2026-11-17',
+      license: 'The pages forbid reproduction (「当サイトの情報を転載、コピー、改変等の行為は禁止いたします」). Local private use only; not in the repository.',
+      notes: `Files: ${m.files.join(', ')}. One station, direction and kind of day each; departure time and destination of every train. The track is the one the station drawing signs for the direction. Where a file covers a station, track and day, the legacy rows for it are not used (M08 荻窪方面 weekday: 329 of 329 trains identical in both).`,
+    });
   if (legacy.length)
     sources.push({
       id: LEGACY_SOURCE_ID,
@@ -229,7 +287,7 @@ function main() {
     for (const r of rs) m.set(`${r.line_id} ${r.service_date_type}${r.platform_id ? ` @${r.platform_id.split(':').pop()}` : ' (no track)'}`, (m.get(`${r.line_id} ${r.service_date_type}${r.platform_id ? ` @${r.platform_id.split(':').pop()}` : ' (no track)'}`) ?? 0) + 1);
     return [...m].sort();
   };
-  for (const [key, n] of count([...k.records, ...o, ...l])) console.log(`${String(n).padStart(5)}  ${key}`);
+  for (const [key, n] of count([...k.records, ...o, ...l, ...m.records])) console.log(`${String(n).padStart(5)}  ${key}`);
   console.log(`wrote ${k.records.length} Keio and ${o.length} Odakyu records (local only); ${k.skipped} Toei-direction duplicates left out`);
 }
 

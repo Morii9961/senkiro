@@ -27,10 +27,10 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { recordsToCsv } from '../src/timetable/adapter';
+import { parseCsv, recordsToCsv } from '../src/timetable/adapter';
 import { parseServiceTime } from '../src/timetable/time';
 import type { TimetableRecord, TimetableSource } from '../src/timetable/types';
-import { dateLimited, parseDigitalTimetable, parseLineList, parseStationTimetable, parseTrainPage, type DigitalColumn, type TrainColumn } from './jreast/parse';
+import { dateLimited, halfWidth, parseDigitalTimetable, parseLineList, parseStationTimetable, parseTrainPage, type DigitalColumn, type TrainColumn } from './jreast/parse';
 import { serviceTimeOf } from '../src/timetable/odpt';
 import { LEGACY_REMARK, legacyTrack, loadLegacyRows } from './legacy-events';
 
@@ -450,6 +450,29 @@ async function main() {
       savedFilled++;
     }
     console.log(`saved stop lists: ${savedFilled} tracks filled`);
+  }
+
+  // Narita Express trains from the airport: their Shinjuku arrival track, from the stop lists the project owner collected
+  // (jr_east_nex_timetables.csv, one row per train, with the stop-list URL of each)
+  const nexFile = resolve(root, 'data/raw/private-saved/jr_east_nex_timetables.csv');
+  if (existsSync(nexFile)) {
+    const [header, ...body] = parseCsv(readFileSync(nexFile, 'utf8'));
+    const col = (name: string) => header!.findIndex((h) => h.trim() === name);
+    const [cNum, cArr, cPf, cUrl] = ['列车编号_新宿方向', '新宿_着', '新宿_番线', '来源URL'].map(col);
+    let nexFilled = 0;
+    for (const cells of body) {
+      const nums = (cells[cNum!] ?? '').split('/').map((x) => x.trim()).filter(Boolean);
+      const arr = serviceTimeOf((cells[cArr!] ?? '').trim() || undefined);
+      const pf = halfWidth((cells[cPf!] ?? '').trim());
+      if (!nums.length || !arr || !/^\d+$/.test(pf)) continue;
+      for (const r of records) {
+        if (r.platform_id || r.line_id !== 'jr-east:narita-express' || !r.train_number || !nums.includes(r.train_number) || r.arrival_time_local !== arr) continue;
+        r.platform_id = `jr-east:shinjuku:${pf}`;
+        r.remarks = [r.remarks?.replace(/ ?· ?No track in the line timetable; not drawn\.?/, ''), `Track from the stop list (${(cells[cUrl!] ?? '').trim()}), collected by the project owner.`].filter(Boolean).join(' · ');
+        nexFilled++;
+      }
+    }
+    console.log(`Narita Express stop lists: ${nexFilled} tracks filled`);
   }
 
   // tracks the official line timetables do not give, from the legacy timetable the project owner handed over (when present)

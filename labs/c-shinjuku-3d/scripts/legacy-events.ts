@@ -87,8 +87,10 @@ export function loadLegacyRows(root: string): LegacyRow[] {
 export function legacyTrack(rows: LegacyRow[], q: { line_id: string; day: string; departure: string | null; destination: string | null; allowed: readonly string[] }): string | null {
   if (!q.departure) return null;
   let c = rows.filter((r) => r.line_id === q.line_id && r.day === q.day && r.departure === q.departure && r.track);
-  const dest = q.destination?.normalize('NFKC');
-  if (c.length > 1 && dest) c = c.filter((r) => r.destination === dest);
+  // 「高尾(東京都)」 and 「高尾」 are one station: compare without what is in brackets
+  const bare = (s: string) => s.normalize('NFKC').replace(/[(（][^)）]*[)）]/g, '').trim();
+  const dest = q.destination ? bare(q.destination) : null;
+  if (c.length > 1 && dest) c = c.filter((r) => bare(r.destination) === dest);
   if (c.length !== 1) return null;
   return q.allowed.includes(c[0]!.track) ? c[0]!.track : null;
 }
