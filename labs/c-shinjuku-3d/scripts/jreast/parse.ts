@@ -185,6 +185,8 @@ export interface DigitalColumn {
   article: string | null;
   first: string | null;
   end: string | null;
+  /** 次の区間: where the train runs on beyond this table, if it does. */
+  next: string | null;
   /** Times by station: arrival (着) and departure (発 or a row without a mark); HH:MM. */
   calls: { station: string; arr: string | null; dep: string | null }[];
   /** Track by station, from the 「<station>番線」 rows. */
@@ -215,15 +217,16 @@ export function parseDigitalTimetable(html: string): DigitalTimetable {
     const th2 = textOf(/<th class="table_th02">([\s\S]*?)<\/th>/.exec(row)?.[1] ?? '');
     const tds = (row.match(/<td[\s\S]*?<\/td>/g) ?? []).map(textOf);
     if (cls === 'tableTr_trainNumber') {
-      columns = tds.map((n) => ({ number: n || null, name: null, operatingDay: null, article: null, first: null, end: null, calls: [], platforms: {} }));
+      columns = tds.map((n) => ({ number: n || null, name: null, operatingDay: null, article: null, first: null, end: null, next: null, calls: [], platforms: {} }));
       continue;
     }
-    const set = (key: 'name' | 'operatingDay' | 'article' | 'first' | 'end') => tds.forEach((v, i) => columns[i] && (columns[i]![key] = v || null));
+    const set = (key: 'name' | 'operatingDay' | 'article' | 'first' | 'end' | 'next') => tds.forEach((v, i) => columns[i] && (columns[i]![key] = v || null));
     if (cls === 'tableTr_trainName') set('name');
     else if (cls === 'tableTr_operatingDay') set('operatingDay');
     else if (cls === 'tableTr_article') set('article');
     else if (cls === 'tableTr_firstTrain') set('first');
     else if (cls === 'tableTr_end') set('end');
+    else if (cls === 'tableTr_next') set('next');
     else if (cls === '' && th1) {
       const pf = /^(.+)番線$/.exec(th1);
       tds.forEach((v, i) => {
@@ -241,6 +244,19 @@ export function parseDigitalTimetable(html: string): DigitalTimetable {
         if (th2 === '着') call.arr = t;
         else call.dep = t;
       });
+    }
+  }
+  for (const col of columns) {
+    // the 終着 cell holds the station and its time (「海老名 0815」): keep the station
+    if (col.end) col.end = col.end.replace(/\s*\d{3,4}$/, '').trim() || null;
+    if (col.first) col.first = col.first.replace(/\s*\d{3,4}$/, '').trim() || null;
+    // a run that ends at a station whose row is marked 発 only: the time printed there is the arrival
+    const last = col.calls.at(-1);
+    // with no 終着 and no 次の区間, the last station with a time is where the run ends
+    const ends = last && (col.end === last.station || (!col.end && !col.next));
+    if (last && ends && last.dep && !last.arr) {
+      last.arr = last.dep;
+      last.dep = null;
     }
   }
   return { title, day: heading ?? null, columns };

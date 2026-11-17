@@ -217,12 +217,14 @@ export function runOfTrip(record: TimetableRecord, run: TrackRun | null, axis: '
 export const COMPLEMENT_WINDOW_SECONDS = 300;
 
 /**
- * Two timetables can each hold half of one stop: at 京王新線 新宿 the Toei train timetable ends with the
- * arrival of a train that runs on into the Keio New Line, and Keio's station timetable has its departure.
- * On one track and one kind of day, an arrival-only plan followed within COMPLEMENT_WINDOW_SECONDS by a
- * departure-only plan is drawn as one train: the departure record is kept and takes the arrival time of
- * the other, which is named in its remarks. Pairs are taken in time order, the nearest departure first,
- * and a pair with different destinations is not merged.
+ * Two records can each hold half of one stop: at 京王新線 新宿 the Toei train timetable ends with the
+ * arrival of a train that runs on into the Keio New Line, and Keio's station timetable has its departure;
+ * at JR 新宿 a 埼京線 train arrives under one number and leaves for 相鉄線 under another. One track holds
+ * one train, so on one track and one kind of day an arrival-only plan followed within
+ * COMPLEMENT_WINDOW_SECONDS by a departure-only plan is drawn as one train: the departure record is kept
+ * and takes the arrival time (and the train number, if it has none) of the other, which is named in its
+ * remarks with its destination. Pairs are taken in time order; a departure to the same destination is
+ * preferred, otherwise the nearest one.
  */
 export function mergeComplementaryPlans(plans: TrainPlan[]): void {
   const groups = new Map<string, TrainPlan[]>();
@@ -238,14 +240,10 @@ export function mergeComplementaryPlans(plans: TrainPlan[]): void {
     const departures = g.filter((p) => p.arrivalAssumed && p.depart != null).sort((a, b) => a.depart! - b.depart!);
     const used = new Set<TrainPlan>();
     for (const a of arrivals) {
-      const b = departures.find(
-        (d) =>
-          !used.has(d) &&
-          d.depart! >= a.arrive &&
-          d.depart! - a.arrive <= COMPLEMENT_WINDOW_SECONDS &&
-          // compared after NFKC: one source writes 塚 as the compatibility ideograph U+FA10
-          (a.record.destination_text == null || d.record.destination_text == null || a.record.destination_text.normalize('NFKC') === d.record.destination_text.normalize('NFKC')),
-      );
+      const near = departures.filter((d) => !used.has(d) && d.depart! >= a.arrive && d.depart! - a.arrive <= COMPLEMENT_WINDOW_SECONDS);
+      // compared after NFKC: one source writes 塚 as the compatibility ideograph U+FA10
+      const dest = (p: TrainPlan) => p.record.destination_text?.normalize('NFKC') ?? null;
+      const b = near.find((d) => dest(d) != null && dest(d) === dest(a)) ?? near[0];
       if (!b) continue;
       used.add(b);
       drop.add(a);
@@ -253,7 +251,12 @@ export function mergeComplementaryPlans(plans: TrainPlan[]): void {
         ...b.record,
         arrival_time_local: a.record.arrival_time_local,
         train_number: b.record.train_number ?? a.record.train_number,
-        remarks: [b.record.remarks, `Arrival time${b.record.train_number == null && a.record.train_number != null ? ' and train number' : ''} from ${a.record.trip_id} (${a.record.source_id}).`].filter(Boolean).join(' · '),
+        remarks: [
+          b.record.remarks,
+          `Arrival time${b.record.train_number == null && a.record.train_number != null ? ' and train number' : ''} from ${a.record.trip_id} (${a.record.source_id})${dest(a) !== dest(b) && a.record.destination_text ? `, which arrives as a train for ${a.record.destination_text}${a.record.train_number ? ` (${a.record.train_number})` : ''}` : ''}.`,
+        ]
+          .filter(Boolean)
+          .join(' · '),
       };
       b.arrive = a.arrive;
       b.arrivalAssumed = false;

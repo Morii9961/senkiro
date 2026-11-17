@@ -32,6 +32,7 @@ import { parseServiceTime } from '../src/timetable/time';
 import type { TimetableRecord, TimetableSource } from '../src/timetable/types';
 import { dateLimited, parseDigitalTimetable, parseLineList, parseStationTimetable, parseTrainPage, type DigitalColumn, type TrainColumn } from './jreast/parse';
 import { serviceTimeOf } from '../src/timetable/odpt';
+import { LEGACY_REMARK, legacyTrack, loadLegacyRows } from './legacy-events';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const cacheDir = resolve(root, 'data/raw/jreast-cache');
@@ -422,6 +423,28 @@ async function main() {
     }
   }
   if (savedFiles.length) console.log(`saved line timetables: ${savedFiles.length} files, ${fromSaved} trains added, ${filled} completed`);
+
+  // tracks the official line timetables do not give, from the legacy timetable the project owner handed over (when present)
+  const legacy = loadLegacyRows(root);
+  let legacyFilled = 0;
+  if (legacy.length) {
+    const TRACKS: Record<string, string[]> = {
+      'jr-east:chuo-rapid': ['7', '8', '11', '12'],
+      'jr-east:saikyo': ['1', '2', '3', '4'],
+      'jr-east:shonan-shinjuku': ['1', '2', '3', '4', '5', '6'],
+      'jr-east:narita-express': ['5', '6'],
+      'jr-east:chuo-limited-express': ['7', '8', '9', '10'],
+    };
+    for (const r of records) {
+      if (r.platform_id || !TRACKS[r.line_id]) continue;
+      const track = legacyTrack(legacy, { line_id: r.line_id, day: r.service_date_type, departure: r.departure_time_local, destination: r.destination_text, allowed: TRACKS[r.line_id]! });
+      if (!track) continue;
+      r.platform_id = `jr-east:shinjuku:${track}`;
+      r.remarks = [r.remarks?.replace(/ ?· ?No track in the line timetable; not drawn\./, ''), LEGACY_REMARK].filter(Boolean).join(' · ');
+      legacyFilled++;
+    }
+    console.log(`legacy timetable: ${legacyFilled} tracks filled`);
+  }
 
   const time = (r: TimetableRecord) => parseServiceTime(r.departure_time_local ?? r.arrival_time_local) ?? 0;
   records.sort((a, b) => a.line_id.localeCompare(b.line_id) || a.service_date_type.localeCompare(b.service_date_type) || time(a) - time(b) || a.trip_id.localeCompare(b.trip_id));

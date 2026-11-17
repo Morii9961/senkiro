@@ -272,9 +272,12 @@ describe('train simulation', () => {
     expect(merged.record.arrival_time_local).toBe('08:15');
     expect(merged.record.train_number).toBe('753T'); // the departure table has none; the arrival record's number is kept
     expect(merged.record.remarks).toMatch(/toei-1/);
-    // a different destination is not merged
-    const far = plansOf([arrival, rec({ ...departure, destination_text: '橋本' })]).plans;
-    expect(far).toHaveLength(2);
+    // a departure to another destination is still the same train on this track (renumbered or turned back), and says so
+    const renumbered = plansOf([arrival, rec({ ...departure, destination_text: '橋本' })]).plans;
+    expect(renumbered).toHaveLength(1);
+    expect(renumbered[0]!.record.remarks).toMatch(/arrives as a train for 笹塚 \(753T\)/);
+    // too far apart: two trains
+    expect(plansOf([arrival, rec({ ...departure, departure_time_local: '08:30' })]).plans).toHaveLength(2);
   });
 
   it('on an east–west platform a trip that names its direction runs that way', () => {

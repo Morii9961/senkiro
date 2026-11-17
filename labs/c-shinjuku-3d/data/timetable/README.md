@@ -32,6 +32,8 @@
 - `keio-shinjuku.csv`、`odakyu-shinjuku.csv`、`private-sources.json`：由 `npx tsx scripts/import-private-timetables.ts` 从用户交来的
   CSV（放在 `data/raw/private-saved/`）生成。京王有逐班番线；小田急只有站台组，不上轨。京王新线 4 号站台的西行发车与都营的西行到站
   在模拟里合为一班（`mergeComplementaryPlans`）。
+- `legacy-seibu-metro.csv`：用户交来的 `timetable_events.csv`（雅虎路线信息层，未核实，放在 `data/raw/private-saved/`）里的西武新宿和丸之内线新宿；
+  同一文件还被 `fetch-timetable-jreast.ts`、`import-private-timetables.ts` 用来补 JR 与小田急的番线（`scripts/legacy-events.ts`），只补空缺、不覆盖官方值。
 - `npx tsx scripts/timetable-coverage.ts`：逐个站台面列出平日 / 周日的班次数和来源，0 / 0 就是没有任何时刻表。
 
 `direction_id`：JR 新宿的记录可写 `southbound` / `northbound`（按前后停车站），列车在通过式番线上按此方向进出。

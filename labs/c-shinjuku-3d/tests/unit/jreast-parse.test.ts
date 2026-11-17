@@ -77,7 +77,7 @@ describe('JR East timetable page readers (local-only fetch script)', () => {
 <tr><th class="table_th01"><span class="v_scale">甲</span></th><th class="table_th02">発</th><td>0700</td><td>0705</td></tr>
 <tr><th class="table_th01"><span class="v_scale">新宿</span></th><th class="table_th02">着</th><td>0759</td><td>レ</td></tr>
 <tr><th class="table_th01"><span class="v_scale">新宿番線</span></th><th class="table_th02"></th><td>(７)</td><td></td></tr>
-<tr class="tableTr_end"><th class="table_th01">終着</th><th class="table_th02"></th><td><span class="e_trainText">新宿</span></td><td><span class="e_trainText">乙</span></td></tr>
+<tr class="tableTr_end"><th class="table_th01">終着</th><th class="table_th02"></th><td><span class="e_trainText">新宿</span> <span class="e_trainText_num">0759</span></td><td><span class="e_trainText">乙</span> <span class="e_trainText_num">0830</span></td></tr>
 </table>`;
     const t = parseDigitalTimetable(DIGITAL);
     expect(t.title).toBe('線B 上り (甲－乙)');

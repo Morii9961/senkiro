@@ -25,6 +25,7 @@ import { fileURLToPath } from 'node:url';
 import { parseCsv, recordsToCsv } from '../src/timetable/adapter';
 import { serviceTimeOf } from '../src/timetable/odpt';
 import type { TimetableRecord, TimetableSource } from '../src/timetable/types';
+import { LEGACY_REMARK, LEGACY_SOURCE_ID, legacyTrack, loadLegacyRows, type LegacyRow } from './legacy-events';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const inDir = resolve(root, 'data/raw/private-saved');
@@ -98,18 +99,22 @@ function keio(): { records: TimetableRecord[]; skipped: number } {
   return { records, skipped };
 }
 
-function odakyu(): TimetableRecord[] {
+const ODAKYU_TRACKS = ['2', '3', '4', '5', '6', '7', '8', '9', '10'];
+
+function odakyu(legacy: LegacyRow[]): TimetableRecord[] {
   const seq = new Map<string, number>();
   return rows('odakyu_shinjuku_departures.csv').map((r) => {
     const day = dayOf(r.day_type!);
     const n = (seq.get(day) ?? 0) + 1;
     seq.set(day, n);
     const romancecar = truthy(r.romancecar);
+    const legacyTr = r.platform ? null : legacyTrack(legacy, { line_id: 'odakyu:odawara', day, departure: serviceTimeOf(r.time), destination: r.destination || null, allowed: ODAKYU_TRACKS });
+    const track = r.platform || legacyTr;
     return {
       station_id: 'odakyu:shinjuku',
       operator_id: 'odakyu',
       line_id: 'odakyu:odawara',
-      platform_id: r.platform ? `odakyu:shinjuku:${r.platform}` : null,
+      platform_id: track ? `odakyu:shinjuku:${track}` : null,
       direction_id: null,
       service_date_type: day,
       trip_id: `odakyu-tt:${day}:${String(n).padStart(4, '0')}`,
@@ -126,7 +131,7 @@ function odakyu(): TimetableRecord[] {
       valid_until: null,
       remarks:
         [
-          r.platform ? null : `No track for this train (the table gives only: ${r.platform_hint || 'nothing'}); not drawn.`,
+          r.platform ? null : legacyTr ? LEGACY_REMARK : `No track for this train (the table gives only: ${r.platform_hint || 'nothing'}); not drawn.`,
           romancecar ? 'ロマンスカー' : null,
           truthy(r.coupled_split) ? '併結・分割あり' : null,
           r.kaisei || null,
@@ -137,10 +142,52 @@ function odakyu(): TimetableRecord[] {
   });
 }
 
+/** 西武新宿 and 丸ノ内線 新宿: nothing but the legacy timetable has their trains. */
+function fromLegacy(legacy: LegacyRow[]): TimetableRecord[] {
+  const spec: Record<string, { station: string; operator: string; tracks: string[] }> = {
+    'seibu:shinjuku': { station: 'seibu:seibu-shinjuku', operator: 'seibu', tracks: ['1', '2', '3'] },
+    'tokyo-metro:marunouchi': { station: 'tokyo-metro:shinjuku:M08', operator: 'tokyo-metro', tracks: ['1', '2'] },
+  };
+  const seq = new Map<string, number>();
+  const out: TimetableRecord[] = [];
+  for (const r of legacy) {
+    const sp = spec[r.line_id];
+    if (!sp || r.station_id !== sp.station || !r.departure) continue;
+    const k = `${r.line_id}|${r.day}`;
+    const n = (seq.get(k) ?? 0) + 1;
+    seq.set(k, n);
+    const track = sp.tracks.includes(r.track) ? r.track : null;
+    out.push({
+      station_id: sp.station,
+      operator_id: sp.operator,
+      line_id: r.line_id,
+      platform_id: track ? `${sp.station}:${track}` : null,
+      direction_id: null,
+      service_date_type: r.day,
+      trip_id: `legacy:${r.line_id}:${r.day}:${String(n).padStart(4, '0')}`,
+      train_number: null,
+      arrival_time_local: null,
+      departure_time_local: r.departure,
+      destination_text: r.destination || null,
+      service_class: r.service_class || null,
+      vehicle_series: null,
+      formation_length: null,
+      vehicle_assignment_status: 'unknown',
+      source_id: LEGACY_SOURCE_ID,
+      valid_from: null,
+      valid_until: null,
+      remarks: [track ? null : 'No track in the legacy table; not drawn.', r.remarks || null].filter(Boolean).join(' · ') || null,
+    });
+  }
+  return out;
+}
+
 function main() {
   mkdirSync(outDir, { recursive: true });
+  const legacy = loadLegacyRows(root);
   const k = keio();
-  const o = odakyu();
+  const o = odakyu(legacy);
+  const l = fromLegacy(legacy);
   const today = new Date().toISOString().slice(0, 10);
   const sources: TimetableSource[] = [
     {
@@ -164,13 +211,25 @@ function main() {
   ];
   writeFileSync(resolve(outDir, 'keio-shinjuku.csv'), recordsToCsv(k.records));
   writeFileSync(resolve(outDir, 'odakyu-shinjuku.csv'), recordsToCsv(o));
+  writeFileSync(resolve(outDir, 'legacy-seibu-metro.csv'), recordsToCsv(l));
+  if (legacy.length)
+    sources.push({
+      id: LEGACY_SOURCE_ID,
+      title: 'timetable_events.csv（新宿駅 全列車時刻、Yahoo!路線情報 由来の層）— ローカル専用・未確認',
+      publisher: 'CSV handed over by the project owner (built 2026-11-14 by another tool; layer src-legacy-yahoo-2026-11)',
+      url: null,
+      retrievedAt: '2026-11-17',
+      license: 'Not licensed for redistribution. Local private use only; not in the repository.',
+      notes:
+        'Departure tables with a track per train, status pending_verification in the file itself. Used only where nothing better exists: the trains of 西武新宿 and 丸ノ内線 新宿, and the tracks of Odakyu trains and of JR 中央線快速 / 埼京線 trains. Where this prototype has official tracks, the legacy tracks agree on every unambiguous match (JR 908, Keio 699; 2026-11-17). The file\'s Toei GTFS layer is identical to the committed Toei timetable and is not used. Vehicle claims in the file are not used.',
+    });
   writeFileSync(resolve(outDir, 'private-sources.json'), JSON.stringify({ generatedAt: today, sources }, null, 2) + '\n');
   const count = (rs: TimetableRecord[]) => {
     const m = new Map<string, number>();
     for (const r of rs) m.set(`${r.line_id} ${r.service_date_type}${r.platform_id ? ` @${r.platform_id.split(':').pop()}` : ' (no track)'}`, (m.get(`${r.line_id} ${r.service_date_type}${r.platform_id ? ` @${r.platform_id.split(':').pop()}` : ' (no track)'}`) ?? 0) + 1);
     return [...m].sort();
   };
-  for (const [key, n] of count([...k.records, ...o])) console.log(`${String(n).padStart(5)}  ${key}`);
+  for (const [key, n] of count([...k.records, ...o, ...l])) console.log(`${String(n).padStart(5)}  ${key}`);
   console.log(`wrote ${k.records.length} Keio and ${o.length} Odakyu records (local only); ${k.skipped} Toei-direction duplicates left out`);
 }
 
