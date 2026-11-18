@@ -475,6 +475,35 @@ async function main() {
     console.log(`Narita Express stop lists: ${nexFilled} tracks filled`);
   }
 
+  // 埼京線 trains that end at 新宿: their arrival track, from the stop lists the project owner collected
+  // (saikyo_terminating_shinjuku.csv, one row per train seen in the 池袋 / 渋谷 departure tables, with the stop-list URL of each)
+  const saikyoFile = resolve(root, 'data/raw/private-saved/saikyo_terminating_shinjuku.csv');
+  if (existsSync(saikyoFile)) {
+    const [header, ...body] = parseCsv(readFileSync(saikyoFile, 'utf8').replace(/^\uFEFF/, ''));
+    const col = (name: string) => header!.findIndex((h) => h.trim() === name);
+    const [cDay, cNum, cArr, cPf, cUrl] = ['日历类型', '列车番号', '新宿_着时刻', '新宿_番线', '详情页URL'].map(col);
+    let saikyoFilled = 0;
+    let saikyoUnmatched = 0;
+    for (const cells of body) {
+      const nums = (cells[cNum!] ?? '').split('/').map((x) => halfWidth(x.trim())).filter(Boolean);
+      const day = (cells[cDay!] ?? '').trim() === '平日' ? 'weekday' : 'saturday-holiday';
+      const arr = serviceTimeOf((cells[cArr!] ?? '').trim() || undefined);
+      const pf = halfWidth((cells[cPf!] ?? '').trim());
+      if (!nums.length || !arr || !/^\d+$/.test(pf)) continue;
+      let hit = false;
+      for (const r of records) {
+        if (r.line_id !== 'jr-east:saikyo' || r.service_date_type !== day || !r.train_number || !nums.includes(r.train_number) || r.arrival_time_local !== arr) continue;
+        hit = true;
+        if (r.platform_id) continue;
+        r.platform_id = `jr-east:shinjuku:${pf}`;
+        r.remarks = [r.remarks?.replace(/ ?· ?No track in the line timetable; not drawn\.?/, ''), `Track from the stop list (${(cells[cUrl!] ?? '').trim()}), collected by the project owner.`].filter(Boolean).join(' · ');
+        saikyoFilled++;
+      }
+      if (!hit) saikyoUnmatched++;
+    }
+    console.log(`埼京線 terminators' stop lists: ${saikyoFilled} tracks filled, ${saikyoUnmatched} rows matched no train`);
+  }
+
   // tracks the official line timetables do not give, from the legacy timetable the project owner handed over (when present)
   const legacy = loadLegacyRows(root);
   let legacyFilled = 0;

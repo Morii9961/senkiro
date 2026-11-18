@@ -336,9 +336,9 @@ function main() {
       title: '東京メトロ 駅時刻表（transfer.tokyometro.jp、NAVITIME 提供）— ローカル専用',
       publisher: '東京地下鉄; text copied from the pages by the project owner',
       url: 'https://www.tokyometro.jp/station/shinjuku/timetable/index.html',
-      retrievedAt: '2026-11-17',
+      retrievedAt: '2026-11-18',
       license: 'The pages forbid reproduction (「当サイトの情報を転載、コピー、改変等の行為は禁止いたします」). Local private use only; not in the repository.',
-      notes: `Files: ${m.files.join(', ')}. One station, direction and kind of day each; departure time and destination of every train. The track is the one the station drawing signs for the direction. Where a file covers a station, track and day, the legacy rows for it are not used (M08 荻窪方面 weekday: 329 of 329 trains identical in both).`,
+      notes: `Files: ${m.files.join(', ')}. One station, direction and kind of day each; departure time and destination of every train. The track is the one the station drawing signs for the direction. Where a file covers a station, track and day, the legacy rows for it are not used. M08 both directions, weekday and Saturday / holiday: all 1,144 trains identical in both (day, track, time, destination). M08 荻窪方面 weekday saved 2026-11-17, the other 11 files 2026-11-18. 当駅始発 marks are kept as a remark.`,
     });
   if (legacy.length)
     sources.push({

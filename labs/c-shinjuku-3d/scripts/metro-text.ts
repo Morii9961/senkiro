@@ -8,6 +8,7 @@
  *   URL: https://transfer.tokyometro.jp/website/timetable?numbering=M08&direction=1&schedule=weekday
  *   05:16 荻窪 行き
  *   07:23 急行 和光市 行き      (a train type before the destination, where the page shows one)
+ *   05:07 各駅停車 当駅始発 元町・中華街 行き   (当駅始発: the train starts here)
  */
 import type { TimetableRecord } from '../src/timetable/types';
 import { serviceTimeOf } from '../src/timetable/odpt';
@@ -26,7 +27,7 @@ export interface MetroTimetable {
   direction: string;
   day: 'weekday' | 'saturday-holiday';
   url: string;
-  entries: { time: string; type: string | null; destination: string }[];
+  entries: { time: string; type: string | null; destination: string; startsHere: boolean }[];
 }
 
 export function parseMetroText(text: string): MetroTimetable | null {
@@ -42,9 +43,10 @@ export function parseMetroText(text: string): MetroTimetable | null {
     const line = raw.trim().normalize('NFKC');
     const m = /^(\d{1,2}):(\d{2})\s+(.+?)\s*行き$/.exec(line);
     if (!m) continue;
-    const words = m[3]!.split(/\s+/);
+    const all = m[3]!.split(/\s+/);
+    const words = all.filter((w) => w !== '当駅始発');
     const destination = words.pop()!;
-    entries.push({ time: `${m[1]!.padStart(2, '0')}:${m[2]}`, type: words.length ? words.join(' ') : null, destination });
+    entries.push({ time: `${m[1]!.padStart(2, '0')}:${m[2]}`, type: words.length ? words.join(' ') : null, destination, startsHere: all.length !== words.length + 1 });
   }
   return { numbering, direction, day: schedule === 'weekday' ? 'weekday' : 'saturday-holiday', url, entries };
 }
@@ -72,6 +74,6 @@ export function metroRecords(t: MetroTimetable): TimetableRecord[] {
     source_id: METRO_SOURCE_ID,
     valid_from: null,
     valid_until: null,
-    remarks: e.type ? null : 'Type not printed on the page (各駅停車 is the only type of this line at this station).',
+    remarks: [e.startsHere ? '当駅始発' : null, e.type ? null : 'Type not printed on the page (各駅停車 is the only type of this line at this station).'].filter(Boolean).join(' · ') || null,
   }));
 }

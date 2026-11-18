@@ -331,8 +331,14 @@ describe('vehicles by service', () => {
     expect(resolveVehicle(rec({ station_id: 'keio:shinjuku', operator_id: 'keio', line_id: 'keio:keio', service_class: '京王ライナー' })).seriesLabel).toBe('5000系');
     const seibu = (service_class: string) => resolveVehicle(rec({ station_id: 'seibu:seibu-shinjuku', operator_id: 'seibu', line_id: 'seibu:shinjuku', service_class }));
     expect(seibu('特急')).toMatchObject({ seriesLabel: '10000系', cars: 7 });
+    expect(seibu('特急小江戸')).toMatchObject({ seriesLabel: '10000系', cars: 7 });
     expect(seibu('ライナー')).toMatchObject({ seriesLabel: '40000系', cars: 10 });
+    expect(seibu('拝島ライナー')).toMatchObject({ seriesLabel: '40000系', cars: 10 });
     expect(seibu('急行').seriesLabel).toBe('30000系');
+    // S-TRAIN through the 副都心線 is Seibu's 40000系; other 副都心線 trains keep the line's representative type
+    const fukutoshin = (service_class: string) => resolveVehicle(rec({ station_id: 'tokyo-metro:shinjuku-sanchome:F13', operator_id: 'tokyo-metro', line_id: 'tokyo-metro:fukutoshin', service_class }));
+    expect(fukutoshin('S-TRAIN2号')).toMatchObject({ basis: 'service-rule', status: 'verified', seriesLabel: '40000系', cars: 10 });
+    expect(fukutoshin('Fライナー').basis).not.toBe('service-rule');
     const tobu = (remarks: string) => resolveVehicle(rec({ line_id: 'jr-east:tobu-through-limited-express', service_class: '特急', remarks }));
     expect(tobu('スペーシア日光 1号').seriesLabel).toBe('100系');
     expect(tobu('スペーシアきぬがわ 3号').seriesLabel).toBe('100系');

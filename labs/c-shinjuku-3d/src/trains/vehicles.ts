@@ -536,6 +536,10 @@ export const SERVICE_VEHICLE_RULES: readonly ServiceVehicleRule[] = [
     note: '拝島ライナー runs with the 40000系 (two 10-car sets).',
   },
   {
+    line_id: 'tokyo-metro:fukutoshin', match: /S-TRAIN/, vehicleId: 'seibu:40000', status: 'verified', cars: 10, sourceIds: ['src:tokyometro-s-train'],
+    note: 'The reserved-seat S-TRAIN (西武秩父–元町・中華街 on Saturdays and holidays, through 副都心線) runs with the Seibu 40000系.',
+  },
+  {
     line_id: 'jr-east:tobu-through-limited-express', match: /スペーシア/, vehicleId: 'tobu:100', status: 'verified', cars: 6, sourceIds: ['src:tobu-spacia-100'],
     note: 'Tobu states that its 100系 Spacia runs the JR through train 「スペーシア日光」.',
   },
