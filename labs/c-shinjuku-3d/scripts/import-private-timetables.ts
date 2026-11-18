@@ -47,10 +47,20 @@ function rows(file: string): Row[] {
 const dayOf = (s: string): string => (s === '平日' ? 'weekday' : s === '土休日' ? 'saturday-holiday' : s);
 const truthy = (s: string | undefined) => s === 'True' || s === 'true' || s === '1';
 
-function keio(): { records: TimetableRecord[]; skipped: number } {
+/** 京王ライナー / Mt.TAKAO号 checked against Keio's 座席指定列車 pages (keio_liner_shinjuku_verified.csv): day|time → row. */
+function keioLinerChecked(): Map<string, Row> {
+  const m = new Map<string, Row>();
+  if (!existsSync(resolve(inDir, 'keio_liner_shinjuku_verified.csv'))) return m;
+  for (const r of rows('keio_liner_shinjuku_verified.csv')) m.set(`${dayOf(r['日別']!)}|${r['時刻']}`, r);
+  return m;
+}
+
+function keio(): { records: TimetableRecord[]; skipped: number; linerChecked: number } {
   const records: TimetableRecord[] = [];
   let skipped = 0;
+  let linerChecked = 0;
   const seq = new Map<string, number>();
+  const liner = keioLinerChecked();
   for (const r of rows('keio_shinjuku_departures.csv')) {
     const day = dayOf(r.day_type!);
     const starts = truthy(r.origin_here);
@@ -68,11 +78,15 @@ function keio(): { records: TimetableRecord[]; skipped: number } {
     const k = `${r.line_param}|${day}`;
     const n = (seq.get(k) ?? 0) + 1;
     seq.set(k, n);
+    // a seat-reserved train in the checked list: its type, number, destination and track agree, so the type is no longer an inference
+    const checked = r.line_param === '1' ? liner.get(`${day}|${r.time}`) : undefined;
+    const agrees = checked && checked['種別'] === r.type && checked['去向'] === r.destination && checked['番線'] === r.platform;
+    if (agrees) linerChecked++;
     const notes = [
       r.note || null,
       starts ? '当駅始発' : null,
       truthy(r.reserved_seat) ? '座席指定' : null,
-      r.type_source && r.type_source !== 'page' ? `type: ${r.type_source}` : null,
+      agrees ? `${checked!['種別']} ${checked!['号数']} (type confirmed on ${checked!['公式種別確認URL']})` : r.type_source && r.type_source !== 'page' ? `type: ${r.type_source}` : null,
       r.kaisei ? `${r.kaisei}` : null,
     ].filter(Boolean);
     records.push({
@@ -97,7 +111,7 @@ function keio(): { records: TimetableRecord[]; skipped: number } {
       remarks: notes.join(' · ') || null,
     });
   }
-  return { records, skipped };
+  return { records, skipped, linerChecked };
 }
 
 const ODAKYU_TRACKS = ['2', '3', '4', '5', '6', '7', '8', '9', '10'];
@@ -165,6 +179,49 @@ function odakyu(legacy: LegacyRow[]): TimetableRecord[] {
   });
 }
 
+const SEIBU_SOURCE = 'local:seibu-station-timetable';
+
+/**
+ * 西武新宿 from Seibu's own station timetable (seibu.ekitan.com, saved as seibu_shinjuku_{weekday,holiday}.csv by the
+ * project owner): time, type, destination of every departure. It agrees train by train with the legacy layer, which
+ * also gives a track; Seibu's pages give none, so the track is taken from the legacy row of the same time and
+ * destination. Empty when the files are absent (the legacy rows are used instead).
+ */
+function seibu(legacy: LegacyRow[]): TimetableRecord[] {
+  const out: TimetableRecord[] = [];
+  for (const f of ['seibu_shinjuku_weekday.csv', 'seibu_shinjuku_holiday.csv']) {
+    if (!existsSync(resolve(inDir, f))) continue;
+    let n = 0;
+    for (const r of rows(f)) {
+      const day = dayOf(r['日別']!);
+      const dep = serviceTimeOf(r['時刻']);
+      const track = legacyTrack(legacy, { line_id: 'seibu:shinjuku', day, departure: dep, destination: r['去向'] || null, allowed: ['1', '2', '3'] });
+      out.push({
+        station_id: 'seibu:seibu-shinjuku',
+        operator_id: 'seibu',
+        line_id: 'seibu:shinjuku',
+        platform_id: track ? `seibu:seibu-shinjuku:${track}` : null,
+        direction_id: null,
+        service_date_type: day,
+        trip_id: `seibu-tt:${day}:${String(++n).padStart(4, '0')}`,
+        train_number: null,
+        arrival_time_local: null,
+        departure_time_local: dep,
+        destination_text: r['去向'] || null,
+        service_class: r['種別'] || null,
+        vehicle_series: null,
+        formation_length: null,
+        vehicle_assignment_status: 'unknown',
+        source_id: SEIBU_SOURCE,
+        valid_from: null,
+        valid_until: null,
+        remarks: [r['始発'] === '○' ? '当駅始発' : null, track ? LEGACY_REMARK : 'No track (Seibu\'s timetable gives none, and no legacy row matches); not drawn.'].filter(Boolean).join(' · ') || null,
+      });
+    }
+  }
+  return out;
+}
+
 /** Tokyo Metro station timetables saved by hand as text (data/raw/private-saved/metro/*.txt). */
 function metro(): { records: TimetableRecord[]; covered: Set<string>; files: string[] } {
   const dir = resolve(inDir, 'metro');
@@ -188,7 +245,7 @@ function metro(): { records: TimetableRecord[]; covered: Set<string>; files: str
 }
 
 /** 西武新宿 and 丸ノ内線 新宿: the legacy timetable, except where an official Tokyo Metro table covers the same station, track and day. */
-function fromLegacy(legacy: LegacyRow[], covered: Set<string>): TimetableRecord[] {
+function fromLegacy(legacy: LegacyRow[], covered: Set<string>, seibuOfficial: boolean): TimetableRecord[] {
   const spec: Record<string, { station: string; operator: string; tracks: string[] }> = {
     'seibu:shinjuku': { station: 'seibu:seibu-shinjuku', operator: 'seibu', tracks: ['1', '2', '3'] },
     'tokyo-metro:marunouchi': { station: 'tokyo-metro:shinjuku:M08', operator: 'tokyo-metro', tracks: ['1', '2'] },
@@ -199,6 +256,7 @@ function fromLegacy(legacy: LegacyRow[], covered: Set<string>): TimetableRecord[
     const sp = spec[r.line_id];
     if (!sp || r.station_id !== sp.station || !r.departure) continue;
     if (covered.has(`${sp.station}|${r.track}|${r.day}`)) continue;
+    if (seibuOfficial && r.line_id === 'seibu:shinjuku') continue;
     const k = `${r.line_id}|${r.day}`;
     const n = (seq.get(k) ?? 0) + 1;
     seq.set(k, n);
@@ -234,7 +292,8 @@ function main() {
   const k = keio();
   const o = odakyu(legacy);
   const m = metro();
-  const l = fromLegacy(legacy, m.covered);
+  const sb = seibu(legacy);
+  const l = fromLegacy(legacy, m.covered, sb.length > 0);
   const today = new Date().toISOString().slice(0, 10);
   const sources: TimetableSource[] = [
     {
@@ -260,6 +319,17 @@ function main() {
   writeFileSync(resolve(outDir, 'odakyu-shinjuku.csv'), recordsToCsv(o));
   writeFileSync(resolve(outDir, 'legacy-seibu-metro.csv'), recordsToCsv(l));
   writeFileSync(resolve(outDir, 'tokyometro.csv'), recordsToCsv(m.records));
+  writeFileSync(resolve(outDir, 'seibu-shinjuku.csv'), recordsToCsv(sb));
+  if (sb.length)
+    sources.push({
+      id: SEIBU_SOURCE,
+      title: '西武鉄道 西武新宿駅 時刻表（seibu.ekitan.com）— ローカル専用',
+      publisher: '西武鉄道 (seibu.ekitan.com); CSV handed over by the project owner',
+      url: 'https://seibu.ekitan.com/norikae/timetable/station/238-0/d1?dw=0',
+      retrievedAt: '2026-11-18',
+      license: 'Not licensed for redistribution. Local private use only; not in the repository.',
+      notes: `Seibu's own station timetable of 西武新宿 (weekday dw=0, Saturday / holiday dw=1): time, type and destination of all ${sb.length} departures. Identical, train by train, to the legacy layer (day, time, destination; the legacy wording of the types is shorter: 特急 / ライナー for 特急小江戸 / 拝島ライナー). Seibu gives no track; the track is the legacy one.`,
+    });
   if (m.files.length)
     sources.push({
       id: METRO_SOURCE_ID,
@@ -287,7 +357,8 @@ function main() {
     for (const r of rs) m.set(`${r.line_id} ${r.service_date_type}${r.platform_id ? ` @${r.platform_id.split(':').pop()}` : ' (no track)'}`, (m.get(`${r.line_id} ${r.service_date_type}${r.platform_id ? ` @${r.platform_id.split(':').pop()}` : ' (no track)'}`) ?? 0) + 1);
     return [...m].sort();
   };
-  for (const [key, n] of count([...k.records, ...o, ...l, ...m.records])) console.log(`${String(n).padStart(5)}  ${key}`);
+  for (const [key, n] of count([...k.records, ...o, ...l, ...m.records, ...sb])) console.log(`${String(n).padStart(5)}  ${key}`);
+  console.log(`京王ライナー / Mt.TAKAO号 confirmed: ${k.linerChecked}; 西武新宿 official: ${sb.length}`);
   console.log(`wrote ${k.records.length} Keio and ${o.length} Odakyu records (local only); ${k.skipped} Toei-direction duplicates left out`);
 }
 
