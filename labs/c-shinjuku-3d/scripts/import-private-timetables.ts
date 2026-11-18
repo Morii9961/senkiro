@@ -133,9 +133,34 @@ function odakyuSecondOpinion(): Map<string, string> {
   return m;
 }
 
+/**
+ * The trains whose two readings differed, checked by the project owner against Odakyu's own timetable pages
+ * (odakyu_shinjuku_trains_verified.csv: day, time, type, name and number, destination, split, the page read): day|time → row.
+ */
+function odakyuChecked(): Map<string, Row> {
+  const m = new Map<string, Row>();
+  if (!existsSync(resolve(inDir, 'odakyu_shinjuku_trains_verified.csv'))) return m;
+  for (const r of rows('odakyu_shinjuku_trains_verified.csv')) m.set(`${dayOf(r['日别']!)}|${serviceTimeOf(r['新宿发车时刻'])}`, r);
+  return m;
+}
+
+let odakyuConfirmed = 0;
+
+/** The remark on a train whose two readings differ: confirmed when the checked list agrees with the destination kept. */
+function odakyuDestinationRemark(destination: string, other: string, checked: Row | undefined): string {
+  if (checked && checked['终点站'] && destKey(checked['终点站']) === destKey(destination)) {
+    odakyuConfirmed++;
+    const what = [checked['列车名号数'], checked['分割併結']].filter(Boolean).join('; ');
+    return `Destination confirmed on ${checked['来源URL']} (checked by the project owner, 2026-11-18${what ? `: ${what}` : ''})`;
+  }
+  const checkedNote = checked?.['终点站'] ? `; the project owner's check of Odakyu's pages gives 「${checked['终点站']}」` : '';
+  return `UNCONFIRMED: another reading of the same PDF gives the destination 「${other}」${checkedNote}`;
+}
+
 function odakyu(legacy: LegacyRow[]): TimetableRecord[] {
   const seq = new Map<string, number>();
   const second = odakyuSecondOpinion();
+  const checked = odakyuChecked();
   return rows('odakyu_shinjuku_departures.csv').map((r) => {
     const day = dayOf(r.day_type!);
     const n = (seq.get(day) ?? 0) + 1;
@@ -169,7 +194,7 @@ function odakyu(legacy: LegacyRow[]): TimetableRecord[] {
           truthy(r.coupled_split) ? '併結・分割あり' : null,
           (() => {
             const other = second.get(`${day}|${serviceTimeOf(r.time)}`);
-            return other && r.destination && destKey(other) !== destKey(r.destination) ? `UNCONFIRMED: another reading of the same PDF gives the destination 「${other}」` : null;
+            return other && r.destination && destKey(other) !== destKey(r.destination) ? odakyuDestinationRemark(r.destination, other, checked.get(`${day}|${serviceTimeOf(r.time)}`)) : null;
           })(),
           r.kaisei || null,
         ]
@@ -312,7 +337,7 @@ function main() {
       url: 'https://www.odakyu.jp/station/shinjuku/',
       retrievedAt: '2026-11-17',
       license: 'Not licensed for redistribution. Local private use only; not in the repository.',
-      notes: `CSV odakyu_shinjuku_departures.csv (retrieved 2026-11-17 by the project owner): departure times checked minute by minute against Odakyu's PDF timetable (according to the CSV), types and destinations from 駅探, 2026年3月14日 / 16日 改正. No track per train: only a platform group, so no Odakyu train is drawn. Converted ${today}. Values not checked against the sources by this prototype.`,
+      notes: `CSV odakyu_shinjuku_departures.csv (retrieved 2026-11-17 by the project owner): departure times checked minute by minute against Odakyu's PDF timetable (according to the CSV), types and destinations from 駅探, 2026年3月14日 / 16日 改正. No track per train: only a platform group, so no Odakyu train is drawn. Converted ${today}. Values not checked against the sources by this prototype. ${odakyuConfirmed ? `The ${odakyuConfirmed} trains whose destination differed in a second reading of the PDF were checked by the project owner on Odakyu's own pages (www.odakyu.jp/station/shinjuku/timetable/down/ and www.odakyu.jp/romancecar/timetable/, odakyu_shinjuku_trains_verified.csv, 2026-11-18): the destination kept is right for all of them.` : ''}`,
     },
   ];
   writeFileSync(resolve(outDir, 'keio-shinjuku.csv'), recordsToCsv(k.records));
@@ -359,6 +384,7 @@ function main() {
   };
   for (const [key, n] of count([...k.records, ...o, ...l, ...m.records, ...sb])) console.log(`${String(n).padStart(5)}  ${key}`);
   console.log(`京王ライナー / Mt.TAKAO号 confirmed: ${k.linerChecked}; 西武新宿 official: ${sb.length}`);
+  console.log(`小田急 destinations confirmed: ${odakyuConfirmed}; still UNCONFIRMED: ${o.filter((r) => r.remarks?.includes('UNCONFIRMED')).length}`);
   console.log(`wrote ${k.records.length} Keio and ${o.length} Odakyu records (local only); ${k.skipped} Toei-direction duplicates left out`);
 }
 
