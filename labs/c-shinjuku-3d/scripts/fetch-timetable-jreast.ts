@@ -116,7 +116,8 @@ const UPSTREAM: { name: string; label: string; line: RegExp; direction: RegExp }
 ];
 
 /** Neighbours of JR Shinjuku that tell the direction of a call: south = 代々木 / 渋谷 side, north = 大久保 / 新大久保 / 池袋 side. */
-const SOUTH = new Set(['代々木', '渋谷', '四ツ谷', '御茶ノ水', '神田', '東京', '品川', '大崎', '恵比寿', '原宿', '武蔵小杉', '横浜', '大船']);
+// 錦糸町: the first stop of 新宿わかしお / 新宿さざなみ, which leave over the 中央線 towards 御茶ノ水 (southwards out of 新宿)
+const SOUTH = new Set(['代々木', '渋谷', '四ツ谷', '御茶ノ水', '神田', '東京', '品川', '大崎', '恵比寿', '原宿', '武蔵小杉', '横浜', '大船', '錦糸町']);
 const NORTH = new Set(['大久保', '新大久保', '池袋', '中野', '三鷹', '吉祥寺', '荻窪', '国分寺', '立川', '八王子', '高尾', '赤羽', '浦和', '大宮', '新宿三丁目', '東中野', '高田馬場', '目白', '板橋', '十条', '武蔵浦和', '大月', '甲府']);
 
 function lineOf(col: TrainColumn, pageLine: string): string | null {
@@ -427,29 +428,38 @@ async function main() {
   }
   if (savedFiles.length) console.log(`saved line timetables: ${savedFiles.length} files, ${fromSaved} trains added, ${filled} completed`);
 
-  // stop lists saved by hand (data/raw/jreast-saved/trains/*.html): the official track of a train the line timetables leave without one
+  // stop lists saved as pages (data/raw/jreast-saved/trains/*.html): the official track of a train the line timetables leave
+  // without one, and its direction where the line timetable lists no other stop near 新宿 (e.g. 新宿わかしお, whose first stop is 錦糸町)
   const savedTrainsDir = resolve(savedDir, 'trains');
   let savedFilled = 0;
+  let savedDirected = 0;
   if (existsSync(savedTrainsDir)) {
-    const byNumber = new Map<string, { arr: string | null; dep: string | null; platform: string }[]>();
+    const byNumber = new Map<string, { arr: string | null; dep: string | null; platform: string | null; direction: 'southbound' | 'northbound' | null }[]>();
     for (const f of readdirSync(savedTrainsDir).filter((x) => /\.html?$/i.test(x))) {
       for (const col of parseTrainPage(readFileSync(resolve(savedTrainsDir, f), 'utf8'))) {
-        const call = col.calls.find((c) => c.station === '新宿');
-        if (!call?.platform || !col.number) continue;
+        const i = col.calls.findIndex((c) => c.station === '新宿');
+        const call = col.calls[i];
+        if (!call || !col.number) continue;
         const list = byNumber.get(col.number) ?? [];
-        list.push({ arr: serviceTimeOf(call.arr ?? undefined), dep: serviceTimeOf(call.dep ?? undefined), platform: call.platform });
+        list.push({ arr: serviceTimeOf(call.arr ?? undefined), dep: serviceTimeOf(call.dep ?? undefined), platform: call.platform ?? null, direction: directionOfCalls(col.calls, i) });
         byNumber.set(col.number, list);
       }
     }
     for (const r of records) {
-      if (r.platform_id || !r.train_number) continue;
+      if (!r.train_number || (r.platform_id && r.direction_id)) continue;
       const hit = (byNumber.get(r.train_number) ?? []).find((c) => (r.arrival_time_local ? c.arr === r.arrival_time_local : true) && (r.departure_time_local ? c.dep === r.departure_time_local : true));
       if (!hit) continue;
-      r.platform_id = `jr-east:shinjuku:${hit.platform}`;
-      r.remarks = [r.remarks?.replace(/ ?· ?No track in the line timetable; not drawn\./, ''), 'Track from the train\'s stop list (saved by hand).'].filter(Boolean).join(' · ');
-      savedFilled++;
+      if (!r.platform_id && hit.platform) {
+        r.platform_id = `jr-east:shinjuku:${hit.platform}`;
+        r.remarks = [r.remarks?.replace(/ ?· ?No track in the line timetable; not drawn\.?/, ''), 'Track from the train\'s stop list (saved page).'].filter(Boolean).join(' · ');
+        savedFilled++;
+      }
+      if (!r.direction_id && hit.direction) {
+        r.direction_id = hit.direction;
+        savedDirected++;
+      }
     }
-    console.log(`saved stop lists: ${savedFilled} tracks filled`);
+    console.log(`saved stop lists: ${savedFilled} tracks filled, ${savedDirected} directions filled`);
   }
 
   // Narita Express trains from the airport: their Shinjuku arrival track, from the stop lists the project owner collected
@@ -510,6 +520,41 @@ async function main() {
       }
     }
     console.log(`埼京線 stop lists (${saikyoFiles.length} files): ${saikyoFilled} tracks filled, ${saikyoUnmatched} rows matched no train`);
+  }
+
+  // seasonal limited expresses (新宿わかしお / 新宿さざなみ): their Shinjuku track, from the stop lists the project owner collected
+  // (shinjuku_seasonal_limited_express_2611.csv, one row per train with the stop-list URL; the four tracks were also read on
+  // the stop-list pages themselves on 2026-11-19 and agree)
+  const seasonalFile = resolve(root, 'data/raw/private-saved/shinjuku_seasonal_limited_express_2611.csv');
+  if (existsSync(seasonalFile)) {
+    const [header, ...body] = parseCsv(readFileSync(seasonalFile, 'utf8').replace(/^\uFEFF/, ''));
+    const col = (name: string) => header!.findIndex((h) => h.trim() === name);
+    const [cName, cNum, cDay, cDep, cArr, cPf, cUrl] = ['列车名', '列车番号', '日历类型', '新宿_发车时刻', '新宿_着时刻', '新宿_番线', '详情页URL'].map(col);
+    let seasonalFilled = 0;
+    let seasonalAgreed = 0;
+    for (const cells of body) {
+      const num = halfWidth((cells[cNum!] ?? '').trim());
+      const day = (cells[cDay!] ?? '').trim() === '平日' ? 'weekday' : 'saturday-holiday';
+      const dep = serviceTimeOf((cells[cDep!] ?? '').trim() || undefined);
+      const arr = serviceTimeOf((cells[cArr!] ?? '').trim() || undefined);
+      const pf = halfWidth((cells[cPf!] ?? '').trim());
+      if (!num || !/^\d+$/.test(pf) || (!dep && !arr)) continue;
+      for (const r of records) {
+        if (r.train_number !== num || r.service_date_type !== day) continue;
+        if ((dep && r.departure_time_local !== dep) || (arr && r.arrival_time_local !== arr)) continue;
+        const what = `the stop list of ${(cells[cName!] ?? '').trim() || num} (${(cells[cUrl!] ?? '').trim()}), collected by the project owner`;
+        if (r.platform_id === `jr-east:shinjuku:${pf}`) {
+          // already read on a saved copy of the same page: the two agree
+          r.remarks = [r.remarks, `Same track in ${what}.`].filter(Boolean).join(' · ');
+          seasonalAgreed++;
+        } else if (!r.platform_id) {
+          r.platform_id = `jr-east:shinjuku:${pf}`;
+          r.remarks = [r.remarks?.replace(/ ?· ?No track in the line timetable; not drawn\.?/, ''), `Track from ${what}.`].filter(Boolean).join(' · ');
+          seasonalFilled++;
+        } else console.warn(`${num}: track ${r.platform_id} here, ${pf} in ${what}`);
+      }
+    }
+    console.log(`seasonal limited expresses' stop lists: ${seasonalFilled} tracks filled, ${seasonalAgreed} agree with saved pages`);
   }
 
   // tracks the official line timetables do not give, from the legacy timetable the project owner handed over (when present)
