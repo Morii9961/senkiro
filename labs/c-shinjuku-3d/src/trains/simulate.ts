@@ -217,6 +217,12 @@ export function runOfTrip(record: TimetableRecord, run: TrackRun | null, axis: '
 export const COMPLEMENT_WINDOW_SECONDS = 300;
 
 /**
+ * Written at the start of the remarks of an arrival that ends here and goes back the way it came (a 都営新宿線 train
+ * that ends at 新宿 and returns to 本八幡 from the other track): it is never joined to a departure on its track.
+ */
+export const TURNS_BACK_REMARK = 'Turns back here';
+
+/**
  * Two records can each hold half of one stop: at 京王新線 新宿 the Toei train timetable ends with the
  * arrival of a train that runs on into the Keio New Line, and Keio's station timetable has its departure;
  * at JR 新宿 a 埼京線 train arrives under one number and leaves for 相鉄線 under another. One track holds
@@ -236,7 +242,7 @@ export function mergeComplementaryPlans(plans: TrainPlan[]): void {
   }
   const drop = new Set<TrainPlan>();
   for (const g of groups.values()) {
-    const arrivals = g.filter((p) => p.depart == null && !p.arrivalAssumed).sort((a, b) => a.arrive - b.arrive);
+    const arrivals = g.filter((p) => p.depart == null && !p.arrivalAssumed && !p.record.remarks?.startsWith(TURNS_BACK_REMARK)).sort((a, b) => a.arrive - b.arrive);
     const departures = g.filter((p) => p.arrivalAssumed && p.depart != null).sort((a, b) => a.depart! - b.depart!);
     const used = new Set<TrainPlan>();
     for (const a of arrivals) {

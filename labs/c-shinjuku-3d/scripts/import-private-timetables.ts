@@ -22,9 +22,10 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { parseCsv, recordsToCsv } from '../src/timetable/adapter';
+import { parseCsv, recordsFromCsv, recordsToCsv } from '../src/timetable/adapter';
 import { serviceTimeOf } from '../src/timetable/odpt';
 import type { TimetableRecord, TimetableSource } from '../src/timetable/types';
+import { TURNS_BACK_REMARK } from '../src/trains/simulate';
 import { LEGACY_REMARK, LEGACY_SOURCE_ID, legacyTrack, loadLegacyRows, type LegacyRow } from './legacy-events';
 import { METRO_SOURCE_ID, metroRecords, parseMetroText } from './metro-text';
 
@@ -146,19 +147,24 @@ function odakyuChecked(): Map<string, Row> {
 
 let odakyuConfirmed = 0;
 let odakyuNaviTracks = 0;
+let odakyuNaviLegacySame = 0;
+let odakyuNaviLegacyDiffer = 0;
 
 /**
- * Tracks of the Romancecars the timetables place only on 「2・3番ホーム」, looked up by the project owner on NAVITIME's
- * station timetable of 新宿 (odakyu_shinjuku_romancecar_platforms.csv): day|time → { track, destination, name, url }.
+ * Tracks from NAVITIME's station timetable of 新宿, looked up by the project owner: the Romancecars the timetables place
+ * only on 「2・3番ホーム」 (odakyu_shinjuku_romancecar_platforms.csv) and every train of a kind of day
+ * (odakyu_shinjuku_navitime_{weekday,holiday}.csv, same columns): day|time → { track, destination, name, url }.
  * Only a single track number of the Odakyu platforms is used.
  */
-function odakyuRomancecarTracks(): Map<string, { track: string; destination: string; name: string; url: string }> {
+function odakyuNavitimeTracks(): Map<string, { track: string; destination: string; name: string; url: string }> {
   const m = new Map<string, { track: string; destination: string; name: string; url: string }>();
-  if (!existsSync(resolve(inDir, 'odakyu_shinjuku_romancecar_platforms.csv'))) return m;
-  for (const r of rows('odakyu_shinjuku_romancecar_platforms.csv')) {
-    const track = (r['新宿番线'] ?? '').trim().normalize('NFKC');
-    if (!ODAKYU_TRACKS.includes(track)) continue;
-    m.set(`${dayOf(r['日别']!)}|${serviceTimeOf(r['新宿发车时刻'])}`, { track, destination: r['终点站'] ?? '', name: r['列车名号数'] ?? '', url: r['来源URL'] ?? '' });
+  for (const f of ['odakyu_shinjuku_romancecar_platforms.csv', 'odakyu_shinjuku_navitime_weekday.csv', 'odakyu_shinjuku_navitime_holiday.csv']) {
+    if (!existsSync(resolve(inDir, f))) continue;
+    for (const r of rows(f)) {
+      const track = (r['新宿番线'] ?? '').trim().normalize('NFKC');
+      if (!ODAKYU_TRACKS.includes(track)) continue;
+      m.set(`${dayOf(r['日别']!)}|${serviceTimeOf(r['新宿发车时刻'])}`, { track, destination: r['终点站'] ?? '', name: r['列车名号数'] ?? '', url: r['来源URL'] ?? '' });
+    }
   }
   return m;
 }
@@ -178,7 +184,7 @@ function odakyu(legacy: LegacyRow[]): TimetableRecord[] {
   const seq = new Map<string, number>();
   const second = odakyuSecondOpinion();
   const checked = odakyuChecked();
-  const navi = odakyuRomancecarTracks();
+  const navi = odakyuNavitimeTracks();
   return rows('odakyu_shinjuku_departures.csv').map((r) => {
     const day = dayOf(r.day_type!);
     const n = (seq.get(day) ?? 0) + 1;
@@ -186,9 +192,11 @@ function odakyu(legacy: LegacyRow[]): TimetableRecord[] {
     const romancecar = truthy(r.romancecar);
     // NAVITIME's track for a Romancecar of the same day, time and destination; otherwise the legacy track
     const naviHit = r.platform ? undefined : navi.get(`${day}|${serviceTimeOf(r.time)}`);
-    const naviTr = naviHit && r.destination && destKey(naviHit.destination) === destKey(r.destination) ? naviHit : undefined;
+    // NAVITIME writes 「本厚木〔新百合ヶ丘から各停〕」 where the table writes 本厚木
+    const naviTr = naviHit && r.destination && destKey(naviHit.destination.replace(/〔[^〕]*〕/g, '')) === destKey(r.destination) ? naviHit : undefined;
     if (naviTr) odakyuNaviTracks++;
-    const legacyTr = r.platform || naviTr ? null : legacyTrack(legacy, { line_id: 'odakyu:odawara', day, departure: serviceTimeOf(r.time), destination: r.destination || null, allowed: ODAKYU_TRACKS });
+    const legacyTr = r.platform ? null : legacyTrack(legacy, { line_id: 'odakyu:odawara', day, departure: serviceTimeOf(r.time), destination: r.destination || null, allowed: ODAKYU_TRACKS });
+    if (naviTr && legacyTr) (legacyTr === naviTr.track ? odakyuNaviLegacySame++ : odakyuNaviLegacyDiffer++);
     const track = r.platform || naviTr?.track || legacyTr;
     return {
       station_id: 'odakyu:shinjuku',
@@ -214,7 +222,7 @@ function odakyu(legacy: LegacyRow[]): TimetableRecord[] {
           r.platform
             ? null
             : naviTr
-              ? `Track from NAVITIME's timetable of 新宿 (${naviTr.url}), looked up by the project owner on 2026-11-19${naviTr.name ? `; ${naviTr.name}` : ''}.`
+              ? `Track from NAVITIME's timetable of 新宿 (${naviTr.url}), looked up by the project owner on 2026-11-19${naviTr.name ? `; ${naviTr.name}` : ''}${legacyTr ? (legacyTr === naviTr.track ? '; the legacy timetable gives the same track' : `; the legacy timetable gives track ${legacyTr}`) : ''}.`
               : legacyTr
                 ? LEGACY_REMARK
                 : `No track for this train (the table gives only: ${r.platform_hint || 'nothing'}); not drawn.`,
@@ -230,6 +238,42 @@ function odakyu(legacy: LegacyRow[]): TimetableRecord[] {
           .join(' · ') || null,
     } satisfies TimetableRecord;
   });
+}
+
+const TOEI_TERMINATING_SOURCE = 'local:toei-terminating-arrival-track';
+
+/**
+ * 都営新宿線 trains that end at 新宿 (the committed Toei timetable has their arrival but no track): local copies on the
+ * arrival track the project owner looked up on ジョルダン乗換案内 (toei_shinjuku_terminating_shinjuku.csv), matched by kind
+ * of day, train number and arrival time. They go back towards 本八幡 from the other track, so they are marked
+ * TURNS_BACK_REMARK and never joined to a departure on their track. The committed records stay as they are (no track).
+ */
+function toeiTerminators(): { records: TimetableRecord[]; rows: number } {
+  const file = 'toei_shinjuku_terminating_shinjuku.csv';
+  if (!existsSync(resolve(inDir, file))) return { records: [], rows: 0 };
+  const committed = recordsFromCsv(readFileSync(resolve(root, 'data/timetable/toei-odpt.csv'), 'utf8')).records.filter(
+    (r) => r.station_id === 'toei:shinjuku:S01' && !r.platform_id && r.arrival_time_local && !r.departure_time_local,
+  );
+  const out: TimetableRecord[] = [];
+  const list = rows(file);
+  for (const x of list) {
+    const day = dayOf(x['日别']!);
+    const track = (x['新宿_着番线'] ?? '').trim().normalize('NFKC');
+    if (track !== '4' && track !== '5') continue;
+    const r = committed.find((c) => c.service_date_type === day && c.train_number === (x['列车番号'] ?? '').trim() && c.arrival_time_local === serviceTimeOf(x['新宿_着时刻']));
+    if (!r) {
+      console.warn(`${file}: ${x['日别']} ${x['列车番号']} ${x['新宿_着时刻']} matches no Toei arrival`);
+      continue;
+    }
+    out.push({
+      ...r,
+      trip_id: `${r.trip_id}:arrival-track`,
+      platform_id: `toei:shinjuku:S01:${track}`,
+      source_id: TOEI_TERMINATING_SOURCE,
+      remarks: `${TURNS_BACK_REMARK}: ends at 新宿 and goes back towards 本八幡 (Toei timetable, ${r.trip_id}). Arrival track from ${x['番线出处'] || 'a route search'} (${x['来源URL']}), looked up by the project owner on 2026-11-19.`,
+    });
+  }
+  return { records: out, rows: list.length };
 }
 
 const SEIBU_SOURCE = 'local:seibu-station-timetable';
@@ -346,6 +390,7 @@ function main() {
   const o = odakyu(legacy);
   const m = metro();
   const sb = seibu(legacy);
+  const tt = toeiTerminators();
   const l = fromLegacy(legacy, m.covered, sb.length > 0);
   const today = new Date().toISOString().slice(0, 10);
   const sources: TimetableSource[] = [
@@ -373,6 +418,17 @@ function main() {
   writeFileSync(resolve(outDir, 'legacy-seibu-metro.csv'), recordsToCsv(l));
   writeFileSync(resolve(outDir, 'tokyometro.csv'), recordsToCsv(m.records));
   writeFileSync(resolve(outDir, 'seibu-shinjuku.csv'), recordsToCsv(sb));
+  writeFileSync(resolve(outDir, 'toei-shinjuku-terminating.csv'), recordsToCsv(tt.records));
+  if (tt.records.length)
+    sources.push({
+      id: TOEI_TERMINATING_SOURCE,
+      title: '都営新宿線 新宿止まりの列車の到着番線（ジョルダン乗換案内）— ローカル専用',
+      publisher: 'Times: 東京都交通局 via ODPT (CC BY 4.0, committed as toei-odpt.csv); track: ジョルダン乗換案内, looked up by the project owner',
+      url: 'https://www.jorudan.co.jp/norikae/',
+      retrievedAt: '2026-11-19',
+      license: 'The arrival track comes from a route search site with no open licence: local private use only; not in the repository.',
+      notes: `${tt.records.length} trains of the 都営新宿線 that end at 新宿 (from 本八幡): copies of the committed Toei arrival records with the arrival track the project owner read on ジョルダン乗換案内 (route 新宿三丁目 → 新線新宿, one search per train; toei_shinjuku_terminating_shinjuku.csv). All give track 4. No official statement of the track was found (two web searches on 2026-11-19). The trains go back towards 本八幡 from track 5, so they are not joined to a departure on track 4.`,
+    });
   if (sb.length)
     sources.push({
       id: SEIBU_SOURCE,
@@ -411,9 +467,9 @@ function main() {
     return [...m].sort();
   };
   for (const [key, n] of count([...k.records, ...o, ...l, ...m.records, ...sb])) console.log(`${String(n).padStart(5)}  ${key}`);
-  console.log(`京王ライナー / Mt.TAKAO号 confirmed: ${k.linerChecked}; 西武新宿 official: ${sb.length}`);
+  console.log(`京王ライナー / Mt.TAKAO号 confirmed: ${k.linerChecked}; 西武新宿 official: ${sb.length}; 都営 trains ending at 新宿 placed: ${tt.records.length} of ${tt.rows}`);
   console.log(`小田急 destinations confirmed: ${odakyuConfirmed}; still UNCONFIRMED: ${o.filter((r) => r.remarks?.includes('UNCONFIRMED')).length}`);
-  console.log(`小田急 Romancecar tracks from NAVITIME: ${odakyuNaviTracks}; Odakyu trains without a track: ${o.filter((r) => !r.platform_id).length}`);
+  console.log(`小田急 tracks from NAVITIME: ${odakyuNaviTracks} (legacy track the same: ${odakyuNaviLegacySame}, different: ${odakyuNaviLegacyDiffer}); Odakyu trains without a track: ${o.filter((r) => !r.platform_id).length}`);
   console.log(`wrote ${k.records.length} Keio and ${o.length} Odakyu records (local only); ${k.skipped} Toei-direction duplicates left out`);
 }
 

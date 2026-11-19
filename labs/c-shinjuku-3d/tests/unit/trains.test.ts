@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { demoFixture } from '../../src/timetable/demoFixture';
 import type { TimetableRecord } from '../../src/timetable/types';
 import {
-  APPROACH_SECONDS, ASSUMED_DWELL_SECONDS, DEPART_SECONDS, NOMINAL_CAR_LENGTH, SHORT_STOP_SECONDS, TERMINATING_HOLD_SECONDS, buildTrainPlans, trainStateAt, trainStatesAt,
+  APPROACH_SECONDS, ASSUMED_DWELL_SECONDS, DEPART_SECONDS, NOMINAL_CAR_LENGTH, SHORT_STOP_SECONDS, TERMINATING_HOLD_SECONDS, TURNS_BACK_REMARK, buildTrainPlans, trainStateAt, trainStatesAt,
 } from '../../src/trains/simulate';
 import { physicalTrackKey, trackLine } from '../../src/trains/trackGeometry';
 import { allTrackRunKeys, modelTrackKeys, trackRun } from '../../src/trains/trackRuns';
@@ -278,6 +278,11 @@ describe('train simulation', () => {
     expect(renumbered[0]!.record.remarks).toMatch(/arrives as a train for 笹塚 \(753T\)/);
     // too far apart: two trains
     expect(plansOf([arrival, rec({ ...departure, departure_time_local: '08:30' })]).plans).toHaveLength(2);
+    // a train that ends here and goes back the way it came is never joined to the next departure on its track
+    const turning = rec({ ...arrival, destination_text: '新宿', remarks: `${TURNS_BACK_REMARK} (ends at 新宿)` });
+    const apart = plansOf([turning, departure]).plans;
+    expect(apart).toHaveLength(2);
+    expect(apart.find((p) => p.record.trip_id === 'keio-1')!.arrivalAssumed).toBe(true);
   });
 
   it('on an east–west platform a trip that names its direction runs that way', () => {
