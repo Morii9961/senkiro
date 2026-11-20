@@ -1854,6 +1854,17 @@ a {
   background: color-mix(in srgb, var(--st-delayed) 16%, transparent);
 }
 
+.coverage-badge {
+  flex-basis: 100%;
+  color: var(--ink-3);
+  font-weight: 400;
+}
+
+.train-sources ul {
+  margin: 2px 0 8px;
+  padding-left: 16px;
+}
+
 .train-bar-row {
   display: flex;
   align-items: center;

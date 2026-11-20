@@ -22,6 +22,12 @@ export const APPROACH_SECONDS = 40;
 export const DEPART_SECONDS = 36;
 /** Dwell drawn before the departure when the timetable gives no arrival time. */
 export const ASSUMED_DWELL_SECONDS = 30;
+/**
+ * A timetable printed to the minute gives the same minute for arrival and departure when the stop is
+ * shorter than a minute. Such a stop is drawn this long, starting at the printed minute — inside the
+ * minute both times name — and the card says the dwell is schematic.
+ */
+export const SHORT_STOP_SECONDS = 25;
 /** How long a terminating train (no departure time) stays before it is taken off the display. */
 export const TERMINATING_HOLD_SECONDS = 60;
 const DOOR_MOVE_SECONDS = 3;
@@ -58,6 +64,8 @@ export interface TrainPlan {
   depart: number | null;
   /** True when the timetable had no arrival time and the dwell is a display assumption. */
   arrivalAssumed: boolean;
+  /** True when arrival and departure are the same printed minute and the stop is drawn SHORT_STOP_SECONDS long. */
+  shortStopAssumed: boolean;
   /** When the train enters and leaves the display. */
   enter: number;
   leave: number;
@@ -130,9 +138,12 @@ export function buildTrainPlans(model: StationModel, records: TimetableRecord[],
       continue;
     }
     const arrive = arr ?? dep! - ASSUMED_DWELL_SECONDS;
+    const minuteOnly = (t: string | null) => t != null && /^\d{1,2}:\d{2}$/.test(t.trim());
+    const shortStop = arr != null && dep === arr && minuteOnly(record.arrival_time_local) && minuteOnly(record.departure_time_local);
+    const depart = shortStop ? arr + SHORT_STOP_SECONDS : dep;
     const vehicle = resolveVehicle(record);
     const { length, carLength } = trainLength(line, vehicle.cars, vehicle.spec.carLengthM);
-    const run = trackRun(track.platform.id, track.trackNumber);
+    const run = runOfTrip(record, trackRun(track.platform.id, track.trackNumber), line.axis);
     const stopAt = (line.lo + line.hi) / 2;
     const moves = run?.departs != null;
     plans.push({
@@ -146,10 +157,11 @@ export function buildTrainPlans(model: StationModel, records: TimetableRecord[],
       modelLineId: lineEntry(record.line_id)?.modelLineIds[0] ?? null,
       vehicle,
       arrive,
-      depart: dep,
+      depart,
       arrivalAssumed: arr == null,
+      shortStopAssumed: shortStop,
       enter: moves ? arrive - APPROACH_SECONDS : arrive,
-      leave: dep == null ? arrive + TERMINATING_HOLD_SECONDS : moves ? dep + DEPART_SECONDS : dep,
+      leave: depart == null ? arrive + TERMINATING_HOLD_SECONDS : moves ? depart + DEPART_SECONDS : depart,
       approachSeconds: APPROACH_SECONDS,
       length,
       carLength,
@@ -157,6 +169,8 @@ export function buildTrainPlans(model: StationModel, records: TimetableRecord[],
       runDistance: (line.clipHi - line.clipLo) / 2 + length / 2 + 0.2,
     });
   }
+
+  mergeComplementaryPlans(plans);
 
   // One track holds one train at a time: a train does not start to run in while the one before is still leaving.
   const byTrack = new Map<string, TrainPlan[]>();
@@ -182,6 +196,81 @@ export function buildTrainPlans(model: StationModel, records: TimetableRecord[],
 
   plans.sort((a, b) => a.enter - b.enter);
   return { plans, unplaced };
+}
+
+/**
+ * A JR Shinjuku record may name its own direction of travel ('southbound' / 'northbound', read from the
+ * train's next or previous stop). On a through track that decides the way the train runs, also where the
+ * track table leaves it open (5・6: limited expresses of both directions) or names the more frequent
+ * direction only. JR platforms lie north–south in the model: +1 is south.
+ */
+export function runOfTrip(record: TimetableRecord, run: TrackRun | null, axis: 'x' | 'z' = 'x'): TrackRun | null {
+  if (!run || run.kind !== 'through') return run;
+  // x grows southwards and z westwards in the model, so +1 is south on an x platform and west on a z platform
+  const dir = (record.direction_id ?? '').toLowerCase();
+  const d = axis === 'x' ? (dir === 'southbound' ? 1 : dir === 'northbound' ? -1 : null) : dir === 'westbound' ? 1 : dir === 'eastbound' ? -1 : null;
+  if (d == null || d === run.departs) return run;
+  return { ...run, departs: d, note: `${run.note} This trip runs ${dir}, as its own timetable record says.` };
+}
+
+/** How far apart the arrival of one record and the departure of another may be to be read as one stop. */
+export const COMPLEMENT_WINDOW_SECONDS = 300;
+
+/**
+ * Written at the start of the remarks of an arrival that ends here and goes back the way it came (a 都営新宿線 train
+ * that ends at 新宿 and returns to 本八幡 from the other track): it is never joined to a departure on its track.
+ */
+export const TURNS_BACK_REMARK = 'Turns back here';
+
+/**
+ * Two records can each hold half of one stop: at 京王新線 新宿 the Toei train timetable ends with the
+ * arrival of a train that runs on into the Keio New Line, and Keio's station timetable has its departure;
+ * at JR 新宿 a 埼京線 train arrives under one number and leaves for 相鉄線 under another. One track holds
+ * one train, so on one track and one kind of day an arrival-only plan followed within
+ * COMPLEMENT_WINDOW_SECONDS by a departure-only plan is drawn as one train: the departure record is kept
+ * and takes the arrival time (and the train number, if it has none) of the other, which is named in its
+ * remarks with its destination. Pairs are taken in time order; a departure to the same destination is
+ * preferred, otherwise the nearest one.
+ */
+export function mergeComplementaryPlans(plans: TrainPlan[]): void {
+  const groups = new Map<string, TrainPlan[]>();
+  for (const p of plans) {
+    const k = `${p.physicalTrack}|${p.record.service_date_type}`;
+    let g = groups.get(k);
+    if (!g) groups.set(k, (g = []));
+    g.push(p);
+  }
+  const drop = new Set<TrainPlan>();
+  for (const g of groups.values()) {
+    const arrivals = g.filter((p) => p.depart == null && !p.arrivalAssumed && !p.record.remarks?.startsWith(TURNS_BACK_REMARK)).sort((a, b) => a.arrive - b.arrive);
+    const departures = g.filter((p) => p.arrivalAssumed && p.depart != null).sort((a, b) => a.depart! - b.depart!);
+    const used = new Set<TrainPlan>();
+    for (const a of arrivals) {
+      const near = departures.filter((d) => !used.has(d) && d.depart! >= a.arrive && d.depart! - a.arrive <= COMPLEMENT_WINDOW_SECONDS);
+      // compared after NFKC: one source writes 塚 as the compatibility ideograph U+FA10
+      const dest = (p: TrainPlan) => p.record.destination_text?.normalize('NFKC') ?? null;
+      const b = near.find((d) => dest(d) != null && dest(d) === dest(a)) ?? near[0];
+      if (!b) continue;
+      used.add(b);
+      drop.add(a);
+      b.record = {
+        ...b.record,
+        arrival_time_local: a.record.arrival_time_local,
+        train_number: b.record.train_number ?? a.record.train_number,
+        remarks: [
+          b.record.remarks,
+          `Arrival time${b.record.train_number == null && a.record.train_number != null ? ' and train number' : ''} from ${a.record.trip_id} (${a.record.source_id})${dest(a) !== dest(b) && a.record.destination_text ? `, which arrives as a train for ${a.record.destination_text}${a.record.train_number ? ` (${a.record.train_number})` : ''}` : ''}.`,
+        ]
+          .filter(Boolean)
+          .join(' · '),
+      };
+      b.arrive = a.arrive;
+      b.arrivalAssumed = false;
+      b.enter = b.run?.departs != null ? b.arrive - APPROACH_SECONDS : b.arrive;
+    }
+  }
+  if (drop.size === 0) return;
+  for (let i = plans.length - 1; i >= 0; i--) if (drop.has(plans[i]!)) plans.splice(i, 1);
 }
 
 function stationInModel(model: StationModel, stationId: string): boolean {

@@ -1,0 +1,14 @@
+{
+  "generatedAt": "2026-11-16",
+  "sources": [
+    {
+      "id": "src:odpt-toei-train-timetable",
+      "title": "東京都交通局 列車時刻表（公共交通オープンデータセンター）",
+      "publisher": "東京都交通局・公共交通オープンデータ協議会",
+      "url": "https://ckan.odpt.org/dataset/r_train_timetable-toei",
+      "retrievedAt": "2026-11-16",
+      "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/deed.ja)",
+      "notes": "Modified extract made by SENKIRO Lab with scripts/fetch-timetable-odpt.ts from https://api-public.odpt.org/api/v4/odpt:TrainTimetable (都営新宿線, 都営大江戸線; dct:issued 2025-03-15, 2025-03-17). Kept: the calls at 新宿 S01, 新宿三丁目 S02, 新宿 E27 and 新宿西口 E01. Changed: times before 03:00 written as 24:xx; the track added from the next / previous station and the station direction signs; destination names from 東京都交通局 駅情報 (CC BY 4.0) and, for Keio stations, written by this prototype. Not in the data: vehicle type and number of cars."
+    }
+  ]
+}

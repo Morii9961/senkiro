@@ -645,15 +645,21 @@ test.describe('train simulation', () => {
   const trains = (page: Page) =>
     page.evaluate(() => (window as unknown as { __SENKIRO_TRAINS__?: { shown: number; instances: number; moving: number; seconds: number } }).__SENKIRO_TRAINS__ ?? null);
 
-  test('says what it is: a timetable simulation on demo data, never a live position', async ({ page }) => {
+  test('says what it is: a timetable simulation on a real timetable, never a live position', async ({ page }) => {
     const errors = await open(page, 'lang=zh&theme=light&trains=on&simtime=12:01:40');
     await waitForScene(page);
     await expect(page.getByTestId('sim-badge')).toHaveText('时刻表模拟 · 非实时列车位置');
-    await expect(page.getByTestId('demo-badge')).toBeVisible();
+    // the committed Toei timetable replaces the demo fixture as a whole
+    await expect(page.getByTestId('demo-badge')).toHaveCount(0);
+    await expect(page.getByTestId('coverage-badge')).toContainText('都营新宿线');
+    await expect(page.getByTestId('coverage-badge')).toContainText('都营大江户线');
+    await expect(page.getByTestId('coverage-badge')).toContainText('其他线路没有可用的时刻表或不知道番线');
     await expect(page.getByTestId('sim-time')).toContainText('12:01:40');
     await page.getByTestId('tab-ops').click();
-    await expect(page.getByTestId('train-data-note')).toContainText('Demo Fixture');
-    await expect.poll(async () => (await trains(page))?.shown ?? 0).toBeGreaterThan(3);
+    await expect(page.getByTestId('train-data-note')).toContainText('toei-odpt.csv');
+    await expect(page.getByTestId('train-sources')).toContainText('東京都交通局・公共交通オープンデータ協議会');
+    await expect(page.getByTestId('train-sources')).toContainText('CC BY 4.0');
+    await expect.poll(async () => (await trains(page))?.shown ?? 0).toBeGreaterThan(0);
     // one instanced mesh for every train: a single extra draw call
     const withTrains = (await stats(page))!.calls;
     await page.getByTestId('trains-toggle').click();
@@ -661,24 +667,24 @@ test.describe('train simulation', () => {
     expect(errors).toEqual([]);
   });
 
-  test('a train card shows schedule, vehicle status and source — and no invented train number or destination', async ({ page }) => {
+  test('a train card shows schedule, train number, vehicle status and source — and nothing the timetable does not give', async ({ page }) => {
     await open(page, 'lang=zh&theme=light&trains=on&simtime=12:01:40');
     await waitForScene(page);
+    await page.getByTestId('sim-day').selectOption('weekday');
     await page.getByTestId('tab-ops').click();
-    await page.getByTestId('train-filter-line').selectOption('sk:line:jr-east-yamanote');
+    // weekday 12:01:40: one Oedo Line train is on display (ODPT, Toei train timetable)
+    await page.getByTestId('train-filter-line').selectOption('sk:line:toei-oedo');
     await expect(page.getByTestId('train-row')).toHaveCount(1);
     await page.getByTestId('train-row').first().click();
     const card = page.getByTestId('train-card');
     await expect(card).toBeVisible();
-    await expect(card).toContainText('山手线');
-    await expect(card).toContainText('E235系');
-    await expect(page.getByTestId('train-vehicle-status')).toHaveText('已核实');
+    await expect(card).toContainText('都营大江户线');
+    await expect(page.getByTestId('train-vehicle-status')).toHaveText('代表车型'); // the timetable gives no vehicle type
     await expect(page.getByTestId('train-live-state')).toHaveText('时刻表模拟');
-    await expect(page.getByTestId('train-phase')).toHaveText('停靠（门开）');
-    await expect(card).toContainText('12:02'); // the scheduled departure of the demo record
-    await expect(card).toContainText('无来源'); // no train number
-    await expect(card).toContainText('11 节 (据线路资料)'); // from a sourced fact about the line, not assumed
-    await expect(card).toContainText('Demo Fixture');
+    await expect(card).not.toContainText('无来源'); // the train number comes from the timetable
+    await expect(card).toContainText('8 节 (据线路资料)'); // from a sourced fact about the line, not from the timetable
+    await expect(card).toContainText('東京都交通局 列車時刻表');
+    await expect(card).toContainText('CC BY 4.0');
     // hiding the train takes it off the display without touching the rest
     await page.getByTestId('train-hide').click();
     await expect(card).toBeHidden();
@@ -696,7 +702,7 @@ test.describe('train simulation', () => {
 
     await page.getByTestId('sim-scrub').fill(String(8 * 3600));
     await expect(page.getByTestId('sim-time')).toContainText('08:00:00');
-    await expect.poll(async () => (await trains(page))?.shown ?? 0).toBeGreaterThan(3);
+    await expect.poll(async () => (await trains(page))?.shown ?? 0).toBeGreaterThan(0);
 
     await page.getByTestId('sim-rate-60').click();
     await expect.poll(async () => (await trains(page))?.seconds ?? 0, { timeout: 6_000 }).toBeGreaterThan(8 * 3600 + 60);
@@ -717,7 +723,7 @@ test.describe('train simulation', () => {
     await waitForScene(page);
     await page.getByTestId('demo-1').click();
     await expect(page.getByTestId('step-nav')).toBeVisible();
-    await expect.poll(async () => (await trains(page))?.shown ?? 0).toBeGreaterThan(3);
+    await expect.poll(async () => (await trains(page))?.shown ?? 0).toBeGreaterThan(0);
   });
 });
 
@@ -797,7 +803,7 @@ test.describe('performance', () => {
         webglRenderer: info.renderer,
         viewport,
         canvasPixels: { ...info.canvas, dpr: info.dpr },
-        scene: `all floors, demo route 3 highlighted, labels on, orbiting by keyboard, rendering every frame${withTrains ? ', demo-fixture trains running from 12:00:00' : ', trains off'}`,
+        scene: `all floors, demo route 3 highlighted, labels on, orbiting by keyboard, rendering every frame${withTrains ? ', timetable trains running from 12:00:00' : ', trains off'}`,
         trains: withTrains ? await page.evaluate(() => (window as unknown as { __SENKIRO_TRAINS__?: { shown: number; instances: number } }).__SENKIRO_TRAINS__ ?? null) : null,
         seconds,
         fps: Math.round((m.frames / seconds) * 10) / 10,

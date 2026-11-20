@@ -75,6 +75,16 @@ ODPT 两个数据集能否用于 SENKIRO，是留给人决定的**待决事项**
 | 线路颜色 | 取官方图例色条的**近似色**，不是官方色值；京王线的颜色是本原型自选的。每条线路的 `displayColorNote` 字段里有说明 |
 | 英文、中文名称 | 本原型的翻译，不是运营商的官方译名 |
 
+## 3b. 时刻表（2026-11-16，见 V3-REPORT 第 19 节）
+
+| ID | 标题 | 发布者 | 许可 | 再分发 | 用途 |
+| --- | --- | --- | --- | --- | --- |
+| `src:odpt-toei-train-timetable` | 東京都交通局 列車時刻表（ODPT 公开接口） | 東京都交通局・公共交通オープンデータ協議会 | CC BY 4.0 | yes | `data/timetable/toei-odpt.csv`：都营新宿线、大江户线四站的停站记录（加工：只取四站、24:xx 写法、按方向牌加番线） |
+| `src:odpt-toei-station` | 東京都交通局 駅情報（ODPT 公开接口） | 同上 | CC BY 4.0 | yes | 上述记录的去向站名 |
+| `src:jreast-site-rules` | JR東日本ウェブサイトのご利用にあたって | JR 东日本 | 利用规约（谢绝复制、电子加工、再分发） | no | 不把任何 JR 时刻表放进仓库的依据。JR 时刻只由 `scripts/fetch-timetable-jreast.ts` 读到本机被忽略的 `data/raw/timetable/` |
+
+署名：东京都交通局・公共交通オープンデータ協議会「東京都交通局 列車時刻表」「東京都交通局 駅情報」（CC BY 4.0, https://creativecommons.org/licenses/by/4.0/deed.ja）を加工して作成。
+
 ## 4. 元素来源核对表
 
 每个元素一行：元素 ID、类型、名称、依据资料、资料日期、是否核实存在、`geometry_confidence`、数据性质。
