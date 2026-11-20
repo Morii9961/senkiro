@@ -11,8 +11,8 @@ import { FloorPicker } from './FloorPicker';
 import { LANGS, makeT, type Lang, type StrKey } from './i18n';
 import { isAlightingOnly, makeNamer, pickName } from './naming';
 import { FacilityCard, hasCard } from './panels/FacilityCard';
-import { OpsPanel, type OpsMode } from './panels/OpsPanel';
-import { DisplayPanel, HelpDialog, InfoPanel } from './panels/OtherPanels';
+import type { OpsMode } from './panels/OpsPanel';
+import { DisplayPanel, HelpDialog } from './panels/OtherPanels';
 import { RoutePanel, legGlyph, legText, type RouteChoice } from './panels/RoutePanel';
 import { Plan2D } from './Plan2D';
 import type { RenderStats, SceneHandle } from './Scene3D';
@@ -47,7 +47,7 @@ class SceneBoundary extends Component<{ onFail(): void; children: ReactNode }, {
   }
 }
 
-type Tab = 'route' | 'display' | 'ops' | 'info';
+type Tab = 'route' | 'display' | 'ops';
 type ViewMode = '3d' | '2d';
 /** Which floors are shown: all of them, those the route passes, or one. */
 type FloorMode = 'all' | 'route' | number;
@@ -89,7 +89,7 @@ export function App() {
   const viewMode: ViewMode = no3d ? '2d' : wantedView;
   const [tab, setTab] = useState<Tab>('route');
   const [helpOpen, setHelpOpen] = useState(false);
-  const [panelOpen, setPanelOpenState] = useState(() => stored('panel', ['open', 'closed'] as const, 'open') === 'open');
+  const [panelOpen, setPanelOpenState] = useState(() => stored('panel', ['open', 'closed'] as const, 'closed') === 'open');
   const setPanelOpen = (open: boolean) => {
     setPanelOpenState(open);
     remember('panel', open ? 'open' : 'closed');
@@ -134,22 +134,6 @@ export function App() {
   const [selectedTrain, setSelectedTrain] = useState<string | null>(null);
   const trainPlans = useMemo(() => buildTrainPlans(model, timetable.records, { dayType }), [model, timetable, dayType]);
   const lineColor = useMemo(() => new Map(model.railLines.map((l) => [l.id, l.displayColor])), [model]);
-  // the lines the timetable covers, named as the model names them; every other line shows no train
-  const trainCoverage = useMemo(() => {
-    if (timetable.dataset.kind === 'demo-fixture') return null;
-    const order = LINE_REGISTRY.map((l) => l.line_id);
-    const known = timetable.coveredLineIds.filter((id) => lineEntry(id));
-    const names = [...known]
-      .sort((a, b) => order.indexOf(a) - order.indexOf(b))
-      .map((id) => {
-        const entry = lineEntry(id);
-        const rl = model.railLines.find((l) => l.id === entry?.modelLineIds[0]);
-        return rl ? (pickName(rl.names, lang) ?? entry?.name_ja ?? id) : (entry?.name_ja ?? id);
-      });
-    // trains of a line the registry does not list (e.g. limited expresses such as 「湘南」 on the JR tracks)
-    if (known.length < timetable.coveredLineIds.length) names.push(makeT(lang)('trainOtherLines'));
-    return names.join(lang === 'en' ? ', ' : '、');
-  }, [timetable, model, lang]);
   const trainShown = useCallback((p: TrainPlan) => !hiddenTrains.has(p.id) && trainPasses(p, trainFilter), [hiddenTrains, trainFilter]);
   const selectedPlan = selectedTrain ? (trainPlans.plans.find((p) => p.id === selectedTrain) ?? null) : null;
 
@@ -381,7 +365,6 @@ export function App() {
     { id: 'route', label: t('tabRoute') },
     { id: 'ops', label: t('tabOps') },
     { id: 'display', label: t('tabDisplay') },
-    { id: 'info', label: t('tabInfo') },
   ];
   const leg = route && focusLeg !== null ? route.legs[focusLeg] : undefined;
 
@@ -394,12 +377,7 @@ export function App() {
       <header className="topbar">
         <div className="brand">
           <h1>{t('appTitle')}</h1>
-          <p>{t('appSubtitle')}</p>
         </div>
-        <p className="honesty" data-testid="honesty">
-          <span className="honesty-mark" aria-hidden="true" />
-          {t('honestyShort')}
-        </p>
         <div className="top-actions">
           <div className="segmented small" role="group" aria-label={t('viewSwitch')}>
             {(['3d', '2d'] as const).map((m) => (
@@ -552,11 +530,6 @@ export function App() {
           </button>
         </div>
 
-        <div className="hud hud-compass" aria-hidden="true">
-          <span>← {t('north')}</span>
-          <span className="muted">{t('schematic')}</span>
-        </div>
-
         {route && (
           <div className="hud step-nav" data-testid="step-nav">
             <button type="button" onClick={() => stepTo(focusLeg === null ? 0 : Math.max(0, focusLeg - 1))} disabled={focusLeg === 0} aria-label={t('stepPrev')} title={t('stepPrev')}>
@@ -602,8 +575,6 @@ export function App() {
             t={t}
             clock={clock}
             clockRef={clockRef}
-            demoData={timetable.dataset.kind === 'demo-fixture'}
-            coverage={trainCoverage}
             trainsOn={trainsOn}
             dayType={dayType}
             onClock={setClock}
@@ -639,7 +610,6 @@ export function App() {
             t={t}
             lang={lang}
             model={model}
-            sources={sources}
             namer={namer}
             elementId={selectedId}
             canRoute={canRoute}
@@ -701,57 +671,39 @@ export function App() {
               palette={palette}
               is3d={is3d}
               explode={explode}
-              ghostOthers={ghostOthers}
               showLabels={showLabels}
               showVerticals={showVerticals}
               showBlocks={showBlocks}
               showFareBoundary={showFareBoundary}
               onFareBoundary={setShowFareBoundary}
               hasBlocks={model.unverifiedBlocks.length > 0}
-              animate={animate}
               fareZones={fareZones}
               onExplode={setExplode}
-              onGhost={setGhostOthers}
               onLabels={setShowLabels}
               onVerticals={setShowVerticals}
               onBlocks={setShowBlocks}
-              onAnimate={setAnimate}
             />
           )}
           {tab === 'ops' && (
-            <OpsPanel
+            <div className="panel-body">
+              <TrainSection
               t={t}
               lang={lang}
               model={model}
-              mode={opsMode}
-              loading={opsLoading}
-              result={opsResult}
-              bound={bound}
-              providerLabels={{ example: providers.example.label[lang], odpt: providers.odpt.label[lang] }}
-              onMode={setOpsMode}
-              onRefresh={() => setOpsTick((n) => n + 1)}
-              onSelect={select}
-              trains={
-                <TrainSection
-                  t={t}
-                  lang={lang}
-                  model={model}
-                  data={timetable}
-                  plans={trainPlans.plans}
-                  unplaced={trainPlans.unplaced.length}
-                  filter={trainFilter}
-                  hiddenCount={hiddenTrains.size}
-                  clockRef={clockRef}
-                  shown={trainShown}
-                  selectedId={selectedTrain}
-                  onSelect={selectTrain}
-                  onFilter={setTrainFilter}
-                  onUnhide={() => setHiddenTrains(new Set())}
-                />
-              }
+              data={timetable}
+              plans={trainPlans.plans}
+              unplaced={trainPlans.unplaced.length}
+              filter={trainFilter}
+              hiddenCount={hiddenTrains.size}
+              clockRef={clockRef}
+              shown={trainShown}
+              selectedId={selectedTrain}
+              onSelect={selectTrain}
+              onFilter={setTrainFilter}
+              onUnhide={() => setHiddenTrains(new Set())}
             />
+            </div>
           )}
-          {tab === 'info' && <InfoPanel t={t} model={model} sources={sources} stats={stats} />}
         </div>
       </aside>
 

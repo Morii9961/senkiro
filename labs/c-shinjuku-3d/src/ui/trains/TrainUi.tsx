@@ -2,9 +2,10 @@
  * Interface of the train simulation: the clock bar on the stage, the card of
  * a selected train, and the filters in the Operations tab.
  *
- * Wherever a train is shown, the interface says what it is: a simulation
- * computed from a timetable — never a live position — and, while the demo
- * fixture is in use, that the times themselves are made up.
+ * The clock bar says "timetable simulation" and the train card adds that it is
+ * not a live position. The data notes, source lists and debugging rows were
+ * taken out for the public version (2026-11-20); the sources stay in the
+ * timetable files and in SOURCES.md.
  */
 import { useEffect, useState, type ReactNode, type RefObject } from 'react';
 import type { StationModel } from '../../domain/types';
@@ -43,9 +44,6 @@ export function TrainBar(props: {
   t: T;
   clock: SimClock;
   clockRef: RefObject<SimClock>;
-  demoData: boolean;
-  /** Names of the lines the timetable covers; null with the demo fixture. */
-  coverage: string | null;
   trainsOn: boolean;
   dayType: CalendarDayType;
   onClock(c: SimClock): void;
@@ -60,18 +58,8 @@ export function TrainBar(props: {
     <div className={`hud train-bar ${props.trainsOn ? '' : 'off'}`} role="group" aria-label={t('trainSim')} data-testid="train-bar">
       <p className="train-bar-note">
         <span className="sim-badge" data-testid="sim-badge">
-          {t('trainSimBadge')}
+          {t('trainSimShort')}
         </span>
-        {props.demoData && (
-          <span className="demo-badge" data-testid="demo-badge" title={t('trainDemoNote')}>
-            {t('trainDemoBadge')}
-          </span>
-        )}
-        {!props.demoData && props.coverage && (
-          <span className="coverage-badge" data-testid="coverage-badge">
-            {t('trainCoverage', { lines: props.coverage })}
-          </span>
-        )}
       </p>
       <div className="train-bar-row">
         <button type="button" className="tb-btn" aria-pressed={props.trainsOn} onClick={() => props.onToggle(!props.trainsOn)} title={props.trainsOn ? t('trainHideAll') : t('trainShowAll')} aria-label={props.trainsOn ? t('trainHideAll') : t('trainShowAll')} data-testid="trains-toggle">
@@ -175,50 +163,6 @@ export function TrainSection(props: {
   return (
     <section className="train-section" data-testid="train-section">
       <h3>{t('trainSim')}</h3>
-      <p className={`notice ${demo ? 'warn' : ''}`} data-testid="train-data-note">
-        {demo ? t('trainDemoNote') : t('trainRealNote', { files: data.files.join(', ') })}
-        {data.localFiles.length > 0 && (
-          <>
-            {' '}
-            <strong data-testid="train-local-note">
-              {data.localFiles.join(', ')}: {t('trainLocalOnly')}
-            </strong>
-          </>
-        )}
-      </p>
-      {!demo && (
-        <div className="train-sources" data-testid="train-sources">
-          <p className="muted small">{t('trainSources')}</p>
-          <ul className="muted small">
-            {data.dataset.sources.map((s) => (
-              <li key={s.id}>
-                {s.url ? (
-                  <a href={s.url} target="_blank" rel="noreferrer">
-                    {s.title}
-                  </a>
-                ) : (
-                  s.title
-                )}
-                {s.publisher ? ` · ${s.publisher}` : ''}
-                {s.license ? ` · ${s.license}` : ''}
-                {s.retrievedAt ? ` · ${s.retrievedAt}` : ''}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-      <p className="muted small">{t('trainSimNote')}</p>
-      <dl className="mini-facts">
-        <div>
-          <dt>{t('trainRecords')}</dt>
-          <dd data-testid="train-record-count">
-            {data.records.length}
-            {data.errorCount > 0 && ` · ${t('trainErrors', { n: data.errorCount })}`}
-            {data.warningCount > 0 && ` · ${t('trainWarnings', { n: data.warningCount })}`}
-            {props.unplaced > 0 && ` · ${t('trainUnplaced', { n: props.unplaced })}`}
-          </dd>
-        </div>
-      </dl>
       <div className="filter-grid">
         <label>
           <span>{t('trainFilterLine')}</span>
@@ -238,17 +182,6 @@ export function TrainSection(props: {
             {tracks.map((p) => (
               <option key={`${p.platformAreaId}#${p.trackNumber}`} value={`${p.platformAreaId}#${p.trackNumber}`}>
                 {opName(p)} {t('trackN', { n: p.trackNumber })}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          <span>{t('trainFilterVehicle')}</span>
-          <select value={filter.status} onChange={(e) => props.onFilter({ ...filter, status: e.target.value as TrainFilter['status'] })} data-testid="train-filter-status">
-            <option value="all">{t('filterAll')}</option>
-            {(['verified', 'representative', 'unknown'] as const).map((s) => (
-              <option key={s} value={s}>
-                {t(STATUS_KEYS[s])}
               </option>
             ))}
           </select>
@@ -349,31 +282,8 @@ export function TrainCard(props: {
         </>
       ),
     },
-    { key: 'cars', label: t('tfCars'), value: v.cars != null ? `${t('tfCarsN', { n: v.cars })}${v.carsBasis === 'line-fact' ? ` (${t('tfCarsFromLine')})` : ''}` : <span className="muted">{t('tfCarsUnknown')}</span> },
+    { key: 'cars', label: t('tfCars'), value: v.cars != null ? t('tfCarsN', { n: v.cars }) : <span className="muted">{t('tfCarsUnknown')}</span> },
     { key: 'no', label: t('tfTrainNumber'), value: r.train_number ?? <span className="muted">{t('tfNoTrainNumber')}</span> },
-    {
-      key: 'state', label: t('tfState'),
-      value: (
-        <>
-          <strong data-testid="train-live-state">{t('trainScheduled')}</strong>
-          {' · '}
-          <span data-testid="train-phase">{state ? t(PHASE_KEY[state.phase]) : t('trainGone')}</span>
-          {plan.run?.departs == null && ` · ${t('trainNoDirection')}`}
-        </>
-      ),
-    },
-    {
-      key: 'src', label: t('tfSource'),
-      value: (
-        <>
-          {demo ? t('trainDemoBadge') : (source?.title ?? r.source_id)}
-          {!demo && source?.publisher ? ` · ${source.publisher}` : ''}
-          {!demo && source?.license ? ` · ${source.license}` : ''}
-          {source?.retrievedAt ? ` · ${source.retrievedAt}` : data.dataset.generatedAt ? ` · ${data.dataset.generatedAt}` : ''}
-        </>
-      ),
-    },
-    ...(r.remarks && !demo ? [{ key: 'rem', label: t('tfRemarks'), value: <span className="muted" data-testid="train-remarks">{r.remarks}</span> }] : []),
   ];
 
   return (
@@ -391,7 +301,6 @@ export function TrainCard(props: {
           ×
         </button>
       </header>
-      {demo && <p className="unverified-banner">{t('trainDemoNote')}</p>}
       <dl className="facts">
         {facts.map((f) => (
           <div key={f.key}>
@@ -411,7 +320,6 @@ export function TrainCard(props: {
           {props.clock.playing ? t('trainPause') : t('trainPlay')}
         </button>
       </div>
-      <p className="card-source">{v.note}</p>
     </aside>
   );
 }

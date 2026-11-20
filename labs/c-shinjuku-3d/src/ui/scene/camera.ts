@@ -19,8 +19,9 @@ export const MIN_DISTANCE = 12;
 /** Polar angle, measured from straight up. */
 export const MIN_POLAR = 0.22;
 export const MAX_POLAR = 1.32;
-export const HOME_POLAR = 0.92;
-export const HOME_AZIMUTH = 0.42;
+export const HOME_POLAR = 1.1;
+/** The opening view: north on the left, the far side east (the user's chosen view, 2026-11-20). */
+export const HOME_AZIMUTH = -0.36;
 
 export interface Box {
   min: Vec3;
@@ -80,6 +81,28 @@ export function screenOffset(target: Vector3, extent: Extent, polar: number, azi
   return right.multiplyScalar((u0 + u1) / 2).add(up.multiplyScalar((v0 + v1) / 2));
 }
 
+/** How far to move the target (in the view plane) so that the extent, seen in perspective from `radius`, sits in the middle. */
+function perspectiveOffset(target: Vector3, extent: Extent, aspect: number, radius: number, polar: number, azimuth: number): Vector3 {
+  const { dir, right, up } = basis(polar, azimuth);
+  const tanY = Math.tan((FOV * Math.PI) / 360);
+  const tanX = tanY * aspect;
+  let x0 = Infinity;
+  let x1 = -Infinity;
+  let y0 = Infinity;
+  let y1 = -Infinity;
+  for (const c of pointsOf(extent)) {
+    c.sub(target);
+    const z = Math.max(1e-3, radius - c.dot(dir));
+    const x = c.dot(right) / (z * tanX);
+    const y = c.dot(up) / (z * tanY);
+    x0 = Math.min(x0, x);
+    x1 = Math.max(x1, x);
+    y0 = Math.min(y0, y);
+    y1 = Math.max(y1, y);
+  }
+  return right.multiplyScalar(((x0 + x1) / 2) * radius * tanX).add(up.multiplyScalar(((y0 + y1) / 2) * radius * tanY));
+}
+
 /** Camera distance at which every point of the extent is inside the given fraction of the view. */
 export function fitDistance(target: Vector3, extent: Extent, aspect: number, fit: { x: number; y: number }, polar: number, azimuth: number): number {
   const { dir, right, up } = basis(polar, azimuth);
@@ -103,11 +126,19 @@ export function homePose(model: StationModel, view: Pick<ViewOptions, 'explode' 
   const target = centre(boxOf(station));
   // look at the middle of what is seen, so that the picture sits in the middle of the view
   for (let i = 0; i < 3; i++) target.add(screenOffset(target, station, HOME_POLAR, HOME_AZIMUTH));
-  const radius = Math.max(
-    MIN_DISTANCE,
-    fitDistance(target, station, aspect, { x: 0.9, y: 0.86 }, HOME_POLAR, HOME_AZIMUTH),
-    fitDistance(target, everything, aspect, { x: 0.97, y: 0.95 }, HOME_POLAR, HOME_AZIMUTH),
-  );
+  const fit = () =>
+    Math.max(
+      fitDistance(target, station, aspect, { x: 0.9, y: 0.86 }, HOME_POLAR, HOME_AZIMUTH),
+      fitDistance(target, everything, aspect, { x: 0.97, y: 0.95 }, HOME_POLAR, HOME_AZIMUTH),
+    );
+  // the near part of a deep station looks bigger than the far part: centre it as it is seen in perspective,
+  // or the picture sits low and the fit stops at its lower edge with room to spare above
+  let radius = fit();
+  for (let i = 0; i < 6; i++) {
+    target.add(perspectiveOffset(target, station, aspect, radius, HOME_POLAR, HOME_AZIMUTH));
+    radius = fit();
+  }
+  radius = Math.max(MIN_DISTANCE, radius);
   return { target, radius, polar: HOME_POLAR, azimuth: HOME_AZIMUTH };
 }
 

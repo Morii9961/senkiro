@@ -29,7 +29,9 @@ async function open(page: Page, query = 'lang=ja&theme=light') {
   });
   page.on('pageerror', (e) => errors.push(String(e)));
   // Trains keep the scene drawing; the tests that wait for it to come to rest switch them off.
-  await page.goto(`/?${/(^|&)trains=/.test(query) ? query : `${query}&trains=off`}`);
+  // The side panel is folded on a first visit; the tests open it unless they say otherwise.
+  const withTrains = /(^|&)trains=/.test(query) ? query : `${query}&trains=off`;
+  await page.goto(`/?${/(^|&)panel=/.test(withTrains) ? withTrains : `${withTrains}&panel=open`}`);
   return errors;
 }
 
@@ -54,7 +56,8 @@ async function settled(page: Page): Promise<Stats> {
         last = s.frames;
         return still;
       },
-      { timeout: 8_000, intervals: [250] },
+      // damping settles in frames, not in seconds: a slow software renderer needs longer
+      { timeout: 15_000, intervals: [250] },
     )
     .toBe(true);
   return (await stats(page))!;
@@ -84,7 +87,21 @@ test.describe('loading', () => {
     expect(s.triangles).toBeGreaterThan(1000);
     expect(s.calls).toBeLessThan(40);
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('SENKIRO Lab · Shinjuku Station 3D');
-    await expect(page.getByTestId('honesty')).toBeVisible();
+    expect(errors).toEqual([]);
+  });
+
+  test('a first visit opens on the overview with the side panel folded and no working notes on the page', async ({ page }) => {
+    // "panel=default" is not a panel state, so the page falls back to its own default, as for a first visitor
+    const errors = await open(page, 'lang=zh&theme=light&panel=default');
+    await waitForScene(page);
+    await expect(page.locator('#panel')).toBeHidden();
+    await expect(page.getByTestId('panel-toggle')).toHaveAttribute('aria-expanded', 'false');
+    await expect(page.getByTestId('honesty')).toHaveCount(0);
+    await expect(page.locator('.brand p')).toHaveCount(0);
+    await expect(page.locator('.hud-compass')).toHaveCount(0);
+    await expect(page.getByTestId('sim-badge')).toHaveText('时刻表模拟');
+    await expect(page.getByTestId('demo-badge')).toHaveCount(0);
+    await expect(page.getByTestId('coverage-badge')).toHaveCount(0);
     expect(errors).toEqual([]);
   });
 
@@ -153,7 +170,7 @@ test.describe('routes', () => {
   });
 
   test('a bus bay of Busta 新宿 can be picked as destination; a gate that cannot be left from inside is entered instead', async ({ page }) => {
-    await page.goto('/?lang=ja&trains=off');
+    await page.goto('/?lang=ja&trains=off&panel=open');
     await page.getByTestId('route-from').selectOption('sk:platform:jr-east-shinjuku-13-14');
     await page.getByTestId('route-to').selectOption('sk:entrance:busta-4f-bay-c8');
     await expect(page.getByTestId('route-result')).toBeVisible();
@@ -431,6 +448,7 @@ test.describe('camera', () => {
   });
 
   test('pitch, distance and position are limited: the camera cannot get under a floor or lose the model', async ({ page }) => {
+    test.slow(); // four waits for the camera to come to rest
     await open(page);
     await waitForScene(page);
     await page.getByRole('application').focus();
@@ -472,7 +490,8 @@ test.describe('camera', () => {
   test('labels do not block the camera: scrolling over one still zooms', async ({ page }) => {
     await open(page);
     const home = await waitForScene(page);
-    const label = page.locator('.label-platform').first();
+    // the first platform label that is on show: which ones are depends on the opening view
+    const label = page.locator('.label-platform:visible').first();
     await expect(label).toBeVisible();
     const box = (await label.boundingBox())!;
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
@@ -498,8 +517,9 @@ test.describe('facility card', () => {
     await expect(card.locator('.line-name').first()).toContainText('線');
     await expect(card.locator('.svc-towards').first()).toContainText('方面');
     await expect(card.locator('.line-mark').first()).toBeVisible();
-    // provenance is one plain line, not a dump of identifiers
-    await expect(card.getByTestId('card-source')).toContainText('2026-08');
+    // the public card names no sources and no platform doors; never an identifier either
+    await expect(card.getByTestId('card-source')).toHaveCount(0);
+    await expect(card.getByTestId('card-doors')).toHaveCount(0);
     const text = await card.innerText();
     expect(text).not.toMatch(/sk:|src:|manual-verified|synthetic|dataNature/);
 
@@ -564,13 +584,18 @@ test.describe('display options', () => {
     expect(errors).toEqual([]);
   });
 
-  test('the legend says the Busta buses are an illustration, and where the services come from', async ({ page }) => {
+  test('the display tab keeps the legend and the useful switches only', async ({ page }) => {
     await open(page, 'lang=zh&theme=light');
     await waitForScene(page);
     await page.getByTestId('tab-display').click();
     const legend = page.locator('.legend');
-    await expect(legend).toContainText('巴士（示意，不表示班次与目的地）');
+    await expect(legend).toContainText('巴士');
+    await expect(legend).not.toContainText('示意');
+    await expect(legend).not.toContainText('推定连接');
     await expect(legend).toContainText('按楼层图位置');
+    await expect(page.getByTestId('animate')).toHaveCount(0);
+    await expect(page.locator('#tabpanel')).not.toContainText('未选中的楼层保留为淡影');
+    await expect(page.locator('#tabpanel')).not.toContainText('左为北');
     // the same services are drawn on the 2D plan of 4F
     await page.getByTestId('view-2d').click();
     await page.getByTestId('floor-4F').click();
@@ -579,42 +604,28 @@ test.describe('display options', () => {
   });
 });
 
-test.describe('honesty about data', () => {
-  test('operations: example mode is labelled as synthetic; live data without the development proxy says so', async ({ page }) => {
+test.describe('the public page', () => {
+  test('the operations tab lists trains only: no data notes, no source list, no data-source picker', async ({ page }) => {
     const errors = await open(page);
     await waitForScene(page);
     await page.getByTestId('tab-ops').click();
-    await page.getByTestId('ops-example').check();
-    await expect(page.getByTestId('sample-banner')).toBeVisible();
-    await expect(page.getByTestId('ops-sample-box')).toBeVisible();
-    await expect(page.getByTestId('ops-meta')).toContainText('2000');
-    await expect(page.getByTestId('ops-lines').locator('li').first()).toContainText('サンプル');
-    await expect(page.getByTestId('ops-board').locator('li').first()).toBeVisible();
+    await expect(page.getByTestId('train-section')).toBeVisible();
+    await expect(page.getByTestId('train-filter-line')).toBeVisible();
+    await expect(page.getByTestId('train-filter-status')).toHaveCount(0);
+    await expect(page.getByTestId('train-data-note')).toHaveCount(0);
+    await expect(page.getByTestId('train-sources')).toHaveCount(0);
+    await expect(page.getByTestId('train-record-count')).toHaveCount(0);
+    await expect(page.getByTestId('ops-off')).toHaveCount(0);
+    await expect(page.getByTestId('ops-example')).toHaveCount(0);
     const text = await page.locator('#tabpanel').innerText();
-    expect(text).not.toMatch(/src:|synthetic|dataNature/);
-
-    // the platform card picks the status up
-    await page.getByTestId('ops-board').locator('.track-n').first().click();
-    await expect(page.getByTestId('inspector').locator('.status').first()).toBeVisible();
-    await page.keyboard.press('Escape');
-
-    // the tests run against the production build, where no proxy (and so no key) exists
-    await page.getByTestId('ops-odpt').check();
-    await expect(page.getByTestId('ops-unavailable')).toBeVisible();
-    await expect(page.getByTestId('ops-unavailable')).toContainText('ODPT_CONSUMER_KEY');
-    await expect(page.getByTestId('sample-banner')).toHaveCount(0);
-    await expect(page.getByTestId('ops-lines')).toHaveCount(0);
+    expect(text).not.toMatch(/src:|synthetic|dataNature|Demo Fixture/);
     expect(errors).toEqual([]);
   });
 
-  test('sources and what was left out are reachable', async ({ page }) => {
+  test('there is no sources tab; the help is still there', async ({ page }) => {
     await open(page);
     await waitForScene(page);
-    await page.getByTestId('tab-info').click();
-    await expect(page.getByTestId('sources').locator('li').first()).toBeVisible();
-    await expect(page.locator('#tabpanel')).toContainText('実測');
-    await page.getByText('モデル化していない接続').click();
-    await expect(page.getByTestId('unconfirmed').locator('li').first()).toBeVisible();
+    await expect(page.getByTestId('tab-info')).toHaveCount(0);
     await page.getByTestId('help').click();
     await expect(page.getByTestId('help-dialog')).toContainText('中ボタン');
     await page.keyboard.press('Escape');
@@ -645,20 +656,12 @@ test.describe('train simulation', () => {
   const trains = (page: Page) =>
     page.evaluate(() => (window as unknown as { __SENKIRO_TRAINS__?: { shown: number; instances: number; moving: number; seconds: number } }).__SENKIRO_TRAINS__ ?? null);
 
-  test('says what it is: a timetable simulation on a real timetable, never a live position', async ({ page }) => {
+  test('says what it is: a timetable simulation', async ({ page }) => {
     const errors = await open(page, 'lang=zh&theme=light&trains=on&simtime=12:01:40');
     await waitForScene(page);
-    await expect(page.getByTestId('sim-badge')).toHaveText('时刻表模拟 · 非实时列车位置');
-    // the committed Toei timetable replaces the demo fixture as a whole
+    await expect(page.getByTestId('sim-badge')).toHaveText('时刻表模拟');
     await expect(page.getByTestId('demo-badge')).toHaveCount(0);
-    await expect(page.getByTestId('coverage-badge')).toContainText('都营新宿线');
-    await expect(page.getByTestId('coverage-badge')).toContainText('都营大江户线');
-    await expect(page.getByTestId('coverage-badge')).toContainText('其他线路没有可用的时刻表或不知道番线');
     await expect(page.getByTestId('sim-time')).toContainText('12:01:40');
-    await page.getByTestId('tab-ops').click();
-    await expect(page.getByTestId('train-data-note')).toContainText('toei-odpt.csv');
-    await expect(page.getByTestId('train-sources')).toContainText('東京都交通局・公共交通オープンデータ協議会');
-    await expect(page.getByTestId('train-sources')).toContainText('CC BY 4.0');
     await expect.poll(async () => (await trains(page))?.shown ?? 0).toBeGreaterThan(0);
     // one instanced mesh for every train: a single extra draw call
     const withTrains = (await stats(page))!.calls;
@@ -667,7 +670,7 @@ test.describe('train simulation', () => {
     expect(errors).toEqual([]);
   });
 
-  test('a train card shows schedule, train number, vehicle status and source — and nothing the timetable does not give', async ({ page }) => {
+  test('a train card shows schedule, train number and vehicle — and no working notes', async ({ page }) => {
     await open(page, 'lang=zh&theme=light&trains=on&simtime=12:01:40');
     await waitForScene(page);
     await page.getByTestId('sim-day').selectOption('weekday');
@@ -680,11 +683,12 @@ test.describe('train simulation', () => {
     await expect(card).toBeVisible();
     await expect(card).toContainText('都营大江户线');
     await expect(page.getByTestId('train-vehicle-status')).toHaveText('代表车型'); // the timetable gives no vehicle type
-    await expect(page.getByTestId('train-live-state')).toHaveText('时刻表模拟');
+    await expect(card).toContainText('时刻表模拟 · 非实时列车位置'); // the card still says it is not a live position
+    await expect(page.getByTestId('train-live-state')).toHaveCount(0);
     await expect(card).not.toContainText('无来源'); // the train number comes from the timetable
-    await expect(card).toContainText('8 节 (据线路资料)'); // from a sourced fact about the line, not from the timetable
-    await expect(card).toContainText('東京都交通局 列車時刻表');
-    await expect(card).toContainText('CC BY 4.0');
+    await expect(card).toContainText('8 节');
+    await expect(card).not.toContainText('据线路资料');
+    await expect(card).not.toContainText('CC BY 4.0');
     // hiding the train takes it off the display without touching the rest
     await page.getByTestId('train-hide').click();
     await expect(card).toBeHidden();

@@ -12,21 +12,17 @@ export function DisplayPanel(props: {
   palette: Palette;
   is3d: boolean;
   explode: number;
-  ghostOthers: boolean;
   showLabels: boolean;
   showVerticals: boolean;
   showBlocks: boolean;
   showFareBoundary: boolean;
   onFareBoundary(v: boolean): void;
   hasBlocks: boolean;
-  animate: boolean;
   fareZones: { zone: string; label: string }[];
   onExplode(v: number): void;
-  onGhost(v: boolean): void;
   onLabels(v: boolean): void;
   onVerticals(v: boolean): void;
   onBlocks(v: boolean): void;
-  onAnimate(v: boolean): void;
 }) {
   const { t, palette: p } = props;
   const legend: [string, string, string?][] = [
@@ -41,7 +37,6 @@ export function DisplayPanel(props: {
     [p.stairs, t('legendStairs')],
     [p.escalator, t('legendEscalator')],
     [p.route, t('legendRoute')],
-    [p.link, t('legendInferred'), 'dash'],
     ...(props.hasBlocks ? ([[p.block, t('legendUnverified'), 'hatch']] as [string, string, string][]) : []),
   ];
   return (
@@ -56,12 +51,10 @@ export function DisplayPanel(props: {
         </label>
       </section>
       <section className="checks">
-        <Check label={t('ghostOthers')} checked={props.ghostOthers} onChange={props.onGhost} disabled={!props.is3d} />
         <Check label={t('showLabels')} checked={props.showLabels} onChange={props.onLabels} />
         <Check label={t('showVerticals')} checked={props.showVerticals} onChange={props.onVerticals} />
         {props.hasBlocks && <Check label={t('showBlocks')} checked={props.showBlocks} onChange={props.onBlocks} />}
         <Check label={t('showFareBoundary')} checked={props.showFareBoundary} onChange={props.onFareBoundary} disabled={!props.is3d} testId="fare-boundary" />
-        <Check label={t('animateCamera')} checked={props.animate} onChange={props.onAnimate} disabled={!props.is3d} testId="animate" />
       </section>
       <section>
         <h3>{t('legend')}</h3>
@@ -73,8 +66,6 @@ export function DisplayPanel(props: {
             </li>
           ))}
         </ul>
-        <p className="fine">{t('orientationNote')}</p>
-        <p className="fine">{t('archNote')}</p>
       </section>
     </div>
   );
