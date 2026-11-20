@@ -386,7 +386,7 @@ test.describe('2D plan', () => {
     await expect.poll(async () => (await viewBox())[2]!).toBeCloseTo(home[2]!, 3);
   });
 
-  test('the plan marks north, frames far-apart parts of a floor side by side, centres them, and keeps a lone platform in proportion', async ({ page }) => {
+  test('the plan marks north, lays each floor horizontally, puts far-apart parts in titled panels side by side, centres them, and keeps a lone platform in proportion', async ({ page }) => {
     const errors = await open(page, 'lang=zh&theme=light&view=2d');
     const plan = page.getByTestId('plan-2d');
     const svg = plan.locator('svg').first();
@@ -403,12 +403,17 @@ test.describe('2D plan', () => {
       return w / (await svg.getAttribute('viewBox'))!.split(' ').map(Number)[2]!;
     };
 
-    // 2F: Seibu (north) and JR / Odakyu are not linked on this floor and lie far apart → two frames
+    // 2F: Seibu and JR / Odakyu are not linked on this floor and lie far apart → two panels with titles;
+    // the JR concourse runs east–west, so the floor is turned north-up
     await pickPlanFloor('2F');
+    await expect(page.getByTestId('plan-compass')).toHaveAttribute('data-north', 'up');
+    await expect(page.getByTestId('plan-compass')).toHaveAttribute('aria-label', /上为北/);
     const frames = plan.locator('[data-testid="plan-blocks"] rect');
     await expect(frames).toHaveCount(2);
+    await expect(plan.getByTestId('plan-panel-head')).toHaveCount(2);
+    await expect(plan.getByTestId('plan-panel-head').filter({ hasText: '西武新宿站' })).toHaveCount(1);
     await expect(page.getByTestId('plan-blocks-note')).toContainText('不按比例');
-    const spans = await frames.evaluateAll((els) => els.map((e) => e.getBoundingClientRect()).map((r) => ({ x0: r.left, x1: r.right })));
+    const spans = (await frames.evaluateAll((els) => els.map((e) => e.getBoundingClientRect()).map((r) => ({ x0: r.left, x1: r.right })))).sort((a, b) => a.x0 - b.x0);
     expect(spans[0]!.x1).toBeLessThan(spans[1]!.x0);
     const pb = (await plan.boundingBox())!;
     const mid = (Math.min(...spans.map((s) => s.x0)) + Math.max(...spans.map((s) => s.x1))) / 2;
@@ -420,6 +425,7 @@ test.describe('2D plan', () => {
     // B1F is linked throughout: one piece, no frame, no note
     await pickPlanFloor('B1F');
     await expect(frames).toHaveCount(0);
+    await expect(plan.getByTestId('plan-panel-head')).toHaveCount(0);
     await expect(page.getByTestId('plan-blocks-note')).toHaveCount(0);
 
     // B7F, a single platform, is drawn no larger than the Busta floors are

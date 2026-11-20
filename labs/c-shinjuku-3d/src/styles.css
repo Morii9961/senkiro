@@ -534,6 +534,36 @@ a {
   letter-spacing: -0.02em;
 }
 
+/* title bar of a panel on a floor drawn in parts; the panel itself is drawn in the SVG */
+.plan-panel-head {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  box-sizing: border-box;
+  padding: 0 10px;
+  border: 1px solid color-mix(in srgb, var(--ink) 30%, var(--paper));
+  border-radius: 8px 8px 0 0;
+  background: var(--surface-2);
+  color: var(--ink);
+  font-size: 12.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.plan-panel-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.plan-panel-north {
+  flex: none;
+  color: var(--ink-3);
+  font-weight: 600;
+}
+
 /* bottom left: the compass, and above it, on a floor drawn in separate blocks, that the gaps are not to scale */
 .plan-legend {
   position: absolute;

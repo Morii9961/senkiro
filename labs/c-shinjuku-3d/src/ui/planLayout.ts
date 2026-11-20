@@ -1,10 +1,10 @@
 /**
  * Layout of the 2D plan of one floor: which parts of the floor are drawn as
- * separate blocks, where each block is placed on the sheet, and the default
- * drawing scale.
+ * separate panels, which way the floor is turned, where each panel goes on the
+ * sheet, and the default drawing scale.
  *
  * This is page layout only. Model coordinates, areas and links are never
- * changed; a block is only moved as a whole when it is drawn.
+ * changed; a block is only turned and moved as a whole when it is drawn.
  *
  * Blocks. Two areas of the floor belong to the same block when
  *   - a passage, a gate or a lift / flight with both ends on this floor joins them, or
@@ -12,24 +12,31 @@
  * Everything else on the floor (tracks, gates, entrances, flights, services)
  * goes with the block of the area it stands in.
  *
- * Placing. The blocks keep their order in both directions (north stays left of
- * south, east stays above west). Only empty bands of the sheet are shortened:
- * where no block covers a stretch of x (or of z) longer than FRAME_GUTTER, the
- * stretch is cut down to FRAME_GUTTER. Distances between blocks are therefore
- * not to scale, and the plan says so.
+ * Orientation. The main block (the one with the most areas) is laid
+ * horizontally: when it runs east–west the floor is drawn north-up, otherwise
+ * north to the left (the model's own frame, as in 3D). The whole floor turns
+ * together, so one compass holds for every panel.
+ *
+ * Panels. A floor of two or more blocks is drawn as a row of panels of equal
+ * height, one block each, all at the same scale, in their order from left to
+ * right on the turned plan (north → south, or west → east). Distances and
+ * positions between panels are not to scale, and the plan says so.
  */
 import type { PlanPoint, PlanRect, StationModel } from '../domain/types';
 
 /** Areas this close (schematic units) are one block even without a link between them. */
 export const JOIN_GAP = 10;
-/** Space between a block and its frame. */
-export const FRAME_PAD = 1.5;
-/** Empty space left between the frames of two blocks after shortening. */
-export const FRAME_GUTTER = 4;
 /** Margin round the whole plan in the default view (schematic units). */
 export const FIT_PAD = 3.5;
 /** Clear space kept between the drawing and what stands over it (px). */
 export const OVERLAY_CLEARANCE = 12;
+/** Inner margin of a panel (schematic units). */
+export const PANEL_PAD = 2;
+/** Height of a panel's title bar, and the gap between panels (px at the default scale). */
+export const PANEL_HEAD_PX = 30;
+export const PANEL_GAP_PX = 22;
+
+export type North = 'left' | 'up';
 
 export interface ScreenRect {
   x0: number;
@@ -41,7 +48,7 @@ export interface ScreenRect {
 /**
  * What stands over the plan (px, relative to the plan): the floor list at the
  * top left, the view buttons at the bottom right, and the compass with the
- * note on blocks above it at the bottom left. The default view keeps the
+ * note on panels above it at the bottom left. The default view keeps the
  * drawing clear of them.
  */
 export function planOverlays(w: number, h: number, floors: number): ScreenRect[] {
@@ -57,30 +64,17 @@ export interface PlanBlock {
   areaIds: string[];
   /** Extent of what is drawn for the block, model coordinates. */
   extent: PlanRect;
-  /** Added to model coordinates to place the block on the sheet. */
-  dx: number;
-  dz: number;
-  /** The frame round the block, sheet coordinates. */
-  frame: PlanRect;
 }
 
-export interface PlanLayout {
+export interface PlanBlocks {
   blocks: PlanBlock[];
-  /** Extent of everything drawn, sheet coordinates. */
-  bounds: PlanRect;
   blockOfArea: Map<string, number>;
   /** The block whose areas are nearest to a point (model coordinates); 0 when the floor has none. */
   blockAt(p: PlanPoint): number;
 }
 
-const EMPTY: PlanRect = { x0: -10, x1: 10, z0: -10, z1: 10 };
-
 function union(a: PlanRect, b: PlanRect): PlanRect {
   return { x0: Math.min(a.x0, b.x0), x1: Math.max(a.x1, b.x1), z0: Math.min(a.z0, b.z0), z1: Math.max(a.z1, b.z1) };
-}
-
-function grow(r: PlanRect, d: number): PlanRect {
-  return { x0: r.x0 - d, x1: r.x1 + d, z0: r.z0 - d, z1: r.z1 + d };
 }
 
 function aroundPoint(p: PlanPoint, d: number): PlanRect {
@@ -100,33 +94,13 @@ function pointGap(p: PlanPoint, r: PlanRect): number {
   return Math.hypot(gx, gz);
 }
 
-function overlaps(a: PlanRect, b: PlanRect): boolean {
-  return a.x0 < b.x1 && b.x0 < a.x1 && a.z0 < b.z1 && b.z0 < a.z1;
-}
-
-/**
- * Shifts that shorten every empty band between intervals to `gutter`. Returns
- * one shift per interval, in the input order.
- */
-export function squeeze(intervals: [number, number][], gutter: number): number[] {
-  const order = intervals.map((iv, i) => ({ lo: iv[0], hi: iv[1], i })).sort((a, b) => a.lo - b.lo);
-  const shifts = new Array<number>(intervals.length).fill(0);
-  let shift = 0;
-  let reach = -Infinity;
-  for (const iv of order) {
-    if (reach !== -Infinity && iv.lo > reach + gutter) shift -= iv.lo - reach - gutter;
-    shifts[iv.i] = shift;
-    reach = Math.max(reach, iv.hi);
-  }
-  return shifts;
-}
-
-export function planLayout(model: StationModel, ordinal: number): PlanLayout {
+/** The blocks of one floor (independent of screen and orientation). */
+export function planBlocks(model: StationModel, ordinal: number): PlanBlocks {
   const levelIds = new Set(model.levels.filter((l) => l.ordinal === ordinal).map((l) => l.id));
   const areas = model.areas.filter((a) => levelIds.has(a.levelId));
   const index = new Map(areas.map((a, i) => [a.id, i]));
 
-  // --- blocks: union–find over the areas of the floor
+  // --- union–find over the areas of the floor
   const parent = areas.map((_, i) => i);
   const find = (i: number): number => (parent[i] === i ? i : (parent[i] = find(parent[i]!)));
   const join = (a: string | undefined, b: string | undefined) => {
@@ -186,38 +160,11 @@ export function planLayout(model: StationModel, ordinal: number): PlanLayout {
     if (other && v.verticalKind !== 'elevator') add(here.areaId, aroundPoint(other.position, 0.5));
   }
 
-  // --- group, then merge groups whose frames would overlap
-  let groups: { areaIds: string[]; extent: PlanRect }[] = [];
   const byRoot = new Map<number, string[]>();
   areas.forEach((a, i) => byRoot.set(find(i), [...(byRoot.get(find(i)) ?? []), a.id]));
-  for (const ids of byRoot.values()) groups.push({ areaIds: ids, extent: ids.map((id) => drawn.get(id)!).reduce(union) });
-  for (let merged = true; merged; ) {
-    merged = false;
-    outer: for (let i = 0; i < groups.length; i++) {
-      for (let j = i + 1; j < groups.length; j++) {
-        if (overlaps(grow(groups[i]!.extent, FRAME_PAD), grow(groups[j]!.extent, FRAME_PAD))) {
-          groups[i] = { areaIds: [...groups[i]!.areaIds, ...groups[j]!.areaIds], extent: union(groups[i]!.extent, groups[j]!.extent) };
-          groups.splice(j, 1);
-          merged = true;
-          break outer;
-        }
-      }
-    }
-  }
-  // north to south, then east to west: a stable order for tests and keys
-  groups = groups.sort((a, b) => a.extent.x0 - b.extent.x0 || a.extent.z0 - b.extent.z0);
-
-  // --- place: shorten the empty bands; the block with the most areas stays where the model puts it
-  const framed = groups.map((g) => grow(g.extent, FRAME_PAD));
-  const sx = squeeze(framed.map((f) => [f.x0, f.x1]), FRAME_GUTTER);
-  const sz = squeeze(framed.map((f) => [f.z0, f.z1]), FRAME_GUTTER);
-  const main = groups.reduce((best, g, i) => (g.areaIds.length > groups[best]!.areaIds.length ? i : best), 0);
-  const blocks: PlanBlock[] = groups.map((g, i) => {
-    const dx = groups.length > 1 ? sx[i]! - sx[main]! : 0;
-    const dz = groups.length > 1 ? sz[i]! - sz[main]! : 0;
-    const f = framed[i]!;
-    return { areaIds: g.areaIds, extent: g.extent, dx, dz, frame: { x0: f.x0 + dx, x1: f.x1 + dx, z0: f.z0 + dz, z1: f.z1 + dz } };
-  });
+  const blocks = [...byRoot.values()]
+    .map((ids) => ({ areaIds: ids, extent: ids.map((id) => drawn.get(id)!).reduce(union) }))
+    .sort((a, b) => a.extent.x0 - b.extent.x0 || a.extent.z0 - b.extent.z0);
 
   const blockOfArea = new Map<string, number>();
   blocks.forEach((b, i) => b.areaIds.forEach((id) => blockOfArea.set(id, i)));
@@ -238,14 +185,102 @@ export function planLayout(model: StationModel, ordinal: number): PlanLayout {
     });
     return best;
   };
+  return { blocks, blockOfArea, blockAt };
+}
 
-  const bounds =
-    blocks.length === 0
-      ? EMPTY
-      : blocks.length === 1
-        ? blocks[0]!.extent
-        : blocks.map((b) => b.frame).reduce(union);
-  return { blocks, bounds, blockOfArea, blockAt };
+/** Which way the floor is turned: the main block lies horizontally. */
+export function northOf(blocks: PlanBlock[]): North {
+  if (blocks.length === 0) return 'left';
+  const main = blocks.reduce((best, b) => (b.areaIds.length > best.areaIds.length ? b : best));
+  return main.extent.z1 - main.extent.z0 > main.extent.x1 - main.extent.x0 ? 'up' : 'left';
+}
+
+/**
+ * Model point → turned plan, before a block is moved into place. North-left is
+ * the model's own frame (x to the right, z down, east at the top). North-up
+ * turns it a quarter clockwise: x' = −z (east to the right), y' = x (north at the top).
+ */
+export function turn(north: North, p: PlanPoint): { x: number; y: number } {
+  return north === 'up' ? { x: -p.z, y: p.x } : { x: p.x, y: p.z };
+}
+
+function turnRect(north: North, r: PlanRect): ScreenRect {
+  return north === 'up' ? { x0: -r.z1, x1: -r.z0, y0: r.x0, y1: r.x1 } : { x0: r.x0, x1: r.x1, y0: r.z0, y1: r.z1 };
+}
+
+export interface SheetBlock extends PlanBlock {
+  /** Added after turning, to put the block in its panel (sheet units). */
+  tx: number;
+  ty: number;
+  /** The panel round the block (sheet coordinates); null when the floor is a single block. */
+  panel: ScreenRect | null;
+  /** Height of the panel's title bar (sheet units, at the default scale). */
+  head: number;
+}
+
+export interface SheetLayout extends PlanBlocks {
+  north: North;
+  blocks: SheetBlock[];
+  /** Extent of everything drawn, sheet coordinates. */
+  bounds: PlanRect;
+}
+
+/** A model point on the sheet, as drawn in block `b`. */
+export function toSheet(north: North, b: { tx: number; ty: number }, p: PlanPoint): PlanPoint {
+  const t = turn(north, p);
+  return { x: t.x + b.tx, z: t.y + b.ty };
+}
+
+/** SVG transform that draws block `b` (model coordinates) on the sheet. */
+export function sheetTransform(north: North, b: { tx: number; ty: number }): string | undefined {
+  const turnPart = north === 'up' ? ' matrix(0 1 -1 0 0 0)' : '';
+  if (b.tx === 0 && b.ty === 0 && !turnPart) return undefined;
+  return `translate(${b.tx} ${b.ty})${turnPart}`;
+}
+
+function arrange(blocks: PlanBlock[], north: North, head: number, gap: number, minWidth: number[]): { blocks: SheetBlock[]; bounds: PlanRect } {
+  const turned = blocks.map((b) => turnRect(north, b.extent));
+  if (blocks.length <= 1) {
+    const t = turned[0];
+    return {
+      blocks: blocks.map((b) => ({ ...b, tx: 0, ty: 0, panel: null, head: 0 })),
+      bounds: t ? { x0: t.x0, x1: t.x1, z0: t.y0, z1: t.y1 } : { x0: -10, x1: 10, z0: -10, z1: 10 },
+    };
+  }
+  const order = blocks.map((_, i) => i).sort((a, b) => turned[a]!.x0 + turned[a]!.x1 - (turned[b]!.x0 + turned[b]!.x1));
+  const inner = Math.max(...turned.map((t) => t.y1 - t.y0));
+  const height = head + inner + PANEL_PAD * 2;
+  const out: SheetBlock[] = new Array(blocks.length);
+  let x = 0;
+  for (const i of order) {
+    const t = turned[i]!;
+    const w = Math.max(t.x1 - t.x0 + PANEL_PAD * 2, minWidth[i] ?? 0);
+    const top = head + PANEL_PAD + (inner - (t.y1 - t.y0)) / 2;
+    // content centred in its panel (a panel may be wider than its block, to hold its title)
+    out[i] = { ...blocks[i]!, tx: x + (w - (t.x1 - t.x0)) / 2 - t.x0, ty: top - t.y0, panel: { x0: x, x1: x + w, y0: 0, y1: height }, head };
+    x += w + gap;
+  }
+  return { blocks: out, bounds: { x0: 0, x1: x - gap, z0: 0, z1: height } };
+}
+
+/**
+ * The sheet of one floor for a plan of `w` × `h` px. Title bars, gaps and the
+ * width a panel needs for its title (`titlePx`, px) are sized for the default
+ * scale, which depends on them: a few rounds settle it.
+ */
+export function sheetLayout(model: StationModel, ordinal: number, w: number, h: number, floors: number, titlePx: (areaIds: string[]) => number = () => 0): SheetLayout {
+  const base = planBlocks(model, ordinal);
+  const north = northOf(base.blocks);
+  const overlays = planOverlays(w, h, floors);
+  let laid = arrange(base.blocks, north, 0, 0, []);
+  if (base.blocks.length > 1) {
+    const need = base.blocks.map((b) => titlePx(b.areaIds));
+    for (let round = 0; round < 4; round++) {
+      const s = fitScale(laid.bounds, w, h, overlays);
+      laid = arrange(base.blocks, north, PANEL_HEAD_PX / s, PANEL_GAP_PX / s, need.map((px) => px / s));
+    }
+  }
+  return { ...base, north, blocks: laid.blocks, bounds: laid.bounds };
 }
 
 /**
