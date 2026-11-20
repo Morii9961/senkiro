@@ -1,18 +1,25 @@
 /**
  * The 2D plan of one floor. It is drawn from the same StationModel, the same
  * walls (scene/arch/slabs) and the same route line (scene/routeLine) as the 3D
- * view — only projected straight down. North is to the left, as in 3D.
+ * view — only projected straight down. North is to the left, as in 3D (east at
+ * the top): the station runs north–south, so this keeps the drawing wide on a
+ * wide screen and the platform labels horizontal. A compass on the plan says so.
+ *
+ * Parts of a floor that are neither linked nor near one another are drawn in
+ * separate frames, with the empty space between them shortened (planLayout.ts).
+ * That moves whole blocks on the sheet only; the model is not changed.
  *
  * Geometry is an SVG; names are DOM labels laid over it so that they keep a
  * constant size on screen and share their look with the 3D labels.
  */
 import { useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState, type Ref } from 'react';
-import { floorLabel } from '../domain/floors';
+import { floorLabel, floorsOf } from '../domain/floors';
 import type { RunningStatus } from '../domain/overlay';
 import type { Route } from '../domain/route';
 import type { Area, PlanPoint, PlanRect, StationModel, VerticalFacility } from '../domain/types';
 import type { Lang, T } from './i18n';
 import { pickName, type Namer } from './naming';
+import { fitScale, planLayout, planOverlays, scaleCap, type ScreenRect } from './planLayout';
 import type { SceneHandle } from './Scene3D';
 import { gateDirection } from './scene/arch/gates';
 import { wallEdges } from './scene/arch/slabs';
@@ -44,6 +51,8 @@ interface Props {
 interface PlanLabel {
   key: string;
   elementId: string | null;
+  /** The block of the plan the label belongs to (planLayout). */
+  block: number;
   x: number;
   z: number;
   text: string;
@@ -57,9 +66,46 @@ interface PlanLabel {
   alts?: PlanPoint[];
 }
 
-const PAD = 3.5;
 const PUBLIC_SPACE = 'sk:operator:public-space';
 const TRACK_W = 0.62;
+
+/**
+ * Words used only by the plan. Kept here rather than in i18n.ts so that this
+ * component can change without touching the shared dictionary; they can move
+ * there later.
+ */
+const PLAN_TEXT: Record<Lang, { n: string; e: string; s: string; w: string; compass: string; blocks: (n: number) => string }> = {
+  ja: { n: '北', e: '東', s: '南', w: '西', compass: '方位：左が北、上が東', blocks: (n) => `${n} 区画に分けて表示。区画の間隔は縮尺どおりではありません` },
+  zh: { n: '北', e: '东', s: '南', w: '西', compass: '方位：左为北，上为东', blocks: (n) => `分 ${n} 块显示，块间距离已压缩，不按比例` },
+  en: { n: 'N', e: 'E', s: 'S', w: 'W', compass: 'Compass: north is to the left, east at the top', blocks: (n) => `${n} blocks; the gaps between them are not to scale` },
+};
+
+/** North points left, as in the plan; east is at the top. */
+function Compass({ lang }: { lang: Lang }) {
+  const tx = PLAN_TEXT[lang];
+  return (
+    <div className="plan-compass" role="img" aria-label={tx.compass} data-testid="plan-compass" data-north="left">
+      <svg width="88" height="88" viewBox="-44 -44 88 88" aria-hidden="true">
+        <circle r="21" className="plan-compass-ring" />
+        <path d="M0 -21 V-16 M0 21 V16" className="plan-compass-tick" />
+        <path d="M-19 0 L0 -6 L0 6 Z" className="plan-compass-north" />
+        <path d="M19 0 L0 -6 L0 6 Z" className="plan-compass-south" />
+        <text x="-33" y="0" className="plan-compass-n">
+          {tx.n}
+        </text>
+        <text x="0" y="-31" className="plan-compass-minor-text">
+          {tx.e}
+        </text>
+        <text x="32" y="0" className="plan-compass-minor-text">
+          {tx.s}
+        </text>
+        <text x="0" y="31" className="plan-compass-minor-text">
+          {tx.w}
+        </text>
+      </svg>
+    </div>
+  );
+}
 
 function textWidth(text: string, px: number): number {
   let w = 0;
@@ -96,12 +142,10 @@ export function Plan2D(props: Props) {
     const areaById = new Map(model.areas.map((a) => [a.id, a]));
     const areas = model.areas.filter((a) => levelIds.has(a.levelId));
     const elevations = model.levels.filter((l) => levelIds.has(l.id)).map((l) => l.elevation);
-    const bounds = areas.length > 0 ? boundsOf(areas.flatMap((a) => a.footprint)) : { x0: -10, x1: 10, z0: -10, z1: 10 };
     return {
       levelIds,
       areaById,
       areas,
-      bounds,
       gates: model.gates.filter((g) => levelIds.has(g.levelId)),
       entrances: model.entrances.filter((e) => levelIds.has(e.levelId)),
       services: model.services.filter((s) => levelIds.has(s.levelId)),
@@ -115,12 +159,44 @@ export function Plan2D(props: Props) {
     };
   }, [model, ordinal]);
 
+  // --- blocks of the floor and where they are drawn (layout only) -------------------------------
+  const layout = useMemo(() => planLayout(model, ordinal), [model, ordinal]);
+  const allFloors = useMemo(
+    () =>
+      floorsOf(model).map((f) => {
+        const ids = new Set(f.levelIds);
+        return { areas: model.areas.filter((a) => ids.has(a.levelId)).length, bounds: planLayout(model, f.ordinal).bounds };
+      }),
+    [model],
+  );
+  const overlays = useMemo(() => planOverlays(size.w, size.h, allFloors.length), [size.w, size.h, allFloors.length]);
+  const blockOf = (k: number) => layout.blocks[k] ?? { dx: 0, dz: 0 };
+  const areaBlock = (id: string) => layout.blockOfArea.get(id) ?? 0;
+  /** SVG transform that places block `k` on the sheet. */
+  const place = (k: number) => {
+    const { dx, dz } = blockOf(k);
+    return dx === 0 && dz === 0 ? undefined : `translate(${dx} ${dz})`;
+  };
+  /** A model point on the sheet, moved with the block nearest to it. */
+  const onSheet = useMemo(
+    () =>
+      (p: PlanPoint): PlanPoint => {
+        const b = layout.blocks[layout.blockAt(p)];
+        return b ? { x: p.x + b.dx, z: p.z + b.dz } : p;
+      },
+    [layout],
+  );
+  const gateBlock = (g: (typeof floor.gates)[number]) => {
+    const side = g.sides.find((s): s is { areaId: string } => 'areaId' in s && layout.blockOfArea.has(s.areaId));
+    return side ? areaBlock(side.areaId) : layout.blockAt(g.position);
+  };
+
   const fit = useMemo(() => {
-    const b = floor.bounds;
-    const w = b.x1 - b.x0 + PAD * 2;
-    const h = b.z1 - b.z0 + PAD * 2;
-    return { cx: (b.x0 + b.x1) / 2, cz: (b.z0 + b.z1) / 2, scale: Math.min(size.w / w, (size.h - 40) / h) };
-  }, [floor.bounds, size.w, size.h]);
+    const b = layout.bounds;
+    // never larger than the station's other floors are drawn (a lone platform would fill the screen)
+    const scale = Math.min(fitScale(b, size.w, size.h, overlays), scaleCap(allFloors, size.w, size.h, overlays));
+    return { cx: (b.x0 + b.x1) / 2, cz: (b.z0 + b.z1) / 2, scale };
+  }, [layout.bounds, allFloors, overlays, size.w, size.h]);
 
   // a new floor starts framed
   useEffect(() => setCam({ cx: fit.cx, cz: fit.cz, zoom: 1 }), [ordinal]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -168,7 +244,7 @@ export function Plan2D(props: Props) {
     if (d.moved > 5 && !e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.setPointerCapture(e.pointerId);
     d.x = e.clientX;
     d.y = e.clientY;
-    const b = floor.bounds;
+    const b = layout.bounds;
     setCam((c) => ({
       ...c,
       cx: Math.min(b.x1 + 10, Math.max(b.x0 - 10, c.cx - dx / scale)),
@@ -213,10 +289,10 @@ export function Plan2D(props: Props) {
       const a = props.routePts[i]!;
       const b = props.routePts[i + 1]!;
       if (!floor.levelIds.has(a.levelId) || !floor.levelIds.has(b.levelId)) continue;
-      out.push({ a: a.plan, b: b.plan, strong: props.focusLeg === null || b.leg === props.focusLeg, inferred: inferred.has(b.leg) && a.nodeId !== null && b.nodeId !== null });
+      out.push({ a: onSheet(a.plan), b: onSheet(b.plan), strong: props.focusLeg === null || b.leg === props.focusLeg, inferred: inferred.has(b.leg) && a.nodeId !== null && b.nodeId !== null });
     }
     return out;
-  }, [props.routePts, props.route, props.focusLeg, floor.levelIds]);
+  }, [props.routePts, props.route, props.focusLeg, floor.levelIds, onSheet]);
 
   const ordinalOf = (levelId: string) => model.levels.find((l) => l.id === levelId)?.ordinal ?? 0;
   const routeEnds = useMemo(() => {
@@ -229,25 +305,33 @@ export function Plan2D(props: Props) {
       const oa = ordinalOf(a.levelId);
       const ob = ordinalOf(b.levelId);
       if (oa === ob) continue;
-      if (oa === ordinal) changes.push({ at: a.plan, to: floorLabel(ob), up: ob > oa });
+      if (oa === ordinal) changes.push({ at: onSheet(a.plan), to: floorLabel(ob), up: ob > oa });
     }
     return {
-      start: floor.levelIds.has(pts[0]!.levelId) ? pts[0]!.plan : null,
-      end: floor.levelIds.has(pts.at(-1)!.levelId) ? pts.at(-1)!.plan : null,
+      start: floor.levelIds.has(pts[0]!.levelId) ? onSheet(pts[0]!.plan) : null,
+      end: floor.levelIds.has(pts.at(-1)!.levelId) ? onSheet(pts.at(-1)!.plan) : null,
       changes,
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.routePts, floor.levelIds, ordinal]);
+  }, [props.routePts, floor.levelIds, ordinal, onSheet]);
 
   // --- labels ---------------------------------------------------------------------------------
   const labels = useMemo<PlanLabel[]>(() => {
     const out: PlanLabel[] = [];
     const boost = (id: string) => (onRoute.has(id) || id === props.selectedId ? 100 : 0);
+    const blockOfArea = (id: string) => layout.blockOfArea.get(id) ?? 0;
+    // an area that no passage or gate joins to another area of this floor (a street-level landing at the foot
+    // of an exit's stairs, say) is named at every scale: otherwise it is an unexplained box on the plan
+    const joined = new Set<string>();
+    for (const l of floor.links) joined.add(l.fromAreaId).add(l.toAreaId);
+    for (const g of floor.gates) if (g.sides.filter((sd) => 'areaId' in sd && floor.areaById.has(sd.areaId)).length > 1) g.sides.forEach((sd) => 'areaId' in sd && joined.add(sd.areaId));
     for (const a of floor.areas) {
+      const block = blockOfArea(a.id);
       if (a.kind === 'platform') {
         out.push({
           key: a.id,
           elementId: a.id,
+          block,
           x: a.anchor.x,
           z: a.anchor.z,
           text: trackRange(a.tracks.map((x) => x.number)),
@@ -259,46 +343,55 @@ export function Plan2D(props: Props) {
           alts: alongPlatform(a.footprint, a.anchor),
         });
       } else if (a.names.ja !== null) {
-        out.push({ key: a.id, elementId: null, x: a.anchor.x, z: a.anchor.z, text: namer.name(a.id), variant: 'area', priority: 20 + boost(a.id), minScale: onRoute.has(a.id) ? 0 : 9, anchor: 'centre' });
+        const alone = !joined.has(a.id);
+        out.push({ key: a.id, elementId: null, block, x: a.anchor.x, z: a.anchor.z, text: namer.name(a.id), variant: 'area', priority: (alone ? 30 : 20) + boost(a.id), minScale: onRoute.has(a.id) || alone ? 0 : 9, anchor: 'centre' });
       }
     }
-    // whose part of the floor this is: one caption per operator, above its areas (public space has names of its own)
+    // whose part of the floor this is: one caption per operator and block, above its areas (public space has names of its own)
     for (const op of model.operators) {
+      if (op.id === PUBLIC_SPACE) continue;
       const levels = new Set(model.levels.filter((l) => l.operatorId === op.id).map((l) => l.id));
       const mine = floor.areas.filter((a) => levels.has(a.levelId));
-      if (mine.length === 0 || op.id === PUBLIC_SPACE) continue;
-      const b = boundsOf(mine.flatMap((a) => a.footprint));
-      out.push({
-        key: `op:${op.id}`, elementId: null, x: b.x0 + 2, z: b.z0 - 0.3, text: pickName(op.names, props.lang) ?? op.id, variant: 'operator', priority: 48, minScale: 0, anchor: 'above',
-        alts: [{ x: (b.x0 + b.x1) / 2, z: b.z0 - 0.3 }, { x: b.x1 - 2, z: b.z0 - 0.3 }, { x: b.x0 + 2, z: b.z1 + 1.6 }, { x: (b.x0 + b.x1) / 2, z: b.z1 + 1.6 }],
-      });
+      const blocks = [...new Set(mine.map((a) => blockOfArea(a.id)))];
+      for (const block of blocks) {
+        const b = boundsOf(mine.filter((a) => blockOfArea(a.id) === block).flatMap((a) => a.footprint));
+        out.push({
+          key: `op:${op.id}:${block}`, elementId: null, block, x: b.x0 + 2, z: b.z0 - 0.3, text: pickName(op.names, props.lang) ?? op.id, variant: 'operator', priority: 44, minScale: 0, anchor: 'above',
+          alts: [{ x: (b.x0 + b.x1) / 2, z: b.z0 - 0.3 }, { x: b.x1 - 2, z: b.z0 - 0.3 }, { x: b.x0 + 2, z: b.z1 + 1.6 }, { x: (b.x0 + b.x1) / 2, z: b.z1 + 1.6 }],
+        });
+      }
     }
     for (const g of floor.gates) {
-      out.push({ key: g.id, elementId: g.id, x: g.position.x, z: g.position.z, text: namer.name(g.id), variant: 'gate', priority: 50 + boost(g.id), minScale: 0, anchor: 'above' });
+      out.push({ key: g.id, elementId: g.id, block: gateBlock(g), x: g.position.x, z: g.position.z, text: namer.name(g.id), variant: 'gate', priority: 50 + boost(g.id), minScale: 0, anchor: 'above' });
     }
     for (const sv of floor.services) {
       const r = sv.box;
-      out.push({ key: sv.id, elementId: null, x: (r.x0 + r.x1) / 2, z: (r.z0 + r.z1) / 2, text: namer.name(sv.id), variant: 'area', priority: 18, minScale: 12, anchor: 'above' });
+      out.push({ key: sv.id, elementId: null, block: blockOfArea(sv.areaId), x: (r.x0 + r.x1) / 2, z: (r.z0 + r.z1) / 2, text: namer.name(sv.id), variant: 'area', priority: 18, minScale: 12, anchor: 'above' });
     }
     for (const e of floor.entrances) {
-      out.push({ key: e.id, elementId: e.id, x: e.position.x, z: e.position.z, text: namer.name(e.id), variant: 'entrance', priority: (e.names.ja ? 45 : 15) + boost(e.id), minScale: e.names.ja || onRoute.has(e.id) ? 0 : 12, anchor: 'above' });
+      out.push({ key: e.id, elementId: e.id, block: blockOfArea(e.areaId), x: e.position.x, z: e.position.z, text: namer.name(e.id), variant: 'entrance', priority: (e.names.ja ? 45 : 15) + boost(e.id), minScale: e.names.ja || onRoute.has(e.id) ? 0 : 12, anchor: 'above' });
     }
     if (props.showBlocks) {
       for (const b of floor.blocks) {
-        out.push({ key: b.id, elementId: b.id, x: (b.box.x0 + b.box.x1) / 2, z: (b.box.z0 + b.box.z1) / 2, text: `${t('unverified')} · ${namer.name(b.id)}`, variant: 'block', priority: 40, minScale: 0, anchor: 'centre' });
+        const at = { x: (b.box.x0 + b.box.x1) / 2, z: (b.box.z0 + b.box.z1) / 2 };
+        out.push({ key: b.id, elementId: b.id, block: layout.blockAt(at), ...at, text: `${t('unverified')} · ${namer.name(b.id)}`, variant: 'block', priority: 40, minScale: 0, anchor: 'centre' });
       }
     }
-    if (routeEnds.start) out.push({ key: 'route:start', elementId: null, x: routeEnds.start.x, z: routeEnds.start.z, text: t('from'), variant: 'route-start', priority: 200, minScale: 0, anchor: 'above' });
-    if (routeEnds.end) out.push({ key: 'route:end', elementId: null, x: routeEnds.end.x, z: routeEnds.end.z, text: t('to'), variant: 'route-end', priority: 200, minScale: 0, anchor: 'above' });
+    // the ends of the route are already on the sheet (block −1: not moved again)
+    if (routeEnds.start) out.push({ key: 'route:start', elementId: null, block: -1, x: routeEnds.start.x, z: routeEnds.start.z, text: t('from'), variant: 'route-start', priority: 200, minScale: 0, anchor: 'above' });
+    if (routeEnds.end) out.push({ key: 'route:end', elementId: null, block: -1, x: routeEnds.end.x, z: routeEnds.end.z, text: t('to'), variant: 'route-end', priority: 200, minScale: 0, anchor: 'above' });
     return out;
-  }, [floor, model.operators, model.levels, namer, onRoute, props.lang, props.selectedId, props.showBlocks, routeEnds, t]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [floor, layout, model.operators, model.levels, namer, onRoute, props.lang, props.selectedId, props.showBlocks, routeEnds, t]);
 
   const placed = useMemo(() => {
     const compact = scale < 9;
-    // the floor list and the title of the plan stand over the drawing: nothing is placed under them
-    const boxes: { x0: number; y0: number; x1: number; y1: number }[] = [
-      { x0: 0, x1: 112, y0: 0, y1: 340 },
+    // the floor list, the title, the compass and the view buttons stand over the drawing (and the step bar
+    // while a route is shown): nothing is placed under them
+    const boxes: ScreenRect[] = [
+      ...overlays,
       { x0: 0, x1: 480, y0: 0, y1: 46 },
+      ...(props.route ? [{ x0: size.w / 2 - 330, x1: size.w / 2 + 330, y0: size.h - 70, y1: size.h }] : []),
     ];
     const out: (PlanLabel & { sx: number; sy: number; compact: boolean })[] = [];
     for (const l of [...labels].sort((a, b) => b.priority - a.priority)) {
@@ -306,9 +399,10 @@ export function Plan2D(props: Props) {
       const chipW = (l.chips ?? []).reduce((w, c) => w + (compact ? 12 : textWidth(c.text, 11) + 14), 0);
       const w = textWidth(l.text, 12) + 14 + chipW;
       const h = 22;
+      const { dx, dz } = l.block < 0 ? { dx: 0, dz: 0 } : blockOf(l.block);
       for (const at of [{ x: l.x, z: l.z }, ...(l.alts ?? [])]) {
-        const sx = (at.x - vx) * scale;
-        const sy = (at.z - vz) * scale;
+        const sx = (at.x + dx - vx) * scale;
+        const sy = (at.z + dz - vz) * scale;
         if (sx < -40 || sy < -20 || sx > size.w + 40 || sy > size.h + 20) continue;
         const lift = l.variant === 'operator' ? 2 : 12;
         const y0 = l.anchor === 'above' ? sy - h - lift : sy - h / 2;
@@ -320,7 +414,8 @@ export function Plan2D(props: Props) {
       }
     }
     return out;
-  }, [labels, scale, vx, vz, size.w, size.h]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [labels, layout, overlays, props.route, scale, vx, vz, size.w, size.h]);
 
   // --- drawing helpers ----------------------------------------------------------------------------
   const rectEl = (r: PlanRect, key: string, attrs: React.SVGProps<SVGRectElement>) => <rect key={key} x={r.x0} y={r.z0} width={r.x1 - r.x0} height={r.z1 - r.z0} {...attrs} />;
@@ -353,7 +448,7 @@ export function Plan2D(props: Props) {
       }
     }
     return (
-      <g key={v.id} className="pick" onClick={click(v.id)}>
+      <g key={v.id} className="pick" transform={place(areaBlock(here.areaId))} onClick={click(v.id)}>
         <title>{`${namer.name(v.id)} ${up ? '↑' : '↓'} ${floorLabel(ordinalOf(other.levelId))}`}</title>
         <polygon
           points={`${a.x - nx},${a.z - nz} ${b.x - nx},${b.z - nz} ${b.x + nx},${b.z + nz} ${a.x + nx},${a.z + nz}`}
@@ -375,7 +470,7 @@ export function Plan2D(props: Props) {
     const color = dim(p.elevator, v.id);
     const r = 0.36;
     return (
-      <g key={v.id} className="pick" onClick={click(v.id)}>
+      <g key={v.id} className="pick" transform={place(areaBlock(here.areaId))} onClick={click(v.id)}>
         <title>{namer.name(v.id)}</title>
         <rect x={here.position.x - r} y={here.position.z - r} width={r * 2} height={r * 2} rx={px(2)} fill={color} stroke={p.platformEdge} strokeWidth={px(1)} {...sel(v.id)} />
         {scale >= 9 && (
@@ -390,260 +485,291 @@ export function Plan2D(props: Props) {
   const floorName = floorLabel(ordinal);
 
   return (
-    <div className="plan" ref={wrap} data-testid="plan-2d" data-floor={floorName}>
-      <svg
-        viewBox={`${vx} ${vz} ${vw} ${vh}`}
-        width={size.w}
-        height={size.h}
-        role="img"
-        aria-label={t('planLabel', { level: floorName })}
-        onWheel={onWheel}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
-        onDoubleClick={() => setCam({ cx: fit.cx, cz: fit.cz, zoom: 1 })}
-        onClick={() => !wasDrag() && props.onSelect(null)}
-        onContextMenu={(e) => e.preventDefault()}
-      >
-        <defs>
-          <pattern id="plan-hatch" width="1.2" height="1.2" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-            <line x1="0" y1="0" x2="0" y2="1.2" stroke={p.block} strokeWidth="0.16" />
-          </pattern>
-        </defs>
+    <>
+      <div className="plan" ref={wrap} data-testid="plan-2d" data-floor={floorName}>
+        <svg
+          viewBox={`${vx} ${vz} ${vw} ${vh}`}
+          width={size.w}
+          height={size.h}
+          role="img"
+          aria-label={t('planLabel', { level: floorName })}
+          onWheel={onWheel}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={onPointerUp}
+          onDoubleClick={() => setCam({ cx: fit.cx, cz: fit.cz, zoom: 1 })}
+          onClick={() => !wasDrag() && props.onSelect(null)}
+          onContextMenu={(e) => e.preventDefault()}
+        >
+          <defs>
+            <pattern id="plan-hatch" width="1.2" height="1.2" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+              <line x1="0" y1="0" x2="0" y2="1.2" stroke={p.block} strokeWidth="0.16" />
+            </pattern>
+          </defs>
 
-        {/* unverified blocks */}
-        {props.showBlocks &&
-          floor.blocks.map((b) => (
-            <g key={b.id} className="pick" onClick={click(b.id)}>
-              <title>{`${t('unverified')} · ${namer.name(b.id)}`}</title>
-              {rectEl(b.box, 'r', { fill: 'url(#plan-hatch)', stroke: p.block, strokeWidth: px(1.2), strokeDasharray: `${px(5)} ${px(4)}`, ...sel(b.id) })}
-            </g>
-          ))}
-
-        {/* tracks beside platforms */}
-        {floor.areas.map((a) => {
-          if (a.kind !== 'platform') return null;
-          return a.footprint.flatMap((r, ri) =>
-            a.tracks.map((tr) => {
-              if (!tr.side) return null;
-              const alongX = tr.side[0] === 'z';
-              const out = tr.side[1] === '-' ? -1 : 1;
-              const at = alongX ? (out < 0 ? r.z0 : r.z1) : out < 0 ? r.x0 : r.x1;
-              const c0 = at + out * 0.04;
-              const c1 = at + out * (0.04 + TRACK_W);
-              const [lo, hi] = alongX ? [r.x0 - 1.6, r.x1 + 1.6] : [r.z0 - 1.6, r.z1 + 1.6];
-              const bed = alongX ? { x0: lo, x1: hi, z0: Math.min(c0, c1), z1: Math.max(c0, c1) } : { x0: Math.min(c0, c1), x1: Math.max(c0, c1), z0: lo, z1: hi };
-              const rails = [0.17, 0.45].map((off) => at + out * (0.04 + off));
-              const numAt = alongX ? { x: lo + 0.9, z: (c0 + c1) / 2 } : { x: (c0 + c1) / 2, z: lo + 0.9 };
-              return (
-                <g key={`${a.id}-${ri}-${tr.number}`}>
-                  {rectEl(bed, 'bed', { fill: dim(mix(p.trackBed, p.background, 0.35), a.id) })}
-                  {rails.map((c, i) =>
-                    alongX ? <line key={i} x1={lo} x2={hi} y1={c} y2={c} stroke={p.rail} strokeWidth={px(1)} /> : <line key={i} y1={lo} y2={hi} x1={c} x2={c} stroke={p.rail} strokeWidth={px(1)} />,
-                  )}
-                  {scale >= 8 && (
-                    <g style={{ pointerEvents: 'none' }}>
-                      <rect x={numAt.x - px(9)} y={numAt.z - px(7)} width={px(18)} height={px(14)} rx={px(2)} fill={p.ink} />
-                      <text x={numAt.x} y={numAt.z} fontSize={px(10)} textAnchor="middle" dominantBaseline="central" fill={p.background} fontWeight={700}>
-                        {tr.number}
-                      </text>
-                    </g>
-                  )}
-                </g>
-              );
-            }),
-          );
-        })}
-
-        {/* floors */}
-        {floor.areas.map((a) => (
-          <g key={a.id} data-area={a.id} className={a.kind === 'platform' ? 'pick' : undefined} onClick={a.kind === 'platform' ? click(a.id) : undefined}>
-            {a.footprint.map((r, i) => rectEl(r, String(i), { fill: areaFill(a), ...(a.kind === 'platform' ? { stroke: mix(p.platform, p.ink, 0.35), strokeWidth: px(1), ...sel(a.id) } : {}) }))}
-          </g>
-        ))}
-
-        {/* platform edges in the colour of the line that stops there */}
-        {floor.areas.map((a) => {
-          if (a.kind !== 'platform') return null;
-          return a.footprint.flatMap((r, ri) =>
-            a.tracks.map((tr) => {
-              if (!tr.side) return null;
-              const alongX = tr.side[0] === 'z';
-              const out = tr.side[1] === '-' ? -1 : 1;
-              const at = alongX ? (out < 0 ? r.z0 : r.z1) : out < 0 ? r.x0 : r.x1;
-              const inset = at - out * px(2.5);
-              const colors = [...new Set(tr.services.map((s) => lineColor(s.railLineId)))];
-              const [lo, hi] = alongX ? [r.x0, r.x1] : [r.z0, r.z1];
-              return colors.map((c, i) => {
-                const a0 = lo + ((hi - lo) * i) / colors.length;
-                const a1 = lo + ((hi - lo) * (i + 1)) / colors.length;
-                return alongX ? (
-                  <line key={`${a.id}-${ri}-${tr.number}-${i}`} x1={a0} x2={a1} y1={inset} y2={inset} stroke={c} strokeWidth={px(4)} style={{ pointerEvents: 'none' }} />
-                ) : (
-                  <line key={`${a.id}-${ri}-${tr.number}-${i}`} y1={a0} y2={a1} x1={inset} x2={inset} stroke={c} strokeWidth={px(4)} style={{ pointerEvents: 'none' }} />
-                );
-              });
-            }),
-          );
-        })}
-
-        {/* links that are not a shared wall opening (and inferred ones) */}
-        {floor.links.map((l) => {
-          const a = floor.areaById.get(l.fromAreaId)!;
-          const b = floor.areaById.get(l.toAreaId)!;
-          const touching = a.footprint.some((ra) => b.footprint.some((rb) => Math.min(ra.x1, rb.x1) - Math.max(ra.x0, rb.x0) >= -0.01 && Math.min(ra.z1, rb.z1) - Math.max(ra.z0, rb.z0) >= -0.01));
-          if (l.connection === 'verified' && touching) return null;
-          const [pa, pb] = linkEnds(a, b);
-          // drawn links are solid, links read from signage only are dashed
-          return <line key={l.id} x1={pa.x} y1={pa.z} x2={pb.x} y2={pb.z} stroke={p.link} strokeWidth={px(l.connection === 'inferred' ? 2 : 3.5)} strokeLinecap="round" strokeDasharray={l.connection === 'inferred' ? `${px(6)} ${px(5)}` : undefined} />;
-        })}
-
-        {/* gate lines: floor under the gate, then the row of machines */}
-        {floor.gates.map((g) => {
-          const { d, ends } = gateDirection(g, floor.areaById);
-          const [dx, dz] = unit(d[0], d[1]);
-          const nx = -dz;
-          const nz = dx;
-          const reach = Math.max(0.45, ...ends.map((e) => Math.hypot(e.x - g.position.x, e.z - g.position.z) + 0.04));
-          const color = dim(g.gateKind === 'transfer' ? p.gateTransfer : p.gate, g.id);
-          const { x, z } = g.position;
-          const half = 1.0;
-          const corners = [
-            [x - dx * reach - nx * half, z - dz * reach - nz * half],
-            [x + dx * reach - nx * half, z + dz * reach - nz * half],
-            [x + dx * reach + nx * half, z + dz * reach + nz * half],
-            [x - dx * reach + nx * half, z - dz * reach + nz * half],
-          ];
-          return (
-            <g key={g.id} className="pick" onClick={click(g.id)}>
-              <title>{namer.name(g.id)}</title>
-              <polygon points={corners.map((c) => c.join(',')).join(' ')} fill={mix(p.floorUnpaid, p.gateBody, 0.15)} {...sel(g.id)} />
-              {[-0.8, -0.4, 0, 0.4, 0.8].map((off) => (
-                <line key={off} x1={x + nx * off - dx * 0.24} y1={z + nz * off - dz * 0.24} x2={x + nx * off + dx * 0.24} y2={z + nz * off + dz * 0.24} stroke={color} strokeWidth={px(3)} strokeLinecap="round" />
+          {/* frames round the blocks of a floor that is drawn in parts (layout only, see planLayout.ts) */}
+          {layout.blocks.length > 1 && (
+            <g data-testid="plan-blocks" style={{ pointerEvents: 'none' }}>
+              {layout.blocks.map((b, i) => (
+                <rect
+                  key={i}
+                  data-block={i}
+                  x={b.frame.x0}
+                  y={b.frame.z0}
+                  width={b.frame.x1 - b.frame.x0}
+                  height={b.frame.z1 - b.frame.z0}
+                  rx={px(10)}
+                  fill={mix(p.background, p.ink, 0.035)}
+                  stroke={mix(p.background, p.ink, 0.3)}
+                  strokeWidth={px(1)}
+                />
               ))}
             </g>
-          );
-        })}
-
-        {/* walls */}
-        <g stroke={wallColor} strokeWidth={px(2.2)} strokeLinecap="square" style={{ pointerEvents: 'none' }}>
-          {floor.areas.flatMap((a) =>
-            a.kind === 'platform'
-              ? []
-              : wallEdges(ctxLike, a).map((e, i) =>
-                  e.axis === 'x' ? <line key={`${a.id}-${i}`} x1={e.lo} x2={e.hi} y1={e.at} y2={e.at} /> : <line key={`${a.id}-${i}`} y1={e.lo} y2={e.hi} x1={e.at} x2={e.at} />,
-                ),
           )}
-        </g>
 
-        {/* stairs, escalators, lifts */}
-        {floor.verticals.map((v) => {
-          if (v.verticalKind === 'elevator') return lift(v);
-          if (!props.showVerticals && !onRoute.has(v.id) && v.id !== props.selectedId) return null;
-          return flight(v);
-        })}
+          {/* unverified blocks */}
+          {props.showBlocks &&
+            floor.blocks.map((b) => (
+              <g key={b.id} className="pick" transform={place(layout.blockAt({ x: (b.box.x0 + b.box.x1) / 2, z: (b.box.z0 + b.box.z1) / 2 }))} onClick={click(b.id)}>
+                <title>{`${t('unverified')} · ${namer.name(b.id)}`}</title>
+                {rectEl(b.box, 'r', { fill: 'url(#plan-hatch)', stroke: p.block, strokeWidth: px(1.2), strokeDasharray: `${px(5)} ${px(4)}`, ...sel(b.id) })}
+              </g>
+            ))}
 
-        {/* passenger services marked on a floor map (drawn only: no card, not a route end) */}
-        {floor.services.map((sv) => {
-          const r = sv.box;
-          const cx = (r.x0 + r.x1) / 2;
-          const cz = (r.z0 + r.z1) / 2;
-          return (
-            <g key={sv.id} data-testid="plan-service">
-              <title>{namer.name(sv.id)}</title>
-              {sv.iconOnly ? (
-                <rect x={cx - px(5)} y={cz - px(5)} width={px(10)} height={px(10)} rx={px(2)} fill={p.service} stroke={p.background} strokeWidth={px(1.2)} />
-              ) : (
-                <rect x={r.x0} y={r.z0} width={r.x1 - r.x0} height={r.z1 - r.z0} fill={p.service} fillOpacity={sv.serviceKind === 'ticket-machines' ? 0.45 : 0.75} stroke={p.service} strokeWidth={px(1)} />
-              )}
-            </g>
-          );
-        })}
-
-        {/* entrances */}
-        {floor.entrances.map((e) => (
-          <g key={e.id} className="pick" onClick={click(e.id)}>
-            <title>{namer.name(e.id)}</title>
-            <circle cx={e.position.x} cy={e.position.z} r={px(7)} fill={dim(p.entrance, e.id)} stroke={p.background} strokeWidth={px(1.5)} {...sel(e.id)} />
-            <path
-              d={`M${e.position.x - px(3)} ${e.position.z}h${px(6)}m${-px(2.5)} ${-px(2.5)}l${px(2.5)} ${px(2.5)}l${-px(2.5)} ${px(2.5)}`}
-              stroke="#fff"
-              strokeWidth={px(1.4)}
-              fill="none"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              style={{ pointerEvents: 'none' }}
-            />
-          </g>
-        ))}
-
-        {/* route */}
-        <g style={{ pointerEvents: 'none' }} data-testid="plan-route">
-          {segments.map((s, i) => (
-            <line key={`h${i}`} x1={s.a.x} y1={s.a.z} x2={s.b.x} y2={s.b.z} stroke={p.routeHalo} strokeWidth={px(s.strong ? 9 : 6)} strokeLinecap="round" />
-          ))}
-          {segments.map((s, i) => {
-            return (
-              <line
-                key={i}
-                x1={s.a.x}
-                y1={s.a.z}
-                x2={s.b.x}
-                y2={s.b.z}
-                stroke={s.strong ? p.route : p.routeDim}
-                strokeWidth={px(s.strong ? 5 : 3)}
-                strokeLinecap="round"
-                strokeDasharray={s.inferred ? `${px(8)} ${px(7)}` : undefined}
-              />
+          {/* tracks beside platforms */}
+          {floor.areas.map((a) => {
+            if (a.kind !== 'platform') return null;
+            return a.footprint.flatMap((r, ri) =>
+              a.tracks.map((tr) => {
+                if (!tr.side) return null;
+                const alongX = tr.side[0] === 'z';
+                const out = tr.side[1] === '-' ? -1 : 1;
+                const at = alongX ? (out < 0 ? r.z0 : r.z1) : out < 0 ? r.x0 : r.x1;
+                const c0 = at + out * 0.04;
+                const c1 = at + out * (0.04 + TRACK_W);
+                const [lo, hi] = alongX ? [r.x0 - 1.6, r.x1 + 1.6] : [r.z0 - 1.6, r.z1 + 1.6];
+                const bed = alongX ? { x0: lo, x1: hi, z0: Math.min(c0, c1), z1: Math.max(c0, c1) } : { x0: Math.min(c0, c1), x1: Math.max(c0, c1), z0: lo, z1: hi };
+                const rails = [0.17, 0.45].map((off) => at + out * (0.04 + off));
+                const numAt = alongX ? { x: lo + 0.9, z: (c0 + c1) / 2 } : { x: (c0 + c1) / 2, z: lo + 0.9 };
+                return (
+                  <g key={`${a.id}-${ri}-${tr.number}`} transform={place(areaBlock(a.id))}>
+                    {rectEl(bed, 'bed', { fill: dim(mix(p.trackBed, p.background, 0.35), a.id) })}
+                    {rails.map((c, i) =>
+                      alongX ? <line key={i} x1={lo} x2={hi} y1={c} y2={c} stroke={p.rail} strokeWidth={px(1)} /> : <line key={i} y1={lo} y2={hi} x1={c} x2={c} stroke={p.rail} strokeWidth={px(1)} />,
+                    )}
+                    {scale >= 8 && (
+                      <g style={{ pointerEvents: 'none' }}>
+                        <rect x={numAt.x - px(9)} y={numAt.z - px(7)} width={px(18)} height={px(14)} rx={px(2)} fill={p.ink} />
+                        <text x={numAt.x} y={numAt.z} fontSize={px(10)} textAnchor="middle" dominantBaseline="central" fill={p.background} fontWeight={700}>
+                          {tr.number}
+                        </text>
+                      </g>
+                    )}
+                  </g>
+                );
+              }),
             );
           })}
-          {segments.map((s, i) => {
-            // a chevron in the middle of the longer straights shows which way the route runs
-            const len = Math.hypot(s.b.x - s.a.x, s.b.z - s.a.z);
-            if (!s.strong || len * scale < 70) return null;
-            const ux = (s.b.x - s.a.x) / len;
-            const uz = (s.b.z - s.a.z) / len;
-            const mx = (s.a.x + s.b.x) / 2 + ux * px(3);
-            const mz = (s.a.z + s.b.z) / 2 + uz * px(3);
-            const k = px(5);
-            return <polyline key={`a${i}`} points={`${mx - ux * k - uz * k},${mz - uz * k + ux * k} ${mx},${mz} ${mx - ux * k + uz * k},${mz - uz * k - ux * k}`} fill="none" stroke={p.routeHalo} strokeWidth={px(1.8)} strokeLinecap="round" strokeLinejoin="round" />;
-          })}
-          {routeEnds.changes.map((c, i) => (
-            <g key={i}>
-              <circle cx={c.at.x} cy={c.at.z} r={px(11)} fill={p.route} stroke={p.routeHalo} strokeWidth={px(2)} />
-              <text x={c.at.x} y={c.at.z - px(16)} fontSize={px(11)} textAnchor="middle" fill={p.route} fontWeight={700} stroke={p.routeHalo} strokeWidth={px(3)} paintOrder="stroke">
-                {c.up ? '↑' : '↓'} {c.to}
-              </text>
-              <text x={c.at.x} y={c.at.z} fontSize={px(12)} textAnchor="middle" dominantBaseline="central" fill="#fff" fontWeight={700}>
-                {c.up ? '↑' : '↓'}
-              </text>
+
+          {/* floors */}
+          {floor.areas.map((a) => (
+            <g key={a.id} data-area={a.id} transform={place(areaBlock(a.id))} className={a.kind === 'platform' ? 'pick' : undefined} onClick={a.kind === 'platform' ? click(a.id) : undefined}>
+              {a.footprint.map((r, i) => rectEl(r, String(i), { fill: areaFill(a), ...(a.kind === 'platform' ? { stroke: mix(p.platform, p.ink, 0.35), strokeWidth: px(1), ...sel(a.id) } : {}) }))}
             </g>
           ))}
-          {routeEnds.start && <circle cx={routeEnds.start.x} cy={routeEnds.start.z} r={px(7)} fill={p.routeHalo} stroke={p.route} strokeWidth={px(4)} />}
-          {routeEnds.end && <circle cx={routeEnds.end.x} cy={routeEnds.end.z} r={px(8)} fill={p.route} stroke={p.routeHalo} strokeWidth={px(3)} />}
-        </g>
-      </svg>
 
-      {props.showLabels && (
-        <div className="labels plan-labels" data-zoom={scale < 9 ? 1 : 3}>
-          {placed.map((l) => (
-            <span key={l.key} className={`label label-${l.variant}`} style={{ transform: `translate(${Math.round(l.sx)}px, ${Math.round(l.sy)}px) translateX(-50%)` }}>
-              <span className="label-text">{l.text}</span>
-              {l.chips?.map((c, i) => (
-                <span key={i} className="label-chip" style={{ ['--c' as string]: c.color, color: inkOn(c.color) }}>
-                  <span className="label-chip-text">{c.text}</span>
-                </span>
-              ))}
-            </span>
+          {/* platform edges in the colour of the line that stops there */}
+          {floor.areas.map((a) => {
+            if (a.kind !== 'platform') return null;
+            return a.footprint.flatMap((r, ri) =>
+              a.tracks.map((tr) => {
+                if (!tr.side) return null;
+                const alongX = tr.side[0] === 'z';
+                const out = tr.side[1] === '-' ? -1 : 1;
+                const at = alongX ? (out < 0 ? r.z0 : r.z1) : out < 0 ? r.x0 : r.x1;
+                const inset = at - out * px(2.5);
+                const colors = [...new Set(tr.services.map((s) => lineColor(s.railLineId)))];
+                const [lo, hi] = alongX ? [r.x0, r.x1] : [r.z0, r.z1];
+                return colors.map((c, i) => {
+                  const a0 = lo + ((hi - lo) * i) / colors.length;
+                  const a1 = lo + ((hi - lo) * (i + 1)) / colors.length;
+                  return alongX ? (
+                    <line key={`${a.id}-${ri}-${tr.number}-${i}`} transform={place(areaBlock(a.id))} x1={a0} x2={a1} y1={inset} y2={inset} stroke={c} strokeWidth={px(4)} style={{ pointerEvents: 'none' }} />
+                  ) : (
+                    <line key={`${a.id}-${ri}-${tr.number}-${i}`} transform={place(areaBlock(a.id))} y1={a0} y2={a1} x1={inset} x2={inset} stroke={c} strokeWidth={px(4)} style={{ pointerEvents: 'none' }} />
+                  );
+                });
+              }),
+            );
+          })}
+
+          {/* links that are not a shared wall opening (and inferred ones) */}
+          {floor.links.map((l) => {
+            const a = floor.areaById.get(l.fromAreaId)!;
+            const b = floor.areaById.get(l.toAreaId)!;
+            const touching = a.footprint.some((ra) => b.footprint.some((rb) => Math.min(ra.x1, rb.x1) - Math.max(ra.x0, rb.x0) >= -0.01 && Math.min(ra.z1, rb.z1) - Math.max(ra.z0, rb.z0) >= -0.01));
+            if (l.connection === 'verified' && touching) return null;
+            const [pa, pb] = linkEnds(a, b);
+            // drawn links are solid, links read from signage only are dashed
+            return <line key={l.id} transform={place(areaBlock(l.fromAreaId))} x1={pa.x} y1={pa.z} x2={pb.x} y2={pb.z} stroke={p.link} strokeWidth={px(l.connection === 'inferred' ? 2 : 3.5)} strokeLinecap="round" strokeDasharray={l.connection === 'inferred' ? `${px(6)} ${px(5)}` : undefined} />;
+          })}
+
+          {/* gate lines: floor under the gate, then the row of machines */}
+          {floor.gates.map((g) => {
+            const { d, ends } = gateDirection(g, floor.areaById);
+            const [dx, dz] = unit(d[0], d[1]);
+            const nx = -dz;
+            const nz = dx;
+            const reach = Math.max(0.45, ...ends.map((e) => Math.hypot(e.x - g.position.x, e.z - g.position.z) + 0.04));
+            const color = dim(g.gateKind === 'transfer' ? p.gateTransfer : p.gate, g.id);
+            const { x, z } = g.position;
+            const half = 1.0;
+            const corners = [
+              [x - dx * reach - nx * half, z - dz * reach - nz * half],
+              [x + dx * reach - nx * half, z + dz * reach - nz * half],
+              [x + dx * reach + nx * half, z + dz * reach + nz * half],
+              [x - dx * reach + nx * half, z - dz * reach + nz * half],
+            ];
+            return (
+              <g key={g.id} className="pick" transform={place(gateBlock(g))} onClick={click(g.id)}>
+                <title>{namer.name(g.id)}</title>
+                <polygon points={corners.map((c) => c.join(',')).join(' ')} fill={mix(p.floorUnpaid, p.gateBody, 0.15)} {...sel(g.id)} />
+                {[-0.8, -0.4, 0, 0.4, 0.8].map((off) => (
+                  <line key={off} x1={x + nx * off - dx * 0.24} y1={z + nz * off - dz * 0.24} x2={x + nx * off + dx * 0.24} y2={z + nz * off + dz * 0.24} stroke={color} strokeWidth={px(3)} strokeLinecap="round" />
+                ))}
+              </g>
+            );
+          })}
+
+          {/* walls */}
+          <g stroke={wallColor} strokeWidth={px(2.2)} strokeLinecap="square" style={{ pointerEvents: 'none' }}>
+            {floor.areas.flatMap((a) =>
+              a.kind === 'platform'
+                ? []
+                : wallEdges(ctxLike, a).map((e, i) =>
+                    e.axis === 'x' ? <line key={`${a.id}-${i}`} transform={place(areaBlock(a.id))} x1={e.lo} x2={e.hi} y1={e.at} y2={e.at} /> : <line key={`${a.id}-${i}`} transform={place(areaBlock(a.id))} y1={e.lo} y2={e.hi} x1={e.at} x2={e.at} />,
+                  ),
+            )}
+          </g>
+
+          {/* stairs, escalators, lifts */}
+          {floor.verticals.map((v) => {
+            if (v.verticalKind === 'elevator') return lift(v);
+            if (!props.showVerticals && !onRoute.has(v.id) && v.id !== props.selectedId) return null;
+            return flight(v);
+          })}
+
+          {/* passenger services marked on a floor map (drawn only: no card, not a route end) */}
+          {floor.services.map((sv) => {
+            const r = sv.box;
+            const cx = (r.x0 + r.x1) / 2;
+            const cz = (r.z0 + r.z1) / 2;
+            return (
+              <g key={sv.id} data-testid="plan-service" transform={place(areaBlock(sv.areaId))}>
+                <title>{namer.name(sv.id)}</title>
+                {sv.iconOnly ? (
+                  <rect x={cx - px(5)} y={cz - px(5)} width={px(10)} height={px(10)} rx={px(2)} fill={p.service} stroke={p.background} strokeWidth={px(1.2)} />
+                ) : (
+                  <rect x={r.x0} y={r.z0} width={r.x1 - r.x0} height={r.z1 - r.z0} fill={p.service} fillOpacity={sv.serviceKind === 'ticket-machines' ? 0.45 : 0.75} stroke={p.service} strokeWidth={px(1)} />
+                )}
+              </g>
+            );
+          })}
+
+          {/* entrances */}
+          {floor.entrances.map((e) => (
+            <g key={e.id} className="pick" transform={place(areaBlock(e.areaId))} onClick={click(e.id)}>
+              <title>{namer.name(e.id)}</title>
+              <circle cx={e.position.x} cy={e.position.z} r={px(7)} fill={dim(p.entrance, e.id)} stroke={p.background} strokeWidth={px(1.5)} {...sel(e.id)} />
+              <path
+                d={`M${e.position.x - px(3)} ${e.position.z}h${px(6)}m${-px(2.5)} ${-px(2.5)}l${px(2.5)} ${px(2.5)}l${-px(2.5)} ${px(2.5)}`}
+                stroke="#fff"
+                strokeWidth={px(1.4)}
+                fill="none"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{ pointerEvents: 'none' }}
+              />
+            </g>
           ))}
-        </div>
-      )}
 
-      <div className="plan-title" aria-hidden="true">
-        <strong>{floorName}</strong>
-        <span>{t('planHint')}</span>
+          {/* route */}
+          <g style={{ pointerEvents: 'none' }} data-testid="plan-route">
+            {segments.map((s, i) => (
+              <line key={`h${i}`} x1={s.a.x} y1={s.a.z} x2={s.b.x} y2={s.b.z} stroke={p.routeHalo} strokeWidth={px(s.strong ? 9 : 6)} strokeLinecap="round" />
+            ))}
+            {segments.map((s, i) => {
+              return (
+                <line
+                  key={i}
+                  x1={s.a.x}
+                  y1={s.a.z}
+                  x2={s.b.x}
+                  y2={s.b.z}
+                  stroke={s.strong ? p.route : p.routeDim}
+                  strokeWidth={px(s.strong ? 5 : 3)}
+                  strokeLinecap="round"
+                  strokeDasharray={s.inferred ? `${px(8)} ${px(7)}` : undefined}
+                />
+              );
+            })}
+            {segments.map((s, i) => {
+              // a chevron in the middle of the longer straights shows which way the route runs
+              const len = Math.hypot(s.b.x - s.a.x, s.b.z - s.a.z);
+              if (!s.strong || len * scale < 70) return null;
+              const ux = (s.b.x - s.a.x) / len;
+              const uz = (s.b.z - s.a.z) / len;
+              const mx = (s.a.x + s.b.x) / 2 + ux * px(3);
+              const mz = (s.a.z + s.b.z) / 2 + uz * px(3);
+              const k = px(5);
+              return <polyline key={`a${i}`} points={`${mx - ux * k - uz * k},${mz - uz * k + ux * k} ${mx},${mz} ${mx - ux * k + uz * k},${mz - uz * k - ux * k}`} fill="none" stroke={p.routeHalo} strokeWidth={px(1.8)} strokeLinecap="round" strokeLinejoin="round" />;
+            })}
+            {routeEnds.changes.map((c, i) => (
+              <g key={i}>
+                <circle cx={c.at.x} cy={c.at.z} r={px(11)} fill={p.route} stroke={p.routeHalo} strokeWidth={px(2)} />
+                <text x={c.at.x} y={c.at.z - px(16)} fontSize={px(11)} textAnchor="middle" fill={p.route} fontWeight={700} stroke={p.routeHalo} strokeWidth={px(3)} paintOrder="stroke">
+                  {c.up ? '↑' : '↓'} {c.to}
+                </text>
+                <text x={c.at.x} y={c.at.z} fontSize={px(12)} textAnchor="middle" dominantBaseline="central" fill="#fff" fontWeight={700}>
+                  {c.up ? '↑' : '↓'}
+                </text>
+              </g>
+            ))}
+            {routeEnds.start && <circle cx={routeEnds.start.x} cy={routeEnds.start.z} r={px(7)} fill={p.routeHalo} stroke={p.route} strokeWidth={px(4)} />}
+            {routeEnds.end && <circle cx={routeEnds.end.x} cy={routeEnds.end.z} r={px(8)} fill={p.route} stroke={p.routeHalo} strokeWidth={px(3)} />}
+          </g>
+        </svg>
+
+        {props.showLabels && (
+          <div className="labels plan-labels" data-zoom={scale < 9 ? 1 : 3}>
+            {placed.map((l) => (
+              <span key={l.key} className={`label label-${l.variant}`} style={{ transform: `translate(${Math.round(l.sx)}px, ${Math.round(l.sy)}px) translateX(-50%)` }}>
+                <span className="label-text">{l.text}</span>
+                {l.chips?.map((c, i) => (
+                  <span key={i} className="label-chip" style={{ ['--c' as string]: c.color, color: inkOn(c.color) }}>
+                    <span className="label-chip-text">{c.text}</span>
+                  </span>
+                ))}
+              </span>
+            ))}
+          </div>
+        )}
+
+        <div className="plan-title" aria-hidden="true">
+          <strong>{floorName}</strong>
+          <span>{t('planHint')}</span>
+        </div>
       </div>
-    </div>
+      {/* beside the plan, not in it: the plan holds exactly one <svg>, the drawing */}
+      <div className="plan-legend">
+        {layout.blocks.length > 1 && (
+          <p className="plan-note" data-testid="plan-blocks-note">
+            {PLAN_TEXT[props.lang].blocks(layout.blocks.length)}
+          </p>
+        )}
+        <Compass lang={props.lang} />
+      </div>
+    </>
   );
 }

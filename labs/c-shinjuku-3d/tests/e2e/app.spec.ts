@@ -385,6 +385,50 @@ test.describe('2D plan', () => {
     await svg.dblclick({ position: { x: 20, y: box.height - 20 } });
     await expect.poll(async () => (await viewBox())[2]!).toBeCloseTo(home[2]!, 3);
   });
+
+  test('the plan marks north, frames far-apart parts of a floor side by side, centres them, and keeps a lone platform in proportion', async ({ page }) => {
+    const errors = await open(page, 'lang=zh&theme=light&view=2d');
+    const plan = page.getByTestId('plan-2d');
+    const svg = plan.locator('svg').first();
+    await expect(page.getByTestId('plan-compass')).toHaveAttribute('data-north', 'left');
+    await expect(page.getByTestId('plan-compass')).toHaveAttribute('aria-label', /左为北/);
+
+    const pickPlanFloor = async (label: string) => {
+      await page.getByTestId(`floor-${label}`).click();
+      await expect(plan).toHaveAttribute('data-floor', label);
+    };
+    /** Drawing scale of the default view, px per schematic unit. */
+    const scale = async () => {
+      const w = (await svg.boundingBox())!.width;
+      return w / (await svg.getAttribute('viewBox'))!.split(' ').map(Number)[2]!;
+    };
+
+    // 2F: Seibu (north) and JR / Odakyu are not linked on this floor and lie far apart → two frames
+    await pickPlanFloor('2F');
+    const frames = plan.locator('[data-testid="plan-blocks"] rect');
+    await expect(frames).toHaveCount(2);
+    await expect(page.getByTestId('plan-blocks-note')).toContainText('不按比例');
+    const spans = await frames.evaluateAll((els) => els.map((e) => e.getBoundingClientRect()).map((r) => ({ x0: r.left, x1: r.right })));
+    expect(spans[0]!.x1).toBeLessThan(spans[1]!.x0);
+    const pb = (await plan.boundingBox())!;
+    const mid = (Math.min(...spans.map((s) => s.x0)) + Math.max(...spans.map((s) => s.x1))) / 2;
+    expect(Math.abs(mid - (pb.x + pb.width / 2))).toBeLessThan(3);
+    // nothing of the drawing under the floor list
+    const list = (await page.getByTestId('floor-list').boundingBox())!;
+    expect(Math.min(...spans.map((s) => s.x0))).toBeGreaterThan(list.x + list.width);
+
+    // B1F is linked throughout: one piece, no frame, no note
+    await pickPlanFloor('B1F');
+    await expect(frames).toHaveCount(0);
+    await expect(page.getByTestId('plan-blocks-note')).toHaveCount(0);
+
+    // B7F, a single platform, is drawn no larger than the Busta floors are
+    await pickPlanFloor('4F');
+    const busta = await scale();
+    await pickPlanFloor('B7F');
+    expect(await scale()).toBeLessThanOrEqual(busta * 1.01);
+    expect(errors).toEqual([]);
+  });
 });
 
 test.describe('camera', () => {
