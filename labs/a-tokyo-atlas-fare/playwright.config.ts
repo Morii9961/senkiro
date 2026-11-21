@@ -10,7 +10,7 @@ export default defineConfig({
   retries: 0,
   reporter: 'list',
   use: {
-    baseURL: 'http://127.0.0.1:4173',
+    baseURL: 'http://127.0.0.1:18473',
     trace: 'on-first-retry',
     viewport: { width: 1440, height: 900 },
   },
@@ -26,8 +26,8 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npm run preview -- --host 127.0.0.1 --port 4173 --strictPort',
-    url: 'http://127.0.0.1:4173',
+    command: 'npm run preview -- --host 127.0.0.1 --port 18473 --strictPort',
+    url: 'http://127.0.0.1:18473',
     reuseExistingServer: !process.env.CI,
     timeout: 30_000,
   },
