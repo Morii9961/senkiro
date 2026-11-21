@@ -1,0 +1,21 @@
+import { test,expect } from '@playwright/test'
+test('opens the WebGL model, walks a segment and switches floors without console errors',async({page})=>{
+  const errors:string[]=[]
+  page.on('pageerror',e=>errors.push(e.message))
+  page.on('console',m=>{if(m.type()==='error')errors.push(m.text())})
+  await page.goto('/')
+  const canvas=page.locator('canvas')
+  await expect(canvas).toBeVisible()
+  await expect(canvas).toHaveAttribute('data-triangles',/^[1-9]\d+$/)
+  console.log('WebGL',await canvas.getAttribute('data-calls'),'calls,',await canvas.getAttribute('data-triangles'),'triangles')
+  await page.getByRole('button',{name:'EN',exact:true}).click()
+  await page.getByRole('button',{name:'Start walkthrough'}).click()
+  await expect(page.locator('[aria-current="step"]')).toHaveCount(1)
+  await page.getByRole('button',{name:'2D',exact:true}).click()
+  await expect(page.getByRole('img',{name:'Schematic floor plan'})).toBeVisible()
+  await page.getByRole('button',{name:'2F',exact:true}).click()
+  await page.getByRole('button',{name:'3D',exact:true}).click()
+  await expect(canvas).toBeVisible()
+  await page.getByRole('button',{name:'Reset view'}).click()
+  expect(errors).toEqual([])
+})
