@@ -31,6 +31,8 @@ interface MapCanvasProps {
   verticalMap: Map<string, TrackVerticalAttribute>;
   verticalLoading: boolean;
   focusCoords: [number, number] | null;
+  initialViewport?: { lon: number; lat: number; zoom: number } | null;
+  onViewportChange?: (lon: number, lat: number, zoom: number) => void;
   onSelectStation: (stationId: SkId<'station'>) => void;
   onSelectLine: (lineId: SkId<'line'>) => void;
 }
@@ -79,9 +81,13 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
   verticalMap,
   verticalLoading,
   focusCoords,
+  initialViewport,
+  onViewportChange,
   onSelectStation,
   onSelectLine,
 }) => {
+  const onViewportChangeRef = useRef(onViewportChange);
+  onViewportChangeRef.current = onViewportChange;
   const t = UI_TEXT[locale];
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -274,8 +280,8 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
 
     const map = new maplibregl.Map({
       container: containerRef.current,
-      center: [139.745, 35.685],
-      zoom: 11.4,
+      center: initialViewport ? [initialViewport.lon, initialViewport.lat] : [139.745, 35.685],
+      zoom: initialViewport ? initialViewport.zoom : 11.4,
       minZoom: 8,
       maxZoom: 17,
       canvasContextAttributes: { antialias: true, preserveDrawingBuffer: true },
@@ -471,6 +477,10 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
     });
     map.on('load', () => {
       setMapReady(true);
+    });
+    map.on('moveend', () => {
+      const c = map.getCenter();
+      onViewportChangeRef.current?.(c.lng, c.lat, map.getZoom());
     });
 
     mapRef.current = map;

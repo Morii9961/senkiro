@@ -631,6 +631,153 @@ a:focus-visible {
   color: var(--text-muted);
 }
 
+/* === 3D Metropolitan Atlas Floating HUD === */
+.hub-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.hub-chip {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 6px;
+  padding: 4px 9px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.hub-chip:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.underground-hud {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  width: 248px;
+  max-width: calc(100% - 24px);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 9px;
+  box-shadow: var(--shadow);
+  z-index: 15;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.underground-hud-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.btn-underground {
+  flex: 1;
+  border: 1px solid var(--border);
+  background: var(--surface-subtle);
+  color: var(--text);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.btn-underground.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+}
+
+.underground-hud-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 11px;
+}
+
+.hud-slider-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hud-check-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.tier-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.tier-pill {
+  border: 1px solid var(--border);
+  background: var(--surface-subtle);
+  color: var(--text-muted);
+  border-radius: 4px;
+  padding: 3px 6px;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+}
+
+.tier-pill.active {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.trace-hud {
+  position: absolute;
+  bottom: 44px;
+  right: 12px;
+  width: 340px;
+  max-width: calc(100% - 330px);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  box-shadow: var(--shadow);
+  z-index: 15;
+}
+
+.telemetry-chip {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 10px;
+  color: var(--text-muted);
+  box-shadow: var(--shadow);
+  z-index: 14;
+}
+
 @media (max-width: 900px) {
   .workspace {
     flex-direction: column-reverse;

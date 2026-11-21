@@ -43,3 +43,14 @@
 - **决定**：采用免密钥、CC BY 4.0 互換的国土地理院「地理院タイル（淡色地図）」，离线时自动降级为纯色底图背景（MapLibre `background` 层）；Playwright `webServer` 端口选用 `18473`。
 - **备选**：MapTiler/Mapbox（需密钥）或默认 `4173` 端口。
 - **理由**：避免引入任何 API 密钥；实测 Windows 11 环境中 `4173` 落入系统保留端口区间导致 `EACCES`，改用 `18473` 后可稳定在本地与沙盒内完成全部端到端测试。
+
+## D-09：升级独立 Three.js 3D 都市铁路生成系统与 2km 空间分块流式 LOD
+- **决定**：将 3D 视图升级为独立 Three.js 程序化建模引擎（`src/three/` + `src/domain/elevationSolver.ts`），与 2D MapLibre 视图共享同一套 `AtlasDataset`、经纬度投影原点与交互状态；东京 23 区真实 OSM 建筑、道路与河川水域经流式脚本构建为 `public/data/urban-chunks/`（130 个 `2km×2km` 独立 ODbL 空间分块），实现近景轮廓挤出+退台合批（LOD0）与中远景有向包围盒 `InstancedMesh`（LOD1）+ 视锥剔除。
+- **备选**：继续在 MapLibre 2.5D 中做平面折线拉伸，或导入外部成品城市 3D Tiles。
+- **理由**：MapLibre 2.5D 无法表现真实地下空间、隧道纵断穿行、多层级地下换乘井与水平剖切平面，且不得通过导入现成整城模型规避自研程序化建模；纯自研 Three.js 分块+LOD 引擎满足城市尺度探索、地下透视与跨城（大阪/名古屋）迁移要求。
+
+## D-10：示意垂向高度层级与交叉净空自动避碰
+- **决定**：在 `src/domain/elevationSolver.ts` 中建立 `L+2 (+20)` 至 `L-4 (-40)` 示意相对高度体系，每条区段显式标记 `heightBasis`（`manual-verified-relative` / `osm-derived-schematic` / `inferred-schematic`），对重点枢纽（涩谷银座线 3F `+14`、新宿深层大江户线 `-38`、东京/大手町多层交错）录入已核实相对上下关系，并对所有非共站二维交叉自动施加端点归零的高斯净空避碰（`≥ 6.5` 单位）。
+- **备选**：仅按 OSM `layer` 或单一固定深度放置所有地铁线。
+- **理由**：确保空间结构自洽、相邻区间 $C^0$ 连续且无地下交叉穿模，同时绝不把推断高度伪装为官方实测深度。
+

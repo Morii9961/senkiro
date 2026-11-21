@@ -23,8 +23,10 @@ npm test
 | `npm run build` | TypeScript 严格类型检查（`tsc --noEmit`）+ Vite 生产构建 |
 | `npm test` | 运行 Vitest 单元测试（运价规则引擎 + 跨来源对齐 + 数据一致性与 ODbL 隔离） |
 | `npm run test:e2e` | 运行 Playwright 端到端交互测试（首次运行前如缺少浏览器请执行 `npx playwright install chromium`；自动启动 `vite preview` 于 `127.0.0.1:18473`） |
-| `npm run data:fetch` | 从免密钥公开来源重新下载原始数据至 `data/raw/`（被 `.gitignore` 忽略） |
-| `npm run data:build` | 从 `data/raw/` 与 `data/manual/reference-metadata.json` 可复现生成 `data/processed/atlas.json`、`data/sources.json` 与独立 ODbL 文件 `data/processed/osm-vertical.json` |
+| `npm run data:fetch` | 从免密钥公开来源重新下载铁路与纵断原始数据至 `data/raw/`（被 `.gitignore` 忽略） |
+| `npm run data:build` | 可复现生成 `data/processed/atlas.json`、`data/sources.json` 与独立 ODbL 文件 `data/processed/osm-vertical.json` |
+| `npm run data:urban:fetch` | 从 Overpass API 重新下载东京 23 区真实 OSM 建筑、主要道路、河川水域与公园至 `data/raw/urban/` |
+| `npm run data:urban` | 流式处理原始 OSM 都市数据，生成 `public/data/urban-chunks/`（130 个 `2km×2km` 空间分块 + `base-environment.json`） |
 
 ## 环境与密钥
 
@@ -35,6 +37,7 @@ npm test
 ## 文档索引
 
 - [PLAN.md](file:///e:/SENKIRO/labs/a-tokyo-atlas-fare/PLAN.md)：架构与里程碑计划
+- [ARCHITECTURE-3D.md](file:///e:/SENKIRO/labs/a-tokyo-atlas-fare/ARCHITECTURE-3D.md)：三维东京都市与地下铁路程序化建模架构文档
 - [DECISIONS.md](file:///e:/SENKIRO/labs/a-tokyo-atlas-fare/DECISIONS.md)：关键技术与合规决策记录
 - [SOURCES.md](file:///e:/SENKIRO/labs/a-tokyo-atlas-fare/SOURCES.md)：数据源许可登记表与 JR 规则来源表
 - [REPORT.md](file:///e:/SENKIRO/labs/a-tokyo-atlas-fare/REPORT.md)：范围完成情况、真实运行记录、事实出入与 SENKIRO 复用评估

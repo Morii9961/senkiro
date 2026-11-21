@@ -154,9 +154,18 @@ test.describe('SENKIRO Lab · Tokyo Atlas & Fare Interactive E2E', () => {
     await expect(page.getByTestId('fare-total-amount')).toHaveCount(0);
   });
 
-  test('6. Switch to 3D Stereoscopic View, verify schematic honesty banner, and select a RailLine (Should #21)', async ({
+  test('6. Switch to 3D Metropolitan City Atlas (Three.js), verify WebGL rendering, chunk streaming, honesty banner & line selection', async ({
     page,
   }) => {
+    const pageErrors: string[] = [];
+    const mergeErrors: string[] = [];
+    page.on('pageerror', (err) => pageErrors.push(String(err)));
+    page.on('console', (msg) => {
+      if (msg.type() === 'error' && msg.text().includes('mergeGeometries')) {
+        mergeErrors.push(msg.text());
+      }
+    });
+
     await page.goto('/');
     await page.getByTestId('view-mode-3d').click();
 
@@ -164,11 +173,48 @@ test.describe('SENKIRO Lab · Tokyo Atlas & Fare Interactive E2E', () => {
     await expect(banner3d).toBeVisible();
     await expect(banner3d).toContainText('縦断位置は模式表示であり、実際の高さ・深度ではありません');
 
-    // Select a line in 3D view and inspect its detail
+    // Verify Three.js WebGL canvas renders real 3D geometry (non-blank pixels!)
+    await page.waitForSelector('canvas[data-testid="three-3d-canvas"]');
+    await expect
+      .poll(
+        async () =>
+          page.evaluate(() => {
+            const canvas = document.querySelector(
+              'canvas[data-testid="three-3d-canvas"]',
+            ) as HTMLCanvasElement | null;
+            if (!canvas || canvas.width === 0 || canvas.height === 0) return 0;
+            const gl =
+              (canvas.getContext('webgl2') as WebGL2RenderingContext | null) ||
+              (canvas.getContext('webgl') as WebGLRenderingContext | null);
+            if (!gl) return 0;
+            const w = canvas.width;
+            const h = canvas.height;
+            const pixels = new Uint8Array(w * h * 4);
+            gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+            const colors = new Set<string>();
+            for (let i = 0; i < pixels.length; i += 400) {
+              colors.add(`${pixels[i]},${pixels[i + 1]},${pixels[i + 2]}`);
+              if (colors.size >= 8) break;
+            }
+            return colors.size;
+          }),
+        { timeout: 12_000 },
+      )
+      .toBeGreaterThanOrEqual(5);
+
+    // Verify urban GIS chunks streamed & rendered
+    const telemetry = page.getByTestId('three-telemetry');
+    await expect(telemetry).toBeVisible({ timeout: 12_000 });
+    await expect(telemetry).toContainText(/Buildings [1-9]/);
+
+    // Select a line in 3D view and inspect detail + line trace bar
     await page.getByTestId('line-chip-sk:line:jr-east-yamanote').click();
+    await expect(page.getByTestId('line-trace-bar')).toBeVisible();
     await page.getByTestId('tab-detail').click();
     await expect(page.getByTestId('line-detail-card')).toContainText('山手線');
     await expect(page.getByTestId('line-detail-card')).toContainText('OSM 縦断(模式)');
+    expect(pageErrors).toEqual([]);
+    expect(mergeErrors).toEqual([]);
   });
 
   test('7. Strip Map View, Dark Mode, and EN/JA Bilingual Toggle (Should #18 & #19)', async ({
@@ -184,5 +230,65 @@ test.describe('SENKIRO Lab · Tokyo Atlas & Fare Interactive E2E', () => {
     await page.getByTestId('view-mode-strip').click();
     await expect(page.getByTestId('strip-map-view')).toBeVisible();
     await expect(page.getByTestId('strip-map-view')).toContainText('Yamanote');
+  });
+
+  test('8. 3D Underground View, Focus Hubs (Shibuya / Shinjuku / Tokyo), Depth Slice & Tier Filters', async ({
+    page,
+  }) => {
+    const pageErrors: string[] = [];
+    page.on('pageerror', (err) => pageErrors.push(String(err)));
+
+    await page.goto('/');
+    await page.getByTestId('view-mode-3d').click();
+    await expect(page.getByTestId('underground-control-panel')).toBeVisible();
+
+    // Focus Shibuya hub (automatically activates Underground View)
+    await page.getByTestId('hub-btn-shibuya').click();
+    await expect(page.getByTestId('toggle-underground-view')).toContainText('ON');
+    await expect(page.getByTestId('ground-opacity-slider')).toBeVisible();
+
+    // Toggle Hide Buildings, Clip Plane & L-3 tier
+    await page.getByTestId('hide-buildings-checkbox').check();
+    await page.getByTestId('clip-plane-checkbox').check();
+    await expect(page.getByTestId('clip-plane-slider')).toBeVisible();
+    await page.getByTestId('tier-toggle-L-3').click();
+
+    // Focus Shinjuku and Tokyo hubs smoothly
+    await page.getByTestId('hub-btn-shinjuku').click();
+    await page.getByTestId('hub-btn-tokyo').click();
+    expect(pageErrors).toEqual([]);
+  });
+
+  test('9. 3D Line Trace Camera Fly-Through along Ginza Line', async ({ page }) => {
+    await page.goto('/');
+    await page.getByTestId('view-mode-3d').click();
+    await page.getByTestId('line-chip-sk:line:metro-ginza').click();
+
+    const traceBar = page.getByTestId('line-trace-bar');
+    await expect(traceBar).toBeVisible();
+    await page.getByTestId('line-trace-play-btn').click();
+    await expect(page.getByTestId('line-trace-scrubber')).toBeVisible();
+    await expect(traceBar).toContainText(/L[\+\-0]/);
+  });
+
+  test('10. Seamless 2D <-> 3D Switch Preserves Selected Line, Operator Filters & Active JR Fare Route', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    // Trigger JR Fare detour preset in 2D first
+    await page.getByTestId('tab-fare').click();
+    await page.getByTestId('preset-suburban-detour').click();
+    await expect(page.getByTestId('path-diff-banner')).toBeVisible();
+
+    // Switch to 3D and verify active JR Fare dual-path state is preserved!
+    await page.getByTestId('view-mode-3d').click();
+    await expect(page.getByTestId('tokyo-3d-pane')).toBeVisible();
+    await expect(page.getByTestId('path-diff-banner')).toBeVisible();
+    await expect(page.getByTestId('fare-status-badge')).toHaveText('OK');
+
+    // Switch back to 2D and verify MapLibre restores cleanly with fare state intact
+    await page.getByTestId('view-mode-geo').click();
+    await expect(page.getByTestId('map-canvas-pane')).toBeVisible();
+    await expect(page.getByTestId('path-diff-banner')).toBeVisible();
   });
 });

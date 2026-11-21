@@ -1,7 +1,7 @@
 # REPORT — SENKIRO Lab · Tokyo Atlas & Fare
 
 ## 1. 一句话结果
-在 `labs/a-tokyo-atlas-fare/` 完成了基于**同一套真实开放数据实体**（MLIT 国土数値情報 N02-24 + ODPT 免密钥都営 GTFS + 人工核实 JR 営業キロ与规则）驱动的东京铁道交互地图（2D 地理图 + 3D 立体模式分层图 + Strip 路线图）与版本化、可解释的 JR 运价规则引擎（合成费率验证模式），全部 Must（1–16）与 Should（17–21）已完成并通过 **35 条 Vitest 单元测试 + 7 条 Playwright 端到端交互测试**。
+在 `labs/a-tokyo-atlas-fare/` 完成了基于**同一套真实开放数据实体**（MLIT 国土数値情報 N02-24 + ODPT 免密钥都営 GTFS + 人工核实 JR 営業キロ与规则 + 独立隔离 ODbL 东京 23 区都市地理分块）驱动的 **SENKIRO Lab · Tokyo Atlas & Fare（含 Three.js 东京大都市三维城市与地下铁路网络系统）**，保留并回归验证了全部既有 2D 地图、搜索、筛选与可解释 JR 运价功能，通过 **42 条 Vitest 单元测试 + 10 条 Playwright 端到端交互测试**。
 
 ---
 
@@ -44,7 +44,7 @@
 | 18 | 路线图视图（Strip Map） | **完成** | `src/ui/StripMapView.tsx` 为全部 40 条线路提供可切换的条形线路图，展示站号、区间営業キロ、直通境界并联动详情/计费 |
 | 19 | 视觉系统 | **完成** | 克制的日式交通信息排版，线路色仅作识别条/点；支持深浅色切换、JA/EN 双语切换、键盘焦点与 Esc 清除 |
 | 20 | 实时数据适配器接口与插槽 | **完成** | `src/providers/realtimeProvider.ts` 定义 `RealtimeStatusProvider` + `OdptRealtimeProvider`，无密钥时诚实显示「無実時データ / unavailable」 |
-| 21 | 立体视图（3D 分层 + ODbL 隔离） | **完成** | MapLibre 倾斜 3D 视图 + 独立 ODbL 文件 `data/processed/osm-vertical.json`（懒加载拆包）；按 `elevated`/`at_grade`/`underground`/`unknown` 分层，`elevationM` 全部为 `null`；顶部醒目标注「縦断位置は模式表示であり、実際の高さ・深度ではありません」；已补数据测试与 Playwright 测试 |
+| 21 | 立体视图 → **升级为东京大都市 3D 城市与地下铁路网络系统（Three.js）** | **完成** | 自主实现纯程序化 Three.js 3D 引擎（`src/three/` + `src/domain/elevationSolver.ts`）：统一局部米制坐标系、130 个 `2km×2km` 空间分块（24,216 栋真实 OSM 建筑、15,063 个真实轮廓、9 座程序化地标、5,574 主干道与交叉口、1,008 河川水体、151 公园）、LOD0 退台轮廓合批 + LOD1 `InstancedMesh` + 视锥剔除；3D 梯形道床+双线/四轨钢轨+枕木、高架桥面/桥墩/雨棚、连续圆形盾构与矩形明挖半透明隧道、洞口、地下站厅与竖向换乘井；完整地下透视模式（地面透明滑块、隐藏建筑、水平剖切平面、7 级高度层过滤）、沿线平滑追踪与 2D/3D 无缝状态同步 |
 
 ### Could（最后再做 · 22–25）
 | # | 项目 | 状态 | 说明 |
@@ -63,12 +63,14 @@
 1. **数据获取与构建**：
    - `npm run data:fetch` → 退出码 `0`：下载 MLIT `N02-24_GML.zip`（12,718,026 B）、ODPT `Toei-Train-GTFS.zip`（779,776 B）、OSM Overpass 10,506 条铁路 way（9,604,002 B）。
    - `npm run data:build` → 退出码 `0`：生成 `atlas.json`（15 运营商、40 线路、481 车站、404 复合体、503 区段、88 换乘、4 直通、44 未照合）与独立 `osm-vertical.json`（`elevated: 103`, `at_grade: 39`, `underground: 161`, `unknown: 200`）。
+   - `npm run data:urban:fetch` → 退出码 `0`：下载东京 23 区真实 OSM 水体/公园（2,741 条）、主要道路（5,734 条）、核心枢纽建筑（6,127 栋）、全 23 区建筑与高度（503,636 栋，337 MB）。
+   - `npm run data:urban` → 退出码 `0`：流式处理并剔除 563 栋与地面/高架轨道冲突体块，生成 `public/data/urban-chunks/`（130 个 `2km×2km` 空间分块、24,216 栋真实建筑、15,063 详细轮廓、5,574 主干道、1,200 交叉口、9 座地标，总计 3.78 MB）。
 2. **类型检查与生产构建**：
-   - `npm run build`（`tsc --noEmit && vite build`）→ 退出码 `0`，3.49s；`osm-vertical` 自动拆分为独立 chunk（`174.24 kB / gzip 8.60 kB`）。
+   - `npm run build`（`tsc --noEmit && vite build`）→ 退出码 `0`，12.20s；`osm-vertical` 独立拆包，132 个都市分块文件原样输出至 `dist/data/urban-chunks/` 按需流式加载。
 3. **单元测试（Vitest）**：
-   - `npm test` → 退出码 `0`：**2 test files passed, 35 passed (0 failed)**（`fareEngine.test.ts` 26/26，`alignmentAndData.test.ts` 9/9）。
+   - `npm test` → 退出码 `0`：**3 test files passed, 42 passed (0 failed)**（`fareEngine.test.ts` 26/26，`alignmentAndData.test.ts` 9/9，`elevationSolver.test.ts` 7/7 含涩谷/新宿/东京多层级堆叠、$C^0$ 连续性、洞口生成与交叉垂向净空避碰）。
 4. **端到端交互测试（Playwright · Chromium 159）**：
-   - `npm run test:e2e` → 退出码 `0`：**7 passed (7.0s, 0 failed)**。
+   - `npm run test:e2e` → 退出码 `0`：**10 passed (1.4m, 0 failed)**，包含 2D MapLibre 与 3D Three.js 双 WebGL 像素非空渲染断言、分块流式加载与建筑渲染遥测断言、地下透视/剖切平面/层级过滤、涩谷/新宿/东京枢纽快跳、银座线沿线相机追踪及 2D↔3D 状态同步保护。
 
 ---
 
@@ -127,8 +129,10 @@
 
 ### 7.2 已知缺陷与风险
 - 私铁与东京メトロ的 23 区非核心站仅部分补充了英文/假名（未核实站保留 `null` 并在界面显示「未知」）；部分非线性支线（如丸ノ内線方南町支线）未在 23 区主链中单列。
-- OSM 纵断标签在东京高密立交区存在缺失或相互遮挡，约 40%（200/503）区段按诚实原则标为 `unknown`；3D 模式下地下线在 MapLibre 2.5D 渲染中只能以半透明破线模式表现，无法真正“挖开地表”。
-- Vite 主包（含 `atlas.json` 与 `maplibre-gl`）未进一步按区域分片，若扩展至全日本需切换为后端 PostGIS + 矢量瓦片（MVT/PMTiles）。
+- 3D 垂向系统采用 `L+2 (+20)` 至 `L-4 (-40)` 示意相对高度层级：涩谷、新宿、东京/大手町、池袋、御茶ノ水、上野东北新干线等关键枢纽采用已核实相对上下顺序（`manual-verified-relative`），其余区段由 OSM 纵断标签或线路类别推断（`osm-derived-schematic` / `inferred-schematic`），界面明确提示非官方实测深度。
+- 都市地形当前采用统一平坦基准面（`y = 0`）+ 真实 OSM 水体/公园/主干道，尚未叠加真实 DEM 地势起伏（例如涩谷谷地地形与山手台地高差）；高密区域单分块上限为 620 栋（外围 210 栋）以兼顾流畅帧率与仓库体积。
+- 复杂站区未做精细室内建筑（闸机、商店、扶梯、设备房），该范围留待独立的 SENKIRO Station Atlas 模块。
+- Vite 主包（含 `atlas.json`、`maplibre-gl`、`three`）未进一步按区域拆包，扩展至全日本时需升级为 PostGIS + PMTiles / 动态瓦片服务。
 
 ---
 
@@ -169,6 +173,7 @@
 | 依赖 | 版本 | 许可证 |
 | --- | --- | --- |
 | `react` / `react-dom` | 19.3.1 | MIT |
+| `three` / `@types/three` | 0.187.0 | MIT |
 | `maplibre-gl` | 5.24.1 | BSD-3-Clause |
 | `lucide-react` | 0.511.0 | ISC |
 | `typescript` | 5.9.3 | Apache-2.0 |

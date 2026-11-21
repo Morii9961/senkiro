@@ -138,5 +138,19 @@
     "shareAlike": true,
     "attributionText": "© OpenStreetMap contributors (ODbL 1.0)",
     "notes": "ODbL の share-alike 義務が主データセットへ波及しないよう、独立ファイル data/processed/osm-vertical.json に完全分離保存。verticalClass / verticalOrder のみ算出、elevationM は原則 null。"
+  },
+  {
+    "id": "src-osm-urban-3d-chunks",
+    "title": "OpenStreetMap 東京23区 都市地理チャンク（建物輪郭・高さ・主要道路・河川水域・公園）",
+    "publisher": "OpenStreetMap Contributors (via Overpass API)",
+    "url": "https://overpass-api.de/api/interpreter",
+    "retrievedAt": "2026-11-21T11:34:42Z",
+    "license": "ODbL 1.0",
+    "licenseUrl": "https://opendatacommons.org/licenses/odbl/1-0/",
+    "commercialUse": "yes",
+    "redistribution": "yes",
+    "shareAlike": true,
+    "attributionText": "© OpenStreetMap contributors (ODbL 1.0)",
+    "notes": "3D 都市モデル専用の独立 ODbL チャンク群（public/data/urban-chunks/、130チャンク・24,216棟・5,574主要道路・河川公園）。主鉄道データベース data/processed/atlas.json とは物理隔離。高さ未収録建物の推定値（hb=i）は示意高さであり公式測量値ではない。"
   }
 ]

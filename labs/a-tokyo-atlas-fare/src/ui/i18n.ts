@@ -4,8 +4,8 @@ export const UI_TEXT = {
   ja: {
     appTitle: 'SENKIRO Lab · Tokyo Atlas & Fare',
     subtitle: '東京鉄道路線図 × 規則駆動 JR 運賃エンジン',
-    viewGeo: '地理地図',
-    view3d: '立体ビュー (3D)',
+    viewGeo: '2D 地理地図',
+    view3d: '3D 都市アトラス',
     viewStrip: '路線図 (Strip)',
     tabExplore: '探索・検索',
     tabDetail: '駅・路線詳細',
@@ -51,8 +51,8 @@ export const UI_TEXT = {
   en: {
     appTitle: 'SENKIRO Lab · Tokyo Atlas & Fare',
     subtitle: 'Tokyo Rail Atlas × Explainable JR Fare Engine',
-    viewGeo: 'Geo Map',
-    view3d: '3D Layer View',
+    viewGeo: '2D Geo Map',
+    view3d: '3D City Atlas',
     viewStrip: 'Strip Map',
     tabExplore: 'Explore',
     tabDetail: 'Detail',

@@ -9,15 +9,19 @@
     "preview": "vite preview",
     "data:fetch": "node scripts/fetch-raw.mjs",
     "data:build": "node scripts/data-build.mjs",
+    "data:urban:fetch": "node scripts/fetch-urban-raw.mjs",
+    "data:urban": "node scripts/build-urban-chunks.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@types/three": "^0.187.0",
     "lucide-react": "^0.511.0",
     "maplibre-gl": "^5.4.0",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "three": "^0.187.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.52.0",

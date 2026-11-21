@@ -17,6 +17,7 @@ import {
 import type {
   FareQuote,
   FareQuoteRequest,
+  OsmVerticalDataset,
   RealtimeServiceStatus,
   SkId,
   TrackVerticalAttribute,
@@ -32,6 +33,7 @@ import { FarePanel } from './FarePanel.js';
 import { UI_TEXT, type Locale } from './i18n.js';
 import { MapCanvas } from './MapCanvas.js';
 import { StripMapView } from './StripMapView.js';
+import { Tokyo3DCanvas } from './Tokyo3DCanvas.js';
 
 type ViewMode = 'geo' | '3d' | 'strip';
 type SidebarTab = 'explore' | 'detail' | 'fare' | 'coverage';
@@ -59,7 +61,15 @@ export const App: React.FC = () => {
   const [selectedLineId, setSelectedLineId] = useState<SkId<'line'> | null>(null);
   const [focusCoords, setFocusCoords] = useState<[number, number] | null>(null);
 
+  // Shared 2D <-> 3D viewport state so switching preserves map region seamlessly!
+  const [sharedViewport, setSharedViewport] = useState<{
+    lon: number;
+    lat: number;
+    zoom: number;
+  }>({ lon: 139.745, lat: 35.685, zoom: 11.4 });
+
   // Lazy-loaded isolated ODbL vertical layer
+  const [osmVerticalData, setOsmVerticalData] = useState<OsmVerticalDataset | null>(null);
   const [verticalMap, setVerticalMap] = useState<Map<string, TrackVerticalAttribute>>(
     () => new Map(),
   );
@@ -100,10 +110,15 @@ export const App: React.FC = () => {
     void atlasProvider
       .loadOsmVerticalOverlay()
       .then((overlay) => {
+        setOsmVerticalData(overlay);
         setVerticalMap(indexVerticalOverlay(overlay));
       })
       .finally(() => setVerticalLoading(false));
   }, [viewMode, verticalMap.size]);
+
+  const handleViewportChange = useCallback((lon: number, lat: number, zoom: number) => {
+    setSharedViewport({ lon, lat, zoom });
+  }, []);
 
   // Keyboard Escape clears active line/station highlight
   useEffect(() => {
@@ -559,10 +574,26 @@ export const App: React.FC = () => {
               onSetDest={handleSetDest}
             />
           </div>
+        ) : viewMode === '3d' ? (
+          <Tokyo3DCanvas
+            dataset={dataset}
+            osmVertical={osmVerticalData}
+            theme={theme}
+            locale={locale}
+            visibleOperatorIds={visibleOperatorIds}
+            selectedLineId={selectedLineId}
+            selectedStationId={selectedStationId}
+            fareSliceOnly={fareSliceOnly}
+            fareQuote={fareQuote}
+            initialViewport={sharedViewport}
+            onViewportChange={handleViewportChange}
+            onSelectStation={handleSelectStation}
+            onSelectLine={handleSelectLine}
+          />
         ) : (
           <MapCanvas
             dataset={dataset}
-            viewMode={viewMode}
+            viewMode="geo"
             theme={theme}
             locale={locale}
             visibleOperatorIds={visibleOperatorIds}
@@ -576,6 +607,8 @@ export const App: React.FC = () => {
             verticalMap={verticalMap}
             verticalLoading={verticalLoading}
             focusCoords={focusCoords}
+            initialViewport={sharedViewport}
+            onViewportChange={handleViewportChange}
             onSelectStation={handleSelectStation}
             onSelectLine={handleSelectLine}
           />
