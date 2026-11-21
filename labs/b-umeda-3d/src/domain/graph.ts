@@ -75,8 +75,18 @@ export function validate(m: Model, sources: Set<string>) {
       levels.get(a.levelId)!.ordinal - levels.get(b.levelId)!.ordinal,
     )
     if (delta > 0 !== vertical(e)) throw Error('Invalid level change ' + e.id)
+    const low = Math.min(
+      levels.get(a.levelId)!.ordinal,
+      levels.get(b.levelId)!.ordinal,
+    )
+    const skipsLevel = m.levels.some(
+      (l) =>
+        l.stationId === a.stationId &&
+        l.ordinal > low &&
+        l.ordinal < low + delta,
+    )
     if (
-      delta > 1 &&
+      (delta > 1 || skipsLevel) &&
       !(
         e.declaredSpan?.includes(a.levelId) &&
         e.declaredSpan.includes(b.levelId)

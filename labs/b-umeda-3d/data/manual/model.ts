@@ -193,6 +193,8 @@ export function addPlatform(pair: string, z: number, westLift: string) {
     top,
     'エレベーター ' + westLift,
     'Lift ' + westLift,
+    ['jr-map'],
+    { declaredSpan: [jr1.id, jr2.id] },
   )
   link(
     'Passage',
@@ -208,6 +210,7 @@ export function addPlatform(pair: string, z: number, westLift: string) {
 export const firstPlatform = addPlatform('3-4', 7.5, 'W')
 
 const jr3 = level('jr-3f', '3F', 2, osaka.id)
+const mezz = level('jr-mezz', '中2F', 0.5, osaka.id)
 const jrB1 = level('jr-b1', 'B1F', -1, osaka.id),
   jrB2 = level('jr-b2', 'B2F', -2, osaka.id)
 const bridge = place(
@@ -287,7 +290,7 @@ const p910 = addPlatform('9-10', -7.5, 'Z'),
   p11 = addPlatform('11', -12.5, 'AA')
 const areas = [loop, firstPlatform, p56, p78, p910, p11]
 const bridgeLifts = ['H', 'G', 'F', 'E', 'D', 'C']
-const eastLifts = [null, 'O', 'N', 'M', 'L', 'K'] // 1/2 needs the mezzanine interchange O → P; excluded.
+const eastLifts = [null, 'O', 'N', 'M', 'L', 'K']
 function liftAtPlatform(p: Place, hall: Place, letter: string, floor: Level) {
   const topFloor = jr2,
     x = hall.point[0],
@@ -318,14 +321,32 @@ function liftAtPlatform(p: Place, hall: Place, letter: string, floor: Level) {
     landing,
     '改札内通路',
     'Paid concourse passage',
+    letter === 'O' ? ['jr-map', 'jr-access'] : ['jr-map'],
+    letter === 'O' ? { stepFree: true } : {},
   )
+  const stop =
+    letter === 'O'
+      ? place(
+          'Landing',
+          'jr-o-mezz',
+          '中2階 EV O',
+          'Lift O · mezzanine',
+          mezz,
+          [x, z],
+          [1, 1],
+        )
+      : landing
+  if (stop !== landing)
+    link('Elevator', 'jr-o-lower', landing, stop, 'エレベーター O', 'Lift O')
   link(
     'Elevator',
     'jr-' + slug,
-    landing,
+    stop,
     atPlatform,
     'エレベーター ' + letter,
     'Lift ' + letter,
+    ['jr-map'],
+    floor === jr1 && stop === landing ? { declaredSpan: [jr1.id, jr2.id] } : {},
   )
   link(
     'Passage',
@@ -371,6 +392,8 @@ for (const [kind, n, z] of [
     head,
     kind === 'Stairs' ? '西口側階段' : '西口側エスカレーター',
     kind === 'Stairs' ? 'West stairs' : 'West escalator',
+    ['jr-map'],
+    { declaredSpan: [jr1.id, jr2.id] },
   )
   link(
     'Passage',
@@ -380,6 +403,241 @@ for (const [kind, n, z] of [
     'ホーム通路',
     'Platform passage',
   )
+}
+// JR sheets 2–4. The three mezzanine corridors have distinct landings.
+const centralIn = place(
+  'Concourse',
+  'jr-central-in',
+  '中央口 改札内',
+  'Central gate · inside',
+  jr1,
+  [-5, 0],
+  [4, 24],
+)
+const centralOut = place(
+  'Concourse',
+  'jr-central-out',
+  '中央コンコース',
+  'Central concourse',
+  jr1,
+  [-0.6, 0],
+  [4, 29],
+  'unpaid',
+  'railway',
+)
+link('Gate', 'jr-central', centralIn, centralOut, '中央口', 'Central gate')
+const southExit = place(
+  'Entrance',
+  'jr-central-south',
+  '中央南口',
+  'Central South entrance',
+  jr1,
+  [-0.6, 17],
+  [5, 4],
+  'unpaid',
+  'railway',
+)
+const northExit = place(
+  'Entrance',
+  'jr-midosuji-north',
+  '御堂筋北口',
+  'Midosuji North entrance',
+  jr1,
+  [22, -16],
+  [5, 4],
+  'unpaid',
+  'railway',
+)
+link(
+  'Passage',
+  'central-south',
+  centralOut,
+  southExit,
+  '中央南口への通路',
+  'Central South passage',
+)
+link(
+  'Passage',
+  'midosuji-north',
+  street,
+  northExit,
+  '御堂筋北口への通路',
+  'Midosuji North passage',
+)
+link(
+  'Passage',
+  'south-forecourt',
+  southExit,
+  entrance,
+  '南側 改札外通路',
+  'Southern exterior passage',
+)
+const sakuraIn = place(
+  'Concourse',
+  'jr-sakura-in',
+  '桜橋口 改札内',
+  'Sakurabashi gate · inside',
+  jr1,
+  [-13, 10],
+  [4, 6],
+)
+const sakuraOut = place(
+  'Concourse',
+  'jr-sakura-out',
+  '桜橋口 改札外',
+  'Sakurabashi gate · outside',
+  jr1,
+  [-13, 16],
+  [4, 4],
+  'unpaid',
+  'railway',
+)
+link('Gate', 'jr-sakura', sakuraIn, sakuraOut, '桜橋口', 'Sakurabashi gate')
+link(
+  'Passage',
+  'sakura-south',
+  sakuraOut,
+  southExit,
+  '南側 改札外通路',
+  'Southern exterior passage',
+)
+const centralMezz = place(
+  'Concourse',
+  'jr-central-mezz',
+  '中央口 中2階通路',
+  'Central mezzanine passage',
+  mezz,
+  [-7.2, 0],
+  [3, 28],
+)
+const sakuraMezz = place(
+  'Concourse',
+  'jr-sakura-mezz',
+  '桜橋口 中2階通路',
+  'Sakurabashi mezzanine passage',
+  mezz,
+  [-13, 0],
+  [3, 28],
+)
+const eastMezz = place(
+  'Concourse',
+  'jr-east-mezz',
+  '1・2番のりば連絡通路',
+  'Passage to platforms 1 / 2',
+  mezz,
+  [14, 10],
+  [6, 7],
+)
+const oStop = model.places.find((p) => p.id === 'sk:landing:jr-o-mezz')!
+const pStop = place(
+  'Landing',
+  'jr-p-mezz',
+  '中2階 EV P',
+  'Lift P · mezzanine',
+  mezz,
+  [12, 12.5],
+  [1, 1],
+)
+const pUpper = place(
+  'Landing',
+  'jr-p-upper',
+  'ホーム EV P',
+  'Lift P · platform',
+  jr2,
+  [12, 12.5],
+  [1, 1],
+)
+link(
+  'Passage',
+  'mezz-o',
+  oStop,
+  eastMezz,
+  '中2階 連絡通路',
+  'Mezzanine connecting passage',
+  ['jr-map'],
+  { stepFree: true },
+)
+link(
+  'Passage',
+  'mezz-p',
+  eastMezz,
+  pStop,
+  'エレベーター P への通路',
+  'Passage to lift P',
+  ['jr-map'],
+  { stepFree: true },
+)
+link('Elevator', 'jr-p', pStop, pUpper, 'エレベーター P', 'Lift P')
+link(
+  'Passage',
+  'p-platform',
+  pUpper,
+  loop,
+  'ホーム通路',
+  'Platform passage',
+  ['jr-map'],
+  { stepFree: true },
+)
+function stairs(
+  number: string,
+  from: Place,
+  to: Place,
+  foot: Point,
+  head: Point,
+) {
+  const floorOf = (n: Place) => model.levels.find((l) => l.id === n.levelId)!
+  const low = place(
+    'Landing',
+    'jr-stair-' + number + '-foot',
+    '階段下',
+    'Stair foot',
+    floorOf(from),
+    foot,
+    [1, 1],
+  )
+  const high = place(
+    'Landing',
+    'jr-stair-' + number + '-head',
+    '階段上',
+    'Stair head',
+    floorOf(to),
+    head,
+    [1, 1],
+  )
+  link(
+    'Passage',
+    'jr-stair-' + number + '-approach',
+    from,
+    low,
+    '階段への通路',
+    'Approach the stairs',
+  )
+  link(
+    'Stairs',
+    'jr-' + number,
+    low,
+    high,
+    '階段（図 ' + number + '）',
+    'Stairs (map ' + number + ')',
+  )
+  link(
+    'Passage',
+    'jr-stair-' + number + '-arrival',
+    high,
+    to,
+    '階段からの通路',
+    'Leave the stairs',
+  )
+}
+stairs('53', centralIn, centralMezz, [-5, 4], [-7.2, 0])
+stairs('51', sakuraIn, sakuraMezz, [-13, 12], [-13, 7.5])
+for (const [i, number] of ['29', '27', '24', '22', '20', '17'].entries()) {
+  const z = areas[i].point[1]
+  stairs(number, sakuraMezz, areas[i], [-13, z], [-9, z])
+}
+for (const [i, number] of ['31', '28', '25', '23', '21'].entries()) {
+  const z = areas[i].point[1]
+  stairs(number, centralMezz, areas[i], [-7.2, z], [-3.4, z])
 }
 const uk = place(
   'Concourse',

@@ -404,6 +404,7 @@ Repository license。商业使用 yes，原件再分发 yes，相同方式共享
 | sk:level:jr-1f | 1F | sk:source:jr-map (2026-01-14) | schematic |
 | sk:level:jr-2f | 2F | sk:source:jr-map (2026-01-14) | schematic |
 | sk:level:jr-3f | 3F | sk:source:jr-map (2026-01-14) | schematic |
+| sk:level:jr-mezz | 中2F | sk:source:jr-map (2026-01-14) | schematic |
 | sk:level:jr-b1 | B1F | sk:source:jr-map (2026-01-14) | schematic |
 | sk:level:jr-b2 | B2F | sk:source:jr-map (2026-01-14) | schematic |
 | sk:level:outside-1f | 1F | sk:source:city-b (2026-06) | schematic |
@@ -441,6 +442,7 @@ Repository license。商业使用 yes，原件再分发 yes，相同方式共享
 | sk:landing:island-g | ホーム乗降場 G | sk:source:jr-map (2026-01-14) | schematic |
 | sk:landing:hall-o | 乗降場 O | sk:source:jr-map (2026-01-14) | schematic |
 | sk:landing:island-o | ホーム乗降場 O | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:jr-o-mezz | 中2階 EV O | sk:source:jr-map (2026-01-14) | schematic |
 | sk:landing:hall-f | 乗降場 F | sk:source:jr-map (2026-01-14) | schematic |
 | sk:landing:island-f | ホーム乗降場 F | sk:source:jr-map (2026-01-14) | schematic |
 | sk:landing:hall-n | 乗降場 N | sk:source:jr-map (2026-01-14) | schematic |
@@ -461,6 +463,43 @@ Repository license。商业使用 yes，原件再分发 yes，相同方式共享
 | sk:landing:head-83 | ホーム側 83 | sk:source:jr-map (2026-01-14) | schematic |
 | sk:landing:foot-84 | 西口側 84 | sk:source:jr-map (2026-01-14) | schematic |
 | sk:landing:head-84 | ホーム側 84 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:concourse:jr-central-in | 中央口 改札内 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:concourse:jr-central-out | 中央コンコース | sk:source:jr-map (2026-01-14) | schematic |
+| sk:entrance:jr-central-south | 中央南口 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:entrance:jr-midosuji-north | 御堂筋北口 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:concourse:jr-sakura-in | 桜橋口 改札内 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:concourse:jr-sakura-out | 桜橋口 改札外 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:concourse:jr-central-mezz | 中央口 中2階通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:concourse:jr-sakura-mezz | 桜橋口 中2階通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:concourse:jr-east-mezz | 1・2番のりば連絡通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:jr-p-mezz | 中2階 EV P | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:jr-p-upper | ホーム EV P | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:jr-stair-53-foot | 階段下 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:jr-stair-53-head | 階段上 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:jr-stair-51-foot | 階段下 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:jr-stair-51-head | 階段上 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:jr-stair-29-foot | 階段下 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:jr-stair-29-head | 階段上 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:jr-stair-27-foot | 階段下 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:jr-stair-27-head | 階段上 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:jr-stair-24-foot | 階段下 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:jr-stair-24-head | 階段上 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:jr-stair-22-foot | 階段下 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:jr-stair-22-head | 階段上 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:jr-stair-20-foot | 階段下 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:jr-stair-20-head | 階段上 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:jr-stair-17-foot | 階段下 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:jr-stair-17-head | 階段上 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:jr-stair-31-foot | 階段下 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:jr-stair-31-head | 階段上 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:jr-stair-28-foot | 階段下 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:jr-stair-28-head | 階段上 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:jr-stair-25-foot | 階段下 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:jr-stair-25-head | 階段上 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:jr-stair-23-foot | 階段下 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:jr-stair-23-head | 階段上 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:jr-stair-21-foot | 階段下 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:jr-stair-21-head | 階段上 | sk:source:jr-map (2026-01-14) | schematic |
 | sk:concourse:umekita-in | うめきた地下口 改札内 | sk:source:jr-map (2026-01-14) | schematic |
 | sk:concourse:umekita-out | うめきた地下口 改札外 | sk:source:jr-map (2026-01-14) | schematic |
 | sk:landing:ab-1f | 西口側 EV | sk:source:jr-map (2026-01-14) | schematic |
@@ -506,7 +545,8 @@ Repository license。商业使用 yes，原件再分发 yes，相同方式共享
 | sk:passage:hall-g | 改札内通路 | sk:source:jr-map (2026-01-14) | schematic |
 | sk:elevator:jr-g | エレベーター G | sk:source:jr-map (2026-01-14) | schematic |
 | sk:passage:island-g | ホーム通路 | sk:source:jr-map (2026-01-14) | schematic |
-| sk:passage:hall-o | 改札内通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:hall-o | 改札内通路 | sk:source:jr-map (2026-01-14)<br>sk:source:jr-access (未知) | schematic |
+| sk:elevator:jr-o-lower | エレベーター O | sk:source:jr-map (2026-01-14) | schematic |
 | sk:elevator:jr-o | エレベーター O | sk:source:jr-map (2026-01-14) | schematic |
 | sk:passage:island-o | ホーム通路 | sk:source:jr-map (2026-01-14) | schematic |
 | sk:passage:hall-f | 改札内通路 | sk:source:jr-map (2026-01-14) | schematic |
@@ -539,6 +579,55 @@ Repository license。商业使用 yes，原件再分发 yes，相同方式共享
 | sk:passage:foot-84 | 西口側通路 | sk:source:jr-map (2026-01-14) | schematic |
 | sk:escalator:jr-84 | 西口側エスカレーター | sk:source:jr-map (2026-01-14) | schematic |
 | sk:passage:head-84 | ホーム通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:gate:jr-central | 中央口 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:central-south | 中央南口への通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:midosuji-north | 御堂筋北口への通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:south-forecourt | 南側 改札外通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:gate:jr-sakura | 桜橋口 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:sakura-south | 南側 改札外通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:mezz-o | 中2階 連絡通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:mezz-p | エレベーター P への通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:elevator:jr-p | エレベーター P | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:p-platform | ホーム通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:jr-stair-53-approach | 階段への通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:stairs:jr-53 | 階段（図 53） | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:jr-stair-53-arrival | 階段からの通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:jr-stair-51-approach | 階段への通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:stairs:jr-51 | 階段（図 51） | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:jr-stair-51-arrival | 階段からの通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:jr-stair-29-approach | 階段への通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:stairs:jr-29 | 階段（図 29） | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:jr-stair-29-arrival | 階段からの通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:jr-stair-27-approach | 階段への通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:stairs:jr-27 | 階段（図 27） | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:jr-stair-27-arrival | 階段からの通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:jr-stair-24-approach | 階段への通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:stairs:jr-24 | 階段（図 24） | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:jr-stair-24-arrival | 階段からの通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:jr-stair-22-approach | 階段への通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:stairs:jr-22 | 階段（図 22） | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:jr-stair-22-arrival | 階段からの通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:jr-stair-20-approach | 階段への通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:stairs:jr-20 | 階段（図 20） | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:jr-stair-20-arrival | 階段からの通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:jr-stair-17-approach | 階段への通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:stairs:jr-17 | 階段（図 17） | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:jr-stair-17-arrival | 階段からの通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:jr-stair-31-approach | 階段への通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:stairs:jr-31 | 階段（図 31） | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:jr-stair-31-arrival | 階段からの通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:jr-stair-28-approach | 階段への通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:stairs:jr-28 | 階段（図 28） | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:jr-stair-28-arrival | 階段からの通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:jr-stair-25-approach | 階段への通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:stairs:jr-25 | 階段（図 25） | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:jr-stair-25-arrival | 階段からの通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:jr-stair-23-approach | 階段への通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:stairs:jr-23 | 階段（図 23） | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:jr-stair-23-arrival | 階段からの通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:jr-stair-21-approach | 階段への通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:stairs:jr-21 | 階段（図 21） | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:jr-stair-21-arrival | 階段からの通路 | sk:source:jr-map (2026-01-14) | schematic |
 | sk:gate:jr-umekita | うめきた地下口 | sk:source:jr-map (2026-01-14) | schematic |
 | sk:passage:west-ab | 西口側通路 | sk:source:jr-map (2026-01-14)<br>sk:source:jr-access (未知) | schematic |
 | sk:elevator:jr-ab | 西口側エレベーター AB | sk:source:jr-map (2026-01-14) | schematic |

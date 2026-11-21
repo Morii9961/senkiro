@@ -70,6 +70,18 @@ describe('Osaka indoor graph', () => {
       p.filter((s) => s.link.kind === 'Elevator').map((s) => s.link.id),
     ).toEqual(['sk:elevator:jr-ab', 'sk:elevator:jr-ac', 'sk:elevator:jr-ad'])
   })
+  it('uses both O and P when accessing the loop platforms from Midosuji without stairs', () => {
+    const steps = route(
+      model,
+      'sk:concourse:jr-midosuji-in',
+      'sk:platform:jr-1-2',
+      true,
+    )!
+    expect(
+      steps.filter((s) => s.link.kind === 'Elevator').map((s) => s.link.id),
+    ).toEqual(['sk:elevator:jr-o-lower', 'sk:elevator:jr-p'])
+    expect(steps.some((s) => s.to.levelId === 'sk:level:jr-mezz')).toBe(true)
+  })
   it('keeps unverified surroundings outside the routing graph', () => {
     for (const block of model.context)
       expect(route(model, westOutside.id, block.id)).toBeNull()

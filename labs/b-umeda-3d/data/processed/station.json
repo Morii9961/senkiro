@@ -282,6 +282,29 @@
       "stationId": "sk:station:jr-osaka"
     },
     {
+      "id": "sk:level:jr-mezz",
+      "names": {
+        "ja": "中2F",
+        "en": "中2F",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "label": "中2F",
+      "ordinal": 0.5,
+      "stationId": "sk:station:jr-osaka"
+    },
+    {
       "id": "sk:level:jr-b1",
       "names": {
         "ja": "B1F",
@@ -1469,6 +1492,39 @@
       "manager": null
     },
     {
+      "id": "sk:landing:jr-o-mezz",
+      "names": {
+        "ja": "中2階 EV O",
+        "en": "Lift O · mezzanine",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-mezz",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        16,
+        7.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
       "id": "sk:landing:hall-f",
       "names": {
         "ja": "乗降場 F",
@@ -2120,6 +2176,1227 @@
       "point": [
         -14,
         6.9
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:concourse:jr-central-in",
+      "names": {
+        "ja": "中央口 改札内",
+        "en": "Central gate · inside",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Concourse",
+      "levelId": "sk:level:jr-1f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -5,
+        0
+      ],
+      "size": [
+        4,
+        24
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:concourse:jr-central-out",
+      "names": {
+        "ja": "中央コンコース",
+        "en": "Central concourse",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Concourse",
+      "levelId": "sk:level:jr-1f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -0.6,
+        0
+      ],
+      "size": [
+        4,
+        29
+      ],
+      "zone": "unpaid",
+      "manager": "railway"
+    },
+    {
+      "id": "sk:entrance:jr-central-south",
+      "names": {
+        "ja": "中央南口",
+        "en": "Central South entrance",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Entrance",
+      "levelId": "sk:level:jr-1f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -0.6,
+        17
+      ],
+      "size": [
+        5,
+        4
+      ],
+      "zone": "unpaid",
+      "manager": "railway"
+    },
+    {
+      "id": "sk:entrance:jr-midosuji-north",
+      "names": {
+        "ja": "御堂筋北口",
+        "en": "Midosuji North entrance",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Entrance",
+      "levelId": "sk:level:jr-1f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        22,
+        -16
+      ],
+      "size": [
+        5,
+        4
+      ],
+      "zone": "unpaid",
+      "manager": "railway"
+    },
+    {
+      "id": "sk:concourse:jr-sakura-in",
+      "names": {
+        "ja": "桜橋口 改札内",
+        "en": "Sakurabashi gate · inside",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Concourse",
+      "levelId": "sk:level:jr-1f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -13,
+        10
+      ],
+      "size": [
+        4,
+        6
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:concourse:jr-sakura-out",
+      "names": {
+        "ja": "桜橋口 改札外",
+        "en": "Sakurabashi gate · outside",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Concourse",
+      "levelId": "sk:level:jr-1f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -13,
+        16
+      ],
+      "size": [
+        4,
+        4
+      ],
+      "zone": "unpaid",
+      "manager": "railway"
+    },
+    {
+      "id": "sk:concourse:jr-central-mezz",
+      "names": {
+        "ja": "中央口 中2階通路",
+        "en": "Central mezzanine passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Concourse",
+      "levelId": "sk:level:jr-mezz",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -7.2,
+        0
+      ],
+      "size": [
+        3,
+        28
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:concourse:jr-sakura-mezz",
+      "names": {
+        "ja": "桜橋口 中2階通路",
+        "en": "Sakurabashi mezzanine passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Concourse",
+      "levelId": "sk:level:jr-mezz",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -13,
+        0
+      ],
+      "size": [
+        3,
+        28
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:concourse:jr-east-mezz",
+      "names": {
+        "ja": "1・2番のりば連絡通路",
+        "en": "Passage to platforms 1 / 2",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Concourse",
+      "levelId": "sk:level:jr-mezz",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        14,
+        10
+      ],
+      "size": [
+        6,
+        7
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:jr-p-mezz",
+      "names": {
+        "ja": "中2階 EV P",
+        "en": "Lift P · mezzanine",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-mezz",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        12,
+        12.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:jr-p-upper",
+      "names": {
+        "ja": "ホーム EV P",
+        "en": "Lift P · platform",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-2f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        12,
+        12.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:jr-stair-53-foot",
+      "names": {
+        "ja": "階段下",
+        "en": "Stair foot",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-1f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -5,
+        4
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:jr-stair-53-head",
+      "names": {
+        "ja": "階段上",
+        "en": "Stair head",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-mezz",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -7.2,
+        0
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:jr-stair-51-foot",
+      "names": {
+        "ja": "階段下",
+        "en": "Stair foot",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-1f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -13,
+        12
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:jr-stair-51-head",
+      "names": {
+        "ja": "階段上",
+        "en": "Stair head",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-mezz",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -13,
+        7.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:jr-stair-29-foot",
+      "names": {
+        "ja": "階段下",
+        "en": "Stair foot",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-mezz",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -13,
+        12.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:jr-stair-29-head",
+      "names": {
+        "ja": "階段上",
+        "en": "Stair head",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-2f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -9,
+        12.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:jr-stair-27-foot",
+      "names": {
+        "ja": "階段下",
+        "en": "Stair foot",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-mezz",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -13,
+        7.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:jr-stair-27-head",
+      "names": {
+        "ja": "階段上",
+        "en": "Stair head",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-2f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -9,
+        7.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:jr-stair-24-foot",
+      "names": {
+        "ja": "階段下",
+        "en": "Stair foot",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-mezz",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -13,
+        2.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:jr-stair-24-head",
+      "names": {
+        "ja": "階段上",
+        "en": "Stair head",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-2f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -9,
+        2.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:jr-stair-22-foot",
+      "names": {
+        "ja": "階段下",
+        "en": "Stair foot",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-mezz",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -13,
+        -2.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:jr-stair-22-head",
+      "names": {
+        "ja": "階段上",
+        "en": "Stair head",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-2f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -9,
+        -2.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:jr-stair-20-foot",
+      "names": {
+        "ja": "階段下",
+        "en": "Stair foot",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-mezz",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -13,
+        -7.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:jr-stair-20-head",
+      "names": {
+        "ja": "階段上",
+        "en": "Stair head",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-2f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -9,
+        -7.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:jr-stair-17-foot",
+      "names": {
+        "ja": "階段下",
+        "en": "Stair foot",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-mezz",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -13,
+        -12.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:jr-stair-17-head",
+      "names": {
+        "ja": "階段上",
+        "en": "Stair head",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-2f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -9,
+        -12.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:jr-stair-31-foot",
+      "names": {
+        "ja": "階段下",
+        "en": "Stair foot",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-mezz",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -7.2,
+        12.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:jr-stair-31-head",
+      "names": {
+        "ja": "階段上",
+        "en": "Stair head",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-2f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -3.4,
+        12.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:jr-stair-28-foot",
+      "names": {
+        "ja": "階段下",
+        "en": "Stair foot",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-mezz",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -7.2,
+        7.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:jr-stair-28-head",
+      "names": {
+        "ja": "階段上",
+        "en": "Stair head",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-2f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -3.4,
+        7.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:jr-stair-25-foot",
+      "names": {
+        "ja": "階段下",
+        "en": "Stair foot",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-mezz",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -7.2,
+        2.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:jr-stair-25-head",
+      "names": {
+        "ja": "階段上",
+        "en": "Stair head",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-2f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -3.4,
+        2.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:jr-stair-23-foot",
+      "names": {
+        "ja": "階段下",
+        "en": "Stair foot",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-mezz",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -7.2,
+        -2.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:jr-stair-23-head",
+      "names": {
+        "ja": "階段上",
+        "en": "Stair head",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-2f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -3.4,
+        -2.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:jr-stair-21-foot",
+      "names": {
+        "ja": "階段下",
+        "en": "Stair foot",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-mezz",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -7.2,
+        -7.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:jr-stair-21-head",
+      "names": {
+        "ja": "階段上",
+        "en": "Stair head",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-2f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -3.4,
+        -7.5
       ],
       "size": [
         1,
@@ -2788,7 +4065,10 @@
       "kind": "Elevator",
       "from": "sk:landing:jr-west-w",
       "to": "sk:landing:jr-upper-w",
-      "declaredSpan": null,
+      "declaredSpan": [
+        "sk:level:jr-1f",
+        "sk:level:jr-2f"
+      ],
       "stepFree": true,
       "direction": "both",
       "connection": "verified"
@@ -2952,7 +4232,10 @@
       "kind": "Elevator",
       "from": "sk:landing:jr-west-v",
       "to": "sk:landing:jr-upper-v",
-      "declaredSpan": null,
+      "declaredSpan": [
+        "sk:level:jr-1f",
+        "sk:level:jr-2f"
+      ],
       "stepFree": true,
       "direction": "both",
       "connection": "verified"
@@ -3033,7 +4316,10 @@
       "kind": "Elevator",
       "from": "sk:landing:jr-west-x",
       "to": "sk:landing:jr-upper-x",
-      "declaredSpan": null,
+      "declaredSpan": [
+        "sk:level:jr-1f",
+        "sk:level:jr-2f"
+      ],
       "stepFree": true,
       "direction": "both",
       "connection": "verified"
@@ -3114,7 +4400,10 @@
       "kind": "Elevator",
       "from": "sk:landing:jr-west-y",
       "to": "sk:landing:jr-upper-y",
-      "declaredSpan": null,
+      "declaredSpan": [
+        "sk:level:jr-1f",
+        "sk:level:jr-2f"
+      ],
       "stepFree": true,
       "direction": "both",
       "connection": "verified"
@@ -3195,7 +4484,10 @@
       "kind": "Elevator",
       "from": "sk:landing:jr-west-z",
       "to": "sk:landing:jr-upper-z",
-      "declaredSpan": null,
+      "declaredSpan": [
+        "sk:level:jr-1f",
+        "sk:level:jr-2f"
+      ],
       "stepFree": true,
       "direction": "both",
       "connection": "verified"
@@ -3276,7 +4568,10 @@
       "kind": "Elevator",
       "from": "sk:landing:jr-west-aa",
       "to": "sk:landing:jr-upper-aa",
-      "declaredSpan": null,
+      "declaredSpan": [
+        "sk:level:jr-1f",
+        "sk:level:jr-2f"
+      ],
       "stepFree": true,
       "direction": "both",
       "connection": "verified"
@@ -3481,7 +4776,8 @@
       "externalIds": {},
       "provenance": {
         "sourceIds": [
-          "sk:source:jr-map"
+          "sk:source:jr-map",
+          "sk:source:jr-access"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-21"
@@ -3493,7 +4789,34 @@
       "from": "sk:concourse:jr-midosuji-in",
       "to": "sk:landing:hall-o",
       "declaredSpan": null,
-      "stepFree": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:elevator:jr-o-lower",
+      "names": {
+        "ja": "エレベーター O",
+        "en": "Lift O",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Elevator",
+      "from": "sk:landing:hall-o",
+      "to": "sk:landing:jr-o-mezz",
+      "declaredSpan": null,
+      "stepFree": true,
       "direction": "both",
       "connection": "verified"
     },
@@ -3517,7 +4840,7 @@
       "validFrom": null,
       "validTo": null,
       "kind": "Elevator",
-      "from": "sk:landing:hall-o",
+      "from": "sk:landing:jr-o-mezz",
       "to": "sk:landing:island-o",
       "declaredSpan": null,
       "stepFree": true,
@@ -3681,7 +5004,10 @@
       "kind": "Elevator",
       "from": "sk:landing:hall-n",
       "to": "sk:landing:island-n",
-      "declaredSpan": null,
+      "declaredSpan": [
+        "sk:level:jr-1f",
+        "sk:level:jr-2f"
+      ],
       "stepFree": true,
       "direction": "both",
       "connection": "verified"
@@ -3843,7 +5169,10 @@
       "kind": "Elevator",
       "from": "sk:landing:hall-m",
       "to": "sk:landing:island-m",
-      "declaredSpan": null,
+      "declaredSpan": [
+        "sk:level:jr-1f",
+        "sk:level:jr-2f"
+      ],
       "stepFree": true,
       "direction": "both",
       "connection": "verified"
@@ -4005,7 +5334,10 @@
       "kind": "Elevator",
       "from": "sk:landing:hall-l",
       "to": "sk:landing:island-l",
-      "declaredSpan": null,
+      "declaredSpan": [
+        "sk:level:jr-1f",
+        "sk:level:jr-2f"
+      ],
       "stepFree": true,
       "direction": "both",
       "connection": "verified"
@@ -4167,7 +5499,10 @@
       "kind": "Elevator",
       "from": "sk:landing:hall-k",
       "to": "sk:landing:island-k",
-      "declaredSpan": null,
+      "declaredSpan": [
+        "sk:level:jr-1f",
+        "sk:level:jr-2f"
+      ],
       "stepFree": true,
       "direction": "both",
       "connection": "verified"
@@ -4248,7 +5583,10 @@
       "kind": "Stairs",
       "from": "sk:landing:foot-83",
       "to": "sk:landing:head-83",
-      "declaredSpan": null,
+      "declaredSpan": [
+        "sk:level:jr-1f",
+        "sk:level:jr-2f"
+      ],
       "stepFree": false,
       "direction": "both",
       "connection": "verified"
@@ -4329,7 +5667,10 @@
       "kind": "Escalator",
       "from": "sk:landing:foot-84",
       "to": "sk:landing:head-84",
-      "declaredSpan": null,
+      "declaredSpan": [
+        "sk:level:jr-1f",
+        "sk:level:jr-2f"
+      ],
       "stepFree": false,
       "direction": "unknown",
       "connection": "verified"
@@ -4356,6 +5697,1329 @@
       "kind": "Passage",
       "from": "sk:landing:head-84",
       "to": "sk:platform:jr-3-4",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:gate:jr-central",
+      "names": {
+        "ja": "中央口",
+        "en": "Central gate",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Gate",
+      "from": "sk:concourse:jr-central-in",
+      "to": "sk:concourse:jr-central-out",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:central-south",
+      "names": {
+        "ja": "中央南口への通路",
+        "en": "Central South passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:jr-central-out",
+      "to": "sk:entrance:jr-central-south",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:midosuji-north",
+      "names": {
+        "ja": "御堂筋北口への通路",
+        "en": "Midosuji North passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:jr-midosuji-out",
+      "to": "sk:entrance:jr-midosuji-north",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:south-forecourt",
+      "names": {
+        "ja": "南側 改札外通路",
+        "en": "Southern exterior passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:entrance:jr-central-south",
+      "to": "sk:entrance:midosuji-south",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:gate:jr-sakura",
+      "names": {
+        "ja": "桜橋口",
+        "en": "Sakurabashi gate",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Gate",
+      "from": "sk:concourse:jr-sakura-in",
+      "to": "sk:concourse:jr-sakura-out",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:sakura-south",
+      "names": {
+        "ja": "南側 改札外通路",
+        "en": "Southern exterior passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:jr-sakura-out",
+      "to": "sk:entrance:jr-central-south",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:mezz-o",
+      "names": {
+        "ja": "中2階 連絡通路",
+        "en": "Mezzanine connecting passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:jr-o-mezz",
+      "to": "sk:concourse:jr-east-mezz",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:mezz-p",
+      "names": {
+        "ja": "エレベーター P への通路",
+        "en": "Passage to lift P",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:jr-east-mezz",
+      "to": "sk:landing:jr-p-mezz",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:elevator:jr-p",
+      "names": {
+        "ja": "エレベーター P",
+        "en": "Lift P",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Elevator",
+      "from": "sk:landing:jr-p-mezz",
+      "to": "sk:landing:jr-p-upper",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:p-platform",
+      "names": {
+        "ja": "ホーム通路",
+        "en": "Platform passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:jr-p-upper",
+      "to": "sk:platform:jr-1-2",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:jr-stair-53-approach",
+      "names": {
+        "ja": "階段への通路",
+        "en": "Approach the stairs",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:jr-central-in",
+      "to": "sk:landing:jr-stair-53-foot",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:stairs:jr-53",
+      "names": {
+        "ja": "階段（図 53）",
+        "en": "Stairs (map 53)",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Stairs",
+      "from": "sk:landing:jr-stair-53-foot",
+      "to": "sk:landing:jr-stair-53-head",
+      "declaredSpan": null,
+      "stepFree": false,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:jr-stair-53-arrival",
+      "names": {
+        "ja": "階段からの通路",
+        "en": "Leave the stairs",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:jr-stair-53-head",
+      "to": "sk:concourse:jr-central-mezz",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:jr-stair-51-approach",
+      "names": {
+        "ja": "階段への通路",
+        "en": "Approach the stairs",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:jr-sakura-in",
+      "to": "sk:landing:jr-stair-51-foot",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:stairs:jr-51",
+      "names": {
+        "ja": "階段（図 51）",
+        "en": "Stairs (map 51)",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Stairs",
+      "from": "sk:landing:jr-stair-51-foot",
+      "to": "sk:landing:jr-stair-51-head",
+      "declaredSpan": null,
+      "stepFree": false,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:jr-stair-51-arrival",
+      "names": {
+        "ja": "階段からの通路",
+        "en": "Leave the stairs",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:jr-stair-51-head",
+      "to": "sk:concourse:jr-sakura-mezz",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:jr-stair-29-approach",
+      "names": {
+        "ja": "階段への通路",
+        "en": "Approach the stairs",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:jr-sakura-mezz",
+      "to": "sk:landing:jr-stair-29-foot",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:stairs:jr-29",
+      "names": {
+        "ja": "階段（図 29）",
+        "en": "Stairs (map 29)",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Stairs",
+      "from": "sk:landing:jr-stair-29-foot",
+      "to": "sk:landing:jr-stair-29-head",
+      "declaredSpan": null,
+      "stepFree": false,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:jr-stair-29-arrival",
+      "names": {
+        "ja": "階段からの通路",
+        "en": "Leave the stairs",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:jr-stair-29-head",
+      "to": "sk:platform:jr-1-2",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:jr-stair-27-approach",
+      "names": {
+        "ja": "階段への通路",
+        "en": "Approach the stairs",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:jr-sakura-mezz",
+      "to": "sk:landing:jr-stair-27-foot",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:stairs:jr-27",
+      "names": {
+        "ja": "階段（図 27）",
+        "en": "Stairs (map 27)",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Stairs",
+      "from": "sk:landing:jr-stair-27-foot",
+      "to": "sk:landing:jr-stair-27-head",
+      "declaredSpan": null,
+      "stepFree": false,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:jr-stair-27-arrival",
+      "names": {
+        "ja": "階段からの通路",
+        "en": "Leave the stairs",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:jr-stair-27-head",
+      "to": "sk:platform:jr-3-4",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:jr-stair-24-approach",
+      "names": {
+        "ja": "階段への通路",
+        "en": "Approach the stairs",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:jr-sakura-mezz",
+      "to": "sk:landing:jr-stair-24-foot",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:stairs:jr-24",
+      "names": {
+        "ja": "階段（図 24）",
+        "en": "Stairs (map 24)",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Stairs",
+      "from": "sk:landing:jr-stair-24-foot",
+      "to": "sk:landing:jr-stair-24-head",
+      "declaredSpan": null,
+      "stepFree": false,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:jr-stair-24-arrival",
+      "names": {
+        "ja": "階段からの通路",
+        "en": "Leave the stairs",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:jr-stair-24-head",
+      "to": "sk:platform:jr-5-6",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:jr-stair-22-approach",
+      "names": {
+        "ja": "階段への通路",
+        "en": "Approach the stairs",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:jr-sakura-mezz",
+      "to": "sk:landing:jr-stair-22-foot",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:stairs:jr-22",
+      "names": {
+        "ja": "階段（図 22）",
+        "en": "Stairs (map 22)",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Stairs",
+      "from": "sk:landing:jr-stair-22-foot",
+      "to": "sk:landing:jr-stair-22-head",
+      "declaredSpan": null,
+      "stepFree": false,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:jr-stair-22-arrival",
+      "names": {
+        "ja": "階段からの通路",
+        "en": "Leave the stairs",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:jr-stair-22-head",
+      "to": "sk:platform:jr-7-8",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:jr-stair-20-approach",
+      "names": {
+        "ja": "階段への通路",
+        "en": "Approach the stairs",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:jr-sakura-mezz",
+      "to": "sk:landing:jr-stair-20-foot",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:stairs:jr-20",
+      "names": {
+        "ja": "階段（図 20）",
+        "en": "Stairs (map 20)",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Stairs",
+      "from": "sk:landing:jr-stair-20-foot",
+      "to": "sk:landing:jr-stair-20-head",
+      "declaredSpan": null,
+      "stepFree": false,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:jr-stair-20-arrival",
+      "names": {
+        "ja": "階段からの通路",
+        "en": "Leave the stairs",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:jr-stair-20-head",
+      "to": "sk:platform:jr-9-10",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:jr-stair-17-approach",
+      "names": {
+        "ja": "階段への通路",
+        "en": "Approach the stairs",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:jr-sakura-mezz",
+      "to": "sk:landing:jr-stair-17-foot",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:stairs:jr-17",
+      "names": {
+        "ja": "階段（図 17）",
+        "en": "Stairs (map 17)",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Stairs",
+      "from": "sk:landing:jr-stair-17-foot",
+      "to": "sk:landing:jr-stair-17-head",
+      "declaredSpan": null,
+      "stepFree": false,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:jr-stair-17-arrival",
+      "names": {
+        "ja": "階段からの通路",
+        "en": "Leave the stairs",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:jr-stair-17-head",
+      "to": "sk:platform:jr-11",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:jr-stair-31-approach",
+      "names": {
+        "ja": "階段への通路",
+        "en": "Approach the stairs",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:jr-central-mezz",
+      "to": "sk:landing:jr-stair-31-foot",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:stairs:jr-31",
+      "names": {
+        "ja": "階段（図 31）",
+        "en": "Stairs (map 31)",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Stairs",
+      "from": "sk:landing:jr-stair-31-foot",
+      "to": "sk:landing:jr-stair-31-head",
+      "declaredSpan": null,
+      "stepFree": false,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:jr-stair-31-arrival",
+      "names": {
+        "ja": "階段からの通路",
+        "en": "Leave the stairs",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:jr-stair-31-head",
+      "to": "sk:platform:jr-1-2",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:jr-stair-28-approach",
+      "names": {
+        "ja": "階段への通路",
+        "en": "Approach the stairs",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:jr-central-mezz",
+      "to": "sk:landing:jr-stair-28-foot",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:stairs:jr-28",
+      "names": {
+        "ja": "階段（図 28）",
+        "en": "Stairs (map 28)",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Stairs",
+      "from": "sk:landing:jr-stair-28-foot",
+      "to": "sk:landing:jr-stair-28-head",
+      "declaredSpan": null,
+      "stepFree": false,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:jr-stair-28-arrival",
+      "names": {
+        "ja": "階段からの通路",
+        "en": "Leave the stairs",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:jr-stair-28-head",
+      "to": "sk:platform:jr-3-4",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:jr-stair-25-approach",
+      "names": {
+        "ja": "階段への通路",
+        "en": "Approach the stairs",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:jr-central-mezz",
+      "to": "sk:landing:jr-stair-25-foot",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:stairs:jr-25",
+      "names": {
+        "ja": "階段（図 25）",
+        "en": "Stairs (map 25)",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Stairs",
+      "from": "sk:landing:jr-stair-25-foot",
+      "to": "sk:landing:jr-stair-25-head",
+      "declaredSpan": null,
+      "stepFree": false,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:jr-stair-25-arrival",
+      "names": {
+        "ja": "階段からの通路",
+        "en": "Leave the stairs",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:jr-stair-25-head",
+      "to": "sk:platform:jr-5-6",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:jr-stair-23-approach",
+      "names": {
+        "ja": "階段への通路",
+        "en": "Approach the stairs",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:jr-central-mezz",
+      "to": "sk:landing:jr-stair-23-foot",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:stairs:jr-23",
+      "names": {
+        "ja": "階段（図 23）",
+        "en": "Stairs (map 23)",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Stairs",
+      "from": "sk:landing:jr-stair-23-foot",
+      "to": "sk:landing:jr-stair-23-head",
+      "declaredSpan": null,
+      "stepFree": false,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:jr-stair-23-arrival",
+      "names": {
+        "ja": "階段からの通路",
+        "en": "Leave the stairs",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:jr-stair-23-head",
+      "to": "sk:platform:jr-7-8",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:jr-stair-21-approach",
+      "names": {
+        "ja": "階段への通路",
+        "en": "Approach the stairs",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:jr-central-mezz",
+      "to": "sk:landing:jr-stair-21-foot",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:stairs:jr-21",
+      "names": {
+        "ja": "階段（図 21）",
+        "en": "Stairs (map 21)",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Stairs",
+      "from": "sk:landing:jr-stair-21-foot",
+      "to": "sk:landing:jr-stair-21-head",
+      "declaredSpan": null,
+      "stepFree": false,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:jr-stair-21-arrival",
+      "names": {
+        "ja": "階段からの通路",
+        "en": "Leave the stairs",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:jr-stair-21-head",
+      "to": "sk:platform:jr-9-10",
       "declaredSpan": null,
       "stepFree": null,
       "direction": "both",

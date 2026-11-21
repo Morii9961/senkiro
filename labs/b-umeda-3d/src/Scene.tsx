@@ -6,6 +6,8 @@ import type { Step } from './domain/graph'
 import { floors, nodes, station } from './model'
 import { sample } from './providers/service'
 
+import * as architecture from './architecture'
+
 interface Props {
   lang: Language
   dark: boolean
@@ -16,6 +18,8 @@ interface Props {
   reset: number
   zoom: { tick: number; factor: number }
   example: boolean
+  onReset: () => void
+  onInspect: (id: string) => void
   onFallback: () => void
 }
 type Label = {
@@ -52,8 +56,8 @@ export function Scene(props: Props) {
       MIDDLE: T.MOUSE.PAN,
       RIGHT: T.MOUSE.PAN,
     }
-    world.add(new T.HemisphereLight(0xffffff, 0xd1d9d8, 2.05))
-    const sun = new T.DirectionalLight(0xfff7df, 2.3)
+    world.add(new T.HemisphereLight(0xffffff, 0xc4c3b8, 1.65))
+    const sun = new T.DirectionalLight(0xfff2da, 1.9)
     sun.position.set(-28, 64, 36)
     world.add(sun)
     const unit = new T.BoxGeometry(),
@@ -63,6 +67,7 @@ export function Scene(props: Props) {
       })
     const dummy = new T.Object3D(),
       labels: Label[] = []
+    let owners: string[] = []
     let group: T.InstancedMesh | null = null,
       propsNow: Props,
       lastReset = -1,
@@ -112,6 +117,8 @@ export function Scene(props: Props) {
       if (!propsNow) return
       const w = box.clientWidth,
         h = box.clientHeight
+      camera.updateMatrixWorld()
+      gl.domElement.dataset.zoom = String(camera.zoom)
       const placed: { x: number; y: number; w: number }[] = []
       for (const label of labels) {
         const v = label.position.clone().project(camera),
@@ -163,7 +170,11 @@ export function Scene(props: Props) {
     function rebuild(p: Props) {
       const refit =
         !propsNow || propsNow.floor !== p.floor || propsNow.spread !== p.spread
+      const previous = propsNow?.route[propsNow.step]?.link.id
+      const current = p.route[p.step]
       propsNow = p
+      owners = []
+      let owner = ''
       if (refit) bounds = fit(p)
       gl.domElement.setAttribute(
         'aria-label',
@@ -184,7 +195,11 @@ export function Scene(props: Props) {
         selected = 0xe14815
       const gap = p.spread ? 9 : 5
       const visible = (n: Place) =>
-        p.floor === null || floors.get(n.levelId)!.ordinal === p.floor
+        p.floor !== null
+          ? floors.get(n.levelId)!.ordinal === p.floor
+          : !current ||
+            n.levelId === current.from.levelId ||
+            n.levelId === current.to.levelId
       const pos = (n: Place, h = 0) =>
         new T.Vector3(
           n.point[0],
@@ -199,6 +214,7 @@ export function Scene(props: Props) {
         color: number,
         rotation?: T.Quaternion,
       ) {
+        owners.push(owner)
         dummy.position.copy(at)
         dummy.scale.set(w, h, d)
         dummy.quaternion.copy(rotation ?? new T.Quaternion())
@@ -232,25 +248,75 @@ export function Scene(props: Props) {
         text: string,
         priority: number,
         active = false,
+        stationName = false,
       ) {
         const el = document.createElement('span')
         el.className = 'pin' + (active ? ' active' : '')
+        if (stationName) el.classList.add('station-pin')
+        el.dataset.owner = owner
         el.textContent = text
         box.appendChild(el)
         labels.push({ position, text, priority, el })
       }
       for (const n of station.places.filter(visible)) {
         if (n.kind === 'Landing') continue
+        owner = n.id
         const [w, d] = n.size,
           at = pos(n)
-        block(
-          at,
-          w,
-          0.72,
-          d,
+        const deckLevel = at.clone().add(new T.Vector3(0, 0.09, 0))
+        const flights = station.links
+          .filter((e) => e.kind === 'Stairs' || e.kind === 'Escalator')
+          .flatMap((e) => {
+            const a = nodes.get(e.from)!,
+              b = nodes.get(e.to)!
+            const [upper, lower] = pos(a).y > pos(b).y ? [a, b] : [b, a]
+            return upper.levelId === n.levelId
+              ? [{ top: pos(upper), foot: pos(lower) }]
+              : []
+          })
+        architecture.deck(
+          n,
+          deckLevel,
+          flights,
           n.kind === 'Platform' ? plate : n.zone === 'unpaid' ? hall : rim,
+          block,
         )
         if (n.kind === 'Platform') {
+          const landings = station.places
+            .filter((s) => s.kind === 'Landing' && s.levelId === n.levelId)
+            .map((s) => pos(s))
+          architecture.platformFittings(n, at, landings, block)
+          if (!current && p.floor === null && n.id.endsWith('21-22')) {
+            label(
+              pos(n, 2.5),
+              p.lang === 'ja'
+                ? 'JR うめきた地下ホーム'
+                : 'JR Umekita platforms',
+              -1,
+              false,
+              true,
+            )
+          }
+          if (
+            !current &&
+            p.floor === null &&
+            (n.id.endsWith('jr-11') || n.id.endsWith('metro-1'))
+          ) {
+            const metro = n.id.endsWith('metro-1')
+            label(
+              pos(n, 3.2),
+              metro
+                ? p.lang === 'ja'
+                  ? '御堂筋線 梅田'
+                  : 'Midosuji · Umeda'
+                : p.lang === 'ja'
+                  ? 'JR 大阪駅'
+                  : 'JR Osaka Station',
+              -1,
+              false,
+              true,
+            )
+          }
           if (p.example && n.id === sample.platformId)
             label(
               pos(n, 3),
@@ -302,16 +368,30 @@ export function Scene(props: Props) {
               (n.id === 'sk:platform:metro-1' && side === 1)
             )
               continue
-            const track = side * (breadth / 2 + 0.8)
+            const track = side * (breadth / 2 + 0.54)
             for (let x = -length / 2 + 0.5; x < length / 2; x += 1.35)
-              slat(x, track, -0.43, 0.32, 1.4, 0.19, steel)
-            for (const shift of [-0.42, 0.42])
+              slat(x, track, -0.43, 0.25, 0.98, 0.17, steel)
+            for (const shift of [-0.32, 0.32])
               slat(0, track + shift, -0.23, length, 0.11, 0.2, steel)
           }
-          label(
-            pos(n, 1.1),
-            n.names[p.lang],
-            n.id.endsWith('3-4') || n.id.endsWith('21-22') ? 1 : 2,
+          const number = n.id
+            .split(':')
+            .pop()!
+            .replace(/^(jr|metro)-/, '')
+            .replace('-', ' · ')
+          const end = pos(n, 1.03)
+          if (alongX) end.x += w * 0.37
+          else end.z += d * 0.32
+          label(end, number, 1)
+          labels[labels.length - 1].el.classList.add('platform-pin')
+          labels[labels.length - 1].el.title = n.names[p.lang]
+          labels[labels.length - 1].el.style.setProperty(
+            '--stripe',
+            n.serviceLineIds?.includes('sk:line:midosuji')
+              ? '#b44041'
+              : n.id.endsWith('1-2')
+                ? '#b95436'
+                : '#537986',
           )
         } else if (n.id === 'sk:entrance:surface-crossing') {
           for (let x = -1.7; x <= 1.7; x += 0.7)
@@ -323,20 +403,47 @@ export function Scene(props: Props) {
               0xf5f1d7,
             )
         } else if (n.kind === 'Concourse' && !n.id.includes('landing')) {
-          // Low parapets cue the long axis of a hall without asserting an enclosure.
-          if (w >= 5 || d >= 5)
-            block(
-              at.clone().add(new T.Vector3(-w / 2 + 0.12, 0.62, 0)),
-              0.18,
-              0.7,
-              d,
-              rim,
-            )
+          const openings = station.links
+            .filter((e) => e.from === n.id || e.to === n.id)
+            .flatMap((e) => {
+              const other = pos(nodes.get(e.from === n.id ? e.to : e.from)!)
+              const samples = Math.ceil(at.distanceTo(other))
+              return Array.from({ length: samples + 1 }, (_, i) =>
+                at.clone().lerp(other, i / Math.max(1, samples)),
+              )
+            })
+          architecture.hallRails(n, deckLevel, openings, block)
           label(pos(n, 1), n.names[p.lang], 2)
         }
       }
+      if (!current && p.floor === null) {
+        const anchors: Record<string, string> = {
+          '3F': 'jr-bridge',
+          中2F: 'jr-sakura-mezz',
+          '1F': 'jr-central-south',
+          B1F: 'umekita-out',
+          B2F: 'jr-23-24',
+          '2F': 'jr-1-2',
+        }
+        for (const [name, suffix] of Object.entries(anchors)) {
+          const n = station.places.find(
+            (k) =>
+              k.id.endsWith(':' + suffix) &&
+              floors.get(k.levelId)!.label === name,
+          )
+          if (!n) continue
+          owner = n.id
+          const corner = pos(n, 0.75)
+          corner.x -= n.size[0] * 0.46
+          corner.z += n.size[1] * 0.41
+          label(corner, name, 0)
+          labels[labels.length - 1].el.classList.add('floor-pin')
+        }
+      }
       const activeIds = new Set(p.route.map((s) => s.link.id))
+      const liftStops = new Set<string>()
       for (const e of station.links) {
+        owner = e.id
         const a = nodes.get(e.from)!,
           b = nodes.get(e.to)!,
           va = visible(a),
@@ -347,27 +454,35 @@ export function Scene(props: Props) {
           mid = start.clone().lerp(end, 0.5)
         const active = activeIds.has(e.id),
           focus = p.route[p.step]?.link.id === e.id
+        if (e.kind === 'Elevator') {
+          architecture.lift(
+            start,
+            end,
+            va && !liftStops.has(a.id),
+            vb && !liftStops.has(b.id),
+            block,
+            beam,
+            va && vb,
+          )
+          liftStops.add(a.id)
+          liftStops.add(b.id)
+        }
         if (va && vb) {
-          if (e.kind === 'Elevator') {
-            const h = Math.abs(end.y - start.y)
-            for (const x of [-0.66, 0.66])
-              for (const z of [-0.66, 0.66])
-                beam(
-                  start.clone().add(new T.Vector3(x, 0, z)),
-                  end.clone().add(new T.Vector3(x, 0, z)),
-                  0.13,
-                  0.13,
-                  steel,
-                )
-            block(mid, 1.16, Math.min(h, 2), 1.16, plate)
-          } else if (e.kind === 'Stairs' || e.kind === 'Escalator') {
-            for (let i = 0; i < 12; i++)
-              block(start.clone().lerp(end, i / 11), 1.1, 0.23, 1.05, steel)
-          } else {
+          if (e.kind === 'Stairs' || e.kind === 'Escalator')
+            architecture.stairs(
+              e,
+              start,
+              end,
+              block,
+              beam,
+              active ? (focus ? selected : routeColor) : undefined,
+            )
+          if (e.kind === 'Passage' || e.kind === 'Gate') {
+            const deckOffset = new T.Vector3(0, -0.23, 0)
             const covered = station.places.some(
               (n) =>
-                n.kind !== 'Landing' &&
                 n.levelId === a.levelId &&
+                n.kind !== 'Landing' &&
                 [a, b].every(
                   (v) =>
                     Math.abs(v.point[0] - n.point[0]) <= n.size[0] / 2 &&
@@ -375,49 +490,92 @@ export function Scene(props: Props) {
                 ),
             )
             if (!covered)
-              beam(start, end, e.kind === 'Gate' ? 1.5 : 1.3, 0.22, rim)
-            if (e.kind === 'Gate') {
-              for (const z of [-0.8, 0, 0.8])
-                block(
-                  mid.clone().add(new T.Vector3(0, 0.52, z)),
-                  0.95,
-                  0.85,
-                  0.32,
-                  0x34565b,
-                )
-              label(
-                mid.clone().add(new T.Vector3(0, 1.3, 0)),
-                e.names[p.lang],
-                active ? 1 : 2,
-                active,
+              architecture.horizontalSpan(
+                start.clone().add(deckOffset),
+                end.clone().add(deckOffset),
+                e.kind === 'Gate' ? 3.8 : 1.85,
+                0.32,
+                a.zone === 'unpaid' ? hall : rim,
+                block,
               )
+            if (e.kind === 'Gate') {
+              architecture.gate(start, end, block)
+              if (!focus)
+                label(
+                  mid.clone().add(new T.Vector3(0, 2.7, 0)),
+                  e.names[p.lang],
+                  active ? 1 : 2,
+                  active,
+                )
             }
           }
-          if (active)
-            beam(
-              start.clone().add(new T.Vector3(0, 0.95, 0)),
-              end.clone().add(new T.Vector3(0, 0.95, 0)),
-              focus ? 0.62 : 0.4,
-              focus ? 0.62 : 0.4,
-              focus ? selected : routeColor,
-            )
+          if (active && e.kind !== 'Stairs' && e.kind !== 'Escalator') {
+            const offset = new T.Vector3(0, start.y === end.y ? 0.1 : 0.5, 0)
+            const c = focus ? selected : routeColor
+            if (start.y === end.y)
+              architecture.horizontalSpan(
+                start.clone().add(offset),
+                end.clone().add(offset),
+                focus ? 0.51 : 0.34,
+                0.07,
+                c,
+                block,
+              )
+            else
+              beam(
+                start.clone().add(offset),
+                end.clone().add(offset),
+                0.28,
+                0.28,
+                c,
+              )
+            if (focus && current && start.y === end.y) {
+              const forward = pos(current.to)
+                .sub(pos(current.from))
+                .setY(0)
+                .normalize()
+              const side = new T.Vector3(forward.z, 0, -forward.x)
+              const tip = pos(current.from, 0.64).lerp(
+                pos(current.to, 0.64),
+                0.82,
+              )
+              for (const sign of [-1, 1])
+                architecture.horizontalSpan(
+                  tip
+                    .clone()
+                    .addScaledVector(forward, -0.49)
+                    .addScaledVector(side, sign * 0.29),
+                  tip,
+                  0.13,
+                  0.08,
+                  0xffe2a0,
+                  block,
+                )
+            }
+          }
         }
-        if (!va || !vb || active) {
-          for (const n of [a, b].filter(visible))
-            block(
-              pos(n, 1.32),
-              active ? 0.9 : 1,
-              0.24,
-              active ? 0.9 : 1,
-              active ? routeColor : steel,
-            )
+        if (
+          !current &&
+          va !== vb &&
+          (e.kind === 'Stairs' || e.kind === 'Escalator')
+        ) {
+          const landing = va ? start : end
+          architecture.stairs(
+            e,
+            landing,
+            landing.clone().lerp(va ? end : start, 0.3),
+            block,
+            beam,
+          )
         }
         if (active && (e.kind === 'Elevator' || focus))
           label(
             (va && vb ? mid : va ? start : end)
               .clone()
               .add(new T.Vector3(0, 1.5, 0)),
-            e.names[p.lang],
+            current?.link.id === e.id && current.from.id !== e.from
+              ? current.to.names[p.lang]
+              : e.names[p.lang],
             focus ? -2 : 0,
             true,
           )
@@ -429,7 +587,12 @@ export function Scene(props: Props) {
       })
       world.add(group)
       labels.sort((a, b) => a.priority - b.priority)
-      if (refit || lastReset !== p.reset || lastFloor !== p.floor) {
+      if (
+        (previous && !current) ||
+        refit ||
+        lastReset !== p.reset ||
+        lastFloor !== p.floor
+      ) {
         reset()
         lastReset = p.reset
         lastFloor = p.floor
@@ -440,7 +603,75 @@ export function Scene(props: Props) {
         lastZoom = p.zoom.tick
       }
       size()
+      if (current && (previous !== current.link.id || refit)) {
+        const a = pos(current.from, 0.6),
+          b = pos(current.to, 0.6)
+        controls.target.copy(a).lerp(b, 0.5)
+        const span = b.clone().sub(a)
+        const sideView = new T.Vector3(span.z, 0, -span.x)
+        if (sideView.x > 0) sideView.negate()
+        sideView.normalize().multiplyScalar(78).y = 52
+        const flight =
+          current.link.kind === 'Stairs' || current.link.kind === 'Escalator'
+        camera.position.copy(controls.target).add(flight ? sideView : view)
+        const desiredHeight = Math.max(
+          10,
+          Math.abs(span.dot(up)) + 6,
+          ((Math.abs(span.dot(right)) + 8) * box.clientHeight) /
+            Math.max(1, box.clientWidth),
+        )
+        camera.zoom = T.MathUtils.clamp(
+          (camera.top - camera.bottom) / desiredHeight,
+          0.65,
+          5,
+        )
+        camera.updateProjectionMatrix()
+        controls.update()
+        draw()
+      }
+      gl.domElement.dataset.focus = current?.link.id ?? ''
     }
+    let pressed: { x: number; y: number } | null = null
+    const pointerDown = (e: PointerEvent) => {
+      pressed = e.button === 0 ? { x: e.clientX, y: e.clientY } : null
+    }
+    const pointerUp = (e: PointerEvent) => {
+      if (
+        !pressed ||
+        !group ||
+        Math.hypot(e.clientX - pressed.x, e.clientY - pressed.y) > 5
+      )
+        return
+      pressed = null
+      for (const { el } of labels) {
+        if (el.style.visibility !== 'visible') continue
+        const r = el.getBoundingClientRect()
+        if (
+          e.clientX >= r.left &&
+          e.clientX <= r.right &&
+          e.clientY >= r.top &&
+          e.clientY <= r.bottom &&
+          el.dataset.owner
+        ) {
+          propsNow.onInspect(el.dataset.owner)
+          return
+        }
+      }
+      const r = gl.domElement.getBoundingClientRect()
+      const ray = new T.Raycaster()
+      ray.setFromCamera(
+        new T.Vector2(
+          (2 * (e.clientX - r.left)) / r.width - 1,
+          1 - (2 * (e.clientY - r.top)) / r.height,
+        ),
+        camera,
+      )
+      const hit = ray.intersectObject(group, false)[0]
+      if (hit?.instanceId !== undefined)
+        propsNow.onInspect(owners[hit.instanceId])
+    }
+    gl.domElement.addEventListener('pointerdown', pointerDown)
+    gl.domElement.addEventListener('pointerup', pointerUp)
     const keyboard = (ev: KeyboardEvent) => {
       const delta: { [key: string]: [number, number] } = {
         ArrowLeft: [-2, 0],
@@ -463,7 +694,7 @@ export function Scene(props: Props) {
           5,
         )
         camera.updateProjectionMatrix()
-      } else if (ev.key.toLowerCase() === 'r') reset()
+      } else if (ev.key.toLowerCase() === 'r') propsNow.onReset()
       else return
       if (!controls.update()) draw()
     }
