@@ -1,11 +1,43 @@
 import { expect, test } from '@playwright/test';
 
 test.describe('SENKIRO Lab · Tokyo Atlas & Fare Interactive E2E', () => {
-  test('1. Search (JA/EN/Kana) and inspect Station Detail with StationComplex & Provenance', async ({
+  test('1. Search (JA/EN/Kana), verify MapLibre renders non-blank railway canvas, and inspect Station Detail', async ({
     page,
   }) => {
+    const mapErrors: string[] = [];
+    page.on('console', (msg) => {
+      if (msg.text().includes('[MapLibre]')) mapErrors.push(msg.text());
+    });
     await page.goto('/');
     await expect(page.getByRole('heading', { name: /SENKIRO Lab/ })).toBeVisible();
+
+    // Verify MapLibre WebGL canvas actually rendered multiple distinct pixel colors (railway lines + stations)
+    await page.waitForSelector('canvas.maplibregl-canvas');
+    await expect
+      .poll(
+        async () =>
+          page.evaluate(() => {
+            const canvas = document.querySelector('canvas.maplibregl-canvas') as HTMLCanvasElement | null;
+            if (!canvas || canvas.width === 0 || canvas.height === 0) return 0;
+            const gl =
+              (canvas.getContext('webgl2') as WebGL2RenderingContext | null) ||
+              (canvas.getContext('webgl') as WebGLRenderingContext | null);
+            if (!gl) return 0;
+            const w = canvas.width;
+            const h = canvas.height;
+            const pixels = new Uint8Array(w * h * 4);
+            gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+            const colors = new Set<string>();
+            for (let i = 0; i < pixels.length; i += 400) {
+              colors.add(`${pixels[i]},${pixels[i + 1]},${pixels[i + 2]}`);
+              if (colors.size >= 8) break;
+            }
+            return colors.size;
+          }),
+        { timeout: 10_000 },
+      )
+      .toBeGreaterThanOrEqual(5);
+    expect(mapErrors).toEqual([]);
 
     const searchInput = page.getByTestId('station-search-input');
     // Search in English

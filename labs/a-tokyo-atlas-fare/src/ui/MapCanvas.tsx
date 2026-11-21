@@ -278,6 +278,7 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
       zoom: 11.4,
       minZoom: 8,
       maxZoom: 17,
+      canvasContextAttributes: { antialias: true, preserveDrawingBuffer: true },
       attributionControl: { compact: true },
       style: {
         version: 8,
@@ -286,27 +287,28 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
             type: 'raster',
             tiles: ['https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png'],
             tileSize: 256,
+            maxzoom: 18,
             attribution: '地理院タイル（国土地理院） | 国土数値情報 N02-24 | ODPT 都営GTFS',
           },
           tracks: {
             type: 'geojson',
-            data: { type: 'FeatureCollection', features: [] },
+            data: tracksGeoJson,
           },
           elevatedRibbons: {
             type: 'geojson',
-            data: { type: 'FeatureCollection', features: [] },
+            data: elevatedRibbonsGeoJson,
           },
           actualPath: {
             type: 'geojson',
-            data: { type: 'FeatureCollection', features: [] },
+            data: actualPathGeoJson,
           },
           billedPath: {
             type: 'geojson',
-            data: { type: 'FeatureCollection', features: [] },
+            data: billedPathGeoJson,
           },
           stations: {
             type: 'geojson',
-            data: { type: 'FeatureCollection', features: [] },
+            data: stationsGeoJson,
           },
         },
         layers: [
@@ -366,7 +368,7 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
               'fill-extrusion-color': ['get', 'color'],
               'fill-extrusion-base': ['get', 'baseHeight'],
               'fill-extrusion-height': ['get', 'topHeight'],
-              'fill-extrusion-opacity': ['get', 'opacity'],
+              'fill-extrusion-opacity': 0.85,
             },
           },
           // Fare comparison overlays (Billed path solid cyan + Actual path dashed orange)
@@ -455,11 +457,18 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
 
     map.addControl(new maplibregl.NavigationControl(), 'top-right');
 
-    // Suppress non-fatal offline raster tile errors so headless/offline renders stay clean
-    map.on('error', () => {
-      // Ignore tile fetch errors when offline
+    // Suppress only external tile fetch errors when offline; surface real style errors
+    map.on('error', (evt) => {
+      const msg = String(evt?.error?.message ?? '');
+      if (msg && !msg.includes('cyberjapandata.gsi.go.jp') && !msg.includes('Failed to fetch')) {
+        console.warn('[MapLibre]', msg);
+      }
     });
 
+    // Mark ready immediately on style.load (does NOT wait for external raster tiles if offline/blocked)
+    map.on('style.load', () => {
+      setMapReady(true);
+    });
     map.on('load', () => {
       setMapReady(true);
     });
