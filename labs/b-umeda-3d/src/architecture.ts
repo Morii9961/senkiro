@@ -281,7 +281,7 @@ export function deck(
     z1 = at.z + depth / 2
   const cuts = flights.flatMap(({ top, foot }) => {
     if (top.x < x0 || top.x > x1 || top.z < z0 || top.z > z1) return []
-    const edge = top.clone().lerp(foot, 0.72)
+    const edge = top.clone().lerp(foot, 0.94)
     const xAligned = Math.abs(top.x - foot.x) > Math.abs(top.z - foot.z)
     const sx = xAligned ? 0.15 : 0.75,
       sz = xAligned ? 0.75 : 0.15

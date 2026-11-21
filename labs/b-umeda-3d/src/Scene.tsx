@@ -413,7 +413,8 @@ export function Scene(props: Props) {
               )
             })
           architecture.hallRails(n, deckLevel, openings, block)
-          label(pos(n, 1), n.names[p.lang], 2)
+          if (!current || n.id === current.from.id || n.id === current.to.id)
+            label(pos(n, 1), n.names[p.lang], 2)
         }
       }
       if (!current && p.floor === null) {
@@ -608,9 +609,16 @@ export function Scene(props: Props) {
           b = pos(current.to, 0.6)
         controls.target.copy(a).lerp(b, 0.5)
         const span = b.clone().sub(a)
-        const sideView = new T.Vector3(span.z, 0, -span.x)
-        if (sideView.x > 0) sideView.negate()
-        sideView.normalize().multiplyScalar(78).y = 52
+        // Look up the flight from its lower landing so the treads remain legible.
+        const lowerSide = span
+          .clone()
+          .multiplyScalar(span.y > 0 ? -1 : 1)
+          .setY(0)
+          .normalize()
+        const sideView = new T.Vector3(lowerSide.z, 0, -lowerSide.x)
+          .multiplyScalar(36)
+          .addScaledVector(lowerSide, 68)
+        sideView.y = 82
         const flight =
           current.link.kind === 'Stairs' || current.link.kind === 'Escalator'
         camera.position.copy(controls.target).add(flight ? sideView : view)
