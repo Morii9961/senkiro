@@ -534,23 +534,62 @@ a {
   letter-spacing: -0.02em;
 }
 
-/* title bar of a panel on a floor drawn in parts; the panel itself is drawn in the SVG */
-.plan-panel-head {
+/* one view of the plan: the drawing and its labels */
+.plan-view {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+/* a floor drawn in parts: a row of panels, each a view of its own, clear of the floor list, the title,
+   the compass and the view buttons */
+.plan-grid {
   position: absolute;
   display: flex;
+  justify-content: center;
+  gap: 14px;
+}
+
+.plan-col {
+  display: flex;
+  flex: 0 1 auto;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 120px;
+}
+
+.plan-panel {
+  position: relative;
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  min-height: 0;
+  border: 1px solid color-mix(in srgb, var(--ink) 30%, var(--paper));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ink) 3%, var(--paper));
+  overflow: hidden;
+}
+
+.plan-panel-head {
+  display: flex;
+  flex: none;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  box-sizing: border-box;
+  height: 32px;
   padding: 0 10px;
-  border: 1px solid color-mix(in srgb, var(--ink) 30%, var(--paper));
-  border-radius: 8px 8px 0 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--ink) 30%, var(--paper));
   background: var(--surface-2);
   color: var(--ink);
   font-size: 12.5px;
   font-weight: 700;
   white-space: nowrap;
-  pointer-events: none;
+}
+
+.plan-panel-body {
+  position: relative;
+  flex: 1;
+  min-height: 0;
 }
 
 .plan-panel-title {

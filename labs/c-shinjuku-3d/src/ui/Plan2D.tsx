@@ -6,8 +6,8 @@
  * main block runs east–west. A compass on the plan says which (planLayout.ts).
  *
  * Parts of a floor that are neither linked nor near one another are drawn as a
- * row of titled panels. That turns and moves whole blocks on the sheet only;
- * the model is not changed.
+ * row of titled panels, each a view of its own: dragging or zooming one panel
+ * leaves the others where they are. The model is not changed.
  *
  * Geometry is an SVG; names are DOM labels laid over it so that they keep a
  * constant size on screen and share their look with the 3D labels.
@@ -19,7 +19,7 @@ import type { Route } from '../domain/route';
 import type { Area, PlanPoint, PlanRect, StationModel, VerticalFacility } from '../domain/types';
 import type { Lang, T } from './i18n';
 import { pickName, type Namer } from './naming';
-import { PANEL_HEAD_PX, fitScale, planOverlays, scaleCap, sheetLayout, sheetTransform, toSheet, type North, type ScreenRect } from './planLayout';
+import { fitScale, floorBounds, floorLayout, panelGrid, planOverlays, scaleCap, sheetTransform, toSheet, type FloorLayout, type North, type ScreenRect } from './planLayout';
 import type { SceneHandle } from './Scene3D';
 import { gateDirection } from './scene/arch/gates';
 import { wallEdges } from './scene/arch/slabs';
@@ -67,6 +67,10 @@ interface PlanLabel {
 }
 
 const PUBLIC_SPACE = 'sk:operator:public-space';
+/** Where the row of panels stands in the plan (px): clear of the floor list, the title and the view buttons. */
+const ROW_SIDE = 124;
+const ROW_TOP = 56;
+const ROW_BOTTOM = 72;
 const TRACK_W = 0.62;
 
 /**
@@ -124,12 +128,27 @@ function alongPlatform(footprint: PlanRect[], anchor: PlanPoint): PlanPoint[] {
   return [0.22, -0.22, 0.38, -0.38].map((k) => (alongX ? { x: anchor.x + (b.x1 - b.x0) * k, z: anchor.z } : { x: anchor.x, z: anchor.z + (b.z1 - b.z0) * k }));
 }
 
-export function Plan2D(props: Props) {
-  const { model, ordinal, palette: p, t, namer } = props;
+interface ViewProps extends Omit<Props, 'handleRef'> {
+  layout: FloorLayout;
+  /** Blocks drawn in this view; null: the whole floor. */
+  show: number[] | null;
+  /** Inside a panel: nothing stands over it, and no operator captions (the panel has a title). */
+  embedded: boolean;
+  /** Largest default scale of the station (px per unit). */
+  cap: number;
+  /** Default scale given by the plan (the shared scale of a floor's panels); otherwise the view fits itself. */
+  scale?: number;
+  floors: number;
+  /** Every view of the plan registers here, so that the view buttons act on all of them. */
+  views: React.RefObject<Set<SceneHandle>>;
+}
+
+/** One view of the plan: the drawing of some blocks of a floor, with its own size, zoom and position. */
+function PlanView(props: ViewProps) {
+  const { model, ordinal, palette: p, t, namer, layout } = props;
   const wrap = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 800, h: 600 });
-  // the view as an offset from the fitted centre: the sheet of a floor depends on the plan's size, so the
-  // default view must follow it
+  // the view as an offset from the fitted centre, so that the default view follows a change of size
   const [view, setView] = useState<{ ox: number; oz: number; zoom: number }>({ ox: 0, oz: 0, zoom: 1 });
   const drag = useRef<{ x: number; y: number; moved: number } | null>(null);
 
@@ -146,82 +165,60 @@ export function Plan2D(props: Props) {
   const floor = useMemo(() => {
     const levelIds = new Set(model.levels.filter((l) => l.ordinal === ordinal).map((l) => l.id));
     const areaById = new Map(model.areas.map((a) => [a.id, a]));
-    const areas = model.areas.filter((a) => levelIds.has(a.levelId));
     const elevations = model.levels.filter((l) => levelIds.has(l.id)).map((l) => l.elevation);
+    // only what stands in the blocks this view shows
+    const keep = (k: number) => props.show === null || props.show.includes(k);
+    const inArea = (id: string) => keep(layout.blockOfArea.get(id) ?? 0);
+    const gateKept = (g: StationModel['gates'][number]) => {
+      const side = g.sides.find((sd): sd is { areaId: string } => 'areaId' in sd && layout.blockOfArea.has(sd.areaId));
+      return keep(side ? (layout.blockOfArea.get(side.areaId) ?? 0) : layout.blockAt(g.position));
+    };
     return {
       levelIds,
       areaById,
-      areas,
-      gates: model.gates.filter((g) => levelIds.has(g.levelId)),
-      entrances: model.entrances.filter((e) => levelIds.has(e.levelId)),
-      services: model.services.filter((s) => levelIds.has(s.levelId)),
-      verticals: model.verticals.filter((v) => v.stops.some((s) => levelIds.has(s.levelId))),
+      keep,
+      areas: model.areas.filter((a) => levelIds.has(a.levelId) && inArea(a.id)),
+      gates: model.gates.filter((g) => levelIds.has(g.levelId) && gateKept(g)),
+      entrances: model.entrances.filter((e) => levelIds.has(e.levelId) && inArea(e.areaId)),
+      services: model.services.filter((s) => levelIds.has(s.levelId) && inArea(s.areaId)),
+      verticals: model.verticals.filter((v) => {
+        const here = v.stops.find((s) => levelIds.has(s.levelId));
+        return here !== undefined && inArea(here.areaId);
+      }),
       links: model.passages.filter((l) => {
         const a = areaById.get(l.fromAreaId);
         const b = areaById.get(l.toAreaId);
-        return a && b && levelIds.has(a.levelId) && levelIds.has(b.levelId);
+        return a && b && levelIds.has(a.levelId) && levelIds.has(b.levelId) && inArea(a.id);
       }),
-      blocks: model.unverifiedBlocks.filter((b) => elevations.some((e) => e >= b.elevation - 1.5 && e <= b.elevation + b.height / LEVEL_SCALE + 1.5)),
+      blocks: model.unverifiedBlocks.filter(
+        (b) => elevations.some((e) => e >= b.elevation - 1.5 && e <= b.elevation + b.height / LEVEL_SCALE + 1.5) && keep(layout.blockAt({ x: (b.box.x0 + b.box.x1) / 2, z: (b.box.z0 + b.box.z1) / 2 })),
+      ),
     };
-  }, [model, ordinal]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [model, ordinal, layout, props.show]);
 
-  // --- blocks of the floor, which way it is turned and where each block is drawn (layout only) -----
-  const nFloors = useMemo(() => floorsOf(model).length, [model]);
-  /** Title of a panel: the stations its areas belong to. */
-  const titleOf = useMemo(() => {
-    const levelById = new Map(model.levels.map((l) => [l.id, l]));
-    const stationById = new Map(model.stations.map((st) => [st.id, st]));
-    const operatorById = new Map(model.operators.map((op) => [op.id, op]));
-    const areaById = new Map(model.areas.map((a) => [a.id, a]));
-    return (areaIds: string[]) => {
-      const names: string[] = [];
-      for (const id of areaIds) {
-        const level = levelById.get(areaById.get(id)!.levelId);
-        const station = level?.stationId ? stationById.get(level.stationId) : undefined;
-        const op = level && level.operatorId !== PUBLIC_SPACE ? operatorById.get(level.operatorId) : undefined;
-        const name = station ? pickName(station.names, props.lang) : op ? pickName(op.names, props.lang) : null;
-        if (name && !names.includes(name)) names.push(name);
-      }
-      return names.join(' · ');
-    };
-  }, [model, props.lang]);
-  /** Width a panel needs for its title bar (px; a very long title is cut short with an ellipsis). */
-  const titlePx = useMemo(() => (areaIds: string[]) => Math.min(300, textWidth(titleOf(areaIds), 12.5) + 64), [titleOf]);
-  const sheet = useMemo(() => sheetLayout(model, ordinal, size.w, size.h, nFloors, titlePx), [model, ordinal, size.w, size.h, nFloors, titlePx]);
-  const allFloors = useMemo(
-    () =>
-      floorsOf(model).map((f) => {
-        const ids = new Set(f.levelIds);
-        return { areas: model.areas.filter((a) => ids.has(a.levelId)).length, bounds: sheetLayout(model, f.ordinal, size.w, size.h, nFloors, titlePx).bounds };
-      }),
-    [model, size.w, size.h, nFloors, titlePx],
-  );
-  const overlays = useMemo(() => planOverlays(size.w, size.h, nFloors), [size.w, size.h, nFloors]);
-  const panels = sheet.blocks.length > 1;
-  const blockOf = (k: number) => sheet.blocks[k] ?? { tx: 0, ty: 0 };
-  const areaBlock = (id: string) => sheet.blockOfArea.get(id) ?? 0;
-  /** SVG transform that turns block `k` and puts it in place on the sheet. */
-  const place = (k: number) => sheetTransform(sheet.north, blockOf(k));
-  /** Keeps a text or icon drawn inside a turned block upright on screen. */
-  const upright = (x: number, z: number) => (sheet.north === 'up' ? `rotate(-90 ${x} ${z})` : undefined);
-  /** A model point on the sheet, turned and moved with the block nearest to it. */
-  const onSheet = useMemo(
-    () =>
-      (p: PlanPoint): PlanPoint =>
-        toSheet(sheet.north, sheet.blocks[sheet.blockAt(p)] ?? { tx: 0, ty: 0 }, p),
-    [sheet],
-  );
+  // --- which way the floor is turned (layout only) ---------------------------------------------
+  const north = layout.north;
+  const areaBlock = (id: string) => layout.blockOfArea.get(id) ?? 0;
+  /** SVG transform that turns the floor (the same for every block). */
+  const place = (_block: number) => sheetTransform(north);
+  /** Keeps a text or icon drawn inside the turned floor upright on screen. */
+  const upright = (x: number, z: number) => (north === 'up' ? `rotate(-90 ${x} ${z})` : undefined);
+  /** A model point on the turned plan. */
+  const onSheet = useMemo(() => (pt: PlanPoint): PlanPoint => toSheet(north, pt), [north]);
   const gateBlock = (g: (typeof floor.gates)[number]) => {
-    const side = g.sides.find((s): s is { areaId: string } => 'areaId' in s && sheet.blockOfArea.has(s.areaId));
-    return side ? areaBlock(side.areaId) : sheet.blockAt(g.position);
+    const side = g.sides.find((s): s is { areaId: string } => 'areaId' in s && layout.blockOfArea.has(s.areaId));
+    return side ? areaBlock(side.areaId) : layout.blockAt(g.position);
   };
+  const bounds = useMemo(() => floorBounds(layout, props.show ?? undefined), [layout, props.show]);
+  const overlays = useMemo(() => (props.embedded ? [] : planOverlays(size.w, size.h, props.floors)), [props.embedded, size.w, size.h, props.floors]);
 
   const fit = useMemo(() => {
-    const b = sheet.bounds;
+    const b = bounds;
     // never larger than the station's other floors are drawn (a lone platform would fill the screen)
-    const scale = Math.min(fitScale(b, size.w, size.h, overlays), scaleCap(allFloors, size.w, size.h, overlays));
-    return { cx: (b.x0 + b.x1) / 2, cz: (b.z0 + b.z1) / 2, scale };
-  }, [sheet.bounds, allFloors, overlays, size.w, size.h]);
+    const s = props.scale ?? fitScale(b, size.w, size.h, overlays);
+    return { cx: (b.x0 + b.x1) / 2, cz: (b.z0 + b.z1) / 2, scale: Math.min(s, props.cap) };
+  }, [bounds, overlays, props.scale, props.cap, size.w, size.h]);
 
   // a new floor starts framed
   useEffect(() => setView({ ox: 0, oz: 0, zoom: 1 }), [ordinal]);
@@ -234,17 +231,21 @@ export function Plan2D(props: Props) {
   const vz = cam.cz - vh / 2;
   const px = (n: number) => n / scale;
 
-  useImperativeHandle(
-    props.handleRef,
-    (): SceneHandle => ({
+  // the view buttons of the stage act on every view of the plan
+  useEffect(() => {
+    const handle: SceneHandle = {
       reset: () => setView({ ox: 0, oz: 0, zoom: 1 }),
       zoom: (factor) => setView((c) => ({ ...c, zoom: Math.min(12, Math.max(0.6, c.zoom / factor)) })),
       rotate: () => undefined,
       tilt: () => undefined,
       focusBox: () => undefined,
-    }),
-    [fit],
-  );
+    };
+    const views = props.views.current;
+    views.add(handle);
+    return () => {
+      views.delete(handle);
+    };
+  }, [props.views]);
 
   const onWheel = (e: React.WheelEvent) => {
     const box = e.currentTarget.getBoundingClientRect();
@@ -270,7 +271,7 @@ export function Plan2D(props: Props) {
     if (d.moved > 5 && !e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.setPointerCapture(e.pointerId);
     d.x = e.clientX;
     d.y = e.clientY;
-    const b = sheet.bounds;
+    const b = bounds;
     setView((c) => ({
       ...c,
       ox: Math.min(b.x1 + 10, Math.max(b.x0 - 10, fit.cx + c.ox - dx / scale)) - fit.cx,
@@ -315,10 +316,11 @@ export function Plan2D(props: Props) {
       const a = props.routePts[i]!;
       const b = props.routePts[i + 1]!;
       if (!floor.levelIds.has(a.levelId) || !floor.levelIds.has(b.levelId)) continue;
+      if (!floor.keep(layout.blockAt(a.plan)) || !floor.keep(layout.blockAt(b.plan))) continue;
       out.push({ a: onSheet(a.plan), b: onSheet(b.plan), strong: props.focusLeg === null || b.leg === props.focusLeg, inferred: inferred.has(b.leg) && a.nodeId !== null && b.nodeId !== null });
     }
     return out;
-  }, [props.routePts, props.route, props.focusLeg, floor.levelIds, onSheet]);
+  }, [props.routePts, props.route, props.focusLeg, floor, layout, onSheet]);
 
   const ordinalOf = (levelId: string) => model.levels.find((l) => l.id === levelId)?.ordinal ?? 0;
   const routeEnds = useMemo(() => {
@@ -331,21 +333,22 @@ export function Plan2D(props: Props) {
       const oa = ordinalOf(a.levelId);
       const ob = ordinalOf(b.levelId);
       if (oa === ob) continue;
-      if (oa === ordinal) changes.push({ at: onSheet(a.plan), to: floorLabel(ob), up: ob > oa });
+      if (oa === ordinal && floor.keep(layout.blockAt(a.plan))) changes.push({ at: onSheet(a.plan), to: floorLabel(ob), up: ob > oa });
     }
+    const here = (pt: RoutePoint) => floor.levelIds.has(pt.levelId) && floor.keep(layout.blockAt(pt.plan));
     return {
-      start: floor.levelIds.has(pts[0]!.levelId) ? onSheet(pts[0]!.plan) : null,
-      end: floor.levelIds.has(pts.at(-1)!.levelId) ? onSheet(pts.at(-1)!.plan) : null,
+      start: here(pts[0]!) ? onSheet(pts[0]!.plan) : null,
+      end: here(pts.at(-1)!) ? onSheet(pts.at(-1)!.plan) : null,
       changes,
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.routePts, floor.levelIds, ordinal, onSheet]);
+  }, [props.routePts, floor, layout, ordinal, onSheet]);
 
   // --- labels ---------------------------------------------------------------------------------
   const labels = useMemo<PlanLabel[]>(() => {
     const out: PlanLabel[] = [];
     const boost = (id: string) => (onRoute.has(id) || id === props.selectedId ? 100 : 0);
-    const blockOfArea = (id: string) => sheet.blockOfArea.get(id) ?? 0;
+    const blockOfArea = (id: string) => layout.blockOfArea.get(id) ?? 0;
     // an area that no passage or gate joins to another area of this floor (a street-level landing at the foot
     // of an exit's stairs, say) is named at every scale: otherwise it is an unexplained box on the plan
     const joined = new Set<string>();
@@ -374,8 +377,8 @@ export function Plan2D(props: Props) {
       }
     }
     // whose part of the floor this is: one caption per operator, above its areas (public space has names of its
-    // own). A floor drawn in panels has station titles instead.
-    if (!panels) {
+    // own). A panel has a title of its own instead.
+    if (!props.embedded) {
       for (const op of model.operators) {
         if (op.id === PUBLIC_SPACE) continue;
         const levels = new Set(model.levels.filter((l) => l.operatorId === op.id).map((l) => l.id));
@@ -403,7 +406,7 @@ export function Plan2D(props: Props) {
     if (props.showBlocks) {
       for (const b of floor.blocks) {
         const at = { x: (b.box.x0 + b.box.x1) / 2, z: (b.box.z0 + b.box.z1) / 2 };
-        out.push({ key: b.id, elementId: b.id, block: sheet.blockAt(at), ...at, text: `${t('unverified')} · ${namer.name(b.id)}`, variant: 'block', priority: 40, minScale: 0, anchor: 'centre' });
+        out.push({ key: b.id, elementId: b.id, block: layout.blockAt(at), ...at, text: `${t('unverified')} · ${namer.name(b.id)}`, variant: 'block', priority: 40, minScale: 0, anchor: 'centre' });
       }
     }
     // the ends of the route are already on the sheet (block −1: not moved again)
@@ -411,18 +414,15 @@ export function Plan2D(props: Props) {
     if (routeEnds.end) out.push({ key: 'route:end', elementId: null, block: -1, x: routeEnds.end.x, z: routeEnds.end.z, text: t('to'), variant: 'route-end', priority: 200, minScale: 0, anchor: 'above' });
     return out;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [floor, sheet, panels, onSheet, model.operators, model.levels, namer, onRoute, props.lang, props.selectedId, props.showBlocks, routeEnds, t]);
+  }, [floor, layout, props.embedded, onSheet, model.operators, model.levels, namer, onRoute, props.lang, props.selectedId, props.showBlocks, routeEnds, t]);
 
   const placed = useMemo(() => {
     const compact = scale < 9;
     // the floor list, the title, the compass and the view buttons stand over the drawing (and the step bar
     // while a route is shown): nothing is placed under them
-    const boxes: ScreenRect[] = [
-      ...overlays,
-      { x0: 0, x1: 480, y0: 0, y1: 46 },
-      ...(props.route ? [{ x0: size.w / 2 - 330, x1: size.w / 2 + 330, y0: size.h - 70, y1: size.h }] : []),
-      ...sheet.blocks.flatMap((b) => (b.panel ? [{ x0: (b.panel.x0 - vx) * scale, x1: (b.panel.x1 - vx) * scale, y0: (b.panel.y0 - vz) * scale, y1: (b.panel.y0 - vz) * scale + PANEL_HEAD_PX }] : [])),
-    ];
+    const boxes: ScreenRect[] = props.embedded
+      ? []
+      : [...overlays, { x0: 0, x1: 480, y0: 0, y1: 46 }, ...(props.route ? [{ x0: size.w / 2 - 330, x1: size.w / 2 + 330, y0: size.h - 70, y1: size.h }] : [])];
     const out: (PlanLabel & { sx: number; sy: number; compact: boolean })[] = [];
     for (const l of [...labels].sort((a, b) => b.priority - a.priority)) {
       if (scale < l.minScale) continue;
@@ -430,13 +430,15 @@ export function Plan2D(props: Props) {
       const w = textWidth(l.text, 12) + 14 + chipW;
       const h = 22;
       for (const spot of [{ x: l.x, z: l.z }, ...(l.alts ?? [])]) {
-        const at = l.block < 0 ? spot : toSheet(sheet.north, blockOf(l.block), spot);
+        const at = l.block < 0 ? spot : onSheet(spot);
         const sx = (at.x - vx) * scale;
         const sy = (at.z - vz) * scale;
         if (sx < -40 || sy < -20 || sx > size.w + 40 || sy > size.h + 20) continue;
+        // inside a panel a label must fit in the panel: its edge would cut it off
         const lift = l.variant === 'operator' ? 2 : 12;
         const y0 = l.anchor === 'above' ? sy - h - lift : sy - h / 2;
         const r = { x0: sx - w / 2 - 2, x1: sx + w / 2 + 2, y0: y0 - 2, y1: y0 + h + 2 };
+        if (props.embedded && (r.x0 < 0 || r.y0 < 0 || r.x1 > size.w || r.y1 > size.h)) continue;
         if (boxes.some((q) => r.x0 < q.x1 && q.x0 < r.x1 && r.y0 < q.y1 && q.y0 < r.y1)) continue;
         boxes.push(r);
         out.push({ ...l, sx, sy: y0, compact });
@@ -445,7 +447,7 @@ export function Plan2D(props: Props) {
     }
     return out;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [labels, sheet, overlays, props.route, scale, vx, vz, size.w, size.h]);
+  }, [labels, onSheet, overlays, props.embedded, props.route, scale, vx, vz, size.w, size.h]);
 
   // --- drawing helpers ----------------------------------------------------------------------------
   const rectEl = (r: PlanRect, key: string, attrs: React.SVGProps<SVGRectElement>) => <rect key={key} x={r.x0} y={r.z0} width={r.x1 - r.x0} height={r.z1 - r.z0} {...attrs} />;
@@ -513,10 +515,8 @@ export function Plan2D(props: Props) {
   };
 
   const floorName = floorLabel(ordinal);
-
   return (
-    <>
-      <div className="plan" ref={wrap} data-testid="plan-2d" data-floor={floorName} data-north={sheet.north}>
+    <div className="plan-view" ref={wrap}>
         <svg
           viewBox={`${vx} ${vz} ${vw} ${vh}`}
           width={size.w}
@@ -538,32 +538,10 @@ export function Plan2D(props: Props) {
             </pattern>
           </defs>
 
-          {/* a panel per block on a floor drawn in parts (layout only, see planLayout.ts); the title bars are DOM */}
-          {panels && (
-            <g data-testid="plan-blocks" style={{ pointerEvents: 'none' }}>
-              {sheet.blocks.map((b, i) =>
-                b.panel ? (
-                  <rect
-                    key={i}
-                    data-block={i}
-                    x={b.panel.x0}
-                    y={b.panel.y0}
-                    width={b.panel.x1 - b.panel.x0}
-                    height={b.panel.y1 - b.panel.y0}
-                    rx={px(8)}
-                    fill={mix(p.background, p.ink, 0.03)}
-                    stroke={mix(p.background, p.ink, 0.3)}
-                    strokeWidth={px(1)}
-                  />
-                ) : null,
-              )}
-            </g>
-          )}
-
           {/* unverified blocks */}
           {props.showBlocks &&
             floor.blocks.map((b) => (
-              <g key={b.id} className="pick" transform={place(sheet.blockAt({ x: (b.box.x0 + b.box.x1) / 2, z: (b.box.z0 + b.box.z1) / 2 }))} onClick={click(b.id)}>
+              <g key={b.id} className="pick" transform={place(layout.blockAt({ x: (b.box.x0 + b.box.x1) / 2, z: (b.box.z0 + b.box.z1) / 2 }))} onClick={click(b.id)}>
                 <title>{`${t('unverified')} · ${namer.name(b.id)}`}</title>
                 {rectEl(b.box, 'r', { fill: 'url(#plan-hatch)', stroke: p.block, strokeWidth: px(1.2), strokeDasharray: `${px(5)} ${px(4)}`, ...sel(b.id) })}
               </g>
@@ -774,22 +752,6 @@ export function Plan2D(props: Props) {
           </g>
         </svg>
 
-        {sheet.blocks.map((b, i) =>
-          b.panel ? (
-            <div
-              key={i}
-              className="plan-panel-head"
-              data-testid="plan-panel-head"
-              style={{ left: Math.round((b.panel.x0 - vx) * scale), top: Math.round((b.panel.y0 - vz) * scale), width: Math.round((b.panel.x1 - b.panel.x0) * scale), height: PANEL_HEAD_PX }}
-            >
-              <span className="plan-panel-title">{titleOf(b.areaIds)}</span>
-              <span className="plan-panel-north">
-                {sheet.north === 'up' ? '↑' : '←'} {PLAN_TEXT[props.lang].n}
-              </span>
-            </div>
-          ) : null,
-        )}
-
         {props.showLabels && (
           <div className="labels plan-labels" data-zoom={scale < 9 ? 1 : 3}>
             {placed.map((l) => (
@@ -805,19 +767,118 @@ export function Plan2D(props: Props) {
           </div>
         )}
 
+    </div>
+  );
+}
+
+/**
+ * The plan of one floor: one view of the whole floor, or — when its parts are
+ * neither linked nor near one another — a row of titled panels, one view each.
+ */
+export function Plan2D(props: Props) {
+  const { model, ordinal, t } = props;
+  const wrap = useRef<HTMLDivElement>(null);
+  const [size, setSize] = useState({ w: 800, h: 600 });
+  useLayoutEffect(() => {
+    const el = wrap.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setSize({ w: Math.max(200, el.clientWidth), h: Math.max(200, el.clientHeight) }));
+    ro.observe(el);
+    setSize({ w: Math.max(200, el.clientWidth), h: Math.max(200, el.clientHeight) });
+    return () => ro.disconnect();
+  }, []);
+
+  const nFloors = useMemo(() => floorsOf(model).length, [model]);
+  const layout = useMemo(() => floorLayout(model, ordinal), [model, ordinal]);
+  // the station's largest default scale: no floor, and no panel, is drawn larger
+  const cap = useMemo(() => {
+    const all = floorsOf(model).map((f) => {
+      const ids = new Set(f.levelIds);
+      return { areas: model.areas.filter((a) => ids.has(a.levelId)).length, bounds: floorBounds(floorLayout(model, f.ordinal)) };
+    });
+    return scaleCap(all, size.w, size.h, planOverlays(size.w, size.h, nFloors));
+  }, [model, size.w, size.h, nFloors]);
+
+  /** Title of a panel: the stations its areas belong to. */
+  const titleOf = useMemo(() => {
+    const levelById = new Map(model.levels.map((l) => [l.id, l]));
+    const stationById = new Map(model.stations.map((st) => [st.id, st]));
+    const operatorById = new Map(model.operators.map((op) => [op.id, op]));
+    const areaById = new Map(model.areas.map((a) => [a.id, a]));
+    return (areaIds: string[]) => {
+      const names: string[] = [];
+      for (const id of areaIds) {
+        const level = levelById.get(areaById.get(id)!.levelId);
+        const station = level?.stationId ? stationById.get(level.stationId) : undefined;
+        const op = level && level.operatorId !== PUBLIC_SPACE ? operatorById.get(level.operatorId) : undefined;
+        const name = station ? pickName(station.names, props.lang) : op ? pickName(op.names, props.lang) : null;
+        if (name && !names.includes(name)) names.push(name);
+      }
+      return names.join(' · ');
+    };
+  }, [model, props.lang]);
+
+  const views = useRef(new Set<SceneHandle>());
+  useImperativeHandle(
+    props.handleRef,
+    (): SceneHandle => ({
+      reset: () => views.current.forEach((v) => v.reset()),
+      zoom: (factor) => views.current.forEach((v) => v.zoom(factor)),
+      rotate: () => undefined,
+      tilt: () => undefined,
+      focusBox: () => undefined,
+    }),
+    [],
+  );
+
+  const { handleRef: _handleRef, ...rest } = props;
+  const panels = layout.blocks.length > 1;
+  // the row of panels: clear of the floor list on the left (and as far from the right edge, so that it is centred),
+  // of the title above and of the view buttons below
+  const row = { w: size.w - ROW_SIDE * 2, h: size.h - ROW_TOP - ROW_BOTTOM };
+  const grid = useMemo(() => panelGrid(layout, row.w, row.h, cap), [layout, row.w, row.h, cap]);
+  const floorName = floorLabel(ordinal);
+  const tx = PLAN_TEXT[props.lang];
+  return (
+    <>
+      <div className="plan" ref={wrap} data-testid="plan-2d" data-floor={floorName} data-north={layout.north}>
+        {panels ? (
+          <div className="plan-grid" style={{ left: ROW_SIDE, right: ROW_SIDE, top: ROW_TOP, bottom: ROW_BOTTOM }}>
+            {grid.columns.map((col) => (
+              <div key={col.panels.join('+')} className="plan-col" style={{ width: Math.round(col.width) }}>
+                {col.panels.map((k) => (
+                  <section key={`${ordinal}:${k}`} className="plan-panel" data-testid="plan-panel" data-block={k}>
+                    <header className="plan-panel-head" data-testid="plan-panel-head">
+                      <span className="plan-panel-title">{titleOf(layout.blocks[k]!.areaIds)}</span>
+                      <span className="plan-panel-north">
+                        {layout.north === 'up' ? '↑' : '←'} {tx.n}
+                      </span>
+                    </header>
+                    <div className="plan-panel-body">
+                      <PlanView {...rest} layout={layout} show={[k]} embedded cap={cap} scale={grid.scale} floors={nFloors} views={views} />
+                    </div>
+                  </section>
+                ))}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <PlanView {...rest} layout={layout} show={null} embedded={false} cap={cap} floors={nFloors} views={views} />
+        )}
+
         <div className="plan-title" aria-hidden="true">
           <strong>{floorName}</strong>
           <span>{t('planHint')}</span>
         </div>
       </div>
-      {/* beside the plan, not in it: the plan holds exactly one <svg>, the drawing */}
+      {/* beside the plan, not in it: the compass is an <svg> of its own */}
       <div className="plan-legend">
         {panels && (
           <p className="plan-note" data-testid="plan-blocks-note">
-            {PLAN_TEXT[props.lang].panels(sheet.blocks.length)}
+            {tx.panels(layout.blocks.length)}
           </p>
         )}
-        <Compass lang={props.lang} north={sheet.north} />
+        <Compass lang={props.lang} north={layout.north} />
       </div>
     </>
   );

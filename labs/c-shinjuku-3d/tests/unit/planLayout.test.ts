@@ -1,7 +1,26 @@
 import { describe, expect, it } from 'vitest';
 import { floorsOf } from '../../src/domain/floors';
 import type { StationModel } from '../../src/domain/types';
-import { JOIN_GAP, PANEL_HEAD_PX, fitScale, northOf, planBlocks, planOverlays, rectGap, scaleCap, sheetLayout, toSheet, turn } from '../../src/ui/planLayout';
+import {
+  JOIN_GAP,
+  PANEL_GAP,
+  PANEL_HEAD_PX,
+  PANEL_MARGIN,
+  PANEL_MIN_W,
+  fitScale,
+  floorBounds,
+  floorLayout,
+  northOf,
+  panelGrid,
+  panelOrder,
+  planBlocks,
+  planOverlays,
+  rectGap,
+  scaleCap,
+  toSheet,
+  turn,
+  turnedExtent,
+} from '../../src/ui/planLayout';
 import { loadModel } from './helpers';
 
 const model = loadModel();
@@ -12,6 +31,13 @@ const areasOn = (m: StationModel, ordinal: number) => {
   return m.areas.filter((a) => ids.has(a.levelId));
 };
 const [W, H] = [966, 716]; // the plan at 1366 × 768 with the side panel open
+const capAt = (w: number, h: number) =>
+  scaleCap(
+    floors.map((f) => ({ areas: areasOn(model, f.ordinal).length, bounds: floorBounds(floorLayout(model, f.ordinal)) })),
+    w,
+    h,
+    planOverlays(w, h, floors.length),
+  );
 
 describe('plan layout: blocks of a floor', () => {
   it('splits 2F into the Seibu block and the JR / Odakyu block', () => {
@@ -57,7 +83,7 @@ describe('plan layout: blocks of a floor', () => {
   it('is layout only: the model is not changed', () => {
     const m = loadModel();
     const before = JSON.stringify(m);
-    for (const f of floors) sheetLayout(m, f.ordinal, W, H, floors.length);
+    for (const f of floors) panelGrid(floorLayout(m, f.ordinal), W - 248, H - 128, 20);
     expect(JSON.stringify(m)).toBe(before);
   });
 });
@@ -67,11 +93,10 @@ describe('plan layout: orientation', () => {
     const north = Object.fromEntries(floors.map((f) => [f.label, northOf(planBlocks(model, f.ordinal).blocks)]));
     expect(north).toEqual({ '4F': 'up', '3F': 'up', '2F': 'up', '1F': 'left', B1F: 'up', B2F: 'up', B3F: 'left', B4F: 'up', B5F: 'up', B7F: 'left' });
     for (const f of floors) {
-      const lay = sheetLayout(model, f.ordinal, W, H, floors.length);
+      const lay = floorLayout(model, f.ordinal);
       const main = lay.blocks.reduce((best, b) => (b.areaIds.length > best.areaIds.length ? b : best));
-      const a = toSheet(lay.north, main, { x: main.extent.x0, z: main.extent.z0 });
-      const b = toSheet(lay.north, main, { x: main.extent.x1, z: main.extent.z1 });
-      expect(Math.abs(a.x - b.x)).toBeGreaterThanOrEqual(Math.abs(a.z - b.z));
+      const e = turnedExtent(lay.north, main.extent);
+      expect(e.x1 - e.x0).toBeGreaterThanOrEqual(e.z1 - e.z0);
     }
   });
 
@@ -87,48 +112,54 @@ describe('plan layout: orientation', () => {
     expect(step('left', { x: 0, z: -1 })).toEqual({ x: 0, y: -1 });
     expect(step('up', { x: -1, z: 0 })).toEqual({ x: 0, y: -1 });
     expect(step('up', { x: 0, z: -1 })).toEqual({ x: 1, y: 0 });
+    // the turned extent of a rectangle holds the turned corners
+    const r = { x0: -2, x1: 5, z0: 1, z1: 9 };
+    for (const north of ['left', 'up'] as const) {
+      const e = turnedExtent(north, r);
+      for (const c of [toSheet(north, { x: r.x0, z: r.z0 }), toSheet(north, { x: r.x1, z: r.z1 })]) {
+        expect(c.x).toBeGreaterThanOrEqual(e.x0);
+        expect(c.x).toBeLessThanOrEqual(e.x1);
+        expect(c.z).toBeGreaterThanOrEqual(e.z0);
+        expect(c.z).toBeLessThanOrEqual(e.z1);
+      }
+    }
   });
 });
 
 describe('plan layout: panels', () => {
+  const [rowW, rowH] = [W - 248, H - 128];
+  const cap = capAt(W, H);
   for (const f of floors) {
-    it(`${f.label}: separate blocks sit in one row of equal panels, in their order on the turned plan, each inside its own panel`, () => {
-      const lay = sheetLayout(model, f.ordinal, W, H, floors.length, () => 150);
-      if (lay.blocks.length === 1) {
-        expect(lay.blocks[0]!.panel).toBeNull();
-        return;
+    it(`${f.label}: columns in the blocks' order across the turned plan; one shared scale; every block fits its panel`, () => {
+      const lay = floorLayout(model, f.ordinal);
+      const grid = panelGrid(lay, rowW, rowH, cap);
+      expect(grid.columns.flatMap((c) => c.panels)).toEqual(panelOrder(lay));
+      expect(grid.scale).toBeLessThanOrEqual(cap + 1e-9);
+      const total = grid.columns.reduce((acc, c) => acc + c.width, 0) + PANEL_GAP * (grid.columns.length - 1);
+      expect(total).toBeLessThanOrEqual(rowW + 1e-6);
+      for (const col of grid.columns) {
+        expect(col.width).toBeGreaterThanOrEqual(PANEL_MIN_W);
+        const each = (rowH - PANEL_GAP * (col.panels.length - 1)) / col.panels.length;
+        for (const k of col.panels) {
+          const e = turnedExtent(lay.north, lay.blocks[k]!.extent);
+          expect((e.x1 - e.x0) * grid.scale + PANEL_MARGIN * 2).toBeLessThanOrEqual(col.width + 1e-6);
+          expect((e.z1 - e.z0) * grid.scale + PANEL_MARGIN * 2 + PANEL_HEAD_PX).toBeLessThanOrEqual(each + 1e-6);
+        }
       }
-      const s = fitScale(lay.bounds, W, H, planOverlays(W, H, floors.length));
-      const byLeft = [...lay.blocks].sort((a, b) => a.panel!.x0 - b.panel!.x0);
-      for (let i = 0; i < byLeft.length; i++) {
-        const b = byLeft[i]!;
-        const p = b.panel!;
-        expect(p.y0).toBe(byLeft[0]!.panel!.y0);
-        expect(p.y1).toBe(byLeft[0]!.panel!.y1);
-        // wide enough for its title (sized in a few rounds against the default scale, so within a few per cent)
-        expect((p.x1 - p.x0) * s).toBeGreaterThanOrEqual(150 * 0.97);
-        if (i > 0) expect(p.x0).toBeGreaterThan(byLeft[i - 1]!.panel!.x1);
-        // the block, turned and moved, lies inside its panel and below the title bar
-        const c = [toSheet(lay.north, b, { x: b.extent.x0, z: b.extent.z0 }), toSheet(lay.north, b, { x: b.extent.x1, z: b.extent.z1 })];
-        expect(Math.min(c[0]!.x, c[1]!.x)).toBeGreaterThanOrEqual(p.x0 - 1e-6);
-        expect(Math.max(c[0]!.x, c[1]!.x)).toBeLessThanOrEqual(p.x1 + 1e-6);
-        expect(Math.min(c[0]!.z, c[1]!.z)).toBeGreaterThanOrEqual(p.y0 + (PANEL_HEAD_PX / s) * 0.9);
-        expect(Math.max(c[0]!.z, c[1]!.z)).toBeLessThanOrEqual(p.y1 + 1e-6);
-      }
-      // panels follow the blocks' own left-to-right order on the turned plan
-      const centre = (b: (typeof lay.blocks)[number]) => {
-        const c = [turn(lay.north, { x: b.extent.x0, z: b.extent.z0 }), turn(lay.north, { x: b.extent.x1, z: b.extent.z1 })];
-        return c[0]!.x + c[1]!.x;
-      };
-      for (let i = 1; i < byLeft.length; i++) expect(centre(byLeft[i]!)).toBeGreaterThan(centre(byLeft[i - 1]!));
     });
   }
 
-  it('2F: west to east, the JR / Odakyu panel comes before the Seibu panel (Seibu lies to the north-east)', () => {
-    const lay = sheetLayout(model, ordinalOf('2F'), W, H, floors.length);
-    const seibu = lay.blocks.find((b) => b.areaIds.some((id) => id.includes('seibu')))!;
-    const jr = lay.blocks.find((b) => b.areaIds.some((id) => id.includes('jr-2f')))!;
-    expect(jr.panel!.x1).toBeLessThan(seibu.panel!.x0);
+  it('2F: the JR / Odakyu panel and the Seibu panel side by side, west to east (Seibu lies to the north-east)', () => {
+    const lay = floorLayout(model, ordinalOf('2F'));
+    const grid = panelGrid(lay, rowW, rowH, cap);
+    expect(grid.columns.map((c) => c.panels.map((k) => lay.blocks[k]!.areaIds.some((id) => id.includes('seibu'))))).toEqual([[false], [true]]);
+  });
+
+  it('1F: the two small Seibu exits share a column, so the JR platforms get the width', () => {
+    const lay = floorLayout(model, ordinalOf('1F'));
+    const grid = panelGrid(lay, rowW, rowH, cap);
+    expect(grid.columns.map((c) => c.panels.length)).toEqual([2, 1]);
+    expect(grid.scale).toBeGreaterThan(6);
   });
 });
 
@@ -141,7 +172,7 @@ describe('plan layout: default scale', () => {
   for (const [w, h] of sizes) {
     it(`a lone platform is drawn no larger than the other floors (${w} × ${h})`, () => {
       const overlays = planOverlays(w, h, floors.length);
-      const all = floors.map((f) => ({ label: f.label, areas: areasOn(model, f.ordinal).length, bounds: sheetLayout(model, f.ordinal, w, h, floors.length).bounds }));
+      const all = floors.map((f) => ({ label: f.label, areas: areasOn(model, f.ordinal).length, bounds: floorBounds(floorLayout(model, f.ordinal)) }));
       const cap = scaleCap(all, w, h, overlays);
       const fitOf = (label: string) => fitScale(all.find((x) => x.label === label)!.bounds, w, h, overlays);
       expect(fitOf('B7F')).toBeGreaterThan(cap * 1.2);
@@ -151,10 +182,12 @@ describe('plan layout: default scale', () => {
     });
   }
 
-  it('keeps the drawing clear of the floor list: a wide floor passes beside it, not under it', () => {
+  it('keeps a single-piece floor clear of the floor list: a wide floor passes beside it, not under it', () => {
     const overlays = planOverlays(W, H, floors.length);
     for (const f of floors) {
-      const b = sheetLayout(model, f.ordinal, W, H, floors.length).bounds;
+      const lay = floorLayout(model, f.ordinal);
+      if (lay.blocks.length > 1) continue;
+      const b = floorBounds(lay);
       const s = fitScale(b, W, H, overlays);
       const left = W / 2 - ((b.x1 - b.x0) / 2) * s;
       const top = H / 2 - ((b.z1 - b.z0) / 2) * s;

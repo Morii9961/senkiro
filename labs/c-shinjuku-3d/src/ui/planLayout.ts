@@ -17,10 +17,10 @@
  * north to the left (the model's own frame, as in 3D). The whole floor turns
  * together, so one compass holds for every panel.
  *
- * Panels. A floor of two or more blocks is drawn as a row of panels of equal
- * height, one block each, all at the same scale, in their order from left to
- * right on the turned plan (north → south, or west → east). Distances and
- * positions between panels are not to scale, and the plan says so.
+ * Panels. A floor of two or more blocks is drawn as a row of separate panels,
+ * one block each, each with its own view (pan and zoom do not move the
+ * others). Distances and positions between panels are not to scale, and the
+ * plan says so.
  */
 import type { PlanPoint, PlanRect, StationModel } from '../domain/types';
 
@@ -30,11 +30,8 @@ export const JOIN_GAP = 10;
 export const FIT_PAD = 3.5;
 /** Clear space kept between the drawing and what stands over it (px). */
 export const OVERLAY_CLEARANCE = 12;
-/** Inner margin of a panel (schematic units). */
-export const PANEL_PAD = 2;
-/** Height of a panel's title bar, and the gap between panels (px at the default scale). */
-export const PANEL_HEAD_PX = 30;
-export const PANEL_GAP_PX = 22;
+/** Margin round a block inside its panel (px). */
+export const PANEL_MARGIN = 18;
 
 export type North = 'left' | 'up';
 
@@ -204,83 +201,107 @@ export function turn(north: North, p: PlanPoint): { x: number; y: number } {
   return north === 'up' ? { x: -p.z, y: p.x } : { x: p.x, y: p.z };
 }
 
-function turnRect(north: North, r: PlanRect): ScreenRect {
-  return north === 'up' ? { x0: -r.z1, x1: -r.z0, y0: r.x0, y1: r.x1 } : { x0: r.x0, x1: r.x1, y0: r.z0, y1: r.z1 };
+/** Extent of a model rectangle on the turned plan (x across, z down the screen). */
+export function turnedExtent(north: North, r: PlanRect): PlanRect {
+  return north === 'up' ? { x0: -r.z1, x1: -r.z0, z0: r.x0, z1: r.x1 } : r;
 }
 
-export interface SheetBlock extends PlanBlock {
-  /** Added after turning, to put the block in its panel (sheet units). */
-  tx: number;
-  ty: number;
-  /** The panel round the block (sheet coordinates); null when the floor is a single block. */
-  panel: ScreenRect | null;
-  /** Height of the panel's title bar (sheet units, at the default scale). */
-  head: number;
-}
-
-export interface SheetLayout extends PlanBlocks {
+export interface FloorLayout extends PlanBlocks {
   north: North;
-  blocks: SheetBlock[];
-  /** Extent of everything drawn, sheet coordinates. */
-  bounds: PlanRect;
 }
 
-/** A model point on the sheet, as drawn in block `b`. */
-export function toSheet(north: North, b: { tx: number; ty: number }, p: PlanPoint): PlanPoint {
+/** Blocks and orientation of one floor. */
+export function floorLayout(model: StationModel, ordinal: number): FloorLayout {
+  const base = planBlocks(model, ordinal);
+  return { ...base, north: northOf(base.blocks) };
+}
+
+/** Extent of blocks `show` (all when omitted) on the turned plan, in their true places. */
+export function floorBounds(layout: FloorLayout, show?: number[]): PlanRect {
+  const rects = layout.blocks.filter((_, k) => !show || show.includes(k)).map((b) => turnedExtent(layout.north, b.extent));
+  if (rects.length === 0) return { x0: -10, x1: 10, z0: -10, z1: 10 };
+  return rects.reduce(union);
+}
+
+/** Panels from left to right: the blocks in their order across the turned plan. */
+export function panelOrder(layout: FloorLayout): number[] {
+  const mid = (k: number) => {
+    const e = turnedExtent(layout.north, layout.blocks[k]!.extent);
+    return e.x0 + e.x1;
+  };
+  return layout.blocks.map((_, k) => k).sort((a, b) => mid(a) - mid(b));
+}
+
+/** A model point on the turned plan. */
+export function toSheet(north: North, p: PlanPoint): PlanPoint {
   const t = turn(north, p);
-  return { x: t.x + b.tx, z: t.y + b.ty };
+  return { x: t.x, z: t.y };
 }
 
-/** SVG transform that draws block `b` (model coordinates) on the sheet. */
-export function sheetTransform(north: North, b: { tx: number; ty: number }): string | undefined {
-  const turnPart = north === 'up' ? ' matrix(0 1 -1 0 0 0)' : '';
-  if (b.tx === 0 && b.ty === 0 && !turnPart) return undefined;
-  return `translate(${b.tx} ${b.ty})${turnPart}`;
+/** SVG transform that draws model coordinates on the turned plan. */
+export function sheetTransform(north: North): string | undefined {
+  return north === 'up' ? 'matrix(0 1 -1 0 0 0)' : undefined;
 }
 
-function arrange(blocks: PlanBlock[], north: North, head: number, gap: number, minWidth: number[]): { blocks: SheetBlock[]; bounds: PlanRect } {
-  const turned = blocks.map((b) => turnRect(north, b.extent));
-  if (blocks.length <= 1) {
-    const t = turned[0];
-    return {
-      blocks: blocks.map((b) => ({ ...b, tx: 0, ty: 0, panel: null, head: 0 })),
-      bounds: t ? { x0: t.x0, x1: t.x1, z0: t.y0, z1: t.y1 } : { x0: -10, x1: 10, z0: -10, z1: 10 },
-    };
-  }
-  const order = blocks.map((_, i) => i).sort((a, b) => turned[a]!.x0 + turned[a]!.x1 - (turned[b]!.x0 + turned[b]!.x1));
-  const inner = Math.max(...turned.map((t) => t.y1 - t.y0));
-  const height = head + inner + PANEL_PAD * 2;
-  const out: SheetBlock[] = new Array(blocks.length);
-  let x = 0;
-  for (const i of order) {
-    const t = turned[i]!;
-    const w = Math.max(t.x1 - t.x0 + PANEL_PAD * 2, minWidth[i] ?? 0);
-    const top = head + PANEL_PAD + (inner - (t.y1 - t.y0)) / 2;
-    // content centred in its panel (a panel may be wider than its block, to hold its title)
-    out[i] = { ...blocks[i]!, tx: x + (w - (t.x1 - t.x0)) / 2 - t.x0, ty: top - t.y0, panel: { x0: x, x1: x + w, y0: 0, y1: height }, head };
-    x += w + gap;
-  }
-  return { blocks: out, bounds: { x0: 0, x1: x - gap, z0: 0, z1: height } };
+/** A panel's title bar (px, borders included), its narrowest width (room for the title) and the gap between panels. */
+export const PANEL_HEAD_PX = 34;
+export const PANEL_MIN_W = 170;
+export const PANEL_GAP = 14;
+
+export interface PanelGrid {
+  /** The shared default scale of the floor's panels (px per unit). */
+  scale: number;
+  /** Columns from left to right; each holds one panel, or several stacked (blocks by index). */
+  columns: { width: number; panels: number[] }[];
 }
 
 /**
- * The sheet of one floor for a plan of `w` × `h` px. Title bars, gaps and the
- * width a panel needs for its title (`titlePx`, px) are sized for the default
- * scale, which depends on them: a few rounds settle it.
+ * The panels of a floor in an area of `rowW` × `rowH` px: columns from left
+ * to right in the blocks' order across the turned plan, a column holding one
+ * panel or a few stacked. All panels share one default scale, so the parts of
+ * a floor keep their sizes relative to one another; a column is as wide as its
+ * widest block at that scale (at least PANEL_MIN_W). Of all the ways to cut
+ * the order into columns, the one with the largest scale wins (more columns
+ * when it is within 5 %); the scale never exceeds `cap`.
  */
-export function sheetLayout(model: StationModel, ordinal: number, w: number, h: number, floors: number, titlePx: (areaIds: string[]) => number = () => 0): SheetLayout {
-  const base = planBlocks(model, ordinal);
-  const north = northOf(base.blocks);
-  const overlays = planOverlays(w, h, floors);
-  let laid = arrange(base.blocks, north, 0, 0, []);
-  if (base.blocks.length > 1) {
-    const need = base.blocks.map((b) => titlePx(b.areaIds));
-    for (let round = 0; round < 4; round++) {
-      const s = fitScale(laid.bounds, w, h, overlays);
-      laid = arrange(base.blocks, north, PANEL_HEAD_PX / s, PANEL_GAP_PX / s, need.map((px) => px / s));
+export function panelGrid(layout: FloorLayout, rowW: number, rowH: number, cap: number): PanelGrid {
+  const order = panelOrder(layout);
+  const ext = layout.blocks.map((b) => turnedExtent(layout.north, b.extent));
+  const width = (k: number, s: number) => Math.max(PANEL_MIN_W, (ext[k]!.x1 - ext[k]!.x0) * s + PANEL_MARGIN * 2 + 2);
+  const fits = (cols: number[][], s: number) => {
+    const w = cols.reduce((acc, col) => acc + Math.max(...col.map((k) => width(k, s))), 0) + PANEL_GAP * (cols.length - 1);
+    if (w > rowW) return false;
+    return cols.every((col) => {
+      const each = (rowH - PANEL_GAP * (col.length - 1)) / col.length;
+      return col.every((k) => (ext[k]!.z1 - ext[k]!.z0) * s + PANEL_HEAD_PX + PANEL_MARGIN * 2 <= each);
+    });
+  };
+  const best = (cols: number[][]) => {
+    if (fits(cols, cap)) return cap;
+    let lo = 0;
+    let hi = cap === Infinity ? 1000 : cap;
+    for (let i = 0; i < 50; i++) {
+      const mid = (lo + hi) / 2;
+      if (fits(cols, mid)) lo = mid;
+      else hi = mid;
     }
+    return lo;
+  };
+  // every way of cutting the order into contiguous columns
+  const options: number[][][] = [];
+  for (let mask = 0; mask < 1 << Math.max(0, order.length - 1); mask++) {
+    const cols: number[][] = [[order[0]!]];
+    for (let i = 1; i < order.length; i++) {
+      if (mask & (1 << (i - 1))) cols[cols.length - 1]!.push(order[i]!);
+      else cols.push([order[i]!]);
+    }
+    options.push(cols);
   }
-  return { ...base, north, blocks: laid.blocks, bounds: laid.bounds };
+  const scored = options.map((cols) => ({ cols, s: best(cols) }));
+  const top = Math.max(...scored.map((o) => o.s));
+  const pick = scored.filter((o) => o.s >= top * 0.95).sort((a, b) => b.cols.length - a.cols.length || b.s - a.s)[0]!;
+  const s = Math.max(0.5, pick.s);
+  return { scale: s, columns: pick.cols.map((col) => ({ width: Math.max(...col.map((k) => width(k, s))), panels: col })) };
 }
 
 /**
