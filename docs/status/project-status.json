@@ -1,0 +1,179 @@
+{
+  "schema_version": "1.1",
+  "project_id": "senkiro.main",
+  "project_name": "SENKIRO",
+  "snapshot_at": "2026-11-21T10:38:17+08:00",
+  "source": {
+    "branch": "main",
+    "commit_sha": "2e3a52b19c5c13c1e6c5c4990a7a2a5f546b5a32",
+    "tests_rerun": false,
+    "basis": [
+      "2026-11-21 生成首份快照：只读 Git、GitHub 和仓库文档；不重跑测试、构建或真实验收",
+      "main@2e3a52b（仓库初始化），与 origin/main 一致；GitHub 无 PR",
+      "README.md、docs/plan-v0.1.md、docs/brand-v1.0.md、docs/00-shared-contract.md、labs/README.md",
+      "原型 C 分支：claude/nice-mendeleev-234068@4c8d3dc、claude/shinjuku-3d-indoor-nav-3f3cce@f07cd03、claude/plan2d-layout-fe79d9@206a0ab，均未合并",
+      "labs/c-shinjuku-3d/REPORT.md（V1/V2）与 V3-REPORT.md：2026-11-20 记录 vitest 260 项通过、e2e 34 项中 31 项通过（1 项基准提交上同样失败）。本次未重跑",
+      "lab/a-tokyo-atlas、lab/b-fare 与 main 相同，没有提交；lab/c-shinjuku-3d 本机另有 1 个未推送提交和 2 个未提交文件，未计入"
+    ]
+  },
+  "reporter": {
+    "agent": "claude",
+    "note": "Claude Opus 5.5"
+  },
+  "stage": "planning",
+  "summary": "立项与原型实验阶段，尚无可用产品。三个原型只有 C（新宿站 3D）在推进：V1、V2 完成，V3 已接入新宿三丁目、新宿西口、真实时刻表和 2D 平面图，约 70 个提交仍在 claude/ 分支上未合并。原型 A、B 尚未开始，数据许可待定。",
+  "overall_progress": null,
+  "milestones": [
+    {
+      "id": "project_setup",
+      "title": "立项：仓库、AGPL 许可、品牌命名 v1.0、开发规划 v0.1 与原型共享契约",
+      "status": "done",
+      "evidence_level": "repository",
+      "evidence_refs": [
+        "README.md",
+        "docs/brand-v1.0.md",
+        "docs/plan-v0.1.md",
+        "docs/00-shared-contract.md"
+      ],
+      "human_acceptance": "not_required"
+    },
+    {
+      "id": "lab_a_tokyo_atlas",
+      "title": "原型 A：东京线路地图",
+      "status": "not_started",
+      "evidence_level": "repository",
+      "evidence_refs": [
+        "labs/README.md",
+        "分支 lab/a-tokyo-atlas（无提交）"
+      ],
+      "human_acceptance": "pending"
+    },
+    {
+      "id": "lab_b_fare",
+      "title": "原型 B：JR 运价规则实验室",
+      "status": "not_started",
+      "evidence_level": "repository",
+      "evidence_refs": [
+        "labs/README.md",
+        "分支 lab/b-fare（无提交）"
+      ],
+      "human_acceptance": "pending"
+    },
+    {
+      "id": "lab_c_v1_v2",
+      "title": "原型 C 新宿站 3D：V1、V2（7 站 23 层模型、全部运营方、站内路线导航）",
+      "status": "done",
+      "evidence_level": "existing_test",
+      "evidence_refs": [
+        "labs/c-shinjuku-3d/REPORT.md"
+      ],
+      "human_acceptance": "pending"
+    },
+    {
+      "id": "lab_c_v3",
+      "title": "原型 C V3：新宿三丁目/新宿西口、Busta 细化、建筑精修、列车模拟、2D 平面图",
+      "status": "in_progress",
+      "evidence_level": "existing_test",
+      "evidence_refs": [
+        "labs/c-shinjuku-3d/V3-REPORT.md（分支 claude/plan2d-layout-fe79d9）"
+      ],
+      "human_acceptance": "pending"
+    },
+    {
+      "id": "lab_c_timetable",
+      "title": "原型 C 真实时刻表：都营两线入库，JR 只在本机，其余运营方无公开数据",
+      "status": "in_progress",
+      "evidence_level": "existing_test",
+      "evidence_refs": [
+        "labs/c-shinjuku-3d/V3-REPORT.md（分支 claude/plan2d-layout-fe79d9） 第 23～25 节",
+        "labs/c-shinjuku-3d/data/timetable/README.md"
+      ],
+      "human_acceptance": "not_required"
+    },
+    {
+      "id": "lab_c_merge",
+      "title": "原型 C 的三条 claude/ 分支收拢并通过 PR 合并",
+      "status": "not_started",
+      "evidence_level": "repository",
+      "evidence_refs": [
+        "labs/README.md",
+        "labs/c-shinjuku-3d/REPORT.md 第 7 节"
+      ],
+      "human_acceptance": "pending"
+    },
+    {
+      "id": "lab_scores",
+      "title": "三个原型的人工评分（docs/lab-reports/scores.md）",
+      "status": "not_started",
+      "evidence_level": "repository",
+      "evidence_refs": [
+        "docs/lab-reports/README.md"
+      ],
+      "human_acceptance": "pending"
+    },
+    {
+      "id": "stage0_discovery",
+      "title": "Stage 0：大阪—京都最小数据包、来源与许可清单、ID 规范",
+      "status": "not_started",
+      "evidence_level": "repository",
+      "evidence_refs": [
+        "docs/plan-v0.1.md 第 6 节"
+      ],
+      "human_acceptance": "pending"
+    }
+  ],
+  "blockers": [
+    {
+      "id": "data_licensing",
+      "title": "数据许可没有定",
+      "impact": "ODPT 挑战赛限定数据、JR 东日本和京王网站条款是否允许公开使用都未确认；JR 时刻表只能本机抓取，原型 C 的数据暂不能公开发布。"
+    },
+    {
+      "id": "lab_c_unmerged",
+      "title": "原型 C 停在分支上",
+      "impact": "三条 claude/ 分支约 70 个提交、没有 PR，main 只有初始化提交；合并目标（lab/c-shinjuku-3d 还是 main）没定。"
+    }
+  ],
+  "next_actions": [
+    {
+      "id": "merge_lab_c",
+      "title": "收拢原型 C 分支并开 PR",
+      "priority": "P1",
+      "result": "定下合并目标后把平面图和公开版两条分支合成一个可评审的 PR。"
+    },
+    {
+      "id": "start_lab_a_b",
+      "title": "启动原型 A、B",
+      "priority": "P1",
+      "result": "东京线路地图与 JR 运价实验室各有可运行切片和 REPORT.md，三个原型可以一起评分。"
+    },
+    {
+      "id": "gpu_perf",
+      "title": "在真实显卡上测原型 C 帧率",
+      "priority": "P2",
+      "result": "验证任务书 60 / 30 FPS 目标；目前只有软件渲染数字。"
+    }
+  ],
+  "needs_morii": [
+    {
+      "id": "lab_c_merge_target",
+      "decision": "原型 C 合并到 lab/c-shinjuku-3d 还是 main？三条 claude/ 分支怎么收拢？"
+    },
+    {
+      "id": "data_terms",
+      "decision": "ODPT 挑战赛限定数据用不用、以什么身份用？JR 东日本和京王网站上的事实能否用于公开产品？"
+    },
+    {
+      "id": "data_reviewer",
+      "decision": "原型 C 的数据公开展示前由谁复核？"
+    },
+    {
+      "id": "labs_ab_when",
+      "decision": "原型 A、B 何时开始？"
+    },
+    {
+      "id": "plan_questions",
+      "decision": "规划第 10 节剩下的问题（目标用户、首批地区是否仍是大阪—京都、地图走地理精度还是示意图）何时决定？"
+    }
+  ]
+}
