@@ -1,0 +1,966 @@
+{
+  "lastVerifiedAt": "2026-11-21",
+  "sources": [
+    {
+      "id": "src-ksj-n02-2024",
+      "title": "国土数値情報 鉄道データ（N02・令和6年度 / 2024年版）",
+      "publisher": "国土交通省（MLIT）",
+      "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02.html",
+      "retrievedAt": "2026-11-21T06:30:07Z",
+      "license": "公共データ利用規約（第1.0版）/ CC BY 4.0 互換",
+      "licenseUrl": "https://nlftp.mlit.go.jp/ksj/other/agreement.html",
+      "commercialUse": "yes",
+      "redistribution": "yes",
+      "shareAlike": false,
+      "attributionText": "出典：国土数値情報（鉄道データ N02-24）（国土交通省）を加工して作成",
+      "notes": "駅座標・線路形状の一次基盤データ。N02-24_GML.zip（UTF-8 GeoJSON）から可再現スクリプトで抽出。"
+    },
+    {
+      "id": "src-odpt-toei-gtfs",
+      "title": "都営交通 鉄道 GTFS データ（Toei-Train-GTFS）",
+      "publisher": "東京都交通局 / 公共交通オープンデータ協議会（ODPT）",
+      "url": "https://api-public.odpt.org/api/v4/files/Toei/data/Toei-Train-GTFS.zip",
+      "retrievedAt": "2026-11-21T06:30:07Z",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/deed.ja",
+      "commercialUse": "yes",
+      "redistribution": "yes",
+      "shareAlike": false,
+      "attributionText": "出典：東京都交通局（公共交通オープンデータセンター経由、CC BY 4.0）",
+      "notes": "認証不要の公開エンドポイント api-public.odpt.org より取得。都営地下鉄の駅ナンバリング・英名・駅順のクロスソース照合に使用。"
+    },
+    {
+      "id": "src-gsi-tiles",
+      "title": "地理院タイル（淡色地図）",
+      "publisher": "国土地理院（GSI）",
+      "url": "https://maps.gsi.go.jp/development/ichiran.html",
+      "retrievedAt": "2026-11-21T06:30:07Z",
+      "license": "国土地理院コンテンツ利用規約（CC BY 4.0 互換）",
+      "licenseUrl": "https://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html",
+      "commercialUse": "yes",
+      "redistribution": "yes",
+      "shareAlike": false,
+      "attributionText": "地理院タイル（国土地理院）",
+      "notes": "認証キー不要の背景地図タイル。オフライン環境では自動的にキャンバス背景へフォールバック。"
+    },
+    {
+      "id": "src-jr-east-kippu-1101",
+      "title": "JR東日本 きっぷのルール：運賃計算の特例（特定区間・新幹線と在来線）",
+      "publisher": "東日本旅客鉄道株式会社（JR東日本）",
+      "url": "https://www.jreast.co.jp/kippu/1101.html",
+      "retrievedAt": "2026-11-21T06:22:30Z",
+      "license": "公式案内ページ（事実・規則構造の参照のみ、原文・画像は非転載）",
+      "licenseUrl": "https://www.jreast.co.jp/siteinfo/",
+      "commercialUse": "conditional",
+      "redistribution": "no",
+      "shareAlike": false,
+      "attributionText": "参照：JR東日本 きっぷのルール（運賃計算の特例）",
+      "notes": "第69条特定区間および第16条の2幹在同一視・2026年3月14日改定後の東京〜熱海別線扱いの事実検証に使用。"
+    },
+    {
+      "id": "src-jr-east-kippu-1103",
+      "title": "JR東日本 きっぷのルール：大都市近郊区間内のみをご利用になる場合の特例",
+      "publisher": "東日本旅客鉄道株式会社（JR東日本）",
+      "url": "https://www.jreast.co.jp/kippu/1103.html",
+      "retrievedAt": "2026-11-21T06:22:30Z",
+      "license": "公式案内ページ（事実・規則構造の参照のみ、原文・画像は非転載）",
+      "licenseUrl": "https://www.jreast.co.jp/siteinfo/",
+      "commercialUse": "conditional",
+      "redistribution": "no",
+      "shareAlike": false,
+      "attributionText": "参照：JR東日本 きっぷのルール（大都市近郊区間）",
+      "notes": "東京近郊区間の最短経路運賃計算・重複乗車禁止・途中下車不可・有効期間1日の条件検証に使用。"
+    },
+    {
+      "id": "src-jr-east-ryokaku-2026",
+      "title": "JR東日本 旅客営業規則（2026年3月14日改定反映）",
+      "publisher": "東日本旅客鉄道株式会社（JR東日本）",
+      "url": "https://www.jreast.co.jp/ryokaku/",
+      "retrievedAt": "2026-11-21T06:23:10Z",
+      "license": "公式約款（規則条文番号・条件の参照のみ）",
+      "licenseUrl": "https://www.jreast.co.jp/ryokaku/",
+      "commercialUse": "conditional",
+      "redistribution": "no",
+      "shareAlike": false,
+      "attributionText": "参照：JR東日本 旅客営業規則（第16条の2・第67条・第69条・第156条・第157条）",
+      "notes": "2026年3月14日の運賃改定（電車特定区間・山手線内廃止、東京〜熱海別線化、通算加算方式）および八高線の地方交通線区分の確認に使用。"
+    },
+    {
+      "id": "src-jr-central-rules",
+      "title": "JR東海 旅客営業規則・東海道新幹線／東海道本線営業キロ",
+      "publisher": "東海旅客鉄道株式会社（JR東海）",
+      "url": "https://railway.jr-central.co.jp/ticket-rule/",
+      "retrievedAt": "2026-11-21T06:24:35Z",
+      "license": "公式案内・約款（事実・営業キロ参照のみ）",
+      "licenseUrl": "https://jr-central.co.jp/sitepolicy/",
+      "commercialUse": "conditional",
+      "redistribution": "no",
+      "shareAlike": false,
+      "attributionText": "参照：JR東海 きっぷのルール・東海道新幹線営業キロ",
+      "notes": "東海道新幹線（東京〜品川〜新横浜〜小田原〜熱海〜三島）および在来線（熱海〜函南〜三島）の営業キロ・会社境界・東京近郊区間外判定の確認に使用。"
+    },
+    {
+      "id": "src-manual-verified-tokyo-ref",
+      "title": "東京圏主要鉄道路線 駅名（日英仮名）・駅番号・直通運転・乗換種別 人工検証表",
+      "publisher": "SENKIRO Lab（各社公式路線案内より事実照合）",
+      "url": "https://www.tokyometro.jp/station/index.html",
+      "retrievedAt": "2026-11-21T06:32:00Z",
+      "license": "CC0 1.0（事実メタデータの整理）",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "commercialUse": "yes",
+      "redistribution": "yes",
+      "shareAlike": false,
+      "attributionText": "SENKIRO Lab 人工検証（各社公式路線案内参照）",
+      "notes": "千代田線↔JR常磐緩行↔小田急、都営浅草線↔京急↔京成の直通運転関係、主要駅の英名・仮名・駅番号・JR営業キロ・改札内外区分を事実照合。未検証項目は null / unknown。"
+    },
+    {
+      "id": "src-synthetic-fare-tariff",
+      "title": "SENKIRO Lab 合成運賃・特急料金テーブル（規則検証デモ専用）",
+      "publisher": "SENKIRO Lab",
+      "url": "https://github.com/SENKIRO-project/SENKIRO",
+      "retrievedAt": "2026-11-21T06:35:00Z",
+      "license": "MIT",
+      "licenseUrl": "https://opensource.org/licenses/MIT",
+      "commercialUse": "yes",
+      "redistribution": "yes",
+      "shareAlike": false,
+      "attributionText": "SENKIRO Lab Synthetic Tariff (Demo Only — NOT official fares)",
+      "notes": "完全かつ再配布可能な最新公式全距離帯運賃表の直接取得を回避し、誠実性原則に基づき規則検証デモ用の合成費率として明示分離。"
+    },
+    {
+      "id": "src-osm-overpass-vertical",
+      "title": "OpenStreetMap 鉄道構造タグ（tunnel / bridge / layer）抽出データ",
+      "publisher": "OpenStreetMap Contributors (via Overpass API)",
+      "url": "https://overpass-api.de/api/interpreter",
+      "retrievedAt": "2026-11-21T06:31:14Z",
+      "license": "ODbL 1.0",
+      "licenseUrl": "https://opendatacommons.org/licenses/odbl/1-0/",
+      "commercialUse": "yes",
+      "redistribution": "yes",
+      "shareAlike": true,
+      "attributionText": "© OpenStreetMap contributors (ODbL 1.0)",
+      "notes": "ODbL の share-alike 義務が主データセットへ波及しないよう、独立ファイル data/processed/osm-vertical.json に完全分離保存。verticalClass / verticalOrder のみ算出、elevationM は原則 null。"
+    }
+  ],
+  "operators": [
+    {
+      "id": "sk:operator:jr-east",
+      "ksjName": "東日本旅客鉄道",
+      "names": { "ja": "JR東日本", "ja_kana": "じぇいあーるひがしにほん", "en": "JR East" },
+      "category": "jr",
+      "brandColor": "#378640",
+      "coverageStatus": "partial",
+      "coverageNotes": "東京23区主要路線および運賃検証スライス（大宮・熱海・八王子／八高線）を収録。常磐線など一部路線は地図表示のみ（運賃スライス外）。"
+    },
+    {
+      "id": "sk:operator:jr-central",
+      "ksjName": "東海旅客鉄道",
+      "names": { "ja": "JR東海", "ja_kana": "じぇいあーるとうかい", "en": "JR Central" },
+      "category": "jr",
+      "brandColor": "#F26522",
+      "coverageStatus": "partial",
+      "coverageNotes": "運賃検証スライスとして東海道新幹線（東京〜三島）および東海道本線（熱海〜三島）を収録。"
+    },
+    {
+      "id": "sk:operator:tokyo-metro",
+      "ksjName": "東京地下鉄",
+      "names": { "ja": "東京メトロ", "ja_kana": "とうきょうめとろ", "en": "Tokyo Metro" },
+      "category": "metro",
+      "brandColor": "#00A7DB",
+      "coverageStatus": "full",
+      "coverageNotes": "全9路線（銀座・丸ノ内・日比谷・東西・千代田・有楽町・半蔵門・南北・副都心）の東京23区区間を収録。運賃エンジン対象外（JR専用）。"
+    },
+    {
+      "id": "sk:operator:toei",
+      "ksjName": "東京都",
+      "names": { "ja": "都営地下鉄", "ja_kana": "とえいちかてつ", "en": "Toei Subway" },
+      "category": "toei",
+      "brandColor": "#009E60",
+      "coverageStatus": "full",
+      "coverageNotes": "地下鉄全4路線（浅草・三田・新宿・大江戸）を KSJ N02-24 と ODPT 都営 GTFS でクロスソース照合済み。都電・日暮里舎人ライナーは未照合レコードとして明示保持。"
+    },
+    {
+      "id": "sk:operator:odakyu",
+      "ksjName": "小田急電鉄",
+      "names": { "ja": "小田急電鉄", "ja_kana": "おだきゅうでんてつ", "en": "Odakyu Electric Railway" },
+      "category": "private",
+      "brandColor": "#007ED5",
+      "coverageStatus": "partial",
+      "coverageNotes": "小田原線の東京23区区間（新宿〜喜多見付近）のみ収録。代々木上原で千代田線と直通運転。"
+    },
+    {
+      "id": "sk:operator:keio",
+      "ksjName": "京王電鉄",
+      "names": { "ja": "京王電鉄", "ja_kana": "けいおうでんてつ", "en": "Keio Corporation" },
+      "category": "private",
+      "brandColor": "#DD0077",
+      "coverageStatus": "partial",
+      "coverageNotes": "京王線・井の頭線の東京23区区間のみ収録。"
+    },
+    {
+      "id": "sk:operator:seibu",
+      "ksjName": "西武鉄道",
+      "names": { "ja": "西武鉄道", "ja_kana": "せいぶてつどう", "en": "Seibu Railway" },
+      "category": "private",
+      "brandColor": "#0067C0",
+      "coverageStatus": "partial",
+      "coverageNotes": "新宿線・池袋線の東京23区区間のみ収録。西武新宿駅は新宿駅・新宿三丁目駅とは別複合体として分離。"
+    },
+    {
+      "id": "sk:operator:tokyu",
+      "ksjName": "東急電鉄",
+      "names": { "ja": "東急電鉄", "ja_kana": "とうきゅうでんてつ", "en": "Tokyu Railways" },
+      "category": "private",
+      "brandColor": "#E60012",
+      "coverageStatus": "partial",
+      "coverageNotes": "東横線・田園都市線・大井町線・目黒線の東京23区区間のみ収録。"
+    },
+    {
+      "id": "sk:operator:keikyu",
+      "ksjName": "京浜急行電鉄",
+      "names": { "ja": "京浜急行電鉄", "ja_kana": "けいひんきゅうこうでんてつ", "en": "Keikyu Corporation" },
+      "category": "private",
+      "brandColor": "#E8334A",
+      "coverageStatus": "partial",
+      "coverageNotes": "本線・空港線の東京23区区間のみ収録。泉岳寺で都営浅草線と直通運転。"
+    },
+    {
+      "id": "sk:operator:tobu",
+      "ksjName": "東武鉄道",
+      "names": { "ja": "東武鉄道", "ja_kana": "とうぶてつどう", "en": "Tobu Railway" },
+      "category": "private",
+      "brandColor": "#0F6CC3",
+      "coverageStatus": "partial",
+      "coverageNotes": "伊勢崎線（スカイツリーライン）・東上本線の東京23区区間のみ収録。"
+    },
+    {
+      "id": "sk:operator:keisei",
+      "ksjName": "京成電鉄",
+      "names": { "ja": "京成電鉄", "ja_kana": "けいせいでんてつ", "en": "Keisei Electric Railway" },
+      "category": "private",
+      "brandColor": "#005AAA",
+      "coverageStatus": "partial",
+      "coverageNotes": "本線・押上線の東京23区区間のみ収録。押上で都営浅草線と直通運転。"
+    },
+    {
+      "id": "sk:operator:yurikamome",
+      "ksjName": "ゆりかもめ",
+      "names": { "ja": "ゆりかもめ", "ja_kana": "ゆりかもめ", "en": "Yurikamome" },
+      "category": "third_sector",
+      "brandColor": "#1662B8",
+      "coverageStatus": "none",
+      "coverageNotes": "本プロトタイプでは未収録（カバレッジ誠実表示のため明記）。"
+    },
+    {
+      "id": "sk:operator:tokyo-monorail",
+      "ksjName": "東京モノレール",
+      "names": { "ja": "東京モノレール", "ja_kana": "とうきょうものれーる", "en": "Tokyo Monorail" },
+      "category": "private",
+      "brandColor": "#0080C6",
+      "coverageStatus": "none",
+      "coverageNotes": "本プロトタイプでは未収録（カバレッジ誠実表示のため明記）。"
+    },
+    {
+      "id": "sk:operator:twr",
+      "ksjName": "東京臨海高速鉄道",
+      "names": { "ja": "東京臨海高速鉄道（りんかい線）", "ja_kana": "りんかいせん", "en": "Tokyo Waterfront Area Rapid Transit (Rinkai Line)" },
+      "category": "third_sector",
+      "brandColor": "#00418E",
+      "coverageStatus": "none",
+      "coverageNotes": "本プロトタイプでは未収録（カバレッジ誠実表示のため明記）。"
+    },
+    {
+      "id": "sk:operator:mir",
+      "ksjName": "首都圏新都市鉄道",
+      "names": { "ja": "つくばエクスプレス", "ja_kana": "つくばえくすぷれす", "en": "Tsukuba Express" },
+      "category": "third_sector",
+      "brandColor": "#003C88",
+      "coverageStatus": "none",
+      "coverageNotes": "本プロトタイプでは未収録（カバレッジ誠実表示のため明記）。"
+    }
+  ],
+  "jrFareSliceLines": [
+    {
+      "id": "sk:line:jr-east-yamanote",
+      "operatorId": "sk:operator:jr-east",
+      "ksjLine": "山手線",
+      "names": { "ja": "山手線（正式区間：品川〜田端）", "ja_kana": "やまのてせん", "en": "Yamanote Line (Track: Shinagawa–Tabata)" },
+      "color": "#9ACD32",
+      "stationCodePrefix": "JY",
+      "lineClass": "trunk",
+      "isShinkansen": false,
+      "parallelConventionalLineId": null,
+      "inFareSlice": true,
+      "inTokyoSuburbanArea": true,
+      "coverageStatus": "full",
+      "stops": [
+        { "name": "品川", "cumKm": 0.0, "code": "JY25" },
+        { "name": "大崎", "cumKm": 2.0, "code": "JY24" },
+        { "name": "五反田", "cumKm": 2.9, "code": "JY23" },
+        { "name": "目黒", "cumKm": 4.1, "code": "JY22" },
+        { "name": "恵比寿", "cumKm": 5.6, "code": "JY21" },
+        { "name": "渋谷", "cumKm": 7.2, "code": "JY20" },
+        { "name": "原宿", "cumKm": 8.4, "code": "JY19" },
+        { "name": "代々木", "cumKm": 9.9, "code": "JY18" },
+        { "name": "新宿", "cumKm": 10.6, "code": "JY17" },
+        { "name": "新大久保", "cumKm": 11.9, "code": "JY16" },
+        { "name": "高田馬場", "cumKm": 13.3, "code": "JY15" },
+        { "name": "目白", "cumKm": 14.2, "code": "JY14" },
+        { "name": "池袋", "cumKm": 15.4, "code": "JY13" },
+        { "name": "大塚", "cumKm": 17.2, "code": "JY12" },
+        { "name": "巣鴨", "cumKm": 18.3, "code": "JY11" },
+        { "name": "駒込", "cumKm": 19.0, "code": "JY10" },
+        { "name": "田端", "cumKm": 20.6, "code": "JY09" }
+      ]
+    },
+    {
+      "id": "sk:line:jr-east-tokaido",
+      "operatorId": "sk:operator:jr-east",
+      "ksjLine": "東海道線",
+      "names": { "ja": "東海道本線（JR東日本：東京〜熱海）", "ja_kana": "とうかいどうほんせん", "en": "Tokaido Main Line (JR East: Tokyo–Atami)" },
+      "color": "#F68B1E",
+      "stationCodePrefix": "JT",
+      "lineClass": "trunk",
+      "isShinkansen": false,
+      "parallelConventionalLineId": null,
+      "inFareSlice": true,
+      "inTokyoSuburbanArea": true,
+      "coverageStatus": "full",
+      "stops": [
+        { "name": "東京", "cumKm": 0.0, "code": "JT01" },
+        { "name": "新橋", "cumKm": 1.9, "code": "JT02" },
+        { "name": "品川", "cumKm": 6.8, "code": "JT03" },
+        { "name": "川崎", "cumKm": 18.2, "code": "JT04" },
+        { "name": "鶴見", "cumKm": 21.7, "code": "JK15" },
+        { "name": "横浜", "cumKm": 28.8, "code": "JT05" },
+        { "name": "戸塚", "cumKm": 40.9, "code": "JT06" },
+        { "name": "大船", "cumKm": 46.5, "code": "JT07" },
+        { "name": "藤沢", "cumKm": 51.1, "code": "JT08" },
+        { "name": "茅ヶ崎", "cumKm": 58.6, "code": "JT10" },
+        { "name": "平塚", "cumKm": 63.8, "code": "JT11" },
+        { "name": "国府津", "cumKm": 77.7, "code": "JT14" },
+        { "name": "小田原", "cumKm": 83.9, "code": "JT16" },
+        { "name": "熱海", "cumKm": 104.6, "code": "JT21" }
+      ]
+    },
+    {
+      "id": "sk:line:jr-east-tokaido-hinkaku",
+      "operatorId": "sk:operator:jr-east",
+      "ksjLine": "東海道線",
+      "names": { "ja": "東海道本線支線（品鶴線・横須賀線：西大井経由）", "ja_kana": "ひんかくせん・よこすかせん", "en": "Tokaido Branch / Yokosuka Line (via Nishi-Oi)" },
+      "color": "#0068B7",
+      "stationCodePrefix": "JO",
+      "lineClass": "trunk",
+      "isShinkansen": false,
+      "parallelConventionalLineId": null,
+      "inFareSlice": true,
+      "inTokyoSuburbanArea": true,
+      "coverageStatus": "full",
+      "stops": [
+        { "name": "品川", "cumKm": 0.0, "code": "JO17" },
+        { "name": "西大井", "cumKm": 3.6, "code": "JO16" },
+        { "name": "武蔵小杉", "cumKm": 10.0, "code": "JO15" },
+        { "name": "新川崎", "cumKm": 12.7, "code": "JO14" },
+        { "name": "鶴見", "cumKm": 17.8, "code": "JK15" }
+      ]
+    },
+    {
+      "id": "sk:line:jr-east-tohoku",
+      "operatorId": "sk:operator:jr-east",
+      "ksjLine": "東北線",
+      "names": { "ja": "東北本線（東京〜大宮：王子・浦和経由）", "ja_kana": "とうほくほんせん", "en": "Tohoku Main Line (Tokyo–Omiya via Oji & Urawa)" },
+      "color": "#00B2E5",
+      "stationCodePrefix": "JK",
+      "lineClass": "trunk",
+      "isShinkansen": false,
+      "parallelConventionalLineId": null,
+      "inFareSlice": true,
+      "inTokyoSuburbanArea": true,
+      "coverageStatus": "partial",
+      "stops": [
+        { "name": "東京", "cumKm": 0.0, "code": "JK26" },
+        { "name": "神田", "cumKm": 1.3, "code": "JK27" },
+        { "name": "秋葉原", "cumKm": 2.0, "code": "JK28" },
+        { "name": "上野", "cumKm": 3.6, "code": "JK30" },
+        { "name": "日暮里", "cumKm": 5.8, "code": "JK32" },
+        { "name": "田端", "cumKm": 7.1, "code": "JK34" },
+        { "name": "王子", "cumKm": 9.9, "code": "JK36" },
+        { "name": "赤羽", "cumKm": 13.2, "code": "JK38" },
+        { "name": "川口", "cumKm": 15.8, "code": "JK39" },
+        { "name": "浦和", "cumKm": 24.2, "code": "JK43" },
+        { "name": "大宮", "cumKm": 30.3, "code": "JK47" }
+      ]
+    },
+    {
+      "id": "sk:line:jr-east-tohoku-oku",
+      "operatorId": "sk:operator:jr-east",
+      "ksjLine": "東北線",
+      "names": { "ja": "東北本線（尾久経由：日暮里〜赤羽）", "ja_kana": "とうほくほんせん おくけいゆ", "en": "Tohoku Main Line (via Oku: Nippori–Akabane)" },
+      "color": "#F68B1E",
+      "stationCodePrefix": "JU",
+      "lineClass": "trunk",
+      "isShinkansen": false,
+      "parallelConventionalLineId": null,
+      "inFareSlice": true,
+      "inTokyoSuburbanArea": true,
+      "coverageStatus": "full",
+      "stops": [
+        { "name": "日暮里", "cumKm": 0.0, "code": null },
+        { "name": "尾久", "cumKm": 2.6, "code": "JU03" },
+        { "name": "赤羽", "cumKm": 7.6, "code": "JU04" }
+      ]
+    },
+    {
+      "id": "sk:line:jr-east-tohoku-saikyo",
+      "operatorId": "sk:operator:jr-east",
+      "ksjLine": "東北線",
+      "names": { "ja": "東北本線支線（埼京線：赤羽〜大宮 戸田公園経由）", "ja_kana": "さいきょうせんしせん", "en": "Tohoku Branch / Saikyo Line (Akabane–Omiya via Toda-Koen)" },
+      "color": "#00AC9A",
+      "stationCodePrefix": "JA",
+      "lineClass": "trunk",
+      "isShinkansen": false,
+      "parallelConventionalLineId": null,
+      "inFareSlice": true,
+      "inTokyoSuburbanArea": true,
+      "coverageStatus": "full",
+      "stops": [
+        { "name": "赤羽", "cumKm": 0.0, "code": "JA15" },
+        { "name": "戸田公園", "cumKm": 6.3, "code": "JA18" },
+        { "name": "武蔵浦和", "cumKm": 11.8, "code": "JA21" },
+        { "name": "与野本町", "cumKm": 15.0, "code": "JA24" },
+        { "name": "大宮", "cumKm": 18.0, "code": "JA26" }
+      ]
+    },
+    {
+      "id": "sk:line:jr-east-akabane",
+      "operatorId": "sk:operator:jr-east",
+      "ksjLine": "赤羽線",
+      "names": { "ja": "赤羽線（埼京線：池袋〜赤羽）", "ja_kana": "あかばねせん", "en": "Akabane Line (Saikyo: Ikebukuro–Akabane)" },
+      "color": "#00AC9A",
+      "stationCodePrefix": "JA",
+      "lineClass": "trunk",
+      "isShinkansen": false,
+      "parallelConventionalLineId": null,
+      "inFareSlice": true,
+      "inTokyoSuburbanArea": true,
+      "coverageStatus": "full",
+      "stops": [
+        { "name": "池袋", "cumKm": 0.0, "code": "JA12" },
+        { "name": "板橋", "cumKm": 1.8, "code": "JA13" },
+        { "name": "十条", "cumKm": 3.5, "code": "JA14" },
+        { "name": "赤羽", "cumKm": 5.5, "code": "JA15" }
+      ]
+    },
+    {
+      "id": "sk:line:jr-east-chuo",
+      "operatorId": "sk:operator:jr-east",
+      "ksjLine": "中央線",
+      "names": { "ja": "中央本線（東京〜八王子）", "ja_kana": "ちゅうおうほんせん", "en": "Chuo Main Line (Tokyo–Hachioji)" },
+      "color": "#F15A22",
+      "stationCodePrefix": "JC",
+      "lineClass": "trunk",
+      "isShinkansen": false,
+      "parallelConventionalLineId": null,
+      "inFareSlice": true,
+      "inTokyoSuburbanArea": true,
+      "coverageStatus": "partial",
+      "stops": [
+        { "name": "東京", "cumKm": 0.0, "code": "JC01" },
+        { "name": "神田", "cumKm": 1.3, "code": "JC02" },
+        { "name": "御茶ノ水", "cumKm": 2.6, "code": "JC03" },
+        { "name": "四ツ谷", "cumKm": 6.6, "code": "JC04" },
+        { "name": "代々木", "cumKm": 9.6, "code": "JB11" },
+        { "name": "新宿", "cumKm": 10.3, "code": "JC05" },
+        { "name": "中野", "cumKm": 14.7, "code": "JC06" },
+        { "name": "立川", "cumKm": 37.5, "code": "JC19" },
+        { "name": "八王子", "cumKm": 47.4, "code": "JC22" }
+      ]
+    },
+    {
+      "id": "sk:line:jr-east-sobu",
+      "operatorId": "sk:operator:jr-east",
+      "ksjLine": "総武線",
+      "names": { "ja": "総武本線支線（御茶ノ水〜錦糸町）", "ja_kana": "そうぶほんせんしせん", "en": "Sobu Branch Line (Ochanomizu–Kinshicho)" },
+      "color": "#FFD400",
+      "stationCodePrefix": "JB",
+      "lineClass": "trunk",
+      "isShinkansen": false,
+      "parallelConventionalLineId": null,
+      "inFareSlice": true,
+      "inTokyoSuburbanArea": true,
+      "coverageStatus": "partial",
+      "stops": [
+        { "name": "御茶ノ水", "cumKm": 0.0, "code": "JB18" },
+        { "name": "秋葉原", "cumKm": 0.9, "code": "JB19" },
+        { "name": "浅草橋", "cumKm": 2.0, "code": "JB20" },
+        { "name": "両国", "cumKm": 2.8, "code": "JB21" },
+        { "name": "錦糸町", "cumKm": 4.3, "code": "JB22" }
+      ]
+    },
+    {
+      "id": "sk:line:jr-east-hachiko",
+      "operatorId": "sk:operator:jr-east",
+      "ksjLine": "八高線",
+      "names": { "ja": "八高線（八王子〜拝島・地方交通線）", "ja_kana": "はちこうせん", "en": "Hachiko Line (Hachioji–Haijima · Local Line)" },
+      "color": "#A8A39D",
+      "stationCodePrefix": null,
+      "lineClass": "local_line",
+      "isShinkansen": false,
+      "parallelConventionalLineId": null,
+      "inFareSlice": true,
+      "inTokyoSuburbanArea": true,
+      "coverageStatus": "partial",
+      "stops": [
+        { "name": "八王子", "cumKm": 0.0, "code": null },
+        { "name": "北八王子", "cumKm": 3.1, "code": null },
+        { "name": "小宮", "cumKm": 5.1, "code": null },
+        { "name": "拝島", "cumKm": 9.9, "code": null }
+      ]
+    },
+    {
+      "id": "sk:line:jr-east-joban",
+      "operatorId": "sk:operator:jr-east",
+      "ksjLine": "常磐線",
+      "names": { "ja": "常磐線（日暮里〜金町・運賃スライス外）", "ja_kana": "じょうばんせん", "en": "Joban Line (Nippori–Kanamachi · Map Only)" },
+      "color": "#00B261",
+      "stationCodePrefix": "JJ",
+      "lineClass": "trunk",
+      "isShinkansen": false,
+      "parallelConventionalLineId": null,
+      "inFareSlice": false,
+      "inTokyoSuburbanArea": true,
+      "coverageStatus": "partial",
+      "stops": [
+        { "name": "日暮里", "cumKm": null, "code": "JJ02" },
+        { "name": "三河島", "cumKm": null, "code": "JJ03" },
+        { "name": "南千住", "cumKm": null, "code": "JJ04" },
+        { "name": "北千住", "cumKm": null, "code": "JJ05" },
+        { "name": "綾瀬", "cumKm": null, "code": "JL19" },
+        { "name": "亀有", "cumKm": null, "code": "JL20" },
+        { "name": "金町", "cumKm": null, "code": "JL21" }
+      ]
+    },
+    {
+      "id": "sk:line:jr-east-tohoku-shinkansen",
+      "operatorId": "sk:operator:jr-east",
+      "ksjLine": "東北新幹線",
+      "names": { "ja": "東北新幹線（JR東日本：東京〜大宮）", "ja_kana": "とうほくしんかんせん", "en": "Tohoku Shinkansen (JR East: Tokyo–Omiya)" },
+      "color": "#008941",
+      "stationCodePrefix": null,
+      "lineClass": "shinkansen",
+      "isShinkansen": true,
+      "parallelConventionalLineId": "sk:line:jr-east-tohoku",
+      "inFareSlice": true,
+      "inTokyoSuburbanArea": false,
+      "coverageStatus": "partial",
+      "stops": [
+        { "name": "東京", "cumKm": 0.0, "code": null },
+        { "name": "上野", "cumKm": 3.6, "code": null },
+        { "name": "大宮", "cumKm": 30.3, "code": null }
+      ]
+    },
+    {
+      "id": "sk:line:jr-central-tokaido-shinkansen",
+      "operatorId": "sk:operator:jr-central",
+      "ksjLine": "東海道新幹線",
+      "names": { "ja": "東海道新幹線（JR東海：東京〜三島）", "ja_kana": "とうかいどうしんかんせん", "en": "Tokaido Shinkansen (JR Central: Tokyo–Mishima)" },
+      "color": "#0066B3",
+      "stationCodePrefix": null,
+      "lineClass": "shinkansen",
+      "isShinkansen": true,
+      "parallelConventionalLineId": "sk:line:jr-east-tokaido",
+      "inFareSlice": true,
+      "inTokyoSuburbanArea": false,
+      "coverageStatus": "partial",
+      "stops": [
+        { "name": "東京", "cumKm": 0.0, "code": null },
+        { "name": "品川", "cumKm": 6.8, "code": null },
+        { "name": "新横浜", "cumKm": 28.8, "code": null },
+        { "name": "小田原", "cumKm": 83.9, "code": null },
+        { "name": "熱海", "cumKm": 104.6, "code": null },
+        { "name": "三島", "cumKm": 120.7, "code": null }
+      ]
+    },
+    {
+      "id": "sk:line:jr-central-tokaido",
+      "operatorId": "sk:operator:jr-central",
+      "ksjLine": "東海道線",
+      "names": { "ja": "東海道本線（JR東海：熱海〜三島・近郊区間外）", "ja_kana": "とうかいどうほんせん じぇいあーるとうかい", "en": "Tokaido Main Line (JR Central: Atami–Mishima)" },
+      "color": "#F26522",
+      "stationCodePrefix": "CA",
+      "lineClass": "trunk",
+      "isShinkansen": false,
+      "parallelConventionalLineId": null,
+      "inFareSlice": true,
+      "inTokyoSuburbanArea": false,
+      "coverageStatus": "partial",
+      "stops": [
+        { "name": "熱海", "cumKm": 0.0, "code": "CA00" },
+        { "name": "函南", "cumKm": 9.9, "code": "CA01" },
+        { "name": "三島", "cumKm": 16.1, "code": "CA02" }
+      ]
+    }
+  ],
+  "tokyo23Lines": [
+    { "id": "sk:line:metro-ginza", "operatorId": "sk:operator:tokyo-metro", "ksjLine": "3号線銀座線", "ja": "銀座線", "kana": "ぎんざせん", "en": "Ginza Line", "color": "#FF9500", "prefix": "G", "lineClass": "metro", "coverageStatus": "full" },
+    { "id": "sk:line:metro-marunouchi", "operatorId": "sk:operator:tokyo-metro", "ksjLine": "4号線丸ノ内線", "ja": "丸ノ内線", "kana": "まるのうちせん", "en": "Marunouchi Line", "color": "#F62E36", "prefix": "M", "lineClass": "metro", "coverageStatus": "full" },
+    { "id": "sk:line:metro-hibiya", "operatorId": "sk:operator:tokyo-metro", "ksjLine": "2号線日比谷線", "ja": "日比谷線", "kana": "ひびやせん", "en": "Hibiya Line", "color": "#B5B5AC", "prefix": "H", "lineClass": "metro", "coverageStatus": "full" },
+    { "id": "sk:line:metro-tozai", "operatorId": "sk:operator:tokyo-metro", "ksjLine": "5号線東西線", "ja": "東西線", "kana": "とうざいせん", "en": "Tozai Line", "color": "#009BBF", "prefix": "T", "lineClass": "metro", "coverageStatus": "partial" },
+    { "id": "sk:line:metro-chiyoda", "operatorId": "sk:operator:tokyo-metro", "ksjLine": "9号線千代田線", "ja": "千代田線", "kana": "ちよだせん", "en": "Chiyoda Line", "color": "#00BB85", "prefix": "C", "lineClass": "metro", "coverageStatus": "full" },
+    { "id": "sk:line:metro-yurakucho", "operatorId": "sk:operator:tokyo-metro", "ksjLine": "8号線有楽町線", "ja": "有楽町線", "kana": "ゆうらくちょうせん", "en": "Yurakucho Line", "color": "#C1A470", "prefix": "Y", "lineClass": "metro", "coverageStatus": "partial" },
+    { "id": "sk:line:metro-hanzomon", "operatorId": "sk:operator:tokyo-metro", "ksjLine": "11号線半蔵門線", "ja": "半蔵門線", "kana": "はんぞうもんせん", "en": "Hanzomon Line", "color": "#8F76D6", "prefix": "Z", "lineClass": "metro", "coverageStatus": "full" },
+    { "id": "sk:line:metro-namboku", "operatorId": "sk:operator:tokyo-metro", "ksjLine": "7号線南北線", "ja": "南北線", "kana": "なんぼくせん", "en": "Namboku Line", "color": "#00AC9B", "prefix": "N", "lineClass": "metro", "coverageStatus": "full" },
+    { "id": "sk:line:metro-fukutoshin", "operatorId": "sk:operator:tokyo-metro", "ksjLine": "13号線副都心線", "ja": "副都心線", "kana": "ふくとしんせん", "en": "Fukutoshin Line", "color": "#9C5E31", "prefix": "F", "lineClass": "metro", "coverageStatus": "partial" },
+
+    { "id": "sk:line:toei-asakusa", "operatorId": "sk:operator:toei", "ksjLine": "1号線浅草線", "ja": "都営浅草線", "kana": "とえいあさくさせん", "en": "Toei Asakusa Line", "color": "#E85298", "prefix": "A", "lineClass": "metro", "coverageStatus": "full", "gtfsRouteId": "1" },
+    { "id": "sk:line:toei-mita", "operatorId": "sk:operator:toei", "ksjLine": "6号線三田線", "ja": "都営三田線", "kana": "とえいみたせん", "en": "Toei Mita Line", "color": "#0079C2", "prefix": "I", "lineClass": "metro", "coverageStatus": "full", "gtfsRouteId": "2" },
+    { "id": "sk:line:toei-shinjuku", "operatorId": "sk:operator:toei", "ksjLine": "10号線新宿線", "ja": "都営新宿線", "kana": "とえいしんじゅくせん", "en": "Toei Shinjuku Line", "color": "#6CBB5A", "prefix": "S", "lineClass": "metro", "coverageStatus": "full", "gtfsRouteId": "3" },
+    { "id": "sk:line:toei-oedo", "operatorId": "sk:operator:toei", "ksjLine": "12号線大江戸線", "ja": "都営大江戸線", "kana": "とえいおおえどせん", "en": "Toei Oedo Line", "color": "#B6007A", "prefix": "E", "lineClass": "metro", "coverageStatus": "full", "gtfsRouteId": "4" },
+
+    { "id": "sk:line:odakyu-odawara", "operatorId": "sk:operator:odakyu", "ksjLine": "小田原線", "ja": "小田急小田原線（23区区間）", "kana": "おだきゅうおだわらせん", "en": "Odakyu Odawara Line (23-ward slice)", "color": "#007ED5", "prefix": "OH", "lineClass": "private", "coverageStatus": "partial" },
+    { "id": "sk:line:keio-keio", "operatorId": "sk:operator:keio", "ksjLine": "京王線", "ja": "京王線（23区区間）", "kana": "けいおうせん", "en": "Keio Line (23-ward slice)", "color": "#DD0077", "prefix": "KO", "lineClass": "private", "coverageStatus": "partial" },
+    { "id": "sk:line:keio-inokashira", "operatorId": "sk:operator:keio", "ksjLine": "井の頭線", "ja": "京王井の頭線（23区区間）", "kana": "けいおういのかしらせん", "en": "Keio Inokashira Line (23-ward slice)", "color": "#1D2088", "prefix": "IN", "lineClass": "private", "coverageStatus": "partial" },
+    { "id": "sk:line:seibu-shinjuku", "operatorId": "sk:operator:seibu", "ksjLine": "新宿線", "ja": "西武新宿線（23区区間）", "kana": "せいぶしんじゅくせん", "en": "Seibu Shinjuku Line (23-ward slice)", "color": "#00A6BF", "prefix": "SS", "lineClass": "private", "coverageStatus": "partial" },
+    { "id": "sk:line:seibu-ikebukuro", "operatorId": "sk:operator:seibu", "ksjLine": "池袋線", "ja": "西武池袋線（23区区間）", "kana": "せいぶいけぶくろせん", "en": "Seibu Ikebukuro Line (23-ward slice)", "color": "#FF6600", "prefix": "SI", "lineClass": "private", "coverageStatus": "partial" },
+    { "id": "sk:line:tokyu-toyoko", "operatorId": "sk:operator:tokyu", "ksjLine": "東横線", "ja": "東急東横線（23区区間）", "kana": "とうきゅうとうよこせん", "en": "Tokyu Toyoko Line (23-ward slice)", "color": "#DA0442", "prefix": "TY", "lineClass": "private", "coverageStatus": "partial" },
+    { "id": "sk:line:tokyu-denentoshi", "operatorId": "sk:operator:tokyu", "ksjLine": "田園都市線", "ja": "東急田園都市線（23区区間）", "kana": "とうきゅうでんえんとしせん", "en": "Tokyu Den-en-toshi Line (23-ward slice)", "color": "#20A288", "prefix": "DT", "lineClass": "private", "coverageStatus": "partial" },
+    { "id": "sk:line:keikyu-main", "operatorId": "sk:operator:keikyu", "ksjLine": "本線", "ja": "京急本線（23区区間）", "kana": "けいきゅうほんせん", "en": "Keikyu Main Line (23-ward slice)", "color": "#E8334A", "prefix": "KK", "lineClass": "private", "coverageStatus": "partial" },
+    { "id": "sk:line:keikyu-airport", "operatorId": "sk:operator:keikyu", "ksjLine": "空港線", "ja": "京急空港線", "kana": "けいきゅうくうこうせん", "en": "Keikyu Airport Line", "color": "#E8334A", "prefix": "KK", "lineClass": "private", "coverageStatus": "full" },
+    { "id": "sk:line:tobu-skytree", "operatorId": "sk:operator:tobu", "ksjLine": "伊勢崎線", "ja": "東武スカイツリーライン（23区区間）", "kana": "とうぶすかいつりーらいん", "en": "Tobu Skytree Line (23-ward slice)", "color": "#0F6CC3", "prefix": "TS", "lineClass": "private", "coverageStatus": "partial" },
+    { "id": "sk:line:tobu-tojo", "operatorId": "sk:operator:tobu", "ksjLine": "東上本線", "ja": "東武東上線（23区区間）", "kana": "とうぶとうじょうせん", "en": "Tobu Tojo Line (23-ward slice)", "color": "#004098", "prefix": "TJ", "lineClass": "private", "coverageStatus": "partial" },
+    { "id": "sk:line:keisei-main", "operatorId": "sk:operator:keisei", "ksjLine": "本線", "ja": "京成本線（23区区間）", "kana": "けいせいほんせん", "en": "Keisei Main Line (23-ward slice)", "color": "#005AAA", "prefix": "KS", "lineClass": "private", "coverageStatus": "partial" },
+    { "id": "sk:line:keisei-oshiage", "operatorId": "sk:operator:keisei", "ksjLine": "押上線", "ja": "京成押上線（23区区間）", "kana": "けいせいおしあげせん", "en": "Keisei Oshiage Line (23-ward slice)", "color": "#005AAA", "prefix": "KS", "lineClass": "private", "coverageStatus": "full" }
+  ],
+  "stationNamesRef": {
+    "東京": { "en": "Tokyo", "kana": "とうきょう" },
+    "有楽町": { "en": "Yurakucho", "kana": "ゆうらくちょう" },
+    "新橋": { "en": "Shimbashi", "kana": "しんばし" },
+    "浜松町": { "en": "Hamamatsucho", "kana": "はままつちょう" },
+    "田町": { "en": "Tamachi", "kana": "たまち" },
+    "高輪ゲートウェイ": { "en": "Takanawa Gateway", "kana": "たかなわげーとうぇい" },
+    "品川": { "en": "Shinagawa", "kana": "しながわ" },
+    "大崎": { "en": "Osaki", "kana": "おおさき" },
+    "五反田": { "en": "Gotanda", "kana": "ごたんだ" },
+    "目黒": { "en": "Meguro", "kana": "めぐろ" },
+    "恵比寿": { "en": "Ebisu", "kana": "えびす" },
+    "渋谷": { "en": "Shibuya", "kana": "しぶや" },
+    "原宿": { "en": "Harajuku", "kana": "はらじゅく" },
+    "代々木": { "en": "Yoyogi", "kana": "よよぎ" },
+    "新宿": { "en": "Shinjuku", "kana": "しんじゅく" },
+    "新宿三丁目": { "en": "Shinjuku-sanchome", "kana": "しんじゅくさんちょうめ" },
+    "西武新宿": { "en": "Seibu-Shinjuku", "kana": "せいぶしんじゅく" },
+    "新宿西口": { "en": "Shinjuku-nishiguchi", "kana": "しんじゅくにしぐち" },
+    "新大久保": { "en": "Shin-Okubo", "kana": "しんおおくぼ" },
+    "高田馬場": { "en": "Takadanobaba", "kana": "たかだのばば" },
+    "目白": { "en": "Mejiro", "kana": "めじろ" },
+    "池袋": { "en": "Ikebukuro", "kana": "いけぶくろ" },
+    "大塚": { "en": "Otsuka", "kana": "おおつか" },
+    "巣鴨": { "en": "Sugamo", "kana": "すがも" },
+    "駒込": { "en": "Komagome", "kana": "こまごめ" },
+    "田端": { "en": "Tabata", "kana": "たばた" },
+    "西日暮里": { "en": "Nishi-Nippori", "kana": "にしにっぽり" },
+    "日暮里": { "en": "Nippori", "kana": "にっぽり" },
+    "鶯谷": { "en": "Uguisudani", "kana": "うぐいすだに" },
+    "上野": { "en": "Ueno", "kana": "うえの" },
+    "京成上野": { "en": "Keisei-Ueno", "kana": "けいせいうえの" },
+    "御徒町": { "en": "Okachimachi", "kana": "おかちまち" },
+    "秋葉原": { "en": "Akihabara", "kana": "あきはばら" },
+    "神田": { "en": "Kanda", "kana": "かんだ" },
+    "御茶ノ水": { "en": "Ochanomizu", "kana": "おちゃのみず" },
+    "四ツ谷": { "en": "Yotsuya", "kana": "よつや" },
+    "中野": { "en": "Nakano", "kana": "なかの" },
+    "立川": { "en": "Tachikawa", "kana": "たちかわ" },
+    "八王子": { "en": "Hachioji", "kana": "はちおうじ" },
+    "北八王子": { "en": "Kita-Hachioji", "kana": "きたはちおうじ" },
+    "小宮": { "en": "Komiya", "kana": "こみや" },
+    "拝島": { "en": "Haijima", "kana": "はいじま" },
+    "浅草橋": { "en": "Asakusabashi", "kana": "あさくさばし" },
+    "両国": { "en": "Ryogoku", "kana": "りょうごく" },
+    "錦糸町": { "en": "Kinshicho", "kana": "きんしちょう" },
+    "王子": { "en": "Oji", "kana": "おうじ" },
+    "尾久": { "en": "Oku", "kana": "おく" },
+    "赤羽": { "en": "Akabane", "kana": "あかばね" },
+    "板橋": { "en": "Itabashi", "kana": "いたばし" },
+    "十条": { "en": "Jujo", "kana": "じゅうじょう" },
+    "川口": { "en": "Kawaguchi", "kana": "かわぐち" },
+    "浦和": { "en": "Urawa", "kana": "うらわ" },
+    "大宮": { "en": "Omiya", "kana": "おおみや" },
+    "戸田公園": { "en": "Toda-Koen", "kana": "とだこうえん" },
+    "武蔵浦和": { "en": "Musashi-Urawa", "kana": "むさしうらわ" },
+    "与野本町": { "en": "Yono-Honmachi", "kana": "よのほんまち" },
+    "西大井": { "en": "Nishi-Oi", "kana": "にしおおい" },
+    "武蔵小杉": { "en": "Musashi-Kosugi", "kana": "むさしこすぎ" },
+    "新川崎": { "en": "Shin-Kawasaki", "kana": "しんかわさき" },
+    "川崎": { "en": "Kawasaki", "kana": "かわさき" },
+    "鶴見": { "en": "Tsurumi", "kana": "つるみ" },
+    "横浜": { "en": "Yokohama", "kana": "よこはま" },
+    "新横浜": { "en": "Shin-Yokohama", "kana": "しんよこはま" },
+    "戸塚": { "en": "Totsuka", "kana": "とつか" },
+    "大船": { "en": "Ofuna", "kana": "おおふな" },
+    "藤沢": { "en": "Fujisawa", "kana": "ふじさわ" },
+    "茅ヶ崎": { "en": "Chigasaki", "kana": "ちがさき" },
+    "平塚": { "en": "Hiratsuka", "kana": "ひらつか" },
+    "国府津": { "en": "Kozu", "kana": "こうづ" },
+    "小田原": { "en": "Odawara", "kana": "おだわら" },
+    "熱海": { "en": "Atami", "kana": "あたみ" },
+    "函南": { "en": "Kannami", "kana": "かんなみ" },
+    "三島": { "en": "Mishima", "kana": "みしま" },
+    "三河島": { "en": "Mikawashima", "kana": "みかわしま" },
+    "南千住": { "en": "Minami-Senju", "kana": "みなみせんじゅ" },
+    "北千住": { "en": "Kita-Senju", "kana": "きたせんじゅ" },
+    "綾瀬": { "en": "Ayase", "kana": "あやせ" },
+    "亀有": { "en": "Kameari", "kana": "かめあり" },
+    "金町": { "en": "Kanamachi", "kana": "かなまち" },
+    "代々木上原": { "en": "Yoyogi-Uehara", "kana": "よよぎうえはら" },
+    "表参道": { "en": "Omote-sando", "kana": "おもてさんどう" },
+    "大手町": { "en": "Otemachi", "kana": "おおてまち" },
+    "銀座": { "en": "Ginza", "kana": "ぎんざ" },
+    "浅草": { "en": "Asakusa", "kana": "あさくさ" },
+    "押上": { "en": "Oshiage", "kana": "おしあげ" },
+    "泉岳寺": { "en": "Sengakuji", "kana": "せんがくじ" },
+    "溜池山王": { "en": "Tameike-sanno", "kana": "ためいけさんのう" },
+    "国会議事堂前": { "en": "Kokkai-gijidomae", "kana": "こっかいぎじどうまえ" },
+    "霞ケ関": { "en": "Kasumigaseki", "kana": "かすみがせき" },
+    "霞ヶ関": { "en": "Kasumigaseki", "kana": "かすみがせき" },
+    "六本木": { "en": "Roppongi", "kana": "ろっぽんぎ" },
+    "飯田橋": { "en": "Iidabashi", "kana": "いいだばし" },
+    "市ケ谷": { "en": "Ichigaya", "kana": "いちがや" },
+    "市ヶ谷": { "en": "Ichigaya", "kana": "いちがや" },
+    "日本橋": { "en": "Nihombashi", "kana": "にほんばし" },
+    "赤坂見附": { "en": "Akasaka-mitsuke", "kana": "あかさかみつけ" },
+    "永田町": { "en": "Nagatacho", "kana": "ながたちょう" },
+    "下北沢": { "en": "Shimo-Kitazawa", "kana": "しもきたざわ" },
+    "羽田空港第1・第2ターミナル": { "en": "Haneda Airport Terminal 1·2", "kana": "はねだくうこうだい1・だい2たーみなる" },
+    "中目黒": { "en": "Naka-Meguro", "kana": "なかめぐろ" },
+    "自由が丘": { "en": "Jiyugaoka", "kana": "じゆうがおか" },
+    "二子玉川": { "en": "Futako-Tamagawa", "kana": "ふたこたまがわ" }
+  },
+  "explicitComplexRules": [
+    {
+      "id": "sk:complex:shinjuku",
+      "names": { "ja": "新宿駅複合体", "ja_kana": "しんじゅくえきふくごうたい", "en": "Shinjuku Station Complex" },
+      "memberMatch": [
+        { "operatorId": "sk:operator:jr-east", "stationName": "新宿" },
+        { "operatorId": "sk:operator:tokyo-metro", "stationName": "新宿" },
+        { "operatorId": "sk:operator:toei", "stationName": "新宿" },
+        { "operatorId": "sk:operator:odakyu", "stationName": "新宿" },
+        { "operatorId": "sk:operator:keio", "stationName": "新宿" }
+      ],
+      "interchanges": [
+        { "fromOp": "sk:operator:jr-east", "fromName": "新宿", "toOp": "sk:operator:odakyu", "toName": "新宿", "gateType": "out_of_gate", "walkingMinutes": 4, "notes": "連絡改札あり（IC・連絡券）・一般乗換は改札外" },
+        { "fromOp": "sk:operator:jr-east", "fromName": "新宿", "toOp": "sk:operator:keio", "toName": "新宿", "gateType": "out_of_gate", "walkingMinutes": 4, "notes": "連絡改札あり（IC・連絡券）・一般乗換は改札外" },
+        { "fromOp": "sk:operator:jr-east", "fromName": "新宿", "toOp": "sk:operator:tokyo-metro", "toName": "新宿", "gateType": "out_of_gate", "walkingMinutes": 5, "notes": "改札外地下連絡通路" },
+        { "fromOp": "sk:operator:jr-east", "fromName": "新宿", "toOp": "sk:operator:toei", "toName": "新宿", "gateType": "out_of_gate", "walkingMinutes": 6, "notes": "新線新宿・大江戸線新宿は改札外乗換" }
+      ]
+    },
+    {
+      "id": "sk:complex:shinjuku-sanchome",
+      "names": { "ja": "新宿三丁目駅複合体", "ja_kana": "しんじゅくさんちょうめ", "en": "Shinjuku-sanchome Complex" },
+      "memberMatch": [
+        { "operatorId": "sk:operator:tokyo-metro", "stationName": "新宿三丁目" },
+        { "operatorId": "sk:operator:toei", "stationName": "新宿三丁目" }
+      ],
+      "interchanges": [
+        { "fromOp": "sk:operator:tokyo-metro", "fromName": "新宿三丁目", "toOp": "sk:operator:toei", "toName": "新宿三丁目", "gateType": "out_of_gate", "walkingMinutes": 4, "notes": "東京メトロ（丸ノ内・副都心）と都営新宿線は改札外連絡" }
+      ]
+    },
+    {
+      "id": "sk:complex:seibu-shinjuku",
+      "names": { "ja": "西武新宿駅（独立複合体）", "ja_kana": "せいぶしんじゅく", "en": "Seibu-Shinjuku Station (Distinct Complex)" },
+      "memberMatch": [
+        { "operatorId": "sk:operator:seibu", "stationName": "西武新宿" }
+      ],
+      "interchanges": []
+    },
+    {
+      "id": "sk:complex:shinjuku-nishiguchi",
+      "names": { "ja": "新宿西口駅（独立複合体）", "ja_kana": "しんじゅくにしぐち", "en": "Shinjuku-nishiguchi Station (Distinct Complex)" },
+      "memberMatch": [
+        { "operatorId": "sk:operator:toei", "stationName": "新宿西口" }
+      ],
+      "interchanges": []
+    },
+    {
+      "id": "sk:complex:tokyo",
+      "names": { "ja": "東京駅複合体", "ja_kana": "とうきょうえきふくごうたい", "en": "Tokyo Station Complex" },
+      "memberMatch": [
+        { "operatorId": "sk:operator:jr-east", "stationName": "東京" },
+        { "operatorId": "sk:operator:jr-central", "stationName": "東京" },
+        { "operatorId": "sk:operator:tokyo-metro", "stationName": "東京" }
+      ],
+      "interchanges": [
+        { "fromOp": "sk:operator:jr-east", "fromName": "東京", "toOp": "sk:operator:jr-central", "toName": "東京", "gateType": "in_gate", "walkingMinutes": 5, "notes": "JR在来線・東北新幹線 ↔ 東海道新幹線（新幹線乗換口・改札内連絡）" },
+        { "fromOp": "sk:operator:jr-east", "fromName": "東京", "toOp": "sk:operator:tokyo-metro", "toName": "東京", "gateType": "out_of_gate", "walkingMinutes": 5, "notes": "丸ノ内線東京駅とは改札外地下連絡" }
+      ]
+    },
+    {
+      "id": "sk:complex:shinagawa",
+      "names": { "ja": "品川駅複合体", "ja_kana": "しながわえきふくごうたい", "en": "Shinagawa Station Complex" },
+      "memberMatch": [
+        { "operatorId": "sk:operator:jr-east", "stationName": "品川" },
+        { "operatorId": "sk:operator:jr-central", "stationName": "品川" },
+        { "operatorId": "sk:operator:keikyu", "stationName": "品川" }
+      ],
+      "interchanges": [
+        { "fromOp": "sk:operator:jr-east", "fromName": "品川", "toOp": "sk:operator:jr-central", "toName": "品川", "gateType": "in_gate", "walkingMinutes": 4, "notes": "JR在来線 ↔ 東海道新幹線（新幹線乗換口・改札内連絡）" },
+        { "fromOp": "sk:operator:jr-east", "fromName": "品川", "toOp": "sk:operator:keikyu", "toName": "品川", "gateType": "out_of_gate", "walkingMinutes": 3, "notes": "京急連絡改札・改札外乗換" }
+      ]
+    },
+    {
+      "id": "sk:complex:odawara",
+      "names": { "ja": "小田原駅複合体", "ja_kana": "おだわらえきふくごうたい", "en": "Odawara Station Complex" },
+      "memberMatch": [
+        { "operatorId": "sk:operator:jr-east", "stationName": "小田原" },
+        { "operatorId": "sk:operator:jr-central", "stationName": "小田原" }
+      ],
+      "interchanges": [
+        { "fromOp": "sk:operator:jr-east", "fromName": "小田原", "toOp": "sk:operator:jr-central", "toName": "小田原", "gateType": "in_gate", "walkingMinutes": 4, "notes": "JR東日本東海道本線 ↔ JR東海東海道新幹線（新幹線乗換口）" }
+      ]
+    },
+    {
+      "id": "sk:complex:atami",
+      "names": { "ja": "熱海駅複合体（JR会社境界）", "ja_kana": "あたみえきふくごうたい", "en": "Atami Station Complex (JR East / JR Central Boundary)" },
+      "memberMatch": [
+        { "operatorId": "sk:operator:jr-east", "stationName": "熱海" },
+        { "operatorId": "sk:operator:jr-central", "stationName": "熱海" }
+      ],
+      "interchanges": [
+        { "fromOp": "sk:operator:jr-east", "fromName": "熱海", "toOp": "sk:operator:jr-central", "toName": "熱海", "gateType": "in_gate", "walkingMinutes": 3, "notes": "東海道本線の会社境界（在来線直通・改札内乗換）および東海道新幹線乗換口" }
+      ]
+    },
+    {
+      "id": "sk:complex:ueno",
+      "names": { "ja": "上野・京成上野複合体（異名同一複合体）", "ja_kana": "うえの・けいせいうえの", "en": "Ueno / Keisei-Ueno Complex (Different Names, Same Complex)" },
+      "memberMatch": [
+        { "operatorId": "sk:operator:jr-east", "stationName": "上野" },
+        { "operatorId": "sk:operator:tokyo-metro", "stationName": "上野" },
+        { "operatorId": "sk:operator:keisei", "stationName": "京成上野" }
+      ],
+      "interchanges": [
+        { "fromOp": "sk:operator:jr-east", "fromName": "上野", "toOp": "sk:operator:keisei", "toName": "京成上野", "gateType": "out_of_gate", "walkingMinutes": 5, "notes": "異なる駅名（上野／京成上野）だが地下通路・地上経由で徒歩乗換可能な同一複合体" },
+        { "fromOp": "sk:operator:jr-east", "fromName": "上野", "toOp": "sk:operator:tokyo-metro", "toName": "上野", "gateType": "out_of_gate", "walkingMinutes": 4, "notes": "銀座線・日比谷線とは改札外連絡" }
+      ]
+    },
+    {
+      "id": "sk:complex:tameike-kokkai",
+      "names": { "ja": "溜池山王・国会議事堂前複合体（異名改札内連絡）", "ja_kana": "ためいけさんのう・こっかいぎじどうまえ", "en": "Tameike-sanno / Kokkai-gijidomae Complex (In-Gate)" },
+      "memberMatch": [
+        { "operatorId": "sk:operator:tokyo-metro", "stationName": "溜池山王" },
+        { "operatorId": "sk:operator:tokyo-metro", "stationName": "国会議事堂前" }
+      ],
+      "interchanges": [
+        { "fromOp": "sk:operator:tokyo-metro", "fromName": "溜池山王", "toOp": "sk:operator:tokyo-metro", "toName": "国会議事堂前", "gateType": "in_gate", "walkingMinutes": 4, "notes": "異なる駅名だが東京メトロ改札内地下通路で直接接続（銀座・南北 ↔ 丸ノ内・千代田）" }
+      ]
+    },
+    {
+      "id": "sk:complex:ayase",
+      "names": { "ja": "綾瀬駅（メトロ・JR境界）", "ja_kana": "あやせえき", "en": "Ayase Station (Tokyo Metro / JR East Boundary)" },
+      "memberMatch": [
+        { "operatorId": "sk:operator:tokyo-metro", "stationName": "綾瀬" },
+        { "operatorId": "sk:operator:jr-east", "stationName": "綾瀬" }
+      ],
+      "interchanges": [
+        { "fromOp": "sk:operator:tokyo-metro", "fromName": "綾瀬", "toOp": "sk:operator:jr-east", "toName": "綾瀬", "gateType": "in_gate", "walkingMinutes": 1, "notes": "千代田線とJR常磐線各駅停車の共同使用駅・直通運転境界（同一ホーム改札内）" }
+      ]
+    },
+    {
+      "id": "sk:complex:yoyogi-uehara",
+      "names": { "ja": "代々木上原駅（メトロ・小田急境界）", "ja_kana": "よよぎうえはらえき", "en": "Yoyogi-Uehara Station (Tokyo Metro / Odakyu Boundary)" },
+      "memberMatch": [
+        { "operatorId": "sk:operator:tokyo-metro", "stationName": "代々木上原" },
+        { "operatorId": "sk:operator:odakyu", "stationName": "代々木上原" }
+      ],
+      "interchanges": [
+        { "fromOp": "sk:operator:tokyo-metro", "fromName": "代々木上原", "toOp": "sk:operator:odakyu", "toName": "代々木上原", "gateType": "in_gate", "walkingMinutes": 1, "notes": "千代田線と小田急小田原線の共同使用駅・直通運転境界（改札内乗換）" }
+      ]
+    },
+    {
+      "id": "sk:complex:sengakuji",
+      "names": { "ja": "泉岳寺駅（都営・京急境界）", "ja_kana": "せんがくじえき", "en": "Sengakuji Station (Toei / Keikyu Boundary)" },
+      "memberMatch": [
+        { "operatorId": "sk:operator:toei", "stationName": "泉岳寺" },
+        { "operatorId": "sk:operator:keikyu", "stationName": "泉岳寺" }
+      ],
+      "interchanges": [
+        { "fromOp": "sk:operator:toei", "fromName": "泉岳寺", "toOp": "sk:operator:keikyu", "toName": "泉岳寺", "gateType": "in_gate", "walkingMinutes": 1, "notes": "都営浅草線と京急本線の共同使用駅・直通運転境界（改札内乗換）" }
+      ]
+    },
+    {
+      "id": "sk:complex:oshiage",
+      "names": { "ja": "押上駅複合体（都営・京成・メトロ・東武）", "ja_kana": "おしあげえきふくごうたい", "en": "Oshiage Station Complex" },
+      "memberMatch": [
+        { "operatorId": "sk:operator:toei", "stationName": "押上" },
+        { "operatorId": "sk:operator:keisei", "stationName": "押上" },
+        { "operatorId": "sk:operator:tokyo-metro", "stationName": "押上" },
+        { "operatorId": "sk:operator:tobu", "stationName": "押上" }
+      ],
+      "interchanges": [
+        { "fromOp": "sk:operator:toei", "fromName": "押上", "toOp": "sk:operator:keisei", "toName": "押上", "gateType": "in_gate", "walkingMinutes": 1, "notes": "都営浅草線と京成押上線の共同使用駅・直通運転境界（改札内）" },
+        { "fromOp": "sk:operator:tokyo-metro", "fromName": "押上", "toOp": "sk:operator:tobu", "toName": "押上", "gateType": "in_gate", "walkingMinutes": 1, "notes": "半蔵門線と東武スカイツリーラインの直通運転境界（改札内）" },
+        { "fromOp": "sk:operator:toei", "fromName": "押上", "toOp": "sk:operator:tokyo-metro", "toName": "押上", "gateType": "out_of_gate", "walkingMinutes": 4, "notes": "都営／京成ホームとメトロ／東武ホーム間は改札外連絡" }
+      ]
+    }
+  ],
+  "throughServices": [
+    {
+      "id": "sk:through:chiyoda-joban",
+      "names": {
+        "ja": "東京メトロ千代田線 ↔ JR常磐線（各駅停車）相互直通運転",
+        "ja_kana": "ちよだせん・じょうばんせんちょくつう",
+        "en": "Tokyo Metro Chiyoda Line ↔ JR East Joban Local Through Service"
+      },
+      "boundaryOperatorId": "sk:operator:tokyo-metro",
+      "boundaryStationName": "綾瀬",
+      "fromRailLineId": "sk:line:metro-chiyoda",
+      "toRailLineId": "sk:line:jr-east-joban",
+      "operatorIds": ["sk:operator:tokyo-metro", "sk:operator:jr-east"],
+      "serviceDescription": "代々木上原〜綾瀬（東京メトロ所有）と綾瀬〜取手（JR東日本所有）を綾瀬駅経由で相互直通運転。線路所有権は綾瀬駅で分離される。",
+      "notes": "三社直通（小田急〜東京メトロ〜JR東日本）の東側境界。公式根拠：東京メトロ千代田線・JR東日本常磐線各駅停車案内。"
+    },
+    {
+      "id": "sk:through:chiyoda-odakyu",
+      "names": {
+        "ja": "東京メトロ千代田線 ↔ 小田急小田原線 相互直通運転",
+        "ja_kana": "ちよだせん・おだきゅうせんちょくつう",
+        "en": "Tokyo Metro Chiyoda Line ↔ Odakyu Odawara Line Through Service"
+      },
+      "boundaryOperatorId": "sk:operator:tokyo-metro",
+      "boundaryStationName": "代々木上原",
+      "fromRailLineId": "sk:line:metro-chiyoda",
+      "toRailLineId": "sk:line:odakyu-odawara",
+      "operatorIds": ["sk:operator:tokyo-metro", "sk:operator:odakyu"],
+      "serviceDescription": "綾瀬〜代々木上原（東京メトロ所有）と代々木上原〜小田急線方面（小田急電鉄所有）を代々木上原駅経由で相互直通運転。",
+      "notes": "三社直通（小田急〜東京メトロ〜JR東日本）の西側境界。車両・運転系統と線路所有権は別概念。"
+    },
+    {
+      "id": "sk:through:asakusa-keikyu",
+      "names": {
+        "ja": "都営浅草線 ↔ 京急本線・空港線 相互直通運転",
+        "ja_kana": "とえいあさくさせん・けいきゅうせんちょくつう",
+        "en": "Toei Asakusa Line ↔ Keikyu Main/Airport Line Through Service"
+      },
+      "boundaryOperatorId": "sk:operator:toei",
+      "boundaryStationName": "泉岳寺",
+      "fromRailLineId": "sk:line:toei-asakusa",
+      "toRailLineId": "sk:line:keikyu-main",
+      "operatorIds": ["sk:operator:toei", "sk:operator:keikyu"],
+      "serviceDescription": "押上〜泉岳寺（東京都交通局所有）と泉岳寺〜品川・羽田空港方面（京浜急行電鉄所有）を泉岳寺駅で相互直通運転。",
+      "notes": "羽田空港〜都心〜成田空港方面を結ぶ標準軌直通ネットワークの南側境界。"
+    },
+    {
+      "id": "sk:through:asakusa-keisei",
+      "names": {
+        "ja": "都営浅草線 ↔ 京成押上線 相互直通運転",
+        "ja_kana": "とえいあさくさせん・けいせいおしあげせんちょくつう",
+        "en": "Toei Asakusa Line ↔ Keisei Oshiage Line Through Service"
+      },
+      "boundaryOperatorId": "sk:operator:toei",
+      "boundaryStationName": "押上",
+      "fromRailLineId": "sk:line:toei-asakusa",
+      "toRailLineId": "sk:line:keisei-oshiage",
+      "operatorIds": ["sk:operator:toei", "sk:operator:keisei"],
+      "serviceDescription": "西馬込／泉岳寺〜押上（東京都交通局所有）と押上〜青砥・成田方面（京成電鉄所有）を押上駅で相互直通運転。",
+      "notes": "京急・都営・京成・北総の4社直通ネットワークにおける北東境界。"
+    }
+  ]
+}
