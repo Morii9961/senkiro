@@ -383,6 +383,9 @@ test.describe('2D plan', () => {
 
   test('the wheel zooms the plan and never scrolls the page; dragging moves it; double-click fits', async ({ page }) => {
     await open(page, 'lang=ja&theme=light&view=2d');
+    // B1F is one piece: one view (a floor in parts has a view per panel, tested below)
+    await page.getByTestId('floor-B1F').click();
+    await expect(page.getByTestId('plan-2d')).toHaveAttribute('data-floor', 'B1F');
     const svg = page.locator('[data-testid="plan-2d"] svg');
     await expect(svg).toBeVisible();
     const viewBox = async () => (await svg.getAttribute('viewBox'))!.split(' ').map(Number);
@@ -401,6 +404,69 @@ test.describe('2D plan', () => {
 
     await svg.dblclick({ position: { x: 20, y: box.height - 20 } });
     await expect.poll(async () => (await viewBox())[2]!).toBeCloseTo(home[2]!, 3);
+  });
+
+  test('the plan marks north, lays each floor horizontally, puts far-apart parts in titled panels that move on their own, and keeps a lone platform in proportion', async ({ page }) => {
+    const errors = await open(page, 'lang=zh&theme=light&view=2d');
+    const plan = page.getByTestId('plan-2d');
+    await expect(page.getByTestId('plan-compass')).toHaveAttribute('data-north', 'left');
+    await expect(page.getByTestId('plan-compass')).toHaveAttribute('aria-label', /左为北/);
+
+    const pickPlanFloor = async (label: string) => {
+      await page.getByTestId(`floor-${label}`).click();
+      await expect(plan).toHaveAttribute('data-floor', label);
+    };
+    const viewBoxOf = async (svg: ReturnType<typeof plan.locator>) => (await svg.getAttribute('viewBox'))!.split(' ').map(Number);
+    /** Drawing scale of the default view, px per schematic unit. */
+    const scaleOf = async (svg: ReturnType<typeof plan.locator>) => (await svg.boundingBox())!.width / (await viewBoxOf(svg))[2]!;
+
+    // 2F: Seibu and JR / Odakyu are not linked on this floor and lie far apart → two panels with titles;
+    // the JR concourse runs east–west, so the floor is turned north-up
+    await pickPlanFloor('2F');
+    await expect(page.getByTestId('plan-compass')).toHaveAttribute('data-north', 'up');
+    await expect(page.getByTestId('plan-compass')).toHaveAttribute('aria-label', /上为北/);
+    const panels = plan.getByTestId('plan-panel');
+    await expect(panels).toHaveCount(2);
+    await expect(plan.getByTestId('plan-panel-head').filter({ hasText: '西武新宿站' })).toHaveCount(1);
+    await expect(page.getByTestId('plan-blocks-note')).toContainText('不按比例');
+    const boxes = [(await panels.nth(0).boundingBox())!, (await panels.nth(1).boundingBox())!].sort((a, b) => a.x - b.x);
+    expect(boxes[0]!.x + boxes[0]!.width).toBeLessThan(boxes[1]!.x);
+    const pb = (await plan.boundingBox())!;
+    const mid = (boxes[0]!.x + boxes[1]!.x + boxes[1]!.width) / 2;
+    expect(Math.abs(mid - (pb.x + pb.width / 2))).toBeLessThan(3);
+    // nothing of the drawing under the floor list
+    const list = (await page.getByTestId('floor-list').boundingBox())!;
+    expect(boxes[0]!.x).toBeGreaterThan(list.x + list.width);
+    // the panels share one default scale
+    const svgs = [panels.nth(0).locator('svg'), panels.nth(1).locator('svg')];
+    expect(await scaleOf(svgs[0]!)).toBeCloseTo(await scaleOf(svgs[1]!), 6);
+
+    // each panel is a view of its own: dragging or zooming one leaves the other where it is
+    const before = [await viewBoxOf(svgs[0]!), await viewBoxOf(svgs[1]!)];
+    const b0 = (await svgs[0]!.boundingBox())!;
+    await page.mouse.move(b0.x + b0.width / 2, b0.y + b0.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(b0.x + b0.width / 2 + 60, b0.y + b0.height / 2 + 30, { steps: 5 });
+    await page.mouse.up();
+    await page.mouse.wheel(0, -400);
+    await expect.poll(async () => (await viewBoxOf(svgs[0]!))[2]!).toBeLessThan(before[0]![2]!);
+    expect((await viewBoxOf(svgs[0]!))[0]).not.toBeCloseTo(before[0]![0]!, 3);
+    expect(await viewBoxOf(svgs[1]!)).toEqual(before[1]);
+    // "reset view" frames every panel again
+    await page.getByTestId('reset-view').click();
+    await expect.poll(async () => (await viewBoxOf(svgs[0]!))[2]!).toBeCloseTo(before[0]![2]!, 3);
+
+    // B1F is linked throughout: one piece, no panels, no note
+    await pickPlanFloor('B1F');
+    await expect(panels).toHaveCount(0);
+    await expect(page.getByTestId('plan-blocks-note')).toHaveCount(0);
+
+    // B7F, a single platform, is drawn no larger than the Busta floors are
+    await pickPlanFloor('4F');
+    const busta = await scaleOf(plan.locator('svg').first());
+    await pickPlanFloor('B7F');
+    expect(await scaleOf(plan.locator('svg').first())).toBeLessThanOrEqual(busta * 1.01);
+    expect(errors).toEqual([]);
   });
 });
 

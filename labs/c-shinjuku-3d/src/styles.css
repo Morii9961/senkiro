@@ -535,6 +535,151 @@ a {
   letter-spacing: -0.02em;
 }
 
+/* one view of the plan: the drawing and its labels */
+.plan-view {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+/* a floor drawn in parts: a row of panels, each a view of its own, clear of the floor list, the title,
+   the compass and the view buttons */
+.plan-grid {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+}
+
+.plan-col {
+  display: flex;
+  flex: 0 1 auto;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 120px;
+}
+
+.plan-panel {
+  position: relative;
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  min-height: 0;
+  border: 1px solid color-mix(in srgb, var(--ink) 30%, var(--paper));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ink) 3%, var(--paper));
+  overflow: hidden;
+}
+
+.plan-panel-head {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  height: 32px;
+  padding: 0 10px;
+  border-bottom: 1px solid color-mix(in srgb, var(--ink) 30%, var(--paper));
+  background: var(--surface-2);
+  color: var(--ink);
+  font-size: 12.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.plan-panel-body {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+.plan-panel-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.plan-panel-north {
+  flex: none;
+  color: var(--ink-3);
+  font-weight: 600;
+}
+
+/* bottom left: the compass, and above it, on a floor drawn in separate blocks, that the gaps are not to scale */
+.plan-legend {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  width: 100px;
+  pointer-events: none;
+}
+
+.plan-note {
+  margin: 0 0 0 4px;
+  color: var(--ink-3);
+  font-size: 11.5px;
+  line-height: 1.4;
+}
+
+/* the plan's own compass: north to the left, as drawn. It replaces the stage's text compass in 2D. */
+.plan ~ .hud-compass {
+  display: none;
+}
+
+.plan-compass {
+  width: 88px;
+  height: 88px;
+}
+
+.plan-compass svg {
+  display: block;
+  overflow: visible;
+}
+
+.plan-compass-ring {
+  fill: color-mix(in srgb, var(--surface-2) 82%, transparent);
+  stroke: var(--rule-strong);
+  stroke-width: 1.2;
+}
+
+.plan-compass-north {
+  fill: var(--ink);
+}
+
+.plan-compass-south {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.2;
+  stroke-linejoin: round;
+}
+
+.plan-compass-tick {
+  stroke: var(--ink-3);
+  stroke-width: 1.2;
+}
+
+.plan-compass-n,
+.plan-compass-minor-text {
+  text-anchor: middle;
+  dominant-baseline: central;
+  font-family: var(--sans);
+}
+
+.plan-compass-n {
+  fill: var(--ink);
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.plan-compass-minor-text {
+  fill: var(--ink-3);
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
 /* labels (shared by 3D and 2D) */
 
 .labels {
