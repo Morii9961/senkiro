@@ -1,1 +1,15 @@
-{"compilerOptions":{"target":"ES2022","module":"ESNext","lib":["ES2022","DOM","DOM.Iterable"],"moduleResolution":"Bundler","allowImportingTsExtensions":true,"resolveJsonModule":true,"jsx":"react-jsx","strict":true,"skipLibCheck":true,"noEmit":true},"include":["src","data/manual","scripts","tests","*.ts"]}
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "moduleResolution": "Bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true
+  },
+  "include": ["src", "data/manual", "scripts", "tests", "*.ts"]
+}

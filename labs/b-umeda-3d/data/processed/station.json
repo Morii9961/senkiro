@@ -20,6 +20,29 @@
       "validFrom": null,
       "validTo": null,
       "kind": "Operator"
+    },
+    {
+      "id": "sk:operator:osaka-metro",
+      "names": {
+        "ja": "Osaka Metro",
+        "en": "Osaka Metro",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:metro-access",
+          "sk:source:metro-map",
+          "sk:source:city-metro"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Operator"
     }
   ],
   "stations": [
@@ -43,10 +66,151 @@
       "validFrom": null,
       "validTo": null,
       "operatorId": "sk:operator:jr-west",
-      "lineIds": []
+      "lineIds": [
+        "sk:line:loop",
+        "sk:line:kobe",
+        "sk:line:kyoto",
+        "sk:line:east"
+      ]
+    },
+    {
+      "id": "sk:station:metro-umeda",
+      "names": {
+        "ja": "梅田",
+        "en": "Umeda",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {
+        "stationCode": "M16"
+      },
+      "provenance": {
+        "sourceIds": [
+          "sk:source:metro-access",
+          "sk:source:metro-map",
+          "sk:source:city-metro"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "operatorId": "sk:operator:osaka-metro",
+      "lineIds": [
+        "sk:line:midosuji"
+      ]
     }
   ],
-  "lines": [],
+  "lines": [
+    {
+      "id": "sk:line:midosuji",
+      "names": {
+        "ja": "御堂筋線",
+        "en": "Midosuji Line",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:metro-access",
+          "sk:source:metro-map",
+          "sk:source:city-metro"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "operatorId": "sk:operator:osaka-metro"
+    },
+    {
+      "id": "sk:line:loop",
+      "names": {
+        "ja": "大阪環状線",
+        "en": "Osaka Loop Line",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-index"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "operatorId": "sk:operator:jr-west"
+    },
+    {
+      "id": "sk:line:kobe",
+      "names": {
+        "ja": "JR神戸線",
+        "en": "JR Kobe Line",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-index"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "operatorId": "sk:operator:jr-west"
+    },
+    {
+      "id": "sk:line:kyoto",
+      "names": {
+        "ja": "JR京都線",
+        "en": "JR Kyoto Line",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-index"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "operatorId": "sk:operator:jr-west"
+    },
+    {
+      "id": "sk:line:east",
+      "names": {
+        "ja": "おおさか東線",
+        "en": "Osaka Higashi Line",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-index"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "operatorId": "sk:operator:jr-west"
+    }
+  ],
   "levels": [
     {
       "id": "sk:level:jr-1f",
@@ -93,6 +257,171 @@
       "label": "2F",
       "ordinal": 1,
       "stationId": "sk:station:jr-osaka"
+    },
+    {
+      "id": "sk:level:jr-3f",
+      "names": {
+        "ja": "3F",
+        "en": "3F",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "label": "3F",
+      "ordinal": 2,
+      "stationId": "sk:station:jr-osaka"
+    },
+    {
+      "id": "sk:level:jr-b1",
+      "names": {
+        "ja": "B1F",
+        "en": "B1F",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "label": "B1F",
+      "ordinal": -1,
+      "stationId": "sk:station:jr-osaka"
+    },
+    {
+      "id": "sk:level:jr-b2",
+      "names": {
+        "ja": "B2F",
+        "en": "B2F",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "label": "B2F",
+      "ordinal": -2,
+      "stationId": "sk:station:jr-osaka"
+    },
+    {
+      "id": "sk:level:outside-1f",
+      "names": {
+        "ja": "1F",
+        "en": "1F",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:city-b"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "label": "1F",
+      "ordinal": 0,
+      "stationId": null
+    },
+    {
+      "id": "sk:level:outside-b1",
+      "names": {
+        "ja": "B1F",
+        "en": "B1F",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:city-b"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "label": "B1F",
+      "ordinal": -1,
+      "stationId": null
+    },
+    {
+      "id": "sk:level:metro-b1",
+      "names": {
+        "ja": "B1F",
+        "en": "B1F",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:metro-access",
+          "sk:source:metro-map",
+          "sk:source:city-metro"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "label": "B1F",
+      "ordinal": -1,
+      "stationId": "sk:station:metro-umeda"
+    },
+    {
+      "id": "sk:level:metro-b2",
+      "names": {
+        "ja": "B2F",
+        "en": "B2F",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:metro-access",
+          "sk:source:metro-map",
+          "sk:source:city-metro"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "label": "B2F",
+      "ordinal": -2,
+      "stationId": "sk:station:metro-umeda"
     }
   ],
   "places": [
@@ -173,7 +502,8 @@
       "externalIds": {},
       "provenance": {
         "sourceIds": [
-          "sk:source:jr-map"
+          "sk:source:jr-map",
+          "sk:source:jr-index"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-21"
@@ -193,7 +523,10 @@
         2.8
       ],
       "zone": "paid",
-      "manager": null
+      "manager": null,
+      "serviceLineIds": [
+        "sk:line:kobe"
+      ]
     },
     {
       "id": "sk:landing:jr-west-w",
@@ -260,6 +593,2120 @@
       ],
       "zone": "paid",
       "manager": null
+    },
+    {
+      "id": "sk:concourse:jr-bridge",
+      "names": {
+        "ja": "連絡橋口 改札内",
+        "en": "Bridge gate hall",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Concourse",
+      "levelId": "sk:level:jr-3f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        1,
+        0
+      ],
+      "size": [
+        4.4,
+        29
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:concourse:jr-bridge-out",
+      "names": {
+        "ja": "南北連絡橋",
+        "en": "North–south bridge",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Concourse",
+      "levelId": "sk:level:jr-3f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -3.6,
+        0
+      ],
+      "size": [
+        3.2,
+        30
+      ],
+      "zone": "unpaid",
+      "manager": "unknown"
+    },
+    {
+      "id": "sk:concourse:jr-midosuji-in",
+      "names": {
+        "ja": "御堂筋口 改札内",
+        "en": "Midosuji gate · inside",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Concourse",
+      "levelId": "sk:level:jr-1f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        16,
+        0
+      ],
+      "size": [
+        6,
+        29
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:concourse:jr-midosuji-out",
+      "names": {
+        "ja": "御堂筋コンコース",
+        "en": "Midosuji concourse",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Concourse",
+      "levelId": "sk:level:jr-1f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        22,
+        0
+      ],
+      "size": [
+        5,
+        26
+      ],
+      "zone": "unpaid",
+      "manager": "railway"
+    },
+    {
+      "id": "sk:entrance:midosuji-south",
+      "names": {
+        "ja": "御堂筋南口",
+        "en": "Midosuji South entrance",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Entrance",
+      "levelId": "sk:level:jr-1f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        22,
+        15
+      ],
+      "size": [
+        4,
+        3
+      ],
+      "zone": "unpaid",
+      "manager": "railway"
+    },
+    {
+      "id": "sk:platform:jr-1-2",
+      "names": {
+        "ja": "大阪 1・2番のりば",
+        "en": "Osaka platforms 1 / 2",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map",
+          "sk:source:jr-index"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Platform",
+      "levelId": "sk:level:jr-2f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        0,
+        12.5
+      ],
+      "size": [
+        49,
+        2.8
+      ],
+      "zone": "paid",
+      "manager": null,
+      "serviceLineIds": [
+        "sk:line:loop"
+      ]
+    },
+    {
+      "id": "sk:landing:jr-west-v",
+      "names": {
+        "ja": "西口側 乗降場",
+        "en": "West lift landing",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-1f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -20,
+        12.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:jr-upper-v",
+      "names": {
+        "ja": "ホーム側 乗降場",
+        "en": "Platform lift landing",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-2f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -20,
+        12.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:platform:jr-5-6",
+      "names": {
+        "ja": "大阪 5・6番のりば",
+        "en": "Osaka platforms 5 / 6",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map",
+          "sk:source:jr-index"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Platform",
+      "levelId": "sk:level:jr-2f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        0,
+        2.5
+      ],
+      "size": [
+        49,
+        2.8
+      ],
+      "zone": "paid",
+      "manager": null,
+      "serviceLineIds": [
+        "sk:line:kobe"
+      ]
+    },
+    {
+      "id": "sk:landing:jr-west-x",
+      "names": {
+        "ja": "西口側 乗降場",
+        "en": "West lift landing",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-1f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -20,
+        2.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:jr-upper-x",
+      "names": {
+        "ja": "ホーム側 乗降場",
+        "en": "Platform lift landing",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-2f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -20,
+        2.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:platform:jr-7-8",
+      "names": {
+        "ja": "大阪 7・8番のりば",
+        "en": "Osaka platforms 7 / 8",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map",
+          "sk:source:jr-index"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Platform",
+      "levelId": "sk:level:jr-2f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        0,
+        -2.5
+      ],
+      "size": [
+        49,
+        2.8
+      ],
+      "zone": "paid",
+      "manager": null,
+      "serviceLineIds": [
+        "sk:line:kyoto"
+      ]
+    },
+    {
+      "id": "sk:landing:jr-west-y",
+      "names": {
+        "ja": "西口側 乗降場",
+        "en": "West lift landing",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-1f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -20,
+        -2.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:jr-upper-y",
+      "names": {
+        "ja": "ホーム側 乗降場",
+        "en": "Platform lift landing",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-2f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -20,
+        -2.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:platform:jr-9-10",
+      "names": {
+        "ja": "大阪 9・10番のりば",
+        "en": "Osaka platforms 9 / 10",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map",
+          "sk:source:jr-index"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Platform",
+      "levelId": "sk:level:jr-2f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        0,
+        -7.5
+      ],
+      "size": [
+        49,
+        2.8
+      ],
+      "zone": "paid",
+      "manager": null,
+      "serviceLineIds": [
+        "sk:line:kyoto"
+      ]
+    },
+    {
+      "id": "sk:landing:jr-west-z",
+      "names": {
+        "ja": "西口側 乗降場",
+        "en": "West lift landing",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-1f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -20,
+        -7.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:jr-upper-z",
+      "names": {
+        "ja": "ホーム側 乗降場",
+        "en": "Platform lift landing",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-2f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -20,
+        -7.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:platform:jr-11",
+      "names": {
+        "ja": "大阪 11番のりば",
+        "en": "Osaka platforms 11",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Platform",
+      "levelId": "sk:level:jr-2f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        0,
+        -12.5
+      ],
+      "size": [
+        49,
+        2.8
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:jr-west-aa",
+      "names": {
+        "ja": "西口側 乗降場",
+        "en": "West lift landing",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-1f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -20,
+        -12.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:jr-upper-aa",
+      "names": {
+        "ja": "ホーム側 乗降場",
+        "en": "Platform lift landing",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-2f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -20,
+        -12.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:hall-h",
+      "names": {
+        "ja": "乗降場 H",
+        "en": "Lift landing H",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-3f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        1,
+        12.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:island-h",
+      "names": {
+        "ja": "ホーム乗降場 H",
+        "en": "Platform landing H",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-2f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        1,
+        12.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:hall-g",
+      "names": {
+        "ja": "乗降場 G",
+        "en": "Lift landing G",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-3f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        1,
+        7.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:island-g",
+      "names": {
+        "ja": "ホーム乗降場 G",
+        "en": "Platform landing G",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-2f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        1,
+        7.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:hall-o",
+      "names": {
+        "ja": "乗降場 O",
+        "en": "Lift landing O",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-1f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        16,
+        7.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:island-o",
+      "names": {
+        "ja": "ホーム乗降場 O",
+        "en": "Platform landing O",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-2f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        16,
+        7.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:hall-f",
+      "names": {
+        "ja": "乗降場 F",
+        "en": "Lift landing F",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-3f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        1,
+        2.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:island-f",
+      "names": {
+        "ja": "ホーム乗降場 F",
+        "en": "Platform landing F",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-2f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        1,
+        2.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:hall-n",
+      "names": {
+        "ja": "乗降場 N",
+        "en": "Lift landing N",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-1f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        16,
+        2.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:island-n",
+      "names": {
+        "ja": "ホーム乗降場 N",
+        "en": "Platform landing N",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-2f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        16,
+        2.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:hall-e",
+      "names": {
+        "ja": "乗降場 E",
+        "en": "Lift landing E",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-3f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        1,
+        -2.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:island-e",
+      "names": {
+        "ja": "ホーム乗降場 E",
+        "en": "Platform landing E",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-2f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        1,
+        -2.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:hall-m",
+      "names": {
+        "ja": "乗降場 M",
+        "en": "Lift landing M",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-1f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        16,
+        -2.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:island-m",
+      "names": {
+        "ja": "ホーム乗降場 M",
+        "en": "Platform landing M",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-2f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        16,
+        -2.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:hall-d",
+      "names": {
+        "ja": "乗降場 D",
+        "en": "Lift landing D",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-3f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        1,
+        -7.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:island-d",
+      "names": {
+        "ja": "ホーム乗降場 D",
+        "en": "Platform landing D",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-2f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        1,
+        -7.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:hall-l",
+      "names": {
+        "ja": "乗降場 L",
+        "en": "Lift landing L",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-1f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        16,
+        -7.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:island-l",
+      "names": {
+        "ja": "ホーム乗降場 L",
+        "en": "Platform landing L",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-2f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        16,
+        -7.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:hall-c",
+      "names": {
+        "ja": "乗降場 C",
+        "en": "Lift landing C",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-3f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        1,
+        -12.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:island-c",
+      "names": {
+        "ja": "ホーム乗降場 C",
+        "en": "Platform landing C",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-2f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        1,
+        -12.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:hall-k",
+      "names": {
+        "ja": "乗降場 K",
+        "en": "Lift landing K",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-1f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        16,
+        -12.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:island-k",
+      "names": {
+        "ja": "ホーム乗降場 K",
+        "en": "Platform landing K",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-2f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        16,
+        -12.5
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:foot-83",
+      "names": {
+        "ja": "西口側 83",
+        "en": "West landing 83",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-1f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -18,
+        8.1
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:head-83",
+      "names": {
+        "ja": "ホーム側 83",
+        "en": "Platform landing 83",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-2f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -14,
+        8.1
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:foot-84",
+      "names": {
+        "ja": "西口側 84",
+        "en": "West landing 84",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-1f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -18,
+        6.9
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:head-84",
+      "names": {
+        "ja": "ホーム側 84",
+        "en": "Platform landing 84",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-2f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -14,
+        6.9
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:concourse:umekita-in",
+      "names": {
+        "ja": "うめきた地下口 改札内",
+        "en": "Umekita underground hall",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Concourse",
+      "levelId": "sk:level:jr-b1",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -34,
+        -14
+      ],
+      "size": [
+        20,
+        9
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:concourse:umekita-out",
+      "names": {
+        "ja": "うめきた地下口 改札外",
+        "en": "Umekita gate exterior",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Concourse",
+      "levelId": "sk:level:jr-b1",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -31,
+        -22
+      ],
+      "size": [
+        10,
+        5
+      ],
+      "zone": "unpaid",
+      "manager": "railway"
+    },
+    {
+      "id": "sk:landing:ab-1f",
+      "names": {
+        "ja": "西口側 EV",
+        "en": "West-side lift",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-1f",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -20,
+        -14
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:ab-b2",
+      "names": {
+        "ja": "連絡通路 西口側",
+        "en": "Passage · west end",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-b2",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -20,
+        -14
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:concourse:ac-b2",
+      "names": {
+        "ja": "改札内連絡通路",
+        "en": "Paid connecting passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Concourse",
+      "levelId": "sk:level:jr-b2",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -27,
+        -14
+      ],
+      "size": [
+        8,
+        3
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:ac-b1",
+      "names": {
+        "ja": "地下口側 EV",
+        "en": "Umekita-side lift",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-b1",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -27,
+        -14
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:platform:jr-21-22",
+      "names": {
+        "ja": "うめきた 21・22番",
+        "en": "Umekita platforms 21 / 22",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map",
+          "sk:source:jr-index"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Platform",
+      "levelId": "sk:level:jr-b2",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -36,
+        -14
+      ],
+      "size": [
+        3.4,
+        24
+      ],
+      "zone": "paid",
+      "manager": null,
+      "serviceLineIds": [
+        "sk:line:east"
+      ]
+    },
+    {
+      "id": "sk:landing:uk-ad",
+      "names": {
+        "ja": "地下ホーム行 EV AD",
+        "en": "Platform lift AD",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-b1",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -36,
+        -14
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:platform:jr-23-24",
+      "names": {
+        "ja": "うめきた 23・24番",
+        "en": "Umekita platforms 23 / 24",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map",
+          "sk:source:jr-index"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Platform",
+      "levelId": "sk:level:jr-b2",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -43,
+        -14
+      ],
+      "size": [
+        3.4,
+        24
+      ],
+      "zone": "paid",
+      "manager": null,
+      "serviceLineIds": [
+        "sk:line:east"
+      ]
+    },
+    {
+      "id": "sk:landing:uk-ae",
+      "names": {
+        "ja": "地下ホーム行 EV AE",
+        "en": "Platform lift AE",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:jr-b1",
+      "stationId": "sk:station:jr-osaka",
+      "point": [
+        -43,
+        -14
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:entrance:surface-crossing",
+      "names": {
+        "ja": "バスターミナル側 横断歩道",
+        "en": "Bus terminal crosswalk",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:city-b"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Entrance",
+      "levelId": "sk:level:outside-1f",
+      "stationId": null,
+      "point": [
+        28,
+        3
+      ],
+      "size": [
+        5,
+        3
+      ],
+      "zone": "unpaid",
+      "manager": "unknown"
+    },
+    {
+      "id": "sk:landing:civic-lift-1f",
+      "names": {
+        "ja": "地上エレベーター",
+        "en": "Surface lift landing",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:city-b"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:outside-1f",
+      "stationId": null,
+      "point": [
+        35,
+        3
+      ],
+      "size": [
+        2,
+        2
+      ],
+      "zone": "unpaid",
+      "manager": "unknown"
+    },
+    {
+      "id": "sk:landing:civic-lift-b1",
+      "names": {
+        "ja": "地下通路",
+        "en": "Underground passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:city-b"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:outside-b1",
+      "stationId": null,
+      "point": [
+        35,
+        3
+      ],
+      "size": [
+        2,
+        2
+      ],
+      "zone": "unpaid",
+      "manager": "unknown"
+    },
+    {
+      "id": "sk:concourse:metro-gate-out",
+      "names": {
+        "ja": "中北東改札口 改札外",
+        "en": "North-central east gate · outside",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:metro-access",
+          "sk:source:metro-map",
+          "sk:source:city-metro"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Concourse",
+      "levelId": "sk:level:metro-b1",
+      "stationId": "sk:station:metro-umeda",
+      "point": [
+        33,
+        8
+      ],
+      "size": [
+        7,
+        5
+      ],
+      "zone": "unpaid",
+      "manager": "unknown"
+    },
+    {
+      "id": "sk:concourse:metro-gate-in",
+      "names": {
+        "ja": "中北東改札口 改札内",
+        "en": "North-central east gate · inside",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:metro-access",
+          "sk:source:metro-map",
+          "sk:source:city-metro"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Concourse",
+      "levelId": "sk:level:metro-b1",
+      "stationId": "sk:station:metro-umeda",
+      "point": [
+        26,
+        8
+      ],
+      "size": [
+        5,
+        5
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:metro-lift-b1",
+      "names": {
+        "ja": "スロープ・ホーム行 EV",
+        "en": "Ramp to platform lift",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:metro-access",
+          "sk:source:metro-map",
+          "sk:source:city-metro"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:metro-b1",
+      "stationId": "sk:station:metro-umeda",
+      "point": [
+        26,
+        14
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:platform:metro-1",
+      "names": {
+        "ja": "御堂筋線 梅田 1番線",
+        "en": "Midosuji Line · Umeda platform 1",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:metro-access",
+          "sk:source:metro-map",
+          "sk:source:city-metro"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Platform",
+      "levelId": "sk:level:metro-b2",
+      "stationId": "sk:station:metro-umeda",
+      "point": [
+        26,
+        14
+      ],
+      "size": [
+        4.6,
+        24
+      ],
+      "zone": "paid",
+      "manager": null,
+      "serviceLineIds": [
+        "sk:line:midosuji"
+      ]
     }
   ],
   "links": [
@@ -274,7 +2721,8 @@
       "externalIds": {},
       "provenance": {
         "sourceIds": [
-          "sk:source:jr-map"
+          "sk:source:jr-map",
+          "sk:source:jr-access"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-21"
@@ -286,7 +2734,7 @@
       "from": "sk:concourse:jr-west-inside",
       "to": "sk:concourse:jr-west-outside",
       "declaredSpan": null,
-      "stepFree": null,
+      "stepFree": true,
       "direction": "both",
       "connection": "verified"
     },
@@ -301,7 +2749,8 @@
       "externalIds": {},
       "provenance": {
         "sourceIds": [
-          "sk:source:jr-map"
+          "sk:source:jr-map",
+          "sk:source:jr-access"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-21"
@@ -313,7 +2762,7 @@
       "from": "sk:concourse:jr-west-inside",
       "to": "sk:landing:jr-west-w",
       "declaredSpan": null,
-      "stepFree": null,
+      "stepFree": true,
       "direction": "both",
       "connection": "verified"
     },
@@ -355,7 +2804,8 @@
       "externalIds": {},
       "provenance": {
         "sourceIds": [
-          "sk:source:jr-map"
+          "sk:source:jr-map",
+          "sk:source:jr-access"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-21"
@@ -367,12 +2817,2152 @@
       "from": "sk:landing:jr-upper-w",
       "to": "sk:platform:jr-3-4",
       "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:gate:jr-bridge",
+      "names": {
+        "ja": "連絡橋口",
+        "en": "Bridge gate",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Gate",
+      "from": "sk:concourse:jr-bridge",
+      "to": "sk:concourse:jr-bridge-out",
+      "declaredSpan": null,
       "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:gate:jr-midosuji",
+      "names": {
+        "ja": "御堂筋口を通る",
+        "en": "Cross Midosuji gate",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map",
+          "sk:source:city-b"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Gate",
+      "from": "sk:concourse:jr-midosuji-in",
+      "to": "sk:concourse:jr-midosuji-out",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:south-entry",
+      "names": {
+        "ja": "御堂筋南口への通路",
+        "en": "South entrance passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:jr-midosuji-out",
+      "to": "sk:entrance:midosuji-south",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:west-1-2",
+      "names": {
+        "ja": "西口 改札内通路",
+        "en": "West paid passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:jr-west-inside",
+      "to": "sk:landing:jr-west-v",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:elevator:west-1-2",
+      "names": {
+        "ja": "エレベーター V",
+        "en": "Lift V",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Elevator",
+      "from": "sk:landing:jr-west-v",
+      "to": "sk:landing:jr-upper-v",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:platform-1-2",
+      "names": {
+        "ja": "ホーム通路",
+        "en": "Platform passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:jr-upper-v",
+      "to": "sk:platform:jr-1-2",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:west-5-6",
+      "names": {
+        "ja": "西口 改札内通路",
+        "en": "West paid passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:jr-west-inside",
+      "to": "sk:landing:jr-west-x",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:elevator:west-5-6",
+      "names": {
+        "ja": "エレベーター X",
+        "en": "Lift X",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Elevator",
+      "from": "sk:landing:jr-west-x",
+      "to": "sk:landing:jr-upper-x",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:platform-5-6",
+      "names": {
+        "ja": "ホーム通路",
+        "en": "Platform passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:jr-upper-x",
+      "to": "sk:platform:jr-5-6",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:west-7-8",
+      "names": {
+        "ja": "西口 改札内通路",
+        "en": "West paid passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:jr-west-inside",
+      "to": "sk:landing:jr-west-y",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:elevator:west-7-8",
+      "names": {
+        "ja": "エレベーター Y",
+        "en": "Lift Y",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Elevator",
+      "from": "sk:landing:jr-west-y",
+      "to": "sk:landing:jr-upper-y",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:platform-7-8",
+      "names": {
+        "ja": "ホーム通路",
+        "en": "Platform passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:jr-upper-y",
+      "to": "sk:platform:jr-7-8",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:west-9-10",
+      "names": {
+        "ja": "西口 改札内通路",
+        "en": "West paid passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:jr-west-inside",
+      "to": "sk:landing:jr-west-z",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:elevator:west-9-10",
+      "names": {
+        "ja": "エレベーター Z",
+        "en": "Lift Z",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Elevator",
+      "from": "sk:landing:jr-west-z",
+      "to": "sk:landing:jr-upper-z",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:platform-9-10",
+      "names": {
+        "ja": "ホーム通路",
+        "en": "Platform passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:jr-upper-z",
+      "to": "sk:platform:jr-9-10",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:west-11",
+      "names": {
+        "ja": "西口 改札内通路",
+        "en": "West paid passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:jr-west-inside",
+      "to": "sk:landing:jr-west-aa",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:elevator:west-11",
+      "names": {
+        "ja": "エレベーター AA",
+        "en": "Lift AA",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Elevator",
+      "from": "sk:landing:jr-west-aa",
+      "to": "sk:landing:jr-upper-aa",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:platform-11",
+      "names": {
+        "ja": "ホーム通路",
+        "en": "Platform passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:jr-upper-aa",
+      "to": "sk:platform:jr-11",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:hall-h",
+      "names": {
+        "ja": "改札内通路",
+        "en": "Paid concourse passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:jr-bridge",
+      "to": "sk:landing:hall-h",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:elevator:jr-h",
+      "names": {
+        "ja": "エレベーター H",
+        "en": "Lift H",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Elevator",
+      "from": "sk:landing:hall-h",
+      "to": "sk:landing:island-h",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:island-h",
+      "names": {
+        "ja": "ホーム通路",
+        "en": "Platform passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:island-h",
+      "to": "sk:platform:jr-1-2",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:hall-g",
+      "names": {
+        "ja": "改札内通路",
+        "en": "Paid concourse passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:jr-bridge",
+      "to": "sk:landing:hall-g",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:elevator:jr-g",
+      "names": {
+        "ja": "エレベーター G",
+        "en": "Lift G",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Elevator",
+      "from": "sk:landing:hall-g",
+      "to": "sk:landing:island-g",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:island-g",
+      "names": {
+        "ja": "ホーム通路",
+        "en": "Platform passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:island-g",
+      "to": "sk:platform:jr-3-4",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:hall-o",
+      "names": {
+        "ja": "改札内通路",
+        "en": "Paid concourse passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:jr-midosuji-in",
+      "to": "sk:landing:hall-o",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:elevator:jr-o",
+      "names": {
+        "ja": "エレベーター O",
+        "en": "Lift O",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Elevator",
+      "from": "sk:landing:hall-o",
+      "to": "sk:landing:island-o",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:island-o",
+      "names": {
+        "ja": "ホーム通路",
+        "en": "Platform passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:island-o",
+      "to": "sk:platform:jr-3-4",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:hall-f",
+      "names": {
+        "ja": "改札内通路",
+        "en": "Paid concourse passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:jr-bridge",
+      "to": "sk:landing:hall-f",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:elevator:jr-f",
+      "names": {
+        "ja": "エレベーター F",
+        "en": "Lift F",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Elevator",
+      "from": "sk:landing:hall-f",
+      "to": "sk:landing:island-f",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:island-f",
+      "names": {
+        "ja": "ホーム通路",
+        "en": "Platform passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:island-f",
+      "to": "sk:platform:jr-5-6",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:hall-n",
+      "names": {
+        "ja": "改札内通路",
+        "en": "Paid concourse passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:jr-midosuji-in",
+      "to": "sk:landing:hall-n",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:elevator:jr-n",
+      "names": {
+        "ja": "エレベーター N",
+        "en": "Lift N",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Elevator",
+      "from": "sk:landing:hall-n",
+      "to": "sk:landing:island-n",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:island-n",
+      "names": {
+        "ja": "ホーム通路",
+        "en": "Platform passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:island-n",
+      "to": "sk:platform:jr-5-6",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:hall-e",
+      "names": {
+        "ja": "改札内通路",
+        "en": "Paid concourse passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:jr-bridge",
+      "to": "sk:landing:hall-e",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:elevator:jr-e",
+      "names": {
+        "ja": "エレベーター E",
+        "en": "Lift E",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Elevator",
+      "from": "sk:landing:hall-e",
+      "to": "sk:landing:island-e",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:island-e",
+      "names": {
+        "ja": "ホーム通路",
+        "en": "Platform passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:island-e",
+      "to": "sk:platform:jr-7-8",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:hall-m",
+      "names": {
+        "ja": "改札内通路",
+        "en": "Paid concourse passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:jr-midosuji-in",
+      "to": "sk:landing:hall-m",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:elevator:jr-m",
+      "names": {
+        "ja": "エレベーター M",
+        "en": "Lift M",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Elevator",
+      "from": "sk:landing:hall-m",
+      "to": "sk:landing:island-m",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:island-m",
+      "names": {
+        "ja": "ホーム通路",
+        "en": "Platform passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:island-m",
+      "to": "sk:platform:jr-7-8",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:hall-d",
+      "names": {
+        "ja": "改札内通路",
+        "en": "Paid concourse passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:jr-bridge",
+      "to": "sk:landing:hall-d",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:elevator:jr-d",
+      "names": {
+        "ja": "エレベーター D",
+        "en": "Lift D",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Elevator",
+      "from": "sk:landing:hall-d",
+      "to": "sk:landing:island-d",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:island-d",
+      "names": {
+        "ja": "ホーム通路",
+        "en": "Platform passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:island-d",
+      "to": "sk:platform:jr-9-10",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:hall-l",
+      "names": {
+        "ja": "改札内通路",
+        "en": "Paid concourse passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:jr-midosuji-in",
+      "to": "sk:landing:hall-l",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:elevator:jr-l",
+      "names": {
+        "ja": "エレベーター L",
+        "en": "Lift L",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Elevator",
+      "from": "sk:landing:hall-l",
+      "to": "sk:landing:island-l",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:island-l",
+      "names": {
+        "ja": "ホーム通路",
+        "en": "Platform passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:island-l",
+      "to": "sk:platform:jr-9-10",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:hall-c",
+      "names": {
+        "ja": "改札内通路",
+        "en": "Paid concourse passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:jr-bridge",
+      "to": "sk:landing:hall-c",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:elevator:jr-c",
+      "names": {
+        "ja": "エレベーター C",
+        "en": "Lift C",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Elevator",
+      "from": "sk:landing:hall-c",
+      "to": "sk:landing:island-c",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:island-c",
+      "names": {
+        "ja": "ホーム通路",
+        "en": "Platform passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:island-c",
+      "to": "sk:platform:jr-11",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:hall-k",
+      "names": {
+        "ja": "改札内通路",
+        "en": "Paid concourse passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:jr-midosuji-in",
+      "to": "sk:landing:hall-k",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:elevator:jr-k",
+      "names": {
+        "ja": "エレベーター K",
+        "en": "Lift K",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Elevator",
+      "from": "sk:landing:hall-k",
+      "to": "sk:landing:island-k",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:island-k",
+      "names": {
+        "ja": "ホーム通路",
+        "en": "Platform passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:island-k",
+      "to": "sk:platform:jr-11",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:foot-83",
+      "names": {
+        "ja": "西口側通路",
+        "en": "West passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:jr-west-inside",
+      "to": "sk:landing:foot-83",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:stairs:jr-83",
+      "names": {
+        "ja": "西口側階段",
+        "en": "West stairs",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Stairs",
+      "from": "sk:landing:foot-83",
+      "to": "sk:landing:head-83",
+      "declaredSpan": null,
+      "stepFree": false,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:head-83",
+      "names": {
+        "ja": "ホーム通路",
+        "en": "Platform passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:head-83",
+      "to": "sk:platform:jr-3-4",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:foot-84",
+      "names": {
+        "ja": "西口側通路",
+        "en": "West passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:jr-west-inside",
+      "to": "sk:landing:foot-84",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:escalator:jr-84",
+      "names": {
+        "ja": "西口側エスカレーター",
+        "en": "West escalator",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Escalator",
+      "from": "sk:landing:foot-84",
+      "to": "sk:landing:head-84",
+      "declaredSpan": null,
+      "stepFree": false,
+      "direction": "unknown",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:head-84",
+      "names": {
+        "ja": "ホーム通路",
+        "en": "Platform passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:head-84",
+      "to": "sk:platform:jr-3-4",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:gate:jr-umekita",
+      "names": {
+        "ja": "うめきた地下口",
+        "en": "Umekita underground gate",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Gate",
+      "from": "sk:concourse:umekita-in",
+      "to": "sk:concourse:umekita-out",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:west-ab",
+      "names": {
+        "ja": "西口側通路",
+        "en": "West hall passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map",
+          "sk:source:jr-access"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:jr-west-inside",
+      "to": "sk:landing:ab-1f",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:elevator:jr-ab",
+      "names": {
+        "ja": "西口側エレベーター AB",
+        "en": "West lift AB",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Elevator",
+      "from": "sk:landing:ab-1f",
+      "to": "sk:landing:ab-b2",
+      "declaredSpan": [
+        "sk:level:jr-1f",
+        "sk:level:jr-b2"
+      ],
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:ab-ac",
+      "names": {
+        "ja": "改札内連絡通路を進む",
+        "en": "Follow the paid connecting passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map",
+          "sk:source:jr-access"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:ab-b2",
+      "to": "sk:concourse:ac-b2",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:elevator:jr-ac",
+      "names": {
+        "ja": "地下口側エレベーター AC",
+        "en": "Umekita lift AC",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Elevator",
+      "from": "sk:concourse:ac-b2",
+      "to": "sk:landing:ac-b1",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:ac-hall",
+      "names": {
+        "ja": "うめきた改札内通路",
+        "en": "Umekita paid hall",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map",
+          "sk:source:jr-access"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:ac-b1",
+      "to": "sk:concourse:umekita-in",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:uk-21-22",
+      "names": {
+        "ja": "地下ホームへの通路",
+        "en": "Passage to underground platforms",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map",
+          "sk:source:jr-access"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:umekita-in",
+      "to": "sk:landing:uk-ad",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:elevator:jr-ad",
+      "names": {
+        "ja": "エレベーター AD",
+        "en": "Lift AD",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Elevator",
+      "from": "sk:landing:uk-ad",
+      "to": "sk:platform:jr-21-22",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:uk-23-24",
+      "names": {
+        "ja": "地下ホームへの通路",
+        "en": "Passage to underground platforms",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map",
+          "sk:source:jr-access"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:umekita-in",
+      "to": "sk:landing:uk-ae",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:elevator:jr-ae",
+      "names": {
+        "ja": "エレベーター AE",
+        "en": "Lift AE",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Elevator",
+      "from": "sk:landing:uk-ae",
+      "to": "sk:platform:jr-23-24",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:city-approach",
+      "names": {
+        "ja": "横断歩道へ進む",
+        "en": "Approach the bus terminal crossing",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:city-b"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:jr-midosuji-out",
+      "to": "sk:entrance:surface-crossing",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:city-crossing",
+      "names": {
+        "ja": "横断歩道を渡る",
+        "en": "Cross to the surface lift",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:city-b"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:entrance:surface-crossing",
+      "to": "sk:landing:civic-lift-1f",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:elevator:city-six",
+      "names": {
+        "ja": "地上から地下１階へ",
+        "en": "Take the street lift to B1F",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:city-b"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Elevator",
+      "from": "sk:landing:civic-lift-1f",
+      "to": "sk:landing:civic-lift-b1",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:city-to-metro",
+      "names": {
+        "ja": "中北東改札口へ進む",
+        "en": "Follow the passage to the Metro gate",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:city-b"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:civic-lift-b1",
+      "to": "sk:concourse:metro-gate-out",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:gate:metro-northeast",
+      "names": {
+        "ja": "中北東改札口を通る",
+        "en": "Cross the north-central east gate",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:metro-access",
+          "sk:source:metro-map",
+          "sk:source:city-metro"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Gate",
+      "from": "sk:concourse:metro-gate-out",
+      "to": "sk:concourse:metro-gate-in",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:metro-ramp",
+      "names": {
+        "ja": "スロープを進む",
+        "en": "Follow the ramp to the lift",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:metro-access",
+          "sk:source:metro-map",
+          "sk:source:city-metro"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:metro-gate-in",
+      "to": "sk:landing:metro-lift-b1",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:elevator:metro-platform",
+      "names": {
+        "ja": "1番線ホームへ下りる",
+        "en": "Descend to platform 1",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:metro-access",
+          "sk:source:metro-map",
+          "sk:source:city-metro"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Elevator",
+      "from": "sk:landing:metro-lift-b1",
+      "to": "sk:platform:metro-1",
+      "declaredSpan": null,
+      "stepFree": true,
       "direction": "both",
       "connection": "verified"
     }
   ],
-  "context": [],
+  "context": [
+    {
+      "id": "sk:context:hankyu",
+      "names": {
+        "ja": "阪急 大阪梅田",
+        "en": "Hankyu Osaka-umeda",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "unknown",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "UnverifiedBlock"
+    },
+    {
+      "id": "sk:context:hanshin",
+      "names": {
+        "ja": "阪神 大阪梅田",
+        "en": "Hanshin Osaka-Umeda",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hanshin"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "unknown",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "UnverifiedBlock"
+    },
+    {
+      "id": "sk:context:higashi",
+      "names": {
+        "ja": "東梅田",
+        "en": "Higashi-Umeda",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:higashi"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "unknown",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "UnverifiedBlock"
+    },
+    {
+      "id": "sk:context:nishi",
+      "names": {
+        "ja": "西梅田",
+        "en": "Nishi-Umeda",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:nishi"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "unknown",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "UnverifiedBlock"
+    },
+    {
+      "id": "sk:context:kitashinchi",
+      "names": {
+        "ja": "北新地",
+        "en": "Kitashinchi",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:jr-map"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "unknown",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "UnverifiedBlock"
+    },
+    {
+      "id": "sk:context:whity",
+      "names": {
+        "ja": "ホワイティうめだ",
+        "en": "Whity Umeda",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:metro-exits"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "unknown",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "UnverifiedBlock"
+    }
+  ],
   "complex": {
     "id": "sk:complex:osaka-umeda",
     "names": {
@@ -393,8 +4983,33 @@
     "validFrom": null,
     "validTo": null,
     "stationIds": [
-      "sk:station:jr-osaka"
+      "sk:station:jr-osaka",
+      "sk:station:metro-umeda"
     ]
   },
-  "interchange": null
+  "interchange": {
+    "id": "sk:interchange:osaka-metro-umeda",
+    "names": {
+      "ja": "改札外乗り換え",
+      "en": "Out-of-gate interchange",
+      "ja_kana": null,
+      "zh": null
+    },
+    "externalIds": {},
+    "provenance": {
+      "sourceIds": [
+        "sk:source:city-b"
+      ],
+      "dataNature": "manual-verified",
+      "lastVerifiedAt": "2026-11-21"
+    },
+    "geometry_confidence": "schematic",
+    "validFrom": null,
+    "validTo": null,
+    "stationIds": [
+      "sk:station:jr-osaka",
+      "sk:station:metro-umeda"
+    ],
+    "outsideGates": true
+  }
 }

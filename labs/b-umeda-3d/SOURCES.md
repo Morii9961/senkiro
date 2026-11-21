@@ -2,6 +2,18 @@
 
 AI 对照运营商和大阪市公开资料录入；无实地或人工复核。资料日期、读取日期和业务有效期分别保存。手绘坐标与尺寸仅用于示意；原图未随项目分发。所有 UI 字体使用本机字体，无底图。
 
+### sk:source:city-metro
+
+梅田地区バリアフリーマップ 駅周辺① · 大阪市
+
+[原文](https://www.city.osaka.lg.jp/toshikeikaku/cmsfiles/contents/0000369/369380/umeda02-1%28202606%29.pdf)
+
+资料日期 2026-06，读取日期 2026-11-21。明确中北東改札 B1F 与站台 B2F。
+
+未确认原作再分发授权。商业使用 unknown，原件再分发 unknown，相同方式共享 unknown。
+
+署名 大阪市 · 梅田地区バリアフリーマップ 駅周辺①
+
 ### sk:source:jr-index
 
 大阪駅 構内図・のりば案内 · JR西日本
@@ -212,11 +224,71 @@ AI 对照运营商和大阪市公开资料录入；无实地或人工复核。�
 
 [原文](https://ckan.odpt.org/dataset)
 
-资料日期 未知，读取日期 2026-11-21。各数据集许可不同；未核实可用于本站的 indoor pathways 数据。
+资料日期 未知，读取日期 2026-11-21。数据集许可各异。以下五次公开 CKAN 检索均为零条；只说明关键词检索结果。
 
 未确认原作再分发授权。商业使用 unknown，原件再分发 unknown，相同方式共享 unknown。
 
 署名 ODPT · 公共交通オープンデータセンター 目录
+
+### sk:source:odpt-query-0
+
+CKAN package_search · 大阪メトロ · ODPT
+
+[原文](https://ckan.odpt.org/api/3/action/package_search?rows=8&q=%E5%A4%A7%E9%98%AA%E3%83%A1%E3%83%88%E3%83%AD)
+
+资料日期 未知，读取日期 2026-11-21。实查 result.count = 0。没有下载数据。
+
+未确认原作再分发授权。商业使用 unknown，原件再分发 unknown，相同方式共享 unknown。
+
+署名 ODPT · CKAN package_search · 大阪メトロ
+
+### sk:source:odpt-query-1
+
+CKAN package_search · 梅田 · ODPT
+
+[原文](https://ckan.odpt.org/api/3/action/package_search?rows=8&q=%E6%A2%85%E7%94%B0)
+
+资料日期 未知，读取日期 2026-11-21。实查 result.count = 0。没有下载数据。
+
+未确认原作再分发授权。商业使用 unknown，原件再分发 unknown，相同方式共享 unknown。
+
+署名 ODPT · CKAN package_search · 梅田
+
+### sk:source:odpt-query-2
+
+CKAN package_search · 駅施設情報 · ODPT
+
+[原文](https://ckan.odpt.org/api/3/action/package_search?rows=8&q=%E9%A7%85%E6%96%BD%E8%A8%AD%E6%83%85%E5%A0%B1)
+
+资料日期 未知，读取日期 2026-11-21。实查 result.count = 0。没有下载数据。
+
+未确认原作再分发授权。商业使用 unknown，原件再分发 unknown，相同方式共享 unknown。
+
+署名 ODPT · CKAN package_search · 駅施設情報
+
+### sk:source:odpt-query-3
+
+CKAN package_search · 阪急電鉄 · ODPT
+
+[原文](https://ckan.odpt.org/api/3/action/package_search?rows=8&q=%E9%98%AA%E6%80%A5%E9%9B%BB%E9%89%84)
+
+资料日期 未知，读取日期 2026-11-21。实查 result.count = 0。没有下载数据。
+
+未确认原作再分发授权。商业使用 unknown，原件再分发 unknown，相同方式共享 unknown。
+
+署名 ODPT · CKAN package_search · 阪急電鉄
+
+### sk:source:odpt-query-4
+
+CKAN package_search · JR西日本 · ODPT
+
+[原文](https://ckan.odpt.org/api/3/action/package_search?rows=8&q=JR%E8%A5%BF%E6%97%A5%E6%9C%AC)
+
+资料日期 未知，读取日期 2026-11-21。实查 result.count = 0。没有下载数据。
+
+未确认原作再分发授权。商业使用 unknown，原件再分发 unknown，相同方式共享 unknown。
+
+署名 ODPT · CKAN package_search · JR西日本
 
 ### sk:source:odpt-challenge
 
@@ -319,16 +391,175 @@ Repository license。商业使用 yes，原件再分发 yes，相同方式共享
 | 元素 ID | 名称 | 依据资料（资料日期） | geometry_confidence |
 |---|---|---|---|
 | sk:operator:jr-west | JR西日本 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:operator:osaka-metro | Osaka Metro | sk:source:metro-access (未知)<br>sk:source:metro-map (未知)<br>sk:source:city-metro (2026-06) | schematic |
 | sk:station:jr-osaka | 大阪 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:station:metro-umeda | 梅田 | sk:source:metro-access (未知)<br>sk:source:metro-map (未知)<br>sk:source:city-metro (2026-06) | schematic |
+| sk:line:midosuji | 御堂筋線 | sk:source:metro-access (未知)<br>sk:source:metro-map (未知)<br>sk:source:city-metro (2026-06) | schematic |
+| sk:line:loop | 大阪環状線 | sk:source:jr-index (2026-01-14) | schematic |
+| sk:line:kobe | JR神戸線 | sk:source:jr-index (2026-01-14) | schematic |
+| sk:line:kyoto | JR京都線 | sk:source:jr-index (2026-01-14) | schematic |
+| sk:line:east | おおさか東線 | sk:source:jr-index (2026-01-14) | schematic |
 | sk:complex:osaka-umeda | 大阪・梅田 | sk:source:city-b (2026-06) | schematic |
+| sk:interchange:osaka-metro-umeda | 改札外乗り換え | sk:source:city-b (2026-06) | schematic |
 | sk:level:jr-1f | 1F | sk:source:jr-map (2026-01-14) | schematic |
 | sk:level:jr-2f | 2F | sk:source:jr-map (2026-01-14) | schematic |
+| sk:level:jr-3f | 3F | sk:source:jr-map (2026-01-14) | schematic |
+| sk:level:jr-b1 | B1F | sk:source:jr-map (2026-01-14) | schematic |
+| sk:level:jr-b2 | B2F | sk:source:jr-map (2026-01-14) | schematic |
+| sk:level:outside-1f | 1F | sk:source:city-b (2026-06) | schematic |
+| sk:level:outside-b1 | B1F | sk:source:city-b (2026-06) | schematic |
+| sk:level:metro-b1 | B1F | sk:source:metro-access (未知)<br>sk:source:metro-map (未知)<br>sk:source:city-metro (2026-06) | schematic |
+| sk:level:metro-b2 | B2F | sk:source:metro-access (未知)<br>sk:source:metro-map (未知)<br>sk:source:city-metro (2026-06) | schematic |
 | sk:concourse:jr-west-inside | 西口 改札内 | sk:source:jr-map (2026-01-14) | schematic |
 | sk:concourse:jr-west-outside | 西口 改札外 | sk:source:jr-map (2026-01-14) | schematic |
-| sk:platform:jr-3-4 | 大阪 3・4番のりば | sk:source:jr-map (2026-01-14) | schematic |
+| sk:platform:jr-3-4 | 大阪 3・4番のりば | sk:source:jr-map (2026-01-14)<br>sk:source:jr-index (2026-01-14) | schematic |
 | sk:landing:jr-west-w | 西口側 乗降場 | sk:source:jr-map (2026-01-14) | schematic |
 | sk:landing:jr-upper-w | ホーム側 乗降場 | sk:source:jr-map (2026-01-14) | schematic |
-| sk:gate:jr-west | 西口 | sk:source:jr-map (2026-01-14) | schematic |
-| sk:passage:west-3-4 | 西口 改札内通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:concourse:jr-bridge | 連絡橋口 改札内 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:concourse:jr-bridge-out | 南北連絡橋 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:concourse:jr-midosuji-in | 御堂筋口 改札内 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:concourse:jr-midosuji-out | 御堂筋コンコース | sk:source:jr-map (2026-01-14) | schematic |
+| sk:entrance:midosuji-south | 御堂筋南口 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:platform:jr-1-2 | 大阪 1・2番のりば | sk:source:jr-map (2026-01-14)<br>sk:source:jr-index (2026-01-14) | schematic |
+| sk:landing:jr-west-v | 西口側 乗降場 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:jr-upper-v | ホーム側 乗降場 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:platform:jr-5-6 | 大阪 5・6番のりば | sk:source:jr-map (2026-01-14)<br>sk:source:jr-index (2026-01-14) | schematic |
+| sk:landing:jr-west-x | 西口側 乗降場 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:jr-upper-x | ホーム側 乗降場 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:platform:jr-7-8 | 大阪 7・8番のりば | sk:source:jr-map (2026-01-14)<br>sk:source:jr-index (2026-01-14) | schematic |
+| sk:landing:jr-west-y | 西口側 乗降場 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:jr-upper-y | ホーム側 乗降場 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:platform:jr-9-10 | 大阪 9・10番のりば | sk:source:jr-map (2026-01-14)<br>sk:source:jr-index (2026-01-14) | schematic |
+| sk:landing:jr-west-z | 西口側 乗降場 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:jr-upper-z | ホーム側 乗降場 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:platform:jr-11 | 大阪 11番のりば | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:jr-west-aa | 西口側 乗降場 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:jr-upper-aa | ホーム側 乗降場 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:hall-h | 乗降場 H | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:island-h | ホーム乗降場 H | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:hall-g | 乗降場 G | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:island-g | ホーム乗降場 G | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:hall-o | 乗降場 O | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:island-o | ホーム乗降場 O | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:hall-f | 乗降場 F | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:island-f | ホーム乗降場 F | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:hall-n | 乗降場 N | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:island-n | ホーム乗降場 N | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:hall-e | 乗降場 E | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:island-e | ホーム乗降場 E | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:hall-m | 乗降場 M | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:island-m | ホーム乗降場 M | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:hall-d | 乗降場 D | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:island-d | ホーム乗降場 D | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:hall-l | 乗降場 L | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:island-l | ホーム乗降場 L | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:hall-c | 乗降場 C | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:island-c | ホーム乗降場 C | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:hall-k | 乗降場 K | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:island-k | ホーム乗降場 K | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:foot-83 | 西口側 83 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:head-83 | ホーム側 83 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:foot-84 | 西口側 84 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:head-84 | ホーム側 84 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:concourse:umekita-in | うめきた地下口 改札内 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:concourse:umekita-out | うめきた地下口 改札外 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:ab-1f | 西口側 EV | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:ab-b2 | 連絡通路 西口側 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:concourse:ac-b2 | 改札内連絡通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:landing:ac-b1 | 地下口側 EV | sk:source:jr-map (2026-01-14) | schematic |
+| sk:platform:jr-21-22 | うめきた 21・22番 | sk:source:jr-map (2026-01-14)<br>sk:source:jr-index (2026-01-14) | schematic |
+| sk:landing:uk-ad | 地下ホーム行 EV AD | sk:source:jr-map (2026-01-14) | schematic |
+| sk:platform:jr-23-24 | うめきた 23・24番 | sk:source:jr-map (2026-01-14)<br>sk:source:jr-index (2026-01-14) | schematic |
+| sk:landing:uk-ae | 地下ホーム行 EV AE | sk:source:jr-map (2026-01-14) | schematic |
+| sk:entrance:surface-crossing | バスターミナル側 横断歩道 | sk:source:city-b (2026-06) | schematic |
+| sk:landing:civic-lift-1f | 地上エレベーター | sk:source:city-b (2026-06) | schematic |
+| sk:landing:civic-lift-b1 | 地下通路 | sk:source:city-b (2026-06) | schematic |
+| sk:concourse:metro-gate-out | 中北東改札口 改札外 | sk:source:metro-access (未知)<br>sk:source:metro-map (未知)<br>sk:source:city-metro (2026-06) | schematic |
+| sk:concourse:metro-gate-in | 中北東改札口 改札内 | sk:source:metro-access (未知)<br>sk:source:metro-map (未知)<br>sk:source:city-metro (2026-06) | schematic |
+| sk:landing:metro-lift-b1 | スロープ・ホーム行 EV | sk:source:metro-access (未知)<br>sk:source:metro-map (未知)<br>sk:source:city-metro (2026-06) | schematic |
+| sk:platform:metro-1 | 御堂筋線 梅田 1番線 | sk:source:metro-access (未知)<br>sk:source:metro-map (未知)<br>sk:source:city-metro (2026-06) | schematic |
+| sk:gate:jr-west | 西口 | sk:source:jr-map (2026-01-14)<br>sk:source:jr-access (未知) | schematic |
+| sk:passage:west-3-4 | 西口 改札内通路 | sk:source:jr-map (2026-01-14)<br>sk:source:jr-access (未知) | schematic |
 | sk:elevator:west-3-4 | エレベーター W | sk:source:jr-map (2026-01-14) | schematic |
-| sk:passage:platform-3-4 | ホーム通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:platform-3-4 | ホーム通路 | sk:source:jr-map (2026-01-14)<br>sk:source:jr-access (未知) | schematic |
+| sk:gate:jr-bridge | 連絡橋口 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:gate:jr-midosuji | 御堂筋口を通る | sk:source:jr-map (2026-01-14)<br>sk:source:city-b (2026-06) | schematic |
+| sk:passage:south-entry | 御堂筋南口への通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:west-1-2 | 西口 改札内通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:elevator:west-1-2 | エレベーター V | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:platform-1-2 | ホーム通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:west-5-6 | 西口 改札内通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:elevator:west-5-6 | エレベーター X | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:platform-5-6 | ホーム通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:west-7-8 | 西口 改札内通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:elevator:west-7-8 | エレベーター Y | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:platform-7-8 | ホーム通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:west-9-10 | 西口 改札内通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:elevator:west-9-10 | エレベーター Z | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:platform-9-10 | ホーム通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:west-11 | 西口 改札内通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:elevator:west-11 | エレベーター AA | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:platform-11 | ホーム通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:hall-h | 改札内通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:elevator:jr-h | エレベーター H | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:island-h | ホーム通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:hall-g | 改札内通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:elevator:jr-g | エレベーター G | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:island-g | ホーム通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:hall-o | 改札内通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:elevator:jr-o | エレベーター O | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:island-o | ホーム通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:hall-f | 改札内通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:elevator:jr-f | エレベーター F | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:island-f | ホーム通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:hall-n | 改札内通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:elevator:jr-n | エレベーター N | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:island-n | ホーム通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:hall-e | 改札内通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:elevator:jr-e | エレベーター E | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:island-e | ホーム通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:hall-m | 改札内通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:elevator:jr-m | エレベーター M | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:island-m | ホーム通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:hall-d | 改札内通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:elevator:jr-d | エレベーター D | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:island-d | ホーム通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:hall-l | 改札内通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:elevator:jr-l | エレベーター L | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:island-l | ホーム通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:hall-c | 改札内通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:elevator:jr-c | エレベーター C | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:island-c | ホーム通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:hall-k | 改札内通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:elevator:jr-k | エレベーター K | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:island-k | ホーム通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:foot-83 | 西口側通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:stairs:jr-83 | 西口側階段 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:head-83 | ホーム通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:foot-84 | 西口側通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:escalator:jr-84 | 西口側エスカレーター | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:head-84 | ホーム通路 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:gate:jr-umekita | うめきた地下口 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:west-ab | 西口側通路 | sk:source:jr-map (2026-01-14)<br>sk:source:jr-access (未知) | schematic |
+| sk:elevator:jr-ab | 西口側エレベーター AB | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:ab-ac | 改札内連絡通路を進む | sk:source:jr-map (2026-01-14)<br>sk:source:jr-access (未知) | schematic |
+| sk:elevator:jr-ac | 地下口側エレベーター AC | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:ac-hall | うめきた改札内通路 | sk:source:jr-map (2026-01-14)<br>sk:source:jr-access (未知) | schematic |
+| sk:passage:uk-21-22 | 地下ホームへの通路 | sk:source:jr-map (2026-01-14)<br>sk:source:jr-access (未知) | schematic |
+| sk:elevator:jr-ad | エレベーター AD | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:uk-23-24 | 地下ホームへの通路 | sk:source:jr-map (2026-01-14)<br>sk:source:jr-access (未知) | schematic |
+| sk:elevator:jr-ae | エレベーター AE | sk:source:jr-map (2026-01-14) | schematic |
+| sk:passage:city-approach | 横断歩道へ進む | sk:source:city-b (2026-06) | schematic |
+| sk:passage:city-crossing | 横断歩道を渡る | sk:source:city-b (2026-06) | schematic |
+| sk:elevator:city-six | 地上から地下１階へ | sk:source:city-b (2026-06) | schematic |
+| sk:passage:city-to-metro | 中北東改札口へ進む | sk:source:city-b (2026-06) | schematic |
+| sk:gate:metro-northeast | 中北東改札口を通る | sk:source:metro-access (未知)<br>sk:source:metro-map (未知)<br>sk:source:city-metro (2026-06) | schematic |
+| sk:passage:metro-ramp | スロープを進む | sk:source:metro-access (未知)<br>sk:source:metro-map (未知)<br>sk:source:city-metro (2026-06) | schematic |
+| sk:elevator:metro-platform | 1番線ホームへ下りる | sk:source:metro-access (未知)<br>sk:source:metro-map (未知)<br>sk:source:city-metro (2026-06) | schematic |
+| sk:context:hankyu | 阪急 大阪梅田 | sk:source:hankyu (未知) | unknown |
+| sk:context:hanshin | 阪神 大阪梅田 | sk:source:hanshin (未知) | unknown |
+| sk:context:higashi | 東梅田 | sk:source:higashi (未知) | unknown |
+| sk:context:nishi | 西梅田 | sk:source:nishi (未知) | unknown |
+| sk:context:kitashinchi | 北新地 | sk:source:jr-map (2026-01-14) | unknown |
+| sk:context:whity | ホワイティうめだ | sk:source:metro-exits (未知) | unknown |
+| sk:update:demo-umeda-one | サンプル運行情報 | sk:source:fixture (未知) | unknown |
