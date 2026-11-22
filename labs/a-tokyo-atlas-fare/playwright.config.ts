@@ -1,5 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const e2ePort = Number(process.env.E2E_PORT || 18473);
+const baseUrl = `http://127.0.0.1:${e2ePort}`;
+
 export default defineConfig({
   testDir: './tests/e2e',
   timeout: 45_000,
@@ -10,7 +13,7 @@ export default defineConfig({
   retries: 0,
   reporter: 'list',
   use: {
-    baseURL: 'http://127.0.0.1:18473',
+    baseURL: baseUrl,
     trace: 'on-first-retry',
     viewport: { width: 1440, height: 900 },
   },
@@ -27,9 +30,9 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npm run preview -- --host 127.0.0.1 --port 18473 --strictPort',
-    url: 'http://127.0.0.1:18473',
-    reuseExistingServer: !process.env.CI,
+    command: `npm run preview -- --host 127.0.0.1 --port ${e2ePort} --strictPort`,
+    url: baseUrl,
+    reuseExistingServer: !process.env.CI && !process.env.E2E_PORT,
     timeout: 30_000,
   },
 });
