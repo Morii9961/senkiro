@@ -11,12 +11,12 @@ import {
   indexTrackSpline3D,
   solveConsistPosesAlongSpline,
   type IndexedTrackSpline3D,
-} from '../../domain/rollingStock/articulation.js';
+} from './domain/articulation.js';
 import {
   buildConsistFormation,
   getRollingStockForLine,
   getRollingStockSpec,
-} from '../../domain/rollingStock/specs.js';
+} from './domain/specs.js';
 import type {
   ConsistCarSlot,
   DoorSide,
@@ -29,7 +29,7 @@ import type {
   TrainDoorState,
   TrainLightState,
   TravelDirection,
-} from '../../domain/rollingStock/types.js';
+} from './domain/types.js';
 import type { SkId } from '../../domain/types.js';
 import { buildE235CarLod, type BuiltCarLodResult } from './builders/e235Builder.js';
 import { buildMetro1000CarLod } from './builders/metro1000Builder.js';

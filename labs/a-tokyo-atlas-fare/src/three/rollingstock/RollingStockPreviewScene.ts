@@ -13,14 +13,14 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import {
   createShowcaseCurveSpline3D,
   type IndexedTrackSpline3D,
-} from '../../domain/rollingStock/articulation.js';
-import { LIST_ROLLING_STOCK_SPECS } from '../../domain/rollingStock/specs.js';
+} from './domain/articulation.js';
+import { LIST_ROLLING_STOCK_SPECS } from './domain/specs.js';
 import type {
   DoorSide,
   RollingStockLodLevel,
   RollingStockSeriesId,
   TravelDirection,
-} from '../../domain/rollingStock/types.js';
+} from './domain/types.js';
 import { SkyEnvironmentSystem } from '../environment/skyEnvironment.js';
 import { serializeObject3DToGlb } from './glbExporterAndCache.js';
 import {

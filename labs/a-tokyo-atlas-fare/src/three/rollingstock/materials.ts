@@ -7,7 +7,7 @@
  */
 
 import * as THREE from 'three';
-import type { RollingStockSeriesId, TrainLightState, TravelDirection } from '../../domain/rollingStock/types.js';
+import type { RollingStockSeriesId, TrainLightState, TravelDirection } from './domain/types.js';
 
 interface RgbaColor {
   r: number;

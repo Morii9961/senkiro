@@ -7,7 +7,7 @@
  * and omit copyrighted operator logos/trademarks in compliance with Shared Contract v0.1 Section 6 & 7.
  */
 
-import type { SkId, SourceRecord } from '../types.js';
+import type { SkId, SourceRecord } from '../../../domain/types.js';
 import type {
   ConsistCarSlot,
   RollingStockCarRole,

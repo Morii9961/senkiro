@@ -17,7 +17,7 @@ import type {
   ConsistCarSlot,
   RollingStockLodLevel,
   RollingStockSpec,
-} from '../../../domain/rollingStock/types.js';
+} from '../domain/types.js';
 import {
   createBogieGroup,
   createInterCarGangwayGroup,

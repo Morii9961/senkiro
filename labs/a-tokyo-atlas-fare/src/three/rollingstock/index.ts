@@ -1,4 +1,4 @@
-export * from '../../domain/rollingStock/index.js';
+export * from './domain/index.js';
 export * from './materials.js';
 export * from './components.js';
 export * from './builders/e235Builder.js';
@@ -7,3 +7,4 @@ export * from './builders/metro17000Builder.js';
 export * from './RollingStockFactory.js';
 export * from './glbExporterAndCache.js';
 export * from './RollingStockPreviewScene.js';
+export * from './v2Adapter.js';

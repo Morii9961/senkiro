@@ -10,8 +10,8 @@
 
 import * as THREE from 'three';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import type { RollingStockSeriesId } from '../../domain/rollingStock/types.js';
-import { getRollingStockSpec } from '../../domain/rollingStock/specs.js';
+import type { RollingStockSeriesId } from './domain/types.js';
+import { getRollingStockSpec } from './domain/specs.js';
 
 export interface GlbHeaderInspection {
   readonly validMagic: boolean;

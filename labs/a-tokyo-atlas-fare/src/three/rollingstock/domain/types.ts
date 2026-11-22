@@ -9,7 +9,7 @@ import type {
   Provenance,
   SkId,
   SourceRecord,
-} from '../types.js';
+} from '../../../domain/types.js';
 
 export type RollingStockSeriesId =
   | 'jr-east-e235-0'

@@ -11,7 +11,7 @@ import * as THREE from 'three';
 import type {
   BodyCrossSectionProfile,
   RollingStockLodLevel,
-} from '../../domain/rollingStock/types.js';
+} from './domain/types.js';
 import type { SeriesSharedMaterials } from './materials.js';
 
 /**
