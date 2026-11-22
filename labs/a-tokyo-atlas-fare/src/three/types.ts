@@ -1,6 +1,9 @@
+import type {
+  TunnelCutawayStyle,
+  V2SceneTelemetryExtras,
+} from '../contracts/atlasV2.js';
 import type { SchematicTierId } from '../domain/elevationSolver.js';
 import type { SkId } from '../domain/types.js';
-import type { UndergroundSystemTelemetry } from '../domain/underground/tunnelTypes.js';
 
 export interface UrbanBuildingRecord {
   id: number;
@@ -128,6 +131,7 @@ export interface UndergroundViewSettings {
   hideBuildings: boolean;
   clipEnabled: boolean;
   clipY: number; // -45 .. +35
+  tunnelCutawayStyle?: TunnelCutawayStyle;
   visibleTiers: Record<SchematicTierId, boolean>;
 }
 
@@ -144,7 +148,7 @@ export interface LineTraceStatus {
 export type CameraNavMode = 'map' | 'free';
 export type CameraMoveSpeed = 'slow' | 'normal' | 'fast';
 
-export interface SceneTelemetry {
+export interface SceneTelemetry extends V2SceneTelemetryExtras {
   loadedChunks: number;
   totalChunks: number;
   renderedBuildings: number;
@@ -159,5 +163,4 @@ export interface SceneTelemetry {
   realOsmBuildings?: number;
   infillBuildings?: number;
   railwayLod?: 'near' | 'mid' | 'far';
-  underground?: UndergroundSystemTelemetry;
 }

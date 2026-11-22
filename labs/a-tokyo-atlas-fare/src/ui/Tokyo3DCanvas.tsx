@@ -23,7 +23,6 @@ import type {
   OsmVerticalDataset,
   SkId,
 } from '../domain/types.js';
-import type { TunnelViewpoint } from '../domain/underground/tunnelTypes.js';
 import { TOKYO_HUB_PRESETS } from '../three/geoProjection.js';
 import { Metropolitan3DScene } from '../three/Metropolitan3DScene.js';
 import type {
@@ -110,10 +109,6 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
   const [sceneNight, setSceneNight] = useState(theme === 'dark');
   const [cameraMode, setCameraMode] = useState<CameraNavMode>('map');
   const [cameraSpeed, setCameraSpeed] = useState<CameraMoveSpeed>('normal');
-  const [tunnelViewpoints, setTunnelViewpoints] = useState<TunnelViewpoint[]>([]);
-  const [activeViewpointId, setActiveViewpointId] = useState<string>('');
-  const [roofCutaway, setRoofCutaway] = useState(false);
-  const [lineOverlayVisible, setLineOverlayVisible] = useState(false);
 
   // Sync 3D lighting when global light/dark theme switches
   useEffect(() => {
@@ -143,7 +138,6 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
       initialViewport ?? undefined,
     );
     sceneRef.current = ctrl;
-    setTunnelViewpoints(ctrl.getTunnelViewpoints());
 
     return () => {
       ctrl.dispose();
@@ -176,15 +170,6 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
     });
   }, [visibleOperatorIds, selectedLineId, selectedStationId, fareSliceOnly, underground]);
 
-  // Sync Atlas v2 Underground Section Cut & Independent Line-Color Info Overlay
-  useEffect(() => {
-    sceneRef.current?.setUndergroundSectionCut({
-      mode: roofCutaway ? 'tunnel_roof_open' : underground.enabled ? 'radial_cutaway' : 'none',
-      revealAllRoofs: roofCutaway,
-      lineOverlayVisible,
-    });
-  }, [roofCutaway, lineOverlayVisible, underground.enabled]);
-
   // Sync JR Fare dual-path highlight
   useEffect(() => {
     sceneRef.current?.setFareQuote(fareQuote);
@@ -209,10 +194,6 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
   };
 
   const handleReturnToSurface = () => {
-    setActiveViewpointId('');
-    setRoofCutaway(false);
-    sceneRef.current?.exitTunnelInterior();
-    setCameraMode('map');
     setUnderground((prev) => ({
       ...prev,
       enabled: false,
@@ -223,20 +204,6 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
       verticalExaggeration: 1.0,
       visibleTiers: { ...DEFAULT_VISIBLE_TIERS },
     }));
-  };
-
-  const handleEnterTunnelViewpoint = (vpId: string) => {
-    if (!vpId || !sceneRef.current) return;
-    if (sceneRef.current.enterTunnelViewpoint(vpId)) {
-      setActiveViewpointId(vpId);
-      setCameraMode('free');
-      setCameraSpeed('slow');
-      setUnderground((prev) => ({
-        ...prev,
-        enabled: true,
-        verticalExaggeration: 1.0,
-      }));
-    }
   };
 
   const handleToggleTier = (tierId: SchematicTierId) => {
@@ -526,54 +493,6 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
                   </span>
                 </label>
               </>
-            )}
-
-            <label className="hud-check-row">
-              <input
-                type="checkbox"
-                data-testid="tunnel-roof-cutaway-checkbox"
-                checked={roofCutaway}
-                onChange={(e) => setRoofCutaway(e.target.checked)}
-              />
-              <span>
-                {locale === 'ja' ? 'トンネル天井カット（断面確認）' : 'Tunnel Roof Cutaway'}
-              </span>
-            </label>
-
-            <label className="hud-check-row">
-              <input
-                type="checkbox"
-                data-testid="line-color-overlay-checkbox"
-                checked={lineOverlayVisible}
-                onChange={(e) => setLineOverlayVisible(e.target.checked)}
-              />
-              <span>
-                {locale === 'ja' ? '路線カラー情報オーバーレイ' : 'Line Color Info Overlay'}
-              </span>
-            </label>
-
-            {tunnelViewpoints.length > 0 && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 2 }}>
-                <select
-                  className="hub-chip"
-                  style={{ width: '100%', textAlign: 'left' }}
-                  data-testid="tunnel-viewpoint-select"
-                  aria-label={locale === 'ja' ? '地下トンネル内部視点' : 'Tunnel Interior Viewpoint'}
-                  value={activeViewpointId}
-                  onChange={(e) => handleEnterTunnelViewpoint(e.target.value)}
-                >
-                  <option value="">
-                    {locale === 'ja'
-                      ? '▶ トンネル内部へ入る（模式深度）...'
-                      : '▶ Enter Tunnel Interior (Schematic Depth)...'}
-                  </option>
-                  {tunnelViewpoints.map((vp) => (
-                    <option key={vp.id} value={vp.id}>
-                      {locale === 'ja' ? vp.labelJa : vp.labelEn}
-                    </option>
-                  ))}
-                </select>
-              </div>
             )}
 
             <label className="hud-check-row">

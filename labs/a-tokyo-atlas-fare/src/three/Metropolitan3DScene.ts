@@ -12,8 +12,21 @@
 
 import * as THREE from 'three';
 import {
-  classifyTier,
+  buildPhysicalTrackGraph,
+  type CameraModeV2,
+  type CameraStateSnapshot,
+  type PhysicalTrackGraph,
+  type SimulatedTrainState,
+  type SimulationControlState,
+  type SimTimeScale,
+  type SimTrainDensity,
+  type TrainFollowView,
+  type TrainSimulationEngineAdapter,
+  type TunnelCutawayStyle,
+} from '../contracts/index.js';
+import {
   solveRailwayNetwork3D,
+  classifyTier,
   type SolvedPoint3D,
   type SolvedRailwayNetwork3D,
   type SolvedSegment3D,
@@ -24,7 +37,14 @@ import type {
   OsmVerticalDataset,
   SkId,
 } from '../domain/types.js';
+import { createTrainSimulationEngine } from '../simulation/index.js';
 import { SpatialCameraController } from './cameraController.js';
+import type {
+  AtlasV2SceneApi,
+  AtlasV2ScenePlugins,
+  RollingStockRendererAdapter,
+} from './contracts/adapters.js';
+import { createRollingStockRenderer } from './rollingstock/index.js';
 import { CutawayPitVisuals } from './environment/cutawayVisuals.js';
 import { SkyEnvironmentSystem } from './environment/skyEnvironment.js';
 import { CityChunkManager } from './generators/buildingGenerator.js';
@@ -32,12 +52,6 @@ import { CityTerrainLayer } from './generators/cityTerrainGenerator.js';
 import { RailTrackLayer, type RailwayLodTier } from './generators/railTrackGenerator.js';
 import { TunnelAndStationLayer } from './generators/tunnelGenerator.js';
 import { ViaductLayer } from './generators/viaductGenerator.js';
-import type {
-  TunnelViewpoint,
-  UndergroundRailwayQueryAPI,
-  UndergroundSectionCutState,
-} from '../domain/underground/tunnelTypes.js';
-import { UndergroundRailwaySystem } from './underground/UndergroundRailwaySystem.js';
 import {
   lonLatToWorld,
   TOKYO_HUB_PRESETS,
@@ -58,13 +72,20 @@ import type {
 export interface SceneCallbacks {
   onSelectStation: (stationId: SkId<'station'>) => void;
   onSelectLine: (lineId: SkId<'line'>) => void;
+  onSelectTrain?: (trainId: string | null) => void;
   onTelemetry?: (telemetry: SceneTelemetry) => void;
   onTraceUpdate?: (status: LineTraceStatus) => void;
+  onSimulationUpdate?: (
+    control: SimulationControlState,
+    trains: readonly SimulatedTrainState[],
+  ) => void;
+  onCameraStateChange?: (snapshot: CameraStateSnapshot) => void;
   onCameraMoved?: (lon: number, lat: number, zoomEquiv: number) => void;
 }
 
-export class Metropolitan3DScene {
+export class Metropolitan3DScene implements AtlasV2SceneApi {
   readonly solved: SolvedRailwayNetwork3D;
+  readonly physicalTracks: PhysicalTrackGraph;
 
   private readonly container: HTMLElement;
   private readonly renderer: THREE.WebGLRenderer;
@@ -82,7 +103,6 @@ export class Metropolitan3DScene {
   private readonly railLayer: RailTrackLayer;
   private readonly viaductLayer: ViaductLayer;
   private readonly tunnelLayer: TunnelAndStationLayer;
-  private readonly undergroundSystem: UndergroundRailwaySystem;
   private readonly traceProbe: THREE.Mesh;
 
   private readonly sunLight: THREE.DirectionalLight;
@@ -92,8 +112,16 @@ export class Metropolitan3DScene {
   private cutawayActive = false;
   private cutawayPinned = false;
   private verticalExaggeration = 1.0;
-  private interiorTunnelActive = false;
-  private lastInteriorLightingApplied = false;
+  private tunnelCutawayStyle: TunnelCutawayStyle = 'translucent_shell';
+
+  // v2.0 Subsystem Plugin Slots (injected by Integration Coordinator as branches merge)
+  private simulationEngine: TrainSimulationEngineAdapter | null = null;
+  private rollingStockRenderer: RollingStockRendererAdapter | null = null;
+  private latestTrains: readonly SimulatedTrainState[] = [];
+  private selectedTrainId: string | null = null;
+  private followTrainId: string | null = null;
+  private followTrainView: TrainFollowView = 'chase';
+  private lastSimEmitTime = 0;
 
   private readonly dataset: AtlasDataset;
   private readonly fareSliceLineIds: Set<SkId<'line'>>;
@@ -130,6 +158,7 @@ export class Metropolitan3DScene {
     isDark: boolean,
     callbacks: SceneCallbacks,
     initialCenter?: { lon: number; lat: number; zoom?: number },
+    plugins?: AtlasV2ScenePlugins,
   ) {
     this.container = container;
     this.dataset = dataset;
@@ -139,8 +168,9 @@ export class Metropolitan3DScene {
       dataset.railLines.filter((l) => l.inFareSlice).map((l) => l.id),
     );
 
-    // 1. Solve continuous 3D vertical railway network from shared AtlasDataset + OSM vertical tags
+    // 1. Solve continuous 3D vertical railway network & build unified v2.0 PhysicalTrackGraph
     this.solved = solveRailwayNetwork3D(dataset, osmVertical);
+    this.physicalTracks = buildPhysicalTrackGraph(dataset, this.solved);
 
     // 2. Renderer (logarithmicDepthBuffer: true eliminates distant coplanar ground/water Z-fighting!)
     this.renderer = new THREE.WebGLRenderer({
@@ -219,7 +249,6 @@ export class Metropolitan3DScene {
     this.railLayer = new RailTrackLayer(this.solved, this.clipPlanes);
     this.viaductLayer = new ViaductLayer(this.solved, null, this.clipPlanes);
     this.tunnelLayer = new TunnelAndStationLayer(this.solved, this.clipPlanes);
-    this.undergroundSystem = new UndergroundRailwaySystem(this.solved, this.clipPlanes);
 
     this.scene.add(
       this.terrainLayer.group,
@@ -227,33 +256,14 @@ export class Metropolitan3DScene {
       this.buildingManager.group,
       this.viaductLayer.group,
       this.tunnelLayer.group,
-      this.undergroundSystem.group,
-      this.undergroundSystem.lightingSystem.group,
       this.railLayer.group,
     );
 
-    // Expose read-only Underground Spatial Query & Section-Cut bridge for Camera Session & E2E
-    (
-      window as unknown as {
-        __SENKIRO_UNDERGROUND__?: {
-          api: UndergroundRailwayQueryAPI;
-          enterViewpoint: (id: string) => boolean;
-          exitInterior: () => void;
-          setSectionCut: (state: UndergroundSectionCutState) => void;
-          setCameraPose: (
-            pos: [number, number, number],
-            lookAt: [number, number, number],
-            nearM?: number,
-          ) => void;
-        };
-      }
-    ).__SENKIRO_UNDERGROUND__ = {
-      api: this.undergroundSystem,
-      enterViewpoint: (id: string) => this.enterTunnelViewpoint(id),
-      exitInterior: () => this.exitTunnelInterior(),
-      setSectionCut: (state: UndergroundSectionCutState) => this.setUndergroundSectionCut(state),
-      setCameraPose: (pos, lookAt, nearM = 0.25) => this.setCustomTunnelPose(pos, lookAt, nearM),
-    };
+    // 7b. v2.0 Simulation Engine & Rolling Stock Renderer plugins (Wave 1 + Wave 2 defaults)
+    this.attachSimulationEngine(plugins?.simulationEngine ?? createTrainSimulationEngine());
+    this.attachRollingStockRenderer(
+      plugins?.rollingStockRenderer ?? createRollingStockRenderer(),
+    );
 
     // Glowing trace probe for Line Trace fly-through
     this.traceProbe = new THREE.Mesh(
@@ -325,88 +335,195 @@ export class Metropolitan3DScene {
     this.camCtrl.setSpeed(speed);
   }
 
-  getUndergroundAPI(): UndergroundRailwayQueryAPI {
-    return this.undergroundSystem;
+  // ---- v2.0 Subsystem Plugin Attachment & Public AtlasV2SceneApi ----
+
+  attachSimulationEngine(engine: TrainSimulationEngineAdapter): void {
+    this.simulationEngine = engine;
+    engine.initialize(this.physicalTracks, this.dataset, { autoStart: true });
+    this.latestTrains = engine.getTrains();
   }
 
-  getTunnelViewpoints(): TunnelViewpoint[] {
-    return this.undergroundSystem.getCuratedViewpoints();
-  }
-
-  setUndergroundSectionCut(state: UndergroundSectionCutState): void {
-    this.undergroundSystem.setSectionCutState(state);
-    this.emitTelemetry();
-  }
-
-  /**
-   * Positions camera inside an enterable tunnel/station viewpoint using the existing
-   * SpatialCameraController (without rewriting global camera controls).
-   */
-  enterTunnelViewpoint(viewpointId: string): boolean {
-    const vp = this.undergroundSystem.getCuratedViewpoints().find((v) => v.id === viewpointId);
-    if (!vp) return false;
-    this.setCustomTunnelPose(
-      [vp.position.x, vp.position.y, vp.position.z],
-      [vp.lookAt.x, vp.lookAt.y, vp.lookAt.z],
-      vp.recommendedNearM,
-      vp.recommendedFovDeg,
-    );
-    return true;
-  }
-
-  private setCustomTunnelPose(
-    pos: [number, number, number],
-    lookAt: [number, number, number],
-    nearM = 0.25,
-    fovDeg = 54,
-  ): void {
-    this.tracePlaying = false;
-    this.interiorTunnelActive = true;
-    // Lock 1:1 vertical scale while inspecting tunnel interior so circular bores & clearance stay exact!
-    this.verticalExaggeration = 1.0;
-    this.railLayer.group.scale.y = 1.0;
-    this.viaductLayer.group.scale.y = 1.0;
-    this.tunnelLayer.group.scale.y = 1.0;
-    this.undergroundSystem.group.scale.y = 1.0;
-    this.undergroundSystem.setInteriorMode(true);
-    this.tunnelLayer.setInteriorMode(true);
-
-    this.camCtrl.setUndergroundBounds(true, 1.0);
-    if (this.camCtrl.getMode() === 'free') {
-      this.camCtrl.setMode('map');
+  attachRollingStockRenderer(renderer: RollingStockRendererAdapter): void {
+    if (this.rollingStockRenderer) {
+      this.scene.remove(this.rollingStockRenderer.group);
     }
-    this.camera.fov = fovDeg;
-    this.camera.near = nearM;
-    this.camera.far = 16_000;
-    this.camera.updateProjectionMatrix();
+    this.rollingStockRenderer = renderer;
+    // INVARIANT: rolling stock group NEVER inherits verticalExaggeration scale.y!
+    renderer.group.scale.set(1, 1, 1);
+    this.scene.add(renderer.group);
+    if (this.latestTrains.length > 0) {
+      renderer.syncTrains(
+        this.latestTrains,
+        this.camera.position,
+        this.verticalExaggeration,
+        this.isDark,
+      );
+    }
+  }
 
-    this.camera.position.set(pos[0], pos[1], pos[2]);
-    this.camCtrl.controls.target.set(lookAt[0], lookAt[1], lookAt[2]);
-    this.camCtrl.setMode('free');
-    this.camCtrl.setSpeed('slow');
+  getSimulatedTrains(): readonly SimulatedTrainState[] {
+    return this.latestTrains;
+  }
+
+  getSimulationControlState(): SimulationControlState {
+    if (this.simulationEngine) {
+      return this.simulationEngine.getControlState();
+    }
+    return {
+      running: false,
+      timeScale: 1,
+      simClockSec: 0,
+      density: 'normal',
+      activeLineFilter: null,
+      totalActiveTrains: 0,
+      undergroundTrainCount: 0,
+      isVirtualSimulation: true,
+      dataNature: 'synthetic',
+    };
+  }
+
+  setSimulationRunning(running: boolean): void {
+    this.simulationEngine?.setRunning(running);
+    this.emitSimulationState();
+  }
+
+  setSimulationTimeScale(scale: SimTimeScale): void {
+    this.simulationEngine?.setTimeScale(scale);
+    this.emitSimulationState();
+  }
+
+  setSimulationDensity(density: SimTrainDensity): void {
+    this.simulationEngine?.setDensity(density);
+    if (this.simulationEngine) {
+      this.latestTrains = this.simulationEngine.getTrains();
+    }
+    this.emitSimulationState();
+  }
+
+  setSimulationLineFilter(lineIds: SkId<'line'>[] | null): void {
+    this.simulationEngine?.setLineFilter(lineIds);
+    if (this.simulationEngine) {
+      this.latestTrains = this.simulationEngine.getTrains();
+    }
+    this.emitSimulationState();
+  }
+
+  resetSimulation(seed?: number): void {
+    this.simulationEngine?.reset(seed);
+    if (this.simulationEngine) {
+      this.latestTrains = this.simulationEngine.getTrains();
+    }
+    this.emitSimulationState();
+  }
+
+  selectTrain(trainId: string | null): void {
+    this.selectedTrainId = trainId;
+    this.rollingStockRenderer?.setSelectedTrain(trainId);
+    this.callbacks.onSelectTrain?.(trainId);
+  }
+
+  getSelectedTrainId(): string | null {
+    return this.selectedTrainId;
+  }
+
+  followTrain(trainId: string | null, view: TrainFollowView = 'chase'): void {
+    this.followTrainId = trainId;
+    this.followTrainView = view;
+    if (trainId) {
+      this.tracePlaying = false;
+      this.camCtrl.cancelAnimation();
+      this.selectTrain(trainId);
+    }
+    this.callbacks.onCameraStateChange?.(this.getCameraStateSnapshot());
+  }
+
+  startUndergroundTrainDemo(view: TrainFollowView = 'chase'): string | null {
+    const demoId = this.simulationEngine?.getDemoUndergroundTrainId() ?? null;
+    if (!demoId) return null;
+    this.simulationEngine?.setRunning(true);
+    this.followTrain(demoId, view);
+    return demoId;
+  }
+
+  setUndergroundCutawayStyle(style: TunnelCutawayStyle): void {
+    this.tunnelCutawayStyle = style;
     this.emitTelemetry();
   }
 
-  exitTunnelInterior(): void {
-    this.interiorTunnelActive = false;
-    this.undergroundSystem.setInteriorMode(false);
-    this.tunnelLayer.setInteriorMode(false);
-    this.camCtrl.setUndergroundBounds(false, 1.0);
-    this.camera.fov = 46;
-    this.camera.updateProjectionMatrix();
-
-    // Lift camera cleanly back above ground surface around the current focus XZ so Return to Surface
-    // never leaves the camera stranded underground inside a tunnel bore!
+  getCameraStateSnapshot(): CameraStateSnapshot {
     const focus = this.camCtrl.getFocusTarget();
-    const liftTarget = new THREE.Vector3(focus.x, 0, focus.z);
-    this.camCtrl.setMode('map');
-    this.camCtrl.setSpeed('normal');
-    if (this.camera.position.y < 30) {
-      this.camCtrl.jumpTo(liftTarget, 620, 58, -32);
+    const isUndergroundCamera = this.camera.position.y < -1.5;
+    let mode: CameraModeV2 = this.camCtrl.getMode() === 'free' ? 'free' : 'map';
+    if (this.followTrainId) {
+      mode = this.followTrainView === 'cab' ? 'cab_ride' : 'follow_train';
+    } else if (isUndergroundCamera || this.cutawayActive) {
+      mode = 'underground_inspect';
     }
-    this.buildingManager.group.visible = true;
-    this.terrainLayer.group.visible = true;
-    this.emitTelemetry();
+    return {
+      mode,
+      target: this.followTrainId
+        ? { kind: 'train', trainId: this.followTrainId, view: this.followTrainView }
+        : { kind: 'world', x: focus.x, y: focus.y, z: focus.z },
+      position: [
+        Math.round(this.camera.position.x * 10) / 10,
+        Math.round(this.camera.position.y * 10) / 10,
+        Math.round(this.camera.position.z * 10) / 10,
+      ],
+      lookAt: [
+        Math.round(focus.x * 10) / 10,
+        Math.round(focus.y * 10) / 10,
+        Math.round(focus.z * 10) / 10,
+      ],
+      distanceM: Math.round(this.camCtrl.getDistanceToFocus() * 10) / 10,
+      isUndergroundCamera,
+      followingTrainId: this.followTrainId,
+      followView: this.followTrainId ? this.followTrainView : null,
+    };
+  }
+
+  private emitSimulationState(): void {
+    if (!this.callbacks.onSimulationUpdate) return;
+    this.callbacks.onSimulationUpdate(this.getSimulationControlState(), this.latestTrains);
+  }
+
+  private updateTrainFollowCamera(train: SimulatedTrainState): void {
+    const hp = train.headPose;
+    const hLen = Math.hypot(hp.dirX, hp.dirZ) || 1;
+    const fx = hp.dirX / hLen;
+    const fz = hp.dirZ / hLen;
+    const rx = -fz;
+    const rz = fx;
+
+    let desiredPos: THREE.Vector3;
+    let desiredLook: THREE.Vector3;
+
+    if (this.followTrainView === 'cab') {
+      // Driver cab interior/windshield POV strictly inside tunnel clearance envelope!
+      desiredPos = new THREE.Vector3(hp.x + fx * 1.8, hp.y + 2.35, hp.z + fz * 1.8);
+      desiredLook = new THREE.Vector3(hp.x + fx * 65, hp.y + 2.1 + hp.dirY * 65, hp.z + fz * 65);
+    } else if (this.followTrainView === 'side') {
+      desiredPos = new THREE.Vector3(hp.x + rx * 28 - fx * 14, hp.y + 12, hp.z + rz * 28 - fz * 14);
+      desiredLook = new THREE.Vector3(hp.x - fx * 20, hp.y + 2.2, hp.z - fz * 20);
+    } else if (this.followTrainView === 'overhead_cutaway') {
+      desiredPos = new THREE.Vector3(hp.x - fx * 95 + rx * 65, Math.max(hp.y + 140, 85), hp.z - fz * 95 + rz * 65);
+      desiredLook = new THREE.Vector3(hp.x, hp.y + 2, hp.z);
+    } else {
+      // 'chase': close trailing view (works cleanly both on surface and inside cutaway pit!)
+      const trailDist = train.inTunnel ? 42 : 72;
+      const trailHeight = train.inTunnel ? 18 : 34;
+      desiredPos = new THREE.Vector3(
+        hp.x - fx * trailDist + rx * 16,
+        hp.y + trailHeight,
+        hp.z - fz * trailDist + rz * 16,
+      );
+      desiredLook = new THREE.Vector3(hp.x + fx * 28, hp.y + 2.2, hp.z + fz * 28);
+    }
+
+    const alpha = this.followTrainView === 'cab' ? 0.42 : 0.16;
+    this.camera.position.lerp(desiredPos, alpha);
+    this.camCtrl.controls.target.lerp(desiredLook, alpha);
+    this.camera.lookAt(this.camCtrl.controls.target);
+    this.camCtrl.controls.update();
   }
 
   setTheme(isDark: boolean): void {
@@ -439,11 +556,9 @@ export class Metropolitan3DScene {
     const wasActive = this.cutawayActive;
     this.cutawayActive = underground.enabled;
     this.cutawayPinned = underground.pinCutaway;
-    // Keep 1:1 vertical scale whenever inside a tunnel interior so circular bores & clearance never distort!
-    this.verticalExaggeration =
-      underground.enabled && !this.interiorTunnelActive
-        ? Math.max(1.0, Math.min(2.5, underground.verticalExaggeration))
-        : 1.0;
+    this.verticalExaggeration = underground.enabled
+      ? Math.max(1.0, Math.min(2.5, underground.verticalExaggeration))
+      : 1.0;
 
     this.cutawayUniforms.uCutawayActive.value = underground.enabled ? 1.0 : 0.0;
     this.cutawayUniforms.uCutawayRadius.value = Math.max(
@@ -460,7 +575,6 @@ export class Metropolitan3DScene {
     this.railLayer.group.scale.y = this.verticalExaggeration;
     this.viaductLayer.group.scale.y = this.verticalExaggeration;
     this.tunnelLayer.group.scale.y = this.verticalExaggeration;
-    this.undergroundSystem.group.scale.y = this.verticalExaggeration;
 
     // Boost subterranean illumination gently inside cutaway pit so concrete tunnels pop crisply!
     this.subFillLight.intensity = underground.enabled
@@ -517,16 +631,6 @@ export class Metropolitan3DScene {
       visibleTiers: underground.visibleTiers,
       selectedLineId,
       selectedStationId,
-      fareSliceOnly,
-      fareSliceLineIds: this.fareSliceLineIds,
-      undergroundActive: underground.enabled,
-      clipEnabled: underground.clipEnabled,
-    });
-
-    this.undergroundSystem.applyFilters({
-      visibleOperatorIds,
-      visibleTiers: underground.visibleTiers,
-      selectedLineId,
       fareSliceOnly,
       fareSliceLineIds: this.fareSliceLineIds,
       undergroundActive: underground.enabled,
@@ -841,16 +945,26 @@ export class Metropolitan3DScene {
     this.pointerNdc.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
     this.raycaster.setFromCamera(this.pointerNdc, this.camera);
 
-    // Prioritize clickable 3D station volumes (batched InstancedMesh + underground station caverns!)
+    // Prioritize clickable 3D virtual trains first (when rolling stock renderer is active)
+    if (this.rollingStockRenderer && this.rollingStockRenderer.interactiveTrainMeshes.length > 0) {
+      const trainHits = this.raycaster
+        .intersectObjects(this.rollingStockRenderer.interactiveTrainMeshes, true)
+        .filter((h) => h.object.visible);
+      for (const hit of trainHits) {
+        const tid = this.rollingStockRenderer.resolveTrainHit(hit);
+        if (tid) {
+          this.selectTrain(tid);
+          return;
+        }
+      }
+    }
+
+    // Next prioritize clickable 3D station volumes (batched InstancedMesh with instanceId resolution!)
     const stationHits = this.raycaster
-      .intersectObjects(
-        [...this.tunnelLayer.interactiveStationMeshes, ...this.undergroundSystem.interactiveStationMeshes],
-        false,
-      )
+      .intersectObjects(this.tunnelLayer.interactiveStationMeshes, false)
       .filter((h) => h.object.visible);
     for (const hit of stationHits) {
-      const sid =
-        this.tunnelLayer.resolveStationHit(hit) ?? this.undergroundSystem.resolveStationHit(hit);
+      const sid = this.tunnelLayer.resolveStationHit(hit);
       if (sid) {
         this.callbacks.onSelectStation(sid);
         return;
@@ -858,10 +972,7 @@ export class Metropolitan3DScene {
     }
 
     const lineHits = this.raycaster
-      .intersectObjects(
-        [...this.railLayer.interactiveMeshes, ...this.undergroundSystem.interactiveTrackMeshes],
-        false,
-      )
+      .intersectObjects(this.railLayer.interactiveMeshes, false)
       .filter((h) => h.object.visible);
     if (lineHits.length > 0) {
       const lid = lineHits[0]!.object.userData?.lineId as SkId<'line'> | undefined;
@@ -891,6 +1002,9 @@ export class Metropolitan3DScene {
     const bStats = this.buildingManager.getStats();
     const portalCount = this.solved.segments.reduce((s, seg) => s + seg.portals.length, 0);
     const adjustedCount = this.solved.crossings.filter((c) => c.wasAdjusted).length;
+    const simCtrl = this.getSimulationControlState();
+    const rsStats = this.rollingStockRenderer?.getStats();
+    const camSnap = this.getCameraStateSnapshot();
     const telemetry: SceneTelemetry = {
       ...bStats,
       deconflictedCrossings: adjustedCount,
@@ -900,7 +1014,15 @@ export class Metropolitan3DScene {
       triangles: this.renderer.info.render.triangles,
       loadTimeMs: this.urbanLoadedMs,
       railwayLod: this.currentRailwayLod,
-      underground: this.undergroundSystem.getTelemetry(),
+      activeTrains: simCtrl.totalActiveTrains,
+      undergroundTrains: simCtrl.undergroundTrainCount,
+      simRunning: simCtrl.running,
+      simTimeScale: simCtrl.timeScale,
+      simClockSec: simCtrl.simClockSec,
+      cameraModeV2: camSnap.mode,
+      cameraUnderground: camSnap.isUndergroundCamera,
+      tunnelCutawayStyle: this.tunnelCutawayStyle,
+      rollingStockCars: rsStats?.renderedCarCount ?? 0,
     };
     (window as unknown as { __SENKIRO_3D_METRICS__?: SceneTelemetry }).__SENKIRO_3D_METRICS__ =
       telemetry;
@@ -942,8 +1064,32 @@ export class Metropolitan3DScene {
       this.smoothedFps = Math.round((1000 / Math.max(1, avg)) * 10) / 10;
     }
 
-    // Active Line Trace fly-through progression
-    if (this.tracePlaying && this.tracePath.length >= 2) {
+    // Step v2.0 virtual train simulation & sync rolling stock meshes (unscaled 1:1 carbody!)
+    if (this.simulationEngine) {
+      this.latestTrains = this.simulationEngine.step(dtSec, this.verticalExaggeration);
+      if (this.rollingStockRenderer) {
+        this.rollingStockRenderer.syncTrains(
+          this.latestTrains,
+          this.camera.position,
+          this.verticalExaggeration,
+          this.isDark,
+        );
+      }
+      if (now - this.lastSimEmitTime > 250) {
+        this.lastSimEmitTime = now;
+        this.emitSimulationState();
+      }
+    }
+
+    // Active Train Follow, Line Trace fly-through, or Interactive Spatial Camera
+    if (this.followTrainId && this.simulationEngine) {
+      const targetTrain = this.simulationEngine.getTrainById(this.followTrainId);
+      if (targetTrain) {
+        this.updateTrainFollowCamera(targetTrain);
+      } else {
+        this.camCtrl.update(now, dtSec);
+      }
+    } else if (this.tracePlaying && this.tracePath.length >= 2) {
       this.traceProgress += dtSec * 0.045;
       if (this.traceProgress >= 1) {
         this.traceProgress = 1;
@@ -957,45 +1103,18 @@ export class Metropolitan3DScene {
     const focusTarget = this.camCtrl.getFocusTarget();
     const camDist = this.camCtrl.getDistanceToFocus();
 
-    // Update chunked underground railway geometry, frustum culling, depth attenuation & PointLight pool
-    const { isCameraInsideTunnel, isEnclosedInterior } = this.undergroundSystem.updateForCamera(
-      this.camera,
-      camDist,
-      this.verticalExaggeration,
-    );
-    const insideTunnel = this.interiorTunnelActive || isCameraInsideTunnel;
-    this.tunnelLayer.setInteriorMode(insideTunnel);
-
-    // Cull invisible surface city/terrain draw calls while deeply enclosed inside an opaque concrete bore!
-    this.buildingManager.group.visible = !isEnclosedInterior;
-    this.terrainLayer.group.visible = !isEnclosedInterior;
-
-    // Balance subterranean illumination cleanly when inside a tunnel (neither blown out nor pitch black!)
-    if (isEnclosedInterior !== this.lastInteriorLightingApplied) {
-      this.lastInteriorLightingApplied = isEnclosedInterior;
-      if (isEnclosedInterior) {
-        this.sunLight.intensity = 0.08;
-        this.hemiLight.intensity = 0.28;
-        this.subFillLight.intensity = 0.28;
-      } else {
-        this.sunLight.intensity = this.isDark ? 0.92 : 1.78;
-        this.hemiLight.intensity = this.isDark ? 0.58 : 0.78;
-        this.subFillLight.intensity = this.cutawayActive
-          ? this.isDark
-            ? 0.85
-            : 0.72
-          : this.isDark
-            ? 0.48
-            : 0.34;
-      }
-    }
-
-    // Adaptive near/far planes: drop near to 0.25m inside tunnels so walls & rails never clip!
-    const targetNear = insideTunnel ? 0.25 : Math.max(4, Math.min(75, camDist * 0.012));
-    const targetFar = insideTunnel ? 16_000 : Math.max(28_000, camDist * 8.5);
+    // Adaptive near/far planes: tight 0.25m near-plane inside underground tunnels / cab view,
+    // wider 4..75m near-plane at metropolitan overview distances for depth precision!
+    const isCloseOrInterior =
+      this.camera.position.y < -1.5 ||
+      (this.followTrainId !== null && this.followTrainView === 'cab');
+    const targetNear = isCloseOrInterior
+      ? 0.25
+      : Math.max(4, Math.min(75, camDist * 0.012));
+    const targetFar = Math.max(28_000, camDist * 8.5);
     if (
-      Math.abs(targetNear - this.camera.near) / Math.max(0.05, this.camera.near) > 0.1 ||
-      Math.abs(targetFar - this.camera.far) / Math.max(1, this.camera.far) > 0.15
+      Math.abs(targetNear - this.camera.near) / this.camera.near > 0.1 ||
+      Math.abs(targetFar - this.camera.far) / this.camera.far > 0.15
     ) {
       this.camera.near = targetNear;
       this.camera.far = targetFar;
@@ -1066,7 +1185,7 @@ export class Metropolitan3DScene {
     this.railLayer.dispose();
     this.viaductLayer.dispose();
     this.tunnelLayer.dispose();
-    this.undergroundSystem.dispose();
+    this.rollingStockRenderer?.dispose();
     this.traceProbe.geometry.dispose();
     (this.traceProbe.material as THREE.Material).dispose();
     this.renderer.dispose();
