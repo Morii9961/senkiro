@@ -151,4 +151,5 @@ export interface SceneTelemetry {
   loadTimeMs: number | null;
   realOsmBuildings?: number;
   infillBuildings?: number;
+  railwayLod?: 'near' | 'mid' | 'far';
 }

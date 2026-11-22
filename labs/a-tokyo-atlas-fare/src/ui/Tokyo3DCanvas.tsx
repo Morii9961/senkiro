@@ -464,7 +464,8 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
       {telemetry && (
         <div className="telemetry-chip mono" data-testid="three-telemetry">
           {telemetry.fps > 0 ? `${telemetry.fps} FPS · ` : ''}
-          DC:{telemetry.drawCalls} · Tris:{Math.round(telemetry.triangles / 1000)}k · Chunks{' '}
+          DC:{telemetry.drawCalls} · Tris:{Math.round(telemetry.triangles / 1000)}k
+          {telemetry.railwayLod ? ` · Rail:${telemetry.railwayLod}` : ''} · Chunks{' '}
           {telemetry.loadedChunks}/{telemetry.totalChunks} (L0:{telemetry.lod0Chunks}/L1:
           {telemetry.lod1Chunks}) · Bldgs {telemetry.renderedBuildings.toLocaleString()}
           {typeof telemetry.infillBuildings === 'number' && telemetry.infillBuildings > 0

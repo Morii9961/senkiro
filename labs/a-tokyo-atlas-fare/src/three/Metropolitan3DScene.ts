@@ -28,7 +28,7 @@ import type {
 import { SkyEnvironmentSystem } from './environment/skyEnvironment.js';
 import { CityChunkManager } from './generators/buildingGenerator.js';
 import { CityTerrainLayer } from './generators/cityTerrainGenerator.js';
-import { RailTrackLayer } from './generators/railTrackGenerator.js';
+import { RailTrackLayer, type RailwayLodTier } from './generators/railTrackGenerator.js';
 import { TunnelAndStationLayer } from './generators/tunnelGenerator.js';
 import { ViaductLayer } from './generators/viaductGenerator.js';
 import {
@@ -107,6 +107,7 @@ export class Metropolitan3DScene {
   private urbanLoadedMs: number | null = null;
   private frameTimesMs: number[] = [];
   private smoothedFps = 0;
+  private currentRailwayLod: RailwayLodTier = 'near';
 
   // Pointer click vs drag discrimination
   private pointerDownPos: { x: number; y: number } | null = null;
@@ -324,6 +325,8 @@ export class Metropolitan3DScene {
       selectedLineId,
       fareSliceOnly,
       fareSliceLineIds: this.fareSliceLineIds,
+      undergroundActive: underground.enabled,
+      clipEnabled: underground.clipEnabled,
     });
 
     this.viaductLayer.applyFilters({
@@ -342,6 +345,7 @@ export class Metropolitan3DScene {
       fareSliceOnly,
       fareSliceLineIds: this.fareSliceLineIds,
       undergroundActive: underground.enabled,
+      clipEnabled: underground.clipEnabled,
     });
   }
 
@@ -647,12 +651,12 @@ export class Metropolitan3DScene {
     this.pointerNdc.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
     this.raycaster.setFromCamera(this.pointerNdc, this.camera);
 
-    // Prioritize clickable 3D station volumes over tracks
+    // Prioritize clickable 3D station volumes (batched InstancedMesh with instanceId resolution!)
     const stationHits = this.raycaster
       .intersectObjects(this.tunnelLayer.interactiveStationMeshes, false)
       .filter((h) => h.object.visible);
-    if (stationHits.length > 0) {
-      const sid = stationHits[0]!.object.userData?.stationId as SkId<'station'> | undefined;
+    for (const hit of stationHits) {
+      const sid = this.tunnelLayer.resolveStationHit(hit);
       if (sid) {
         this.callbacks.onSelectStation(sid);
         return;
@@ -698,6 +702,7 @@ export class Metropolitan3DScene {
       drawCalls: this.renderer.info.render.calls,
       triangles: this.renderer.info.render.triangles,
       loadTimeMs: this.urbanLoadedMs,
+      railwayLod: this.currentRailwayLod,
     };
     (window as unknown as { __SENKIRO_3D_METRICS__?: SceneTelemetry }).__SENKIRO_3D_METRICS__ =
       telemetry;
@@ -733,6 +738,11 @@ export class Metropolitan3DScene {
       this.camera.far = targetFar;
       this.camera.updateProjectionMatrix();
     }
+
+    // 3-Tier Railway Distance LOD (P4: near steel/sleepers/catenary -> mid deck -> far skeleton!)
+    this.currentRailwayLod = this.railLayer.updateLod(camDist);
+    this.viaductLayer.updateLod(camDist);
+    this.tunnelLayer.updateLod(camDist);
 
     // Smooth camera animation
     if (this.cameraAnim) {
