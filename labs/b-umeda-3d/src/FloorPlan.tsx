@@ -1,9 +1,10 @@
-import { floors, nodes, station } from './model'
+import { floors, nodes, station, inSite } from './model'
 import { vertical, type Step } from './domain/graph'
 import type { Language, Place } from './domain/types'
 import { sample } from './providers/service'
 
 interface Props {
+  siteId: string | null
   floor: number
   lang: Language
   steps: Step[]
@@ -12,6 +13,12 @@ interface Props {
   example: boolean
 }
 function section(n: Place, floor: number) {
+  if (
+    n.stationId &&
+    !['sk:station:jr-osaka', 'sk:station:metro-umeda'].includes(n.stationId)
+  )
+    return n.stationId
+  if (!n.stationId && n.zone === 'unpaid' && floor < 0) return 'public'
   if (floor === 0) return 'street'
   if (!n.stationId || n.stationId === 'sk:station:metro-umeda') return 'metro'
   if (floor === -2 && ['sk:concourse:ac-b2', 'sk:landing:ab-b2'].includes(n.id))
@@ -26,7 +33,7 @@ function Sheet({
   steps,
   active,
   example,
-}: { places: Place[]; title: string } & Omit<Props, 'floor'>) {
+}: { places: Place[]; title: string } & Omit<Props, 'floor' | 'siteId'>) {
   const xs = places.flatMap((n) => [
       n.point[0] - n.size[0] / 2,
       n.point[0] + n.size[0] / 2,
@@ -177,6 +184,9 @@ function Sheet({
 export function FloorPlan(p: Props) {
   const groups = new Map<string, Place[]>()
   const title: Record<string, string> = {
+    ...Object.fromEntries(station.stations.map((s) => [s.id, s.names[p.lang]])),
+    public:
+      p.lang === 'ja' ? '地下歩行通路・地下街' : 'Public passages & arcades',
     jr: p.lang === 'ja' ? 'JR 大阪駅' : 'JR Osaka',
     street:
       p.lang === 'ja' ? 'JR 大阪駅・地上経路' : 'JR Osaka & street crossing',
@@ -184,7 +194,7 @@ export function FloorPlan(p: Props) {
     passage: p.lang === 'ja' ? '改札内連絡通路' : 'Paid connecting passage',
   }
   for (const n of station.places.filter(
-    (n) => floors.get(n.levelId)!.ordinal === p.floor,
+    (n) => inSite(n, p.siteId) && floors.get(n.levelId)!.ordinal === p.floor,
   )) {
     const key = section(n, p.floor)
     groups.set(key, [...(groups.get(key) ?? []), n])

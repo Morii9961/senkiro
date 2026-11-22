@@ -82,9 +82,65 @@ describe('Osaka indoor graph', () => {
     ).toEqual(['sk:elevator:jr-o-lower', 'sk:elevator:jr-p'])
     expect(steps.some((s) => s.to.levelId === 'sk:level:jr-mezz')).toBe(true)
   })
-  it('keeps unverified surroundings outside the routing graph', () => {
-    for (const block of model.context)
-      expect(route(model, westOutside.id, block.id)).toBeNull()
+  it('reaches all five district stations from JR by verified fare crossings', () => {
+    const ends = ['hk-1', 'hs-1-2', 'higashi-2', 'nishi-1-2', 'kita-1-2']
+    for (const end of ends) {
+      const path = route(
+        model,
+        'sk:concourse:jr-midosuji-in',
+        'sk:platform:' + end,
+      )!
+      expect(cost(path).gates).toBe(2)
+      expect(
+        path.every(
+          (s) =>
+            s.from.zone !== 'paid' ||
+            s.to.zone !== 'paid' ||
+            s.from.stationId === s.to.stationId,
+        ),
+      ).toBe(true)
+    }
+    expect(model.stations).toHaveLength(7)
+    expect(
+      new Set(
+        model.context
+          .filter((s) => s.kind === 'Station')
+          .map((s) => s.stationId),
+      ).size,
+    ).toBe(5)
+  })
+  it('links the two sides of Higashi-Umeda only through their documented gates', () => {
+    for (const n of ['1', '2']) {
+      const path = route(
+        model,
+        'sk:concourse:metro-south-out',
+        'sk:platform:higashi-' + n,
+        true,
+      )!
+      expect(path.map((s) => s.to.id)).toContain('sk:concourse:whity-main')
+      expect(
+        path.filter((s) => s.link.kind === 'Gate').map((s) => s.link.id),
+      ).toEqual(['sk:gate:higashi-' + n])
+    }
+    expect(
+      route(model, 'sk:platform:higashi-1', 'sk:platform:higashi-2')!.filter(
+        (s) => s.link.kind === 'Gate',
+      ),
+    ).toHaveLength(2)
+  })
+  it('keeps Hanshin east gate on B2 and the Hankyu head concourse on 3F', () => {
+    const routeTo = (id: string) =>
+      route(model, 'sk:concourse:jr-midosuji-in', 'sk:platform:' + id)!
+    expect(
+      routeTo('hs-1-2').find((s) => s.link.id === 'sk:gate:hs-east')?.from
+        .levelId,
+    ).toBe('sk:level:hs-b2')
+    expect(
+      routeTo('hk-9').find((s) => s.link.id === 'sk:gate:hk-3f')?.from.levelId,
+    ).toBe('sk:level:hk-3f')
+    expect(routeTo('nishi-1-2').map((s) => s.from.id)).toContain(
+      'sk:concourse:kita-exterior',
+    )
   })
   it('keeps the synthetic overlay linked to an actual platform and the live provider unavailable', async () => {
     const s = exampleService.updates[0]

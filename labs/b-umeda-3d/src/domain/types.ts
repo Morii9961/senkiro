@@ -53,6 +53,7 @@ export interface Place extends Entity {
   point: Point
   size: Point
   serviceLineIds?: string[]
+  boarding?: { label: string; trackSides: (-1 | 1)[]; terminalEnd?: -1 | 1 }
 }
 export type Platform = Place & { kind: 'Platform' }
 export type Entrance = Place & { kind: 'Entrance' }
@@ -70,8 +71,10 @@ export type Gate = Link & { kind: 'Gate' }
 export type VerticalFacility = Link & {
   kind: 'Stairs' | 'Escalator' | 'Elevator'
 }
-export interface ContextBlock extends Entity {
-  kind: 'UnverifiedBlock'
+export interface DistrictSite extends Entity {
+  kind: 'Station' | 'ShoppingArcade'
+  stationId: string | null
+  anchorId: string
 }
 export interface Model {
   operators: Operator[]
@@ -82,7 +85,7 @@ export interface Model {
   levels: Level[]
   places: Place[]
   links: Link[]
-  context: ContextBlock[]
+  context: DistrictSite[]
 }
 export interface SourceRecord {
   id: string

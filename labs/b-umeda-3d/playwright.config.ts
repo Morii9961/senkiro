@@ -1,6 +1,6 @@
 import { defineConfig } from '@playwright/test'
 import { installedBrowser } from './scripts/browser.mjs'
-const port = Number(process.env.SENKIRO_E2E_PORT ?? 5193)
+const port = Number(process.env.SENKIRO_E2E_PORT ?? 27193)
 export default defineConfig({
   testDir: 'tests/browser',
   workers: 1,

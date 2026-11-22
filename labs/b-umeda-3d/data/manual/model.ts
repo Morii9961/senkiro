@@ -7,6 +7,7 @@ import type {
   Place,
   Point,
 } from '../../src/domain/types.ts'
+import { addDistrict } from './district.ts'
 import { checked } from './sources.ts'
 
 // Editorial coordinates in arbitrary units. Only adjacency, order and fare boundaries encode railway facts.
@@ -24,7 +25,11 @@ export function entity(
     provenance: {
       sourceIds: refs.map((key) => 'sk:source:' + key),
       dataNature: 'manual-verified',
-      lastVerifiedAt: checked,
+      lastVerifiedAt: refs.some(
+        (id) => id === 'whity-district' || id === 'whity-plaza',
+      )
+        ? '2026-11-22'
+        : checked,
     },
     geometry_confidence: 'schematic',
     validFrom: null,
@@ -51,6 +56,8 @@ export const model: Model = {
   complex: {
     ...entity('complex', 'osaka-umeda', '大阪・梅田', 'Osaka / Umeda', [
       'city-b',
+      'district-def',
+      'district-ghi',
     ]),
     stationIds: [osaka.id],
   },
@@ -209,6 +216,7 @@ export function addPlatform(pair: string, z: number, westLift: string) {
 }
 export const firstPlatform = addPlatform('3-4', 7.5, 'W')
 
+osaka.provenance.sourceIds.push('sk:source:osaka-roof')
 const jr3 = level('jr-3f', '3F', 2, osaka.id)
 const mezz = level('jr-mezz', '中2F', 0.5, osaka.id)
 const jrB1 = level('jr-b1', 'B1F', -1, osaka.id),
@@ -959,19 +967,10 @@ link(
   'Descend to platform 1',
   metro,
 )
-for (const [id, ja, en, ref] of [
-  ['hankyu', '阪急 大阪梅田', 'Hankyu Osaka-umeda', 'hankyu'],
-  ['hanshin', '阪神 大阪梅田', 'Hanshin Osaka-Umeda', 'hanshin'],
-  ['higashi', '東梅田', 'Higashi-Umeda', 'higashi'],
-  ['nishi', '西梅田', 'Nishi-Umeda', 'nishi'],
-  ['kitashinchi', '北新地', 'Kitashinchi', 'jr-map'],
-  ['whity', 'ホワイティうめだ', 'Whity Umeda', 'metro-exits'],
-])
-  model.context.push({
-    ...entity('context', id, ja, en, [ref]),
-    kind: 'UnverifiedBlock',
-    geometry_confidence: 'unknown',
-  })
+addDistrict(
+  { model, entity, level, place, link },
+  { street, upper, ground, lower, conc, subway: subway.id, jr: jr.id },
+)
 // Representative, explicitly non-exhaustive services for the depicted boarding faces.
 for (const [slug, ja, en, tracks] of [
   ['loop', '大阪環状線', 'Osaka Loop Line', ['1-2']],

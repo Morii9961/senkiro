@@ -43,6 +43,50 @@
       "validFrom": null,
       "validTo": null,
       "kind": "Operator"
+    },
+    {
+      "id": "sk:operator:hankyu",
+      "names": {
+        "ja": "阪急電鉄",
+        "en": "Hankyu Railway",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Operator"
+    },
+    {
+      "id": "sk:operator:hanshin",
+      "names": {
+        "ja": "阪神電気鉄道",
+        "en": "Hanshin Electric Railway",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hanshin-map",
+          "sk:source:hanshin"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Operator"
     }
   ],
   "stations": [
@@ -57,7 +101,8 @@
       "externalIds": {},
       "provenance": {
         "sourceIds": [
-          "sk:source:jr-map"
+          "sk:source:jr-map",
+          "sk:source:osaka-roof"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-21"
@@ -100,6 +145,134 @@
       "lineIds": [
         "sk:line:midosuji"
       ]
+    },
+    {
+      "id": "sk:station:hankyu-osaka-umeda",
+      "names": {
+        "ja": "大阪梅田（阪急）",
+        "en": "Hankyu Osaka-umeda",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "operatorId": "sk:operator:hankyu",
+      "lineIds": [
+        "sk:line:hk-kyoto",
+        "sk:line:hk-takarazuka",
+        "sk:line:hk-kobe"
+      ]
+    },
+    {
+      "id": "sk:station:hanshin-osaka-umeda",
+      "names": {
+        "ja": "大阪梅田（阪神）",
+        "en": "Hanshin Osaka-Umeda",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hanshin-map",
+          "sk:source:hanshin"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "operatorId": "sk:operator:hanshin",
+      "lineIds": [
+        "sk:line:hs-main"
+      ]
+    },
+    {
+      "id": "sk:station:metro-higashiumeda",
+      "names": {
+        "ja": "東梅田",
+        "en": "Higashi-Umeda",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:higashi",
+          "sk:source:higashi-map",
+          "sk:source:district-south"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "operatorId": "sk:operator:osaka-metro",
+      "lineIds": [
+        "sk:line:tanimachi"
+      ]
+    },
+    {
+      "id": "sk:station:jr-kitashinchi",
+      "names": {
+        "ja": "北新地",
+        "en": "Kitashinchi",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:kitashinchi",
+          "sk:source:district-south"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "operatorId": "sk:operator:jr-west",
+      "lineIds": [
+        "sk:line:jr-tozai"
+      ]
+    },
+    {
+      "id": "sk:station:metro-nishiumeda",
+      "names": {
+        "ja": "西梅田",
+        "en": "Nishi-Umeda",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:nishi",
+          "sk:source:district-south"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "operatorId": "sk:operator:osaka-metro",
+      "lineIds": [
+        "sk:line:yotsubashi"
+      ]
     }
   ],
   "lines": [
@@ -117,6 +290,161 @@
           "sk:source:metro-access",
           "sk:source:metro-map",
           "sk:source:city-metro"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "operatorId": "sk:operator:osaka-metro"
+    },
+    {
+      "id": "sk:line:hk-kyoto",
+      "names": {
+        "ja": "京都線",
+        "en": "Kyoto Line",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "operatorId": "sk:operator:hankyu"
+    },
+    {
+      "id": "sk:line:hk-takarazuka",
+      "names": {
+        "ja": "宝塚線",
+        "en": "Takarazuka Line",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "operatorId": "sk:operator:hankyu"
+    },
+    {
+      "id": "sk:line:hk-kobe",
+      "names": {
+        "ja": "神戸線",
+        "en": "Kobe Line",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "operatorId": "sk:operator:hankyu"
+    },
+    {
+      "id": "sk:line:hs-main",
+      "names": {
+        "ja": "阪神本線",
+        "en": "Hanshin Main Line",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hanshin-map",
+          "sk:source:hanshin"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "operatorId": "sk:operator:hanshin"
+    },
+    {
+      "id": "sk:line:tanimachi",
+      "names": {
+        "ja": "谷町線",
+        "en": "Tanimachi Line",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:higashi",
+          "sk:source:higashi-map",
+          "sk:source:district-south"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "operatorId": "sk:operator:osaka-metro"
+    },
+    {
+      "id": "sk:line:jr-tozai",
+      "names": {
+        "ja": "JR東西線",
+        "en": "JR Tozai Line",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:kitashinchi",
+          "sk:source:district-south"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "operatorId": "sk:operator:jr-west"
+    },
+    {
+      "id": "sk:line:yotsubashi",
+      "names": {
+        "ja": "四つ橋線",
+        "en": "Yotsubashi Line",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:nishi",
+          "sk:source:district-south"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-21"
@@ -445,6 +773,248 @@
       "label": "B2F",
       "ordinal": -2,
       "stationId": "sk:station:metro-umeda"
+    },
+    {
+      "id": "sk:level:hk-3f",
+      "names": {
+        "ja": "3F",
+        "en": "3F",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "label": "3F",
+      "ordinal": 2,
+      "stationId": "sk:station:hankyu-osaka-umeda"
+    },
+    {
+      "id": "sk:level:hk-2f",
+      "names": {
+        "ja": "2F",
+        "en": "2F",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "label": "2F",
+      "ordinal": 1,
+      "stationId": "sk:station:hankyu-osaka-umeda"
+    },
+    {
+      "id": "sk:level:hs-b2",
+      "names": {
+        "ja": "B2F",
+        "en": "B2F",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hanshin-map",
+          "sk:source:hanshin"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "label": "B2F",
+      "ordinal": -2,
+      "stationId": "sk:station:hanshin-osaka-umeda"
+    },
+    {
+      "id": "sk:level:hs-b1",
+      "names": {
+        "ja": "B1F",
+        "en": "B1F",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hanshin-map",
+          "sk:source:hanshin"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "label": "B1F",
+      "ordinal": -1,
+      "stationId": "sk:station:hanshin-osaka-umeda"
+    },
+    {
+      "id": "sk:level:higashi-b1",
+      "names": {
+        "ja": "B1F",
+        "en": "B1F",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:higashi",
+          "sk:source:higashi-map",
+          "sk:source:district-south"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "label": "B1F",
+      "ordinal": -1,
+      "stationId": "sk:station:metro-higashiumeda"
+    },
+    {
+      "id": "sk:level:higashi-b2",
+      "names": {
+        "ja": "B2F",
+        "en": "B2F",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:higashi",
+          "sk:source:higashi-map",
+          "sk:source:district-south"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "label": "B2F",
+      "ordinal": -2,
+      "stationId": "sk:station:metro-higashiumeda"
+    },
+    {
+      "id": "sk:level:kita-b1",
+      "names": {
+        "ja": "B1F",
+        "en": "B1F",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:kitashinchi",
+          "sk:source:district-south"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "label": "B1F",
+      "ordinal": -1,
+      "stationId": "sk:station:jr-kitashinchi"
+    },
+    {
+      "id": "sk:level:kita-b2",
+      "names": {
+        "ja": "B2F",
+        "en": "B2F",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:kitashinchi",
+          "sk:source:district-south"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "label": "B2F",
+      "ordinal": -2,
+      "stationId": "sk:station:jr-kitashinchi"
+    },
+    {
+      "id": "sk:level:nishi-b1",
+      "names": {
+        "ja": "B1F",
+        "en": "B1F",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:nishi",
+          "sk:source:district-south"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "label": "B1F",
+      "ordinal": -1,
+      "stationId": "sk:station:metro-nishiumeda"
+    },
+    {
+      "id": "sk:level:nishi-b2",
+      "names": {
+        "ja": "B2F",
+        "en": "B2F",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:nishi",
+          "sk:source:district-south"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "label": "B2F",
+      "ordinal": -2,
+      "stationId": "sk:station:metro-nishiumeda"
     }
   ],
   "places": [
@@ -3984,6 +4554,2378 @@
       "serviceLineIds": [
         "sk:line:midosuji"
       ]
+    },
+    {
+      "id": "sk:concourse:hankyu-crossing",
+      "names": {
+        "ja": "阪急方面 横断歩道",
+        "en": "Crosswalk toward Hankyu",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:city-b"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Concourse",
+      "levelId": "sk:level:outside-1f",
+      "stationId": null,
+      "point": [
+        32,
+        -10
+      ],
+      "size": [
+        3,
+        2
+      ],
+      "zone": "unpaid",
+      "manager": "unknown"
+    },
+    {
+      "id": "sk:concourse:hankyu-front",
+      "names": {
+        "ja": "阪急百貨店付近通路",
+        "en": "Passage by Hankyu department store",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:city-b"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Concourse",
+      "levelId": "sk:level:outside-1f",
+      "stationId": null,
+      "point": [
+        45,
+        -10
+      ],
+      "size": [
+        8,
+        3
+      ],
+      "zone": "unpaid",
+      "manager": "unknown"
+    },
+    {
+      "id": "sk:concourse:hankyu-lift-ground",
+      "names": {
+        "ja": "阪急側 地上 EV④",
+        "en": "Hankyu surface lift ④",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:city-b"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Concourse",
+      "levelId": "sk:level:outside-1f",
+      "stationId": null,
+      "point": [
+        49,
+        -12
+      ],
+      "size": [
+        3,
+        3
+      ],
+      "zone": "unpaid",
+      "manager": "unknown"
+    },
+    {
+      "id": "sk:concourse:hk-gate-out",
+      "names": {
+        "ja": "3階改札口 改札外",
+        "en": "Third-floor gate · outside",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Concourse",
+      "levelId": "sk:level:hk-3f",
+      "stationId": "sk:station:hankyu-osaka-umeda",
+      "point": [
+        49,
+        -12
+      ],
+      "size": [
+        27,
+        4
+      ],
+      "zone": "unpaid",
+      "manager": "railway"
+    },
+    {
+      "id": "sk:concourse:hk-headhall",
+      "names": {
+        "ja": "3階改札口 改札内",
+        "en": "Hankyu terminal concourse",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Concourse",
+      "levelId": "sk:level:hk-3f",
+      "stationId": "sk:station:hankyu-osaka-umeda",
+      "point": [
+        47.45,
+        -16
+      ],
+      "size": [
+        32,
+        4
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:platform:hk-1",
+      "names": {
+        "ja": "阪急 1号線",
+        "en": "Hankyu track 1",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Platform",
+      "levelId": "sk:level:hk-3f",
+      "stationId": "sk:station:hankyu-osaka-umeda",
+      "point": [
+        61.4,
+        -33
+      ],
+      "size": [
+        1.9,
+        31
+      ],
+      "zone": "paid",
+      "manager": null,
+      "serviceLineIds": [
+        "sk:line:hk-kyoto"
+      ],
+      "boarding": {
+        "label": "1",
+        "trackSides": [
+          -1
+        ],
+        "terminalEnd": 1
+      }
+    },
+    {
+      "id": "sk:landing:hk-1-head",
+      "names": {
+        "ja": "ホーム端",
+        "en": "Platform head",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:hk-3f",
+      "stationId": "sk:station:hankyu-osaka-umeda",
+      "point": [
+        61.4,
+        -16
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:platform:hk-2",
+      "names": {
+        "ja": "阪急 2号線",
+        "en": "Hankyu track 2",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Platform",
+      "levelId": "sk:level:hk-3f",
+      "stationId": "sk:station:hankyu-osaka-umeda",
+      "point": [
+        58.3,
+        -33
+      ],
+      "size": [
+        1.9,
+        31
+      ],
+      "zone": "paid",
+      "manager": null,
+      "serviceLineIds": [
+        "sk:line:hk-kyoto"
+      ],
+      "boarding": {
+        "label": "2",
+        "trackSides": [
+          -1
+        ],
+        "terminalEnd": 1
+      }
+    },
+    {
+      "id": "sk:landing:hk-2-head",
+      "names": {
+        "ja": "ホーム端",
+        "en": "Platform head",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:hk-3f",
+      "stationId": "sk:station:hankyu-osaka-umeda",
+      "point": [
+        58.3,
+        -16
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:platform:hk-3",
+      "names": {
+        "ja": "阪急 3号線",
+        "en": "Hankyu track 3",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Platform",
+      "levelId": "sk:level:hk-3f",
+      "stationId": "sk:station:hankyu-osaka-umeda",
+      "point": [
+        55.199999999999996,
+        -33
+      ],
+      "size": [
+        1.9,
+        31
+      ],
+      "zone": "paid",
+      "manager": null,
+      "serviceLineIds": [
+        "sk:line:hk-kyoto"
+      ],
+      "boarding": {
+        "label": "3",
+        "trackSides": [
+          -1
+        ],
+        "terminalEnd": 1
+      }
+    },
+    {
+      "id": "sk:landing:hk-3-head",
+      "names": {
+        "ja": "ホーム端",
+        "en": "Platform head",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:hk-3f",
+      "stationId": "sk:station:hankyu-osaka-umeda",
+      "point": [
+        55.199999999999996,
+        -16
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:platform:hk-4",
+      "names": {
+        "ja": "阪急 4号線",
+        "en": "Hankyu track 4",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Platform",
+      "levelId": "sk:level:hk-3f",
+      "stationId": "sk:station:hankyu-osaka-umeda",
+      "point": [
+        52.099999999999994,
+        -33
+      ],
+      "size": [
+        1.9,
+        31
+      ],
+      "zone": "paid",
+      "manager": null,
+      "serviceLineIds": [
+        "sk:line:hk-takarazuka"
+      ],
+      "boarding": {
+        "label": "4",
+        "trackSides": [
+          -1
+        ],
+        "terminalEnd": 1
+      }
+    },
+    {
+      "id": "sk:landing:hk-4-head",
+      "names": {
+        "ja": "ホーム端",
+        "en": "Platform head",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:hk-3f",
+      "stationId": "sk:station:hankyu-osaka-umeda",
+      "point": [
+        52.099999999999994,
+        -16
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:platform:hk-5",
+      "names": {
+        "ja": "阪急 5号線",
+        "en": "Hankyu track 5",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Platform",
+      "levelId": "sk:level:hk-3f",
+      "stationId": "sk:station:hankyu-osaka-umeda",
+      "point": [
+        49,
+        -33
+      ],
+      "size": [
+        1.9,
+        31
+      ],
+      "zone": "paid",
+      "manager": null,
+      "serviceLineIds": [
+        "sk:line:hk-takarazuka"
+      ],
+      "boarding": {
+        "label": "5",
+        "trackSides": [
+          -1
+        ],
+        "terminalEnd": 1
+      }
+    },
+    {
+      "id": "sk:landing:hk-5-head",
+      "names": {
+        "ja": "ホーム端",
+        "en": "Platform head",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:hk-3f",
+      "stationId": "sk:station:hankyu-osaka-umeda",
+      "point": [
+        49,
+        -16
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:platform:hk-6",
+      "names": {
+        "ja": "阪急 6号線",
+        "en": "Hankyu track 6",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Platform",
+      "levelId": "sk:level:hk-3f",
+      "stationId": "sk:station:hankyu-osaka-umeda",
+      "point": [
+        45.9,
+        -33
+      ],
+      "size": [
+        1.9,
+        31
+      ],
+      "zone": "paid",
+      "manager": null,
+      "serviceLineIds": [
+        "sk:line:hk-takarazuka"
+      ],
+      "boarding": {
+        "label": "6",
+        "trackSides": [
+          -1
+        ],
+        "terminalEnd": 1
+      }
+    },
+    {
+      "id": "sk:landing:hk-6-head",
+      "names": {
+        "ja": "ホーム端",
+        "en": "Platform head",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:hk-3f",
+      "stationId": "sk:station:hankyu-osaka-umeda",
+      "point": [
+        45.9,
+        -16
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:platform:hk-7",
+      "names": {
+        "ja": "阪急 7号線",
+        "en": "Hankyu track 7",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Platform",
+      "levelId": "sk:level:hk-3f",
+      "stationId": "sk:station:hankyu-osaka-umeda",
+      "point": [
+        42.8,
+        -33
+      ],
+      "size": [
+        1.9,
+        31
+      ],
+      "zone": "paid",
+      "manager": null,
+      "serviceLineIds": [
+        "sk:line:hk-kobe"
+      ],
+      "boarding": {
+        "label": "7",
+        "trackSides": [
+          -1
+        ],
+        "terminalEnd": 1
+      }
+    },
+    {
+      "id": "sk:landing:hk-7-head",
+      "names": {
+        "ja": "ホーム端",
+        "en": "Platform head",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:hk-3f",
+      "stationId": "sk:station:hankyu-osaka-umeda",
+      "point": [
+        42.8,
+        -16
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:platform:hk-8",
+      "names": {
+        "ja": "阪急 8号線",
+        "en": "Hankyu track 8",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Platform",
+      "levelId": "sk:level:hk-3f",
+      "stationId": "sk:station:hankyu-osaka-umeda",
+      "point": [
+        39.7,
+        -33
+      ],
+      "size": [
+        1.9,
+        31
+      ],
+      "zone": "paid",
+      "manager": null,
+      "serviceLineIds": [
+        "sk:line:hk-kobe"
+      ],
+      "boarding": {
+        "label": "8",
+        "trackSides": [
+          -1
+        ],
+        "terminalEnd": 1
+      }
+    },
+    {
+      "id": "sk:landing:hk-8-head",
+      "names": {
+        "ja": "ホーム端",
+        "en": "Platform head",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:hk-3f",
+      "stationId": "sk:station:hankyu-osaka-umeda",
+      "point": [
+        39.7,
+        -16
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:platform:hk-9",
+      "names": {
+        "ja": "阪急 9号線",
+        "en": "Hankyu track 9",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Platform",
+      "levelId": "sk:level:hk-3f",
+      "stationId": "sk:station:hankyu-osaka-umeda",
+      "point": [
+        36.599999999999994,
+        -33
+      ],
+      "size": [
+        1.9,
+        31
+      ],
+      "zone": "paid",
+      "manager": null,
+      "serviceLineIds": [
+        "sk:line:hk-kobe"
+      ],
+      "boarding": {
+        "label": "9",
+        "trackSides": [
+          -1
+        ],
+        "terminalEnd": 1
+      }
+    },
+    {
+      "id": "sk:landing:hk-9-head",
+      "names": {
+        "ja": "ホーム端",
+        "en": "Platform head",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:hk-3f",
+      "stationId": "sk:station:hankyu-osaka-umeda",
+      "point": [
+        36.599999999999994,
+        -16
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:concourse:hk-outer",
+      "names": {
+        "ja": "9号線外側 ホーム端",
+        "en": "Outer platform edge at track 9",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Concourse",
+      "levelId": "sk:level:hk-3f",
+      "stationId": "sk:station:hankyu-osaka-umeda",
+      "point": [
+        33.5,
+        -33
+      ],
+      "size": [
+        1.9,
+        31
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:hk-outer-head",
+      "names": {
+        "ja": "ホーム端",
+        "en": "Platform head",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:hk-3f",
+      "stationId": "sk:station:hankyu-osaka-umeda",
+      "point": [
+        33.5,
+        -16
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:concourse:hk-central-out",
+      "names": {
+        "ja": "2階中央改札口 改札外",
+        "en": "Second-floor central gate · outside",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Concourse",
+      "levelId": "sk:level:hk-2f",
+      "stationId": "sk:station:hankyu-osaka-umeda",
+      "point": [
+        49,
+        -26
+      ],
+      "size": [
+        24,
+        3
+      ],
+      "zone": "unpaid",
+      "manager": "railway"
+    },
+    {
+      "id": "sk:concourse:hk-central-in",
+      "names": {
+        "ja": "2階中央改札口 改札内",
+        "en": "Second-floor central gate hall",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Concourse",
+      "levelId": "sk:level:hk-2f",
+      "stationId": "sk:station:hankyu-osaka-umeda",
+      "point": [
+        49,
+        -30
+      ],
+      "size": [
+        27,
+        4
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:hk-central-lift",
+      "names": {
+        "ja": "1号線方面 EV",
+        "en": "Lift to track 1",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:hk-2f",
+      "stationId": "sk:station:hankyu-osaka-umeda",
+      "point": [
+        61.4,
+        -33
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:concourse:city-eight-ground",
+      "names": {
+        "ja": "南改札方面 地上 EV⑧",
+        "en": "Surface lift ⑧",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:city-b"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Concourse",
+      "levelId": "sk:level:outside-1f",
+      "stationId": null,
+      "point": [
+        34,
+        19
+      ],
+      "size": [
+        3,
+        3
+      ],
+      "zone": "unpaid",
+      "manager": "unknown"
+    },
+    {
+      "id": "sk:concourse:metro-south-out",
+      "names": {
+        "ja": "御堂筋線 南改札前",
+        "en": "Midosuji south gate exterior",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:city-b"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Concourse",
+      "levelId": "sk:level:metro-b1",
+      "stationId": "sk:station:metro-umeda",
+      "point": [
+        34,
+        19
+      ],
+      "size": [
+        5,
+        5
+      ],
+      "zone": "unpaid",
+      "manager": "unknown"
+    },
+    {
+      "id": "sk:concourse:hs-east-lift",
+      "names": {
+        "ja": "東口方面 EV⑫",
+        "en": "Lift ⑫ to Hanshin",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:district-def"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Concourse",
+      "levelId": "sk:level:outside-b1",
+      "stationId": null,
+      "point": [
+        23,
+        31
+      ],
+      "size": [
+        3,
+        3
+      ],
+      "zone": "unpaid",
+      "manager": "unknown"
+    },
+    {
+      "id": "sk:concourse:hs-east-out",
+      "names": {
+        "ja": "東口 改札外",
+        "en": "Hanshin east gate · outside",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hanshin-map",
+          "sk:source:hanshin"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Concourse",
+      "levelId": "sk:level:hs-b2",
+      "stationId": "sk:station:hanshin-osaka-umeda",
+      "point": [
+        23,
+        31
+      ],
+      "size": [
+        4,
+        8
+      ],
+      "zone": "unpaid",
+      "manager": "railway"
+    },
+    {
+      "id": "sk:concourse:hs-east-in",
+      "names": {
+        "ja": "東口 改札内",
+        "en": "Hanshin terminal concourse",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hanshin-map",
+          "sk:source:hanshin"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Concourse",
+      "levelId": "sk:level:hs-b2",
+      "stationId": "sk:station:hanshin-osaka-umeda",
+      "point": [
+        19,
+        31
+      ],
+      "size": [
+        4,
+        12
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:platform:hs-1-2",
+      "names": {
+        "ja": "阪神 1・2番のりば",
+        "en": "Hanshin platforms 1・2",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hanshin-map",
+          "sk:source:hanshin"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Platform",
+      "levelId": "sk:level:hs-b2",
+      "stationId": "sk:station:hanshin-osaka-umeda",
+      "point": [
+        2,
+        28
+      ],
+      "size": [
+        30,
+        2.9
+      ],
+      "zone": "paid",
+      "manager": null,
+      "serviceLineIds": [
+        "sk:line:hs-main"
+      ],
+      "boarding": {
+        "label": "1・2",
+        "trackSides": [
+          -1,
+          1
+        ],
+        "terminalEnd": 1
+      }
+    },
+    {
+      "id": "sk:landing:hs-1-2-head",
+      "names": {
+        "ja": "ホーム端",
+        "en": "Platform head",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hanshin-map",
+          "sk:source:hanshin"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:hs-b2",
+      "stationId": "sk:station:hanshin-osaka-umeda",
+      "point": [
+        19,
+        28
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:platform:hs-3-4",
+      "names": {
+        "ja": "阪神 3・4番のりば",
+        "en": "Hanshin platforms 3・4",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hanshin-map",
+          "sk:source:hanshin"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Platform",
+      "levelId": "sk:level:hs-b2",
+      "stationId": "sk:station:hanshin-osaka-umeda",
+      "point": [
+        2,
+        34
+      ],
+      "size": [
+        30,
+        2.9
+      ],
+      "zone": "paid",
+      "manager": null,
+      "serviceLineIds": [
+        "sk:line:hs-main"
+      ],
+      "boarding": {
+        "label": "3・4",
+        "trackSides": [
+          -1,
+          1
+        ],
+        "terminalEnd": 1
+      }
+    },
+    {
+      "id": "sk:landing:hs-3-4-head",
+      "names": {
+        "ja": "ホーム端",
+        "en": "Platform head",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hanshin-map",
+          "sk:source:hanshin"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:hs-b2",
+      "stationId": "sk:station:hanshin-osaka-umeda",
+      "point": [
+        19,
+        34
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:concourse:hs-west-out",
+      "names": {
+        "ja": "西口 改札外",
+        "en": "Hanshin west gate · outside",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hanshin-map",
+          "sk:source:hanshin"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Concourse",
+      "levelId": "sk:level:hs-b1",
+      "stationId": "sk:station:hanshin-osaka-umeda",
+      "point": [
+        -10,
+        29
+      ],
+      "size": [
+        4,
+        6
+      ],
+      "zone": "unpaid",
+      "manager": "railway"
+    },
+    {
+      "id": "sk:concourse:hs-west-in",
+      "names": {
+        "ja": "西口・百貨店口 改札内",
+        "en": "Hanshin west concourse",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hanshin-map",
+          "sk:source:hanshin"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Concourse",
+      "levelId": "sk:level:hs-b1",
+      "stationId": "sk:station:hanshin-osaka-umeda",
+      "point": [
+        -5,
+        31
+      ],
+      "size": [
+        6,
+        9
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:hs-ev-up-0",
+      "names": {
+        "ja": "西側 EV",
+        "en": "West concourse lift",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hanshin-map",
+          "sk:source:hanshin"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:hs-b1",
+      "stationId": "sk:station:hanshin-osaka-umeda",
+      "point": [
+        -5,
+        28
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:hs-ev-down-0",
+      "names": {
+        "ja": "ホーム EV",
+        "en": "Platform lift",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hanshin-map",
+          "sk:source:hanshin"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:hs-b2",
+      "stationId": "sk:station:hanshin-osaka-umeda",
+      "point": [
+        -5,
+        28
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:hs-ev-up-1",
+      "names": {
+        "ja": "西側 EV",
+        "en": "West concourse lift",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hanshin-map",
+          "sk:source:hanshin"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:hs-b1",
+      "stationId": "sk:station:hanshin-osaka-umeda",
+      "point": [
+        -5,
+        34
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:landing:hs-ev-down-1",
+      "names": {
+        "ja": "ホーム EV",
+        "en": "Platform lift",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hanshin-map",
+          "sk:source:hanshin"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:hs-b2",
+      "stationId": "sk:station:hanshin-osaka-umeda",
+      "point": [
+        -5,
+        34
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:concourse:whity-main",
+      "names": {
+        "ja": "ホワイティうめだ",
+        "en": "Whity Umeda",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:whity-floor",
+          "sk:source:whity-city",
+          "sk:source:district-def",
+          "sk:source:whity-district"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-22"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Concourse",
+      "levelId": "sk:level:outside-b1",
+      "stationId": null,
+      "point": [
+        48,
+        23
+      ],
+      "size": [
+        9,
+        4.1
+      ],
+      "zone": "unpaid",
+      "manager": "commercial"
+    },
+    {
+      "id": "sk:concourse:whity-izumi",
+      "names": {
+        "ja": "泉の広場",
+        "en": "Izumi-no-Hiroba",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:whity-plaza",
+          "sk:source:whity-floor",
+          "sk:source:whity-city",
+          "sk:source:district-def",
+          "sk:source:whity-district"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-22"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Concourse",
+      "levelId": "sk:level:outside-b1",
+      "stationId": null,
+      "point": [
+        70,
+        23
+      ],
+      "size": [
+        8,
+        7
+      ],
+      "zone": "unpaid",
+      "manager": "commercial"
+    },
+    {
+      "id": "sk:concourse:whity-east",
+      "names": {
+        "ja": "イーストモール",
+        "en": "East Mall",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:whity-floor",
+          "sk:source:whity-city",
+          "sk:source:district-def",
+          "sk:source:whity-district"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-22"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Concourse",
+      "levelId": "sk:level:outside-b1",
+      "stationId": null,
+      "point": [
+        59.5,
+        23
+      ],
+      "size": [
+        14,
+        4.1
+      ],
+      "zone": "unpaid",
+      "manager": "commercial"
+    },
+    {
+      "id": "sk:concourse:whity-north",
+      "names": {
+        "ja": "ノースモール方面",
+        "en": "North Mall passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:whity-floor",
+          "sk:source:whity-city",
+          "sk:source:district-def",
+          "sk:source:whity-district"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-22"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Concourse",
+      "levelId": "sk:level:outside-b1",
+      "stationId": null,
+      "point": [
+        48,
+        14.7
+      ],
+      "size": [
+        3.8,
+        12.5
+      ],
+      "zone": "unpaid",
+      "manager": "commercial"
+    },
+    {
+      "id": "sk:concourse:whity-nomoka",
+      "names": {
+        "ja": "NOMOKA方面",
+        "en": "Passage toward NOMOKA",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:whity-floor",
+          "sk:source:whity-city",
+          "sk:source:district-def",
+          "sk:source:whity-district"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-22"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Concourse",
+      "levelId": "sk:level:outside-b1",
+      "stationId": null,
+      "point": [
+        70,
+        15.9
+      ],
+      "size": [
+        3.6,
+        7.2
+      ],
+      "zone": "unpaid",
+      "manager": "commercial"
+    },
+    {
+      "id": "sk:concourse:higashi-out-2",
+      "names": {
+        "ja": "中西改札前",
+        "en": "Higashi-Umeda central west exterior",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:higashi",
+          "sk:source:higashi-map",
+          "sk:source:district-south"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Concourse",
+      "levelId": "sk:level:higashi-b1",
+      "stationId": "sk:station:metro-higashiumeda",
+      "point": [
+        47,
+        33
+      ],
+      "size": [
+        4,
+        4
+      ],
+      "zone": "unpaid",
+      "manager": "railway"
+    },
+    {
+      "id": "sk:concourse:higashi-in-2",
+      "names": {
+        "ja": "中西改札内",
+        "en": "Higashi-Umeda central west hall",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:higashi",
+          "sk:source:higashi-map",
+          "sk:source:district-south"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Concourse",
+      "levelId": "sk:level:higashi-b1",
+      "stationId": "sk:station:metro-higashiumeda",
+      "point": [
+        47,
+        37
+      ],
+      "size": [
+        3.4,
+        4
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:platform:higashi-2",
+      "names": {
+        "ja": "東梅田 2番線",
+        "en": "Higashi-Umeda platform 2",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:higashi",
+          "sk:source:higashi-map",
+          "sk:source:district-south"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Platform",
+      "levelId": "sk:level:higashi-b2",
+      "stationId": "sk:station:metro-higashiumeda",
+      "point": [
+        47,
+        41
+      ],
+      "size": [
+        2.9,
+        22
+      ],
+      "zone": "paid",
+      "manager": null,
+      "serviceLineIds": [
+        "sk:line:tanimachi"
+      ],
+      "boarding": {
+        "label": "2",
+        "trackSides": [
+          1
+        ]
+      }
+    },
+    {
+      "id": "sk:landing:higashi-stop-2",
+      "names": {
+        "ja": "ホーム EV",
+        "en": "Platform lift",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:higashi",
+          "sk:source:higashi-map",
+          "sk:source:district-south"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:higashi-b2",
+      "stationId": "sk:station:metro-higashiumeda",
+      "point": [
+        47,
+        37
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:concourse:higashi-out-1",
+      "names": {
+        "ja": "南改札前",
+        "en": "Higashi-Umeda south exterior",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:higashi",
+          "sk:source:higashi-map",
+          "sk:source:district-south"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Concourse",
+      "levelId": "sk:level:higashi-b1",
+      "stationId": "sk:station:metro-higashiumeda",
+      "point": [
+        52,
+        42
+      ],
+      "size": [
+        4,
+        4
+      ],
+      "zone": "unpaid",
+      "manager": "railway"
+    },
+    {
+      "id": "sk:concourse:higashi-in-1",
+      "names": {
+        "ja": "南改札内",
+        "en": "Higashi-Umeda south hall",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:higashi",
+          "sk:source:higashi-map",
+          "sk:source:district-south"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Concourse",
+      "levelId": "sk:level:higashi-b1",
+      "stationId": "sk:station:metro-higashiumeda",
+      "point": [
+        52,
+        46
+      ],
+      "size": [
+        3.4,
+        4
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:platform:higashi-1",
+      "names": {
+        "ja": "東梅田 1番線",
+        "en": "Higashi-Umeda platform 1",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:higashi",
+          "sk:source:higashi-map",
+          "sk:source:district-south"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Platform",
+      "levelId": "sk:level:higashi-b2",
+      "stationId": "sk:station:metro-higashiumeda",
+      "point": [
+        52,
+        41
+      ],
+      "size": [
+        2.9,
+        22
+      ],
+      "zone": "paid",
+      "manager": null,
+      "serviceLineIds": [
+        "sk:line:tanimachi"
+      ],
+      "boarding": {
+        "label": "1",
+        "trackSides": [
+          -1
+        ]
+      }
+    },
+    {
+      "id": "sk:landing:higashi-stop-1",
+      "names": {
+        "ja": "ホーム EV",
+        "en": "Platform lift",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:higashi",
+          "sk:source:higashi-map",
+          "sk:source:district-south"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:higashi-b2",
+      "stationId": "sk:station:metro-higashiumeda",
+      "point": [
+        52,
+        46
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:concourse:diamor",
+      "names": {
+        "ja": "ディアモール大阪 経由",
+        "en": "Via Diamor Osaka",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:district-def"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Concourse",
+      "levelId": "sk:level:outside-b1",
+      "stationId": null,
+      "point": [
+        18,
+        48
+      ],
+      "size": [
+        4,
+        9
+      ],
+      "zone": "unpaid",
+      "manager": "commercial"
+    },
+    {
+      "id": "sk:concourse:kita-exterior",
+      "names": {
+        "ja": "西改札口前",
+        "en": "Kitashinchi west gate · outside",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:kitashinchi",
+          "sk:source:district-south"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Concourse",
+      "levelId": "sk:level:kita-b1",
+      "stationId": "sk:station:jr-kitashinchi",
+      "point": [
+        -7,
+        62
+      ],
+      "size": [
+        4,
+        4
+      ],
+      "zone": "unpaid",
+      "manager": "railway"
+    },
+    {
+      "id": "sk:concourse:kita-hall",
+      "names": {
+        "ja": "西改札口内",
+        "en": "Kitashinchi west gate · inside",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:kitashinchi",
+          "sk:source:district-south"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Concourse",
+      "levelId": "sk:level:kita-b1",
+      "stationId": "sk:station:jr-kitashinchi",
+      "point": [
+        -3,
+        62
+      ],
+      "size": [
+        8,
+        3.5
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:platform:kita-1-2",
+      "names": {
+        "ja": "北新地 1・2番線",
+        "en": "Kitashinchi platforms 1 / 2",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:kitashinchi",
+          "sk:source:district-south"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Platform",
+      "levelId": "sk:level:kita-b2",
+      "stationId": "sk:station:jr-kitashinchi",
+      "point": [
+        6,
+        62
+      ],
+      "size": [
+        29,
+        3.6
+      ],
+      "zone": "paid",
+      "manager": null,
+      "serviceLineIds": [
+        "sk:line:jr-tozai"
+      ],
+      "boarding": {
+        "label": "1・2",
+        "trackSides": [
+          -1,
+          1
+        ]
+      }
+    },
+    {
+      "id": "sk:landing:kita-platform-ev",
+      "names": {
+        "ja": "ホーム EV",
+        "en": "Platform lift",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:kitashinchi",
+          "sk:source:district-south"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:kita-b2",
+      "stationId": "sk:station:jr-kitashinchi",
+      "point": [
+        -3,
+        62
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:concourse:nishi-exterior",
+      "names": {
+        "ja": "南改札前",
+        "en": "Nishi-Umeda south gate · outside",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:nishi",
+          "sk:source:district-south"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Concourse",
+      "levelId": "sk:level:nishi-b1",
+      "stationId": "sk:station:metro-nishiumeda",
+      "point": [
+        -18,
+        54
+      ],
+      "size": [
+        4,
+        4
+      ],
+      "zone": "unpaid",
+      "manager": "railway"
+    },
+    {
+      "id": "sk:concourse:nishi-hall",
+      "names": {
+        "ja": "南改札内",
+        "en": "Nishi-Umeda south gate · inside",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:nishi",
+          "sk:source:district-south"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Concourse",
+      "levelId": "sk:level:nishi-b1",
+      "stationId": "sk:station:metro-nishiumeda",
+      "point": [
+        -18,
+        50
+      ],
+      "size": [
+        3.5,
+        7
+      ],
+      "zone": "paid",
+      "manager": null
+    },
+    {
+      "id": "sk:platform:nishi-1-2",
+      "names": {
+        "ja": "西梅田 1・2番線",
+        "en": "Nishi-Umeda platforms 1 / 2",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:nishi",
+          "sk:source:district-south"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Platform",
+      "levelId": "sk:level:nishi-b2",
+      "stationId": "sk:station:metro-nishiumeda",
+      "point": [
+        -18,
+        44
+      ],
+      "size": [
+        3.6,
+        24
+      ],
+      "zone": "paid",
+      "manager": null,
+      "serviceLineIds": [
+        "sk:line:yotsubashi"
+      ],
+      "boarding": {
+        "label": "1・2",
+        "trackSides": [
+          -1,
+          1
+        ]
+      }
+    },
+    {
+      "id": "sk:landing:nishi-platform-ev",
+      "names": {
+        "ja": "ホーム EV",
+        "en": "Platform lift",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:nishi",
+          "sk:source:district-south"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Landing",
+      "levelId": "sk:level:nishi-b2",
+      "stationId": "sk:station:metro-nishiumeda",
+      "point": [
+        -18,
+        50
+      ],
+      "size": [
+        1,
+        1
+      ],
+      "zone": "paid",
+      "manager": null
     }
   ],
   "links": [
@@ -7497,6 +10439,1884 @@
       "stepFree": true,
       "direction": "both",
       "connection": "verified"
+    },
+    {
+      "id": "sk:passage:hankyu-crossing-via-jr-midosuji-out",
+      "names": {
+        "ja": "通路 → 阪急方面 横断歩道",
+        "en": "Walk to Crosswalk toward Hankyu",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:city-b"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:jr-midosuji-out",
+      "to": "sk:concourse:hankyu-crossing",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:hankyu-front-via-hankyu-crossing",
+      "names": {
+        "ja": "通路 → 阪急百貨店付近通路",
+        "en": "Walk to Passage by Hankyu department store",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:city-b"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:hankyu-crossing",
+      "to": "sk:concourse:hankyu-front",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:hankyu-lift-ground-via-hankyu-front",
+      "names": {
+        "ja": "通路 → 阪急側 地上 EV④",
+        "en": "Walk to Hankyu surface lift ④",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:city-b"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:hankyu-front",
+      "to": "sk:concourse:hankyu-lift-ground",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:elevator:hk-04",
+      "names": {
+        "ja": "3階改札方面 EV④",
+        "en": "Lift ④ to third-floor gate",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:city-b"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Elevator",
+      "from": "sk:concourse:hankyu-lift-ground",
+      "to": "sk:concourse:hk-gate-out",
+      "declaredSpan": [
+        "sk:level:outside-1f",
+        "sk:level:hk-3f"
+      ],
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:gate:hk-3f",
+      "names": {
+        "ja": "阪急 3階改札口",
+        "en": "Hankyu third-floor gate",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Gate",
+      "from": "sk:concourse:hk-gate-out",
+      "to": "sk:concourse:hk-headhall",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:hk-1-head-via-hk-headhall",
+      "names": {
+        "ja": "通路 → ホーム端",
+        "en": "Walk to Platform head",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:hk-headhall",
+      "to": "sk:landing:hk-1-head",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:hk-1-via-hk-1-head",
+      "names": {
+        "ja": "通路 → 阪急 1号線",
+        "en": "Walk to Hankyu track 1",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:hk-1-head",
+      "to": "sk:platform:hk-1",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:hk-2-head-via-hk-headhall",
+      "names": {
+        "ja": "通路 → ホーム端",
+        "en": "Walk to Platform head",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:hk-headhall",
+      "to": "sk:landing:hk-2-head",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:hk-2-via-hk-2-head",
+      "names": {
+        "ja": "通路 → 阪急 2号線",
+        "en": "Walk to Hankyu track 2",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:hk-2-head",
+      "to": "sk:platform:hk-2",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:hk-3-head-via-hk-headhall",
+      "names": {
+        "ja": "通路 → ホーム端",
+        "en": "Walk to Platform head",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:hk-headhall",
+      "to": "sk:landing:hk-3-head",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:hk-3-via-hk-3-head",
+      "names": {
+        "ja": "通路 → 阪急 3号線",
+        "en": "Walk to Hankyu track 3",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:hk-3-head",
+      "to": "sk:platform:hk-3",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:hk-4-head-via-hk-headhall",
+      "names": {
+        "ja": "通路 → ホーム端",
+        "en": "Walk to Platform head",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:hk-headhall",
+      "to": "sk:landing:hk-4-head",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:hk-4-via-hk-4-head",
+      "names": {
+        "ja": "通路 → 阪急 4号線",
+        "en": "Walk to Hankyu track 4",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:hk-4-head",
+      "to": "sk:platform:hk-4",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:hk-5-head-via-hk-headhall",
+      "names": {
+        "ja": "通路 → ホーム端",
+        "en": "Walk to Platform head",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:hk-headhall",
+      "to": "sk:landing:hk-5-head",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:hk-5-via-hk-5-head",
+      "names": {
+        "ja": "通路 → 阪急 5号線",
+        "en": "Walk to Hankyu track 5",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:hk-5-head",
+      "to": "sk:platform:hk-5",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:hk-6-head-via-hk-headhall",
+      "names": {
+        "ja": "通路 → ホーム端",
+        "en": "Walk to Platform head",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:hk-headhall",
+      "to": "sk:landing:hk-6-head",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:hk-6-via-hk-6-head",
+      "names": {
+        "ja": "通路 → 阪急 6号線",
+        "en": "Walk to Hankyu track 6",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:hk-6-head",
+      "to": "sk:platform:hk-6",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:hk-7-head-via-hk-headhall",
+      "names": {
+        "ja": "通路 → ホーム端",
+        "en": "Walk to Platform head",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:hk-headhall",
+      "to": "sk:landing:hk-7-head",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:hk-7-via-hk-7-head",
+      "names": {
+        "ja": "通路 → 阪急 7号線",
+        "en": "Walk to Hankyu track 7",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:hk-7-head",
+      "to": "sk:platform:hk-7",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:hk-8-head-via-hk-headhall",
+      "names": {
+        "ja": "通路 → ホーム端",
+        "en": "Walk to Platform head",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:hk-headhall",
+      "to": "sk:landing:hk-8-head",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:hk-8-via-hk-8-head",
+      "names": {
+        "ja": "通路 → 阪急 8号線",
+        "en": "Walk to Hankyu track 8",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:hk-8-head",
+      "to": "sk:platform:hk-8",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:hk-9-head-via-hk-headhall",
+      "names": {
+        "ja": "通路 → ホーム端",
+        "en": "Walk to Platform head",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:hk-headhall",
+      "to": "sk:landing:hk-9-head",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:hk-9-via-hk-9-head",
+      "names": {
+        "ja": "通路 → 阪急 9号線",
+        "en": "Walk to Hankyu track 9",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:hk-9-head",
+      "to": "sk:platform:hk-9",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:hk-outer-head-via-hk-headhall",
+      "names": {
+        "ja": "通路 → ホーム端",
+        "en": "Walk to Platform head",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:hk-headhall",
+      "to": "sk:landing:hk-outer-head",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:hk-outer-via-hk-outer-head",
+      "names": {
+        "ja": "通路 → 9号線外側 ホーム端",
+        "en": "Walk to Outer platform edge at track 9",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:hk-outer-head",
+      "to": "sk:concourse:hk-outer",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:gate:hk-2f",
+      "names": {
+        "ja": "阪急 2階中央改札口",
+        "en": "Hankyu second-floor central gate",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Gate",
+      "from": "sk:concourse:hk-central-out",
+      "to": "sk:concourse:hk-central-in",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:hk-central-lift-via-hk-central-in",
+      "names": {
+        "ja": "通路 → 1号線方面 EV",
+        "en": "Walk to Lift to track 1",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu-lift"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:hk-central-in",
+      "to": "sk:landing:hk-central-lift",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:elevator:hk-track-one",
+      "names": {
+        "ja": "1号線エレベーター",
+        "en": "Lift to track 1",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hankyu-current",
+          "sk:source:hankyu-lift"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Elevator",
+      "from": "sk:landing:hk-central-lift",
+      "to": "sk:platform:hk-1",
+      "declaredSpan": [
+        "sk:level:hk-2f",
+        "sk:level:hk-3f"
+      ],
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:city-eight-ground-via-civic-lift-1f",
+      "names": {
+        "ja": "通路 → 南改札方面 地上 EV⑧",
+        "en": "Walk to Surface lift ⑧",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:city-b"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:civic-lift-1f",
+      "to": "sk:concourse:city-eight-ground",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:elevator:city-eight",
+      "names": {
+        "ja": "南改札前へ EV⑧",
+        "en": "Lift ⑧ to south gate exterior",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:city-b"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Elevator",
+      "from": "sk:concourse:city-eight-ground",
+      "to": "sk:concourse:metro-south-out",
+      "declaredSpan": [
+        "sk:level:outside-1f",
+        "sk:level:metro-b1"
+      ],
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:hs-east-lift-via-metro-south-out",
+      "names": {
+        "ja": "通路 → 東口方面 EV⑫",
+        "en": "Walk to Lift ⑫ to Hanshin",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:district-def"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:metro-south-out",
+      "to": "sk:concourse:hs-east-lift",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:elevator:city-twelve",
+      "names": {
+        "ja": "東口へ EV⑫",
+        "en": "Lift ⑫ to Hanshin east gate",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:district-def"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Elevator",
+      "from": "sk:concourse:hs-east-lift",
+      "to": "sk:concourse:hs-east-out",
+      "declaredSpan": [
+        "sk:level:outside-b1",
+        "sk:level:hs-b2"
+      ],
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:gate:hs-east",
+      "names": {
+        "ja": "阪神 東口",
+        "en": "Hanshin east gate",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hanshin-map",
+          "sk:source:hanshin"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Gate",
+      "from": "sk:concourse:hs-east-out",
+      "to": "sk:concourse:hs-east-in",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:hs-1-2-head-via-hs-east-in",
+      "names": {
+        "ja": "通路 → ホーム端",
+        "en": "Walk to Platform head",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hanshin-map",
+          "sk:source:hanshin"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:hs-east-in",
+      "to": "sk:landing:hs-1-2-head",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:hs-1-2-via-hs-1-2-head",
+      "names": {
+        "ja": "通路 → 阪神 1・2番のりば",
+        "en": "Walk to Hanshin platforms 1・2",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hanshin-map",
+          "sk:source:hanshin"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:hs-1-2-head",
+      "to": "sk:platform:hs-1-2",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:hs-3-4-head-via-hs-east-in",
+      "names": {
+        "ja": "通路 → ホーム端",
+        "en": "Walk to Platform head",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hanshin-map",
+          "sk:source:hanshin"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:hs-east-in",
+      "to": "sk:landing:hs-3-4-head",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:hs-3-4-via-hs-3-4-head",
+      "names": {
+        "ja": "通路 → 阪神 3・4番のりば",
+        "en": "Walk to Hanshin platforms 3・4",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hanshin-map",
+          "sk:source:hanshin"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:hs-3-4-head",
+      "to": "sk:platform:hs-3-4",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:gate:hs-west",
+      "names": {
+        "ja": "阪神 西口",
+        "en": "Hanshin west gate",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hanshin-map",
+          "sk:source:hanshin"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Gate",
+      "from": "sk:concourse:hs-west-out",
+      "to": "sk:concourse:hs-west-in",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:hs-ev-up-0-via-hs-west-in",
+      "names": {
+        "ja": "通路 → 西側 EV",
+        "en": "Walk to West concourse lift",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hanshin-map",
+          "sk:source:hanshin"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:hs-west-in",
+      "to": "sk:landing:hs-ev-up-0",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:elevator:hs-west-0",
+      "names": {
+        "ja": "ホームエレベーター",
+        "en": "Platform lift",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hanshin-map",
+          "sk:source:hanshin"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Elevator",
+      "from": "sk:landing:hs-ev-up-0",
+      "to": "sk:landing:hs-ev-down-0",
+      "declaredSpan": [
+        "sk:level:hs-b1",
+        "sk:level:hs-b2"
+      ],
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:hs-1-2-via-hs-ev-down-0",
+      "names": {
+        "ja": "通路 → 阪神 1・2番のりば",
+        "en": "Walk to Hanshin platforms 1・2",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hanshin-map",
+          "sk:source:hanshin"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:hs-ev-down-0",
+      "to": "sk:platform:hs-1-2",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:hs-ev-up-1-via-hs-west-in",
+      "names": {
+        "ja": "通路 → 西側 EV",
+        "en": "Walk to West concourse lift",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hanshin-map",
+          "sk:source:hanshin"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:hs-west-in",
+      "to": "sk:landing:hs-ev-up-1",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:elevator:hs-west-1",
+      "names": {
+        "ja": "ホームエレベーター",
+        "en": "Platform lift",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hanshin-map",
+          "sk:source:hanshin"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Elevator",
+      "from": "sk:landing:hs-ev-up-1",
+      "to": "sk:landing:hs-ev-down-1",
+      "declaredSpan": [
+        "sk:level:hs-b1",
+        "sk:level:hs-b2"
+      ],
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:hs-3-4-via-hs-ev-down-1",
+      "names": {
+        "ja": "通路 → 阪神 3・4番のりば",
+        "en": "Walk to Hanshin platforms 3・4",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:hanshin-map",
+          "sk:source:hanshin"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:hs-ev-down-1",
+      "to": "sk:platform:hs-3-4",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:whity-main-via-metro-south-out",
+      "names": {
+        "ja": "通路 → ホワイティうめだ",
+        "en": "Walk to Whity Umeda",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:district-def"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:metro-south-out",
+      "to": "sk:concourse:whity-main",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:whity-north-via-whity-main",
+      "names": {
+        "ja": "通路 → ノースモール方面",
+        "en": "Walk to North Mall passage",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:whity-floor",
+          "sk:source:whity-city",
+          "sk:source:district-def",
+          "sk:source:whity-district"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-22"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:whity-main",
+      "to": "sk:concourse:whity-north",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:whity-east-via-whity-main",
+      "names": {
+        "ja": "通路 → イーストモール",
+        "en": "Walk to East Mall",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:whity-floor",
+          "sk:source:whity-city",
+          "sk:source:district-def",
+          "sk:source:whity-district"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-22"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:whity-main",
+      "to": "sk:concourse:whity-east",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:whity-izumi-via-whity-east",
+      "names": {
+        "ja": "通路 → 泉の広場",
+        "en": "Walk to Izumi-no-Hiroba",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:whity-floor",
+          "sk:source:whity-city",
+          "sk:source:district-def",
+          "sk:source:whity-district"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-22"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:whity-east",
+      "to": "sk:concourse:whity-izumi",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:whity-nomoka-via-whity-izumi",
+      "names": {
+        "ja": "通路 → NOMOKA方面",
+        "en": "Walk to Passage toward NOMOKA",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:whity-floor",
+          "sk:source:whity-city",
+          "sk:source:district-def",
+          "sk:source:whity-district"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-22"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:whity-izumi",
+      "to": "sk:concourse:whity-nomoka",
+      "declaredSpan": null,
+      "stepFree": null,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:higashi-out-2-via-whity-main",
+      "names": {
+        "ja": "通路 → 中西改札前",
+        "en": "Walk to Higashi-Umeda central west exterior",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:district-def"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:whity-main",
+      "to": "sk:concourse:higashi-out-2",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:gate:higashi-2",
+      "names": {
+        "ja": "中西改札",
+        "en": "Higashi-Umeda central west gate",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:higashi",
+          "sk:source:higashi-map",
+          "sk:source:district-south"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Gate",
+      "from": "sk:concourse:higashi-out-2",
+      "to": "sk:concourse:higashi-in-2",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:elevator:higashi-2",
+      "names": {
+        "ja": "ホームエレベーター",
+        "en": "Platform lift",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:higashi",
+          "sk:source:higashi-map",
+          "sk:source:district-south"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Elevator",
+      "from": "sk:concourse:higashi-in-2",
+      "to": "sk:landing:higashi-stop-2",
+      "declaredSpan": [
+        "sk:level:higashi-b1",
+        "sk:level:higashi-b2"
+      ],
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:higashi-2-via-higashi-stop-2",
+      "names": {
+        "ja": "通路 → 東梅田 2番線",
+        "en": "Walk to Higashi-Umeda platform 2",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:higashi",
+          "sk:source:higashi-map",
+          "sk:source:district-south"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:higashi-stop-2",
+      "to": "sk:platform:higashi-2",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:higashi-out-1-via-whity-main",
+      "names": {
+        "ja": "通路 → 南改札前",
+        "en": "Walk to Higashi-Umeda south exterior",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:district-def"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:whity-main",
+      "to": "sk:concourse:higashi-out-1",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:gate:higashi-1",
+      "names": {
+        "ja": "南改札",
+        "en": "Higashi-Umeda south gate",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:higashi",
+          "sk:source:higashi-map",
+          "sk:source:district-south"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Gate",
+      "from": "sk:concourse:higashi-out-1",
+      "to": "sk:concourse:higashi-in-1",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:elevator:higashi-1",
+      "names": {
+        "ja": "ホームエレベーター",
+        "en": "Platform lift",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:higashi",
+          "sk:source:higashi-map",
+          "sk:source:district-south"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Elevator",
+      "from": "sk:concourse:higashi-in-1",
+      "to": "sk:landing:higashi-stop-1",
+      "declaredSpan": [
+        "sk:level:higashi-b1",
+        "sk:level:higashi-b2"
+      ],
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:higashi-1-via-higashi-stop-1",
+      "names": {
+        "ja": "通路 → 東梅田 1番線",
+        "en": "Walk to Higashi-Umeda platform 1",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:higashi",
+          "sk:source:higashi-map",
+          "sk:source:district-south"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:higashi-stop-1",
+      "to": "sk:platform:higashi-1",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:diamor-via-metro-south-out",
+      "names": {
+        "ja": "通路 → ディアモール大阪 経由",
+        "en": "Walk to Via Diamor Osaka",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:district-def"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:metro-south-out",
+      "to": "sk:concourse:diamor",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:gate:kita-gate",
+      "names": {
+        "ja": "西改札口",
+        "en": "Kitashinchi west gate",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:kitashinchi",
+          "sk:source:district-south"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Gate",
+      "from": "sk:concourse:kita-exterior",
+      "to": "sk:concourse:kita-hall",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:elevator:kita-platform",
+      "names": {
+        "ja": "ホームエレベーター",
+        "en": "Platform lift",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:kitashinchi",
+          "sk:source:district-south"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Elevator",
+      "from": "sk:concourse:kita-hall",
+      "to": "sk:landing:kita-platform-ev",
+      "declaredSpan": [
+        "sk:level:kita-b1",
+        "sk:level:kita-b2"
+      ],
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:kita-1-2-via-kita-platform-ev",
+      "names": {
+        "ja": "通路 → 北新地 1・2番線",
+        "en": "Walk to Kitashinchi platforms 1 / 2",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:kitashinchi",
+          "sk:source:district-south"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:kita-platform-ev",
+      "to": "sk:platform:kita-1-2",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:kita-exterior-via-diamor",
+      "names": {
+        "ja": "通路 → 西改札口前",
+        "en": "Walk to Kitashinchi west gate · outside",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:district-def"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:diamor",
+      "to": "sk:concourse:kita-exterior",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:gate:nishi-gate",
+      "names": {
+        "ja": "南改札",
+        "en": "Nishi-Umeda south gate",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:nishi",
+          "sk:source:district-south"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Gate",
+      "from": "sk:concourse:nishi-exterior",
+      "to": "sk:concourse:nishi-hall",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:elevator:nishi-platform",
+      "names": {
+        "ja": "ホームエレベーター",
+        "en": "Platform lift",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:nishi",
+          "sk:source:district-south"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Elevator",
+      "from": "sk:concourse:nishi-hall",
+      "to": "sk:landing:nishi-platform-ev",
+      "declaredSpan": [
+        "sk:level:nishi-b1",
+        "sk:level:nishi-b2"
+      ],
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:nishi-1-2-via-nishi-platform-ev",
+      "names": {
+        "ja": "通路 → 西梅田 1・2番線",
+        "en": "Walk to Nishi-Umeda platforms 1 / 2",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:nishi",
+          "sk:source:district-south"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:landing:nishi-platform-ev",
+      "to": "sk:platform:nishi-1-2",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
+    },
+    {
+      "id": "sk:passage:nishi-exterior-via-kita-exterior",
+      "names": {
+        "ja": "通路 → 南改札前",
+        "en": "Walk to Nishi-Umeda south gate · outside",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:district-ghi"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Passage",
+      "from": "sk:concourse:kita-exterior",
+      "to": "sk:concourse:nishi-exterior",
+      "declaredSpan": null,
+      "stepFree": true,
+      "direction": "both",
+      "connection": "verified"
     }
   ],
   "context": [
@@ -7511,15 +12331,18 @@
       "externalIds": {},
       "provenance": {
         "sourceIds": [
+          "sk:source:hankyu-current",
           "sk:source:hankyu"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-21"
       },
-      "geometry_confidence": "unknown",
+      "geometry_confidence": "schematic",
       "validFrom": null,
       "validTo": null,
-      "kind": "UnverifiedBlock"
+      "kind": "Station",
+      "stationId": "sk:station:hankyu-osaka-umeda",
+      "anchorId": "sk:concourse:hk-headhall"
     },
     {
       "id": "sk:context:hanshin",
@@ -7532,78 +12355,18 @@
       "externalIds": {},
       "provenance": {
         "sourceIds": [
+          "sk:source:hanshin-map",
           "sk:source:hanshin"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-21"
       },
-      "geometry_confidence": "unknown",
+      "geometry_confidence": "schematic",
       "validFrom": null,
       "validTo": null,
-      "kind": "UnverifiedBlock"
-    },
-    {
-      "id": "sk:context:higashi",
-      "names": {
-        "ja": "東梅田",
-        "en": "Higashi-Umeda",
-        "ja_kana": null,
-        "zh": null
-      },
-      "externalIds": {},
-      "provenance": {
-        "sourceIds": [
-          "sk:source:higashi"
-        ],
-        "dataNature": "manual-verified",
-        "lastVerifiedAt": "2026-11-21"
-      },
-      "geometry_confidence": "unknown",
-      "validFrom": null,
-      "validTo": null,
-      "kind": "UnverifiedBlock"
-    },
-    {
-      "id": "sk:context:nishi",
-      "names": {
-        "ja": "西梅田",
-        "en": "Nishi-Umeda",
-        "ja_kana": null,
-        "zh": null
-      },
-      "externalIds": {},
-      "provenance": {
-        "sourceIds": [
-          "sk:source:nishi"
-        ],
-        "dataNature": "manual-verified",
-        "lastVerifiedAt": "2026-11-21"
-      },
-      "geometry_confidence": "unknown",
-      "validFrom": null,
-      "validTo": null,
-      "kind": "UnverifiedBlock"
-    },
-    {
-      "id": "sk:context:kitashinchi",
-      "names": {
-        "ja": "北新地",
-        "en": "Kitashinchi",
-        "ja_kana": null,
-        "zh": null
-      },
-      "externalIds": {},
-      "provenance": {
-        "sourceIds": [
-          "sk:source:jr-map"
-        ],
-        "dataNature": "manual-verified",
-        "lastVerifiedAt": "2026-11-21"
-      },
-      "geometry_confidence": "unknown",
-      "validFrom": null,
-      "validTo": null,
-      "kind": "UnverifiedBlock"
+      "kind": "Station",
+      "stationId": "sk:station:hanshin-osaka-umeda",
+      "anchorId": "sk:concourse:hs-east-in"
     },
     {
       "id": "sk:context:whity",
@@ -7616,15 +12379,93 @@
       "externalIds": {},
       "provenance": {
         "sourceIds": [
-          "sk:source:metro-exits"
+          "sk:source:whity-floor",
+          "sk:source:whity-city",
+          "sk:source:district-def",
+          "sk:source:whity-district"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-22"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "ShoppingArcade",
+      "stationId": null,
+      "anchorId": "sk:concourse:whity-main"
+    },
+    {
+      "id": "sk:context:higashi",
+      "names": {
+        "ja": "東梅田",
+        "en": "Higashi-Umeda",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:higashi",
+          "sk:source:higashi-map",
+          "sk:source:district-south"
         ],
         "dataNature": "manual-verified",
         "lastVerifiedAt": "2026-11-21"
       },
-      "geometry_confidence": "unknown",
+      "geometry_confidence": "schematic",
       "validFrom": null,
       "validTo": null,
-      "kind": "UnverifiedBlock"
+      "kind": "Station",
+      "stationId": "sk:station:metro-higashiumeda",
+      "anchorId": "sk:platform:higashi-2"
+    },
+    {
+      "id": "sk:context:kitashinchi",
+      "names": {
+        "ja": "北新地",
+        "en": "Kitashinchi",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:kitashinchi",
+          "sk:source:district-south"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Station",
+      "stationId": "sk:station:jr-kitashinchi",
+      "anchorId": "sk:platform:kita-1-2"
+    },
+    {
+      "id": "sk:context:nishi",
+      "names": {
+        "ja": "西梅田",
+        "en": "Nishi-Umeda",
+        "ja_kana": null,
+        "zh": null
+      },
+      "externalIds": {},
+      "provenance": {
+        "sourceIds": [
+          "sk:source:nishi",
+          "sk:source:district-south"
+        ],
+        "dataNature": "manual-verified",
+        "lastVerifiedAt": "2026-11-21"
+      },
+      "geometry_confidence": "schematic",
+      "validFrom": null,
+      "validTo": null,
+      "kind": "Station",
+      "stationId": "sk:station:metro-nishiumeda",
+      "anchorId": "sk:platform:nishi-1-2"
     }
   ],
   "complex": {
@@ -7638,7 +12479,11 @@
     "externalIds": {},
     "provenance": {
       "sourceIds": [
-        "sk:source:city-b"
+        "sk:source:city-b",
+        "sk:source:district-def",
+        "sk:source:district-ghi",
+        "sk:source:district-def",
+        "sk:source:district-ghi"
       ],
       "dataNature": "manual-verified",
       "lastVerifiedAt": "2026-11-21"
@@ -7648,7 +12493,12 @@
     "validTo": null,
     "stationIds": [
       "sk:station:jr-osaka",
-      "sk:station:metro-umeda"
+      "sk:station:metro-umeda",
+      "sk:station:hankyu-osaka-umeda",
+      "sk:station:hanshin-osaka-umeda",
+      "sk:station:metro-higashiumeda",
+      "sk:station:jr-kitashinchi",
+      "sk:station:metro-nishiumeda"
     ]
   },
   "interchange": {

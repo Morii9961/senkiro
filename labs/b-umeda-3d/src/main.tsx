@@ -4,7 +4,7 @@ import { Scene } from './Scene'
 import { FloorPlan } from './FloorPlan'
 import { route, cost, type Step } from './domain/graph'
 import type { Language } from './domain/types'
-import { floorLabels, floors, nodes, station } from './model'
+import { floorLabels, floors, nodes, station, sites, inSite } from './model'
 import records from '../data/sources.json'
 import { Guide, areaText } from './Guide'
 import { exampleService } from './providers/service'
@@ -29,6 +29,24 @@ const tours = [
     start: 'sk:concourse:jr-west-outside',
     end: 'sk:platform:jr-3-4',
   },
+  {
+    ja: '大阪 → 阪急 京都線',
+    en: 'Osaka → Hankyu Kyoto Line',
+    start: 'sk:concourse:jr-midosuji-in',
+    end: 'sk:platform:hk-1',
+  },
+  {
+    ja: '大阪 → ホワイティ → 東梅田',
+    en: 'Osaka → Whity → Higashi-Umeda',
+    start: 'sk:concourse:jr-midosuji-in',
+    end: 'sk:platform:higashi-2',
+  },
+  {
+    ja: '北新地 → 西梅田',
+    en: 'Kitashinchi → Nishi-Umeda',
+    start: 'sk:platform:kita-1-2',
+    end: 'sk:platform:nishi-1-2',
+  },
 ]
 function instruction(s: Step, lang: Language) {
   if (s.link.from === s.from.id) return s.link.names[lang]
@@ -51,6 +69,54 @@ function App() {
     [reset, setReset] = useState(0)
   const [zoom, setZoom] = useState({ tick: 0, factor: 1 }),
     [planZoom, setPlanZoom] = useState(1)
+  const [siteId, setSiteId] = useState<string | null>(null)
+  const [eye, setEye] = useState<string | null>(null)
+  function interior() {
+    if (eye) {
+      setEye(null)
+      return
+    }
+    const target =
+      (picked && nodes.get(picked)?.kind === 'Platform'
+        ? nodes.get(picked)
+        : undefined) ??
+      (siteId === 'sk:context:whity'
+        ? nodes.get('sk:concourse:whity-east')
+        : station.places.find(
+            (p) => p.kind === 'Platform' && inSite(p, siteId),
+          ))
+    if (!target) return
+    selectStep(-1)
+    setPicked(null)
+    selectFloor(null)
+    setPlan(false)
+    setEye(target.id)
+  }
+  const [shell, setShell] = useState(true)
+  const site = sites.find((s) => s.id === siteId)
+  const siteFloors = floorLabels.filter(
+    ([n]) =>
+      !siteId ||
+      station.places.some(
+        (p) => inSite(p, siteId) && floors.get(p.levelId)!.ordinal === n,
+      ),
+  )
+  function visit(id: string | null) {
+    setEye(null)
+    setSiteId(id)
+    setPicked(null)
+    selectStep(-1)
+    setPlanZoom(1)
+    const at = sites.find((s) => s.id === id)
+    selectFloor(
+      plan && at
+        ? floors.get(nodes.get(at.anchorId)!.levelId)!.ordinal
+        : plan
+          ? 0
+          : null,
+    )
+    setReset((r) => r + 1)
+  }
   const [trip, setTrip] = useState({ start: tours[0].start, end: tours[0].end })
   const [drawer, setDrawer] = useState(false)
   const [picked, setPicked] = useState<string | null>(null)
@@ -69,11 +135,18 @@ function App() {
   const floorNow = floor ?? 0,
     shownFloor = floorLabels.find((f) => f[0] === floorNow)?.[1]
   function togglePlan(next: boolean) {
+    setEye(null)
     setPlan(next)
     setPicked(null)
     if (!next && path[step]) selectFloor(null)
     if (next && floor === null)
-      selectFloor(path[step] ? floors.get(path[step].to.levelId)!.ordinal : 0)
+      selectFloor(
+        path[step]
+          ? floors.get(path[step].to.levelId)!.ordinal
+          : site
+            ? floors.get(nodes.get(site.anchorId)!.levelId)!.ordinal
+            : 0,
+      )
     setPlanZoom(1)
   }
   function changeZoom(factor: number) {
@@ -81,27 +154,38 @@ function App() {
     else setZoom((v) => ({ tick: v.tick + 1, factor }))
   }
   function highlight(i: number) {
+    setEye(null)
+    setSiteId(null)
     selectStep(i)
     setPicked(null)
     if (path[i])
       selectFloor(plan ? floors.get(path[i].to.levelId)!.ordinal : null)
   }
   function pickTour(i: number) {
+    setEye(null)
+    setSiteId(null)
     setTrip({ start: tours[i].start, end: tours[i].end })
     setPicked(null)
     selectStep(-1)
     selectFloor(plan ? 0 : null)
   }
   function endpoint(which: 'start' | 'end', id: string) {
+    setEye(null)
+    setSiteId(null)
     setTrip({ ...trip, [which]: id })
     selectStep(-1)
     setPicked(null)
     selectFloor(plan ? floors.get(nodes.get(id)!.levelId)!.ordinal : null)
   }
   function inspect(id: string) {
+    if (sites.some((s) => s.id === id)) {
+      visit(id)
+      return
+    }
     setPicked(id)
   }
   function resetView() {
+    setEye(null)
     selectStep(-1)
     setPicked(null)
     setReset((v) => v + 1)
@@ -171,7 +255,7 @@ function App() {
           <div className="viewer-bar">
             <strong>
               <i className="status-dot" />
-              {t('大阪・梅田', 'Osaka / Umeda')}
+              {site?.names[lang] ?? t('大阪・梅田', 'Osaka / Umeda')}
             </strong>
             <div className="seg">
               <button aria-pressed={!plan} onClick={() => togglePlan(false)}>
@@ -185,6 +269,7 @@ function App() {
           <div className="stage">
             {plan ? (
               <FloorPlan
+                siteId={siteId}
                 floor={floorNow}
                 lang={lang}
                 steps={step >= 0 || drawer ? path : []}
@@ -194,7 +279,19 @@ function App() {
               />
             ) : (
               <Scene
-                {...{ lang, dark, floor, spread, step, reset, zoom, example }}
+                {...{
+                  lang,
+                  dark,
+                  floor,
+                  spread,
+                  step,
+                  reset,
+                  zoom,
+                  example,
+                  siteId,
+                  shell,
+                  eye,
+                }}
                 route={step >= 0 || drawer ? path : []}
                 onInspect={inspect}
                 onReset={resetView}
@@ -274,6 +371,14 @@ function App() {
                 {evidence}
               </section>
             )}
+            {eye && (
+              <div className="eye-hint">
+                {nodes.get(eye)!.names[lang]} ·{' '}
+                {t('ドラッグで見回す', 'Drag to look around')}
+                <br />
+                {t('内装はイメージです。', 'Illustrative interior finishes.')}
+              </div>
+            )}
             {step >= 0 && path[step] && (
               <div className="walk-hud">
                 <button
@@ -307,7 +412,7 @@ function App() {
               </div>
             )}
             <div className="view-tag">
-              {plan ? 'PLAN' : 'AXON'} <b>/</b>{' '}
+              {plan ? 'PLAN' : eye ? 'INTERIOR' : 'AXON'} <b>/</b>{' '}
               {step >= 0 && path[step] && !plan
                 ? [
                     ...new Set(
@@ -322,17 +427,25 @@ function App() {
             </div>
             <details className="surround">
               <summary>
-                {t('周辺区画 · 接続未確認', 'Surroundings · unverified')}
+                {site
+                  ? site.names[lang]
+                  : t('駅・地下街を選択', 'Stations & arcades')}
               </summary>
-              <small>
-                {t('位置・接続とも未確認', 'Locations and links unverified')}
-              </small>
-              {station.context.map((b) => (
-                <div className="context-block" key={b.id}>
-                  <i aria-hidden="true" />
-                  {b.names[lang]}
-                </div>
-              ))}
+              <div className="site-list">
+                {[null, ...sites].map((s) => (
+                  <button
+                    key={s?.id ?? 'all'}
+                    aria-pressed={siteId === (s?.id ?? null)}
+                    onClick={(e) => {
+                      visit(s?.id ?? null)
+                      e.currentTarget.closest('details')!.open = false
+                    }}
+                  >
+                    {s?.names[lang] ?? t('大阪・梅田 全域', 'Entire district')}
+                    <span>{s ? (s.stationId ? '▤' : '◇') : '⌖'}</span>
+                  </button>
+                ))}
+              </div>
             </details>
             <div className="zoom">
               <button
@@ -362,6 +475,7 @@ function App() {
               <button
                 aria-pressed={floor === null}
                 onClick={() => {
+                  setEye(null)
                   selectFloor(null)
                   selectStep(-1)
                   setPicked(null)
@@ -370,11 +484,12 @@ function App() {
                 {t('全階', 'All')}
               </button>
             )}
-            {floorLabels.map(([n, label]) => (
+            {siteFloors.map(([n, label]) => (
               <button
                 aria-pressed={floor === n}
                 key={n}
                 onClick={() => {
+                  setEye(null)
                   selectFloor(n)
                   selectStep(-1)
                   setPicked(null)
@@ -384,6 +499,16 @@ function App() {
                 {label}
               </button>
             ))}
+            {!plan && (
+              <button onClick={interior} aria-pressed={!!eye}>
+                {t('乗客目線', 'Passenger view')}
+              </button>
+            )}
+            {!plan && (
+              <button aria-pressed={shell} onClick={() => setShell(!shell)}>
+                {t('建築断面', 'Architecture')}
+              </button>
+            )}
             {!plan && (
               <button
                 className="spread"
@@ -407,7 +532,9 @@ function App() {
               <i className="key path-key" />
               {t('経路', 'Route')}
             </span>
-            <small>{t('模式図・縮尺なし', 'Schematic · not to scale')}</small>
+            <small>
+              {t('内装・寸法は模式表現', 'Schematic layout and finishes')}
+            </small>
           </div>
         </section>
         <aside hidden={!drawer}>
@@ -601,13 +728,23 @@ function App() {
           </div>
           {dialog === 'sources' ? (
             <>
-              <p>{t('資料確認日', 'Sources checked')} · 2026-11-21</p>
+              <p>
+                {t('構内図・乗換経路', 'Station plans and transfer guides')}
+              </p>
               {records
                 .filter((r) =>
                   [
                     'sk:source:jr-map',
                     'sk:source:metro-access',
                     'sk:source:city-b',
+                    'sk:source:district-def',
+                    'sk:source:district-ghi',
+                    'sk:source:hankyu-current',
+                    'sk:source:hanshin-map',
+                    'sk:source:higashi-map',
+                    'sk:source:nishi',
+                    'sk:source:kitashinchi',
+                    'sk:source:whity-district',
                   ].includes(r.id),
                 )
                 .map((r) => (
@@ -617,7 +754,8 @@ function App() {
                     </a>
                     <br />
                     {r.sourceDate ??
-                      t('資料日不明', 'Publication date unknown')}
+                      t('資料日不明', 'Publication date unknown')}{' '}
+                    · {t('確認', 'Checked')} {r.retrievedAt}
                   </p>
                 ))}
             </>

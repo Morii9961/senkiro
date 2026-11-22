@@ -64,7 +64,7 @@ test('lets a mobile visitor inspect fare zones, sources and the synthetic overla
   await expect(
     page.getByText('B1F · Outside gates · manager unknown'),
   ).toBeVisible()
-  await expect(page.getByText('Hankyu Osaka-umeda · Unverified')).toBeVisible()
+  await expect(page.getByText('Hankyu Osaka-umeda · Station')).toBeVisible()
   await page.getByRole('button', { name: 'Toggle theme' }).click()
   await page
     .getByRole('button', { name: 'Sources', exact: false })
@@ -127,4 +127,63 @@ test('selects a model feature and navigates custom endpoints in either direction
   await expect(
     page.getByText('You are already at the destination.'),
   ).toBeVisible()
+})
+test('opens each district model and shows its own floors, platforms and retail passages', async ({
+  page,
+}, info) => {
+  const errors: string[] = []
+  page.on('pageerror', (e) => errors.push(e.message))
+  page.on('console', (m) => {
+    if (m.type() === 'error') errors.push(m.text())
+  })
+  await page.goto('/')
+  await page.getByRole('button', { name: 'EN', exact: true }).click()
+  for (const [label, expected] of [
+    ['Hankyu Osaka-umeda', '3F'],
+    ['Hanshin Osaka-Umeda', 'B2F'],
+    ['Higashi-Umeda', 'B2F'],
+    ['Nishi-Umeda', 'B2F'],
+    ['Kitashinchi', 'B2F'],
+    ['Whity Umeda', 'B1F'],
+  ]) {
+    await page.locator('.surround summary').click()
+    await page.locator('.site-list button').filter({ hasText: label }).click()
+    await expect(page.locator('.viewer-bar strong')).toContainText(label)
+    await expect(
+      page
+        .locator('.floors')
+        .getByRole('button', { name: expected, exact: true }),
+    ).toBeVisible()
+    await expect(page.locator('canvas')).toHaveAttribute(
+      'data-triangles',
+      /^[1-9]/,
+    )
+    if (label === 'Hankyu Osaka-umeda' || label === 'Whity Umeda') {
+      const slug = label.split(' ')[0]
+      await page.screenshot({ path: info.outputPath(slug + '.png') })
+      const interior = page.getByRole('button', { name: 'Passenger view' })
+      await interior.click()
+      const canvas = page.locator('canvas')
+      await expect(canvas).toHaveAttribute('data-view', 'interior')
+      await page.screenshot({
+        path: info.outputPath('passenger-' + slug + '.png'),
+      })
+      const frame = await canvas.getAttribute('data-frame')
+      await canvas.focus()
+      await page.keyboard.press('ArrowRight')
+      await expect(canvas).not.toHaveAttribute('data-frame', frame!)
+      await interior.click()
+      await expect(canvas).toHaveAttribute('data-view', 'overview')
+    }
+  }
+  await page.getByRole('button', { name: '2D', exact: true }).click()
+  await expect(page.locator('.sheet')).toHaveCount(1)
+  await expect(page.locator('.sheet')).toContainText('Izumi-no-Hiroba')
+  await page.getByRole('button', { name: '3D', exact: true }).click()
+  await page.locator('.surround summary').click()
+  await page.getByRole('button', { name: /Entire district/ }).click()
+  await expect(page.locator('.viewer-bar strong')).toContainText(
+    'Osaka / Umeda',
+  )
+  expect(errors).toEqual([])
 })

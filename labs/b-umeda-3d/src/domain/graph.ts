@@ -67,6 +67,20 @@ export function validate(m: Model, sources: Set<string>) {
     )
       throw Error('Invalid area ' + p.id)
   }
+  for (const area of m.context) {
+    const anchor = nodes.get(area.anchorId)
+    if (
+      !anchor ||
+      anchor.stationId !== area.stationId ||
+      (area.kind === 'Station') !== !!area.stationId
+    )
+      throw Error('Invalid district anchor ' + area.id)
+    if (
+      area.kind === 'ShoppingArcade' &&
+      (anchor.zone !== 'unpaid' || anchor.manager !== 'commercial')
+    )
+      throw Error('Invalid shopping arcade ' + area.id)
+  }
   for (const e of m.links) {
     const a = nodes.get(e.from),
       b = nodes.get(e.to)

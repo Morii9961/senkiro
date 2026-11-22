@@ -1,14 +1,8 @@
 import { Quaternion, Vector3 } from 'three'
+import type { DrawBlock as Block } from './buildings'
+import { Finish } from './surfaces'
 import type { Link, Place } from './domain/types'
 
-type Block = (
-  at: Vector3,
-  w: number,
-  h: number,
-  d: number,
-  color: number,
-  rotation?: Quaternion,
-) => void
 type Beam = (
   from: Vector3,
   to: Vector3,
@@ -21,13 +15,20 @@ const stone = 0xbab9aa,
   metal = 0x465963,
   brass = 0xf0b959,
   enamel = 0x294447
-const white = 0xe8e5d6
+
 const lineColors: Record<string, number> = {
   'sk:line:loop': 0xbe684b,
   'sk:line:kobe': 0x436e86,
   'sk:line:kyoto': 0x567c97,
   'sk:line:east': 0x5a877c,
   'sk:line:midosuji': 0xa94445,
+  'sk:line:hk-kyoto': 0x556d53,
+  'sk:line:hk-takarazuka': 0x986c40,
+  'sk:line:hk-kobe': 0x51667e,
+  'sk:line:hs-main': 0x345e79,
+  'sk:line:jr-tozai': 0x996a86,
+  'sk:line:tanimachi': 0x7a6388,
+  'sk:line:yotsubashi': 0x397f97,
 }
 
 // Sizes, modular bays, sign panels and car shapes are original diagram symbols.
@@ -36,6 +37,7 @@ export function platformFittings(
   at: Vector3,
   landings: Vector3[],
   block: Block,
+  board: (p: Vector3, alongX: boolean) => void,
 ) {
   const alongX = n.size[0] > n.size[1],
     length = Math.max(...n.size)
@@ -75,11 +77,27 @@ export function platformFittings(
       part(s, y, -0.22, width, height, width, colour)
     }
     part(s, 2.4, -0.22, 2.1, 0.13, 0.42, metal)
-    part(s + 0.75, 2.05, -0.22, 0.94, 0.39, 0.14, enamel)
-    part(s + 0.75, 1.92, -0.22, 0.96, 0.1, 0.17, accent)
+    part(s + 0.75, 2.05, -0.22, 0.19, 0.46, 1.49, enamel)
+    board(
+      at
+        .clone()
+        .add(
+          new Vector3(
+            alongX ? s + 0.75 : -0.22,
+            2.05,
+            alongX ? -0.22 : s + 0.75,
+          ),
+        ),
+      !alongX,
+    )
+    part(s + 0.75, 1.82, -0.22, 0.2, 0.04, 1.49, accent)
     for (const foot of [-0.38, 0.38])
       part(s + foot, 0.52, 0.37, 0.12, 0.27, 0.28, metal)
-    part(s, 0.7, 0.37, 1.12, 0.13, 0.42, white)
+    for (const slat of [-0.15, 0, 0.15])
+      part(s, 0.71, 0.37 + slat, 1.13, 0.09, 0.11, 0xaf8b64)
+    part(s, 0.84, 0.15, 1.12, 0.23, 0.075, 0xa57f58)
+    part(s, 2.4, -0.22, 0.11, 0.17, 1.28, 0x777d7c)
+    part(s, 2.32, 0.24, 0.49, 0.055, 0.1, 0xfcf1d2)
   }
 }
 export function horizontalSpan(
@@ -205,7 +223,9 @@ export function lift(
     ) => block(pos.clone().add(new Vector3(x, y, z)), w, h, d, c)
     part(0, 0.97, -0.16, 1.25, 1.94, 1.04, 0x758f96)
     for (const side of [-1, 1]) {
-      part(side * 0.29, 0.88, 0.38, 0.55, 1.62, 0.055, 0xb2c1bb)
+      part(side * 0.29, 0.88, 0.38, 0.55, 1.62, 0.055, 0xafbab9)
+      part(side * 0.29, 1.2, 0.42, 0.37, 0.42, 0.043, 0x51656b)
+      part(side * 0.29, 0.27, 0.415, 0.48, 0.15, 0.035, 0x899192)
       part(side * 0.64, 0.97, 0.38, 0.12, 1.95, 0.15, metal)
     }
     part(0, 1.79, 0.4, 1.2, 0.18, 0.13, enamel)
@@ -222,6 +242,20 @@ export function lift(
           0.1,
           metal,
         )
+    const low = a.y < b.y ? a : b,
+      high = low === a ? b : a
+    block(
+      low
+        .clone()
+        .lerp(high, 0.5)
+        .add(new Vector3(0, 0, -0.59)),
+      1.24,
+      high.y - low.y,
+      0.045,
+      0x8aabb4,
+      undefined,
+      Finish.glazing,
+    )
     for (const f of [0.33, 0.66])
       block(a.clone().lerp(b, f), 1.4, 0.1, 1.24, 0x70878b)
   }
@@ -261,6 +295,13 @@ export function gate(a: Vector3, b: Vector3, block: Block) {
     part(lane, 0.44, 0, 0.31, 0.88, 1.32, metal)
     part(lane, 0.91, 0, 0.34, 0.1, 1.35, 0x9bada6)
     part(lane, 0.975, -0.39, 0.21, 0.04, 0.28, brass)
+  }
+  for (const x of [-1.35, -0.45, 0.45])
+    part(x + 0.24, 0.54, 0.08, 0.23, 0.31, 0.065, 0x8b6659)
+  for (const x of [-1.35, -0.45, 0.45, 1.35]) {
+    part(x, 0.93, 0.47, 0.22, 0.035, 0.22, 0x273337)
+    part(x, 0.73, -0.67, 0.18, 0.12, 0.035, 0x78a38a)
+    part(x, 0.17, 0, 0.33, 0.085, 1.37, 0x96a1a1)
   }
   for (const x of [-1.72, 1.72]) part(x, 1.14, 0, 0.14, 2.28, 0.14, metal)
   part(0, 2.3, 0, 3.6, 0.36, 0.18, enamel)

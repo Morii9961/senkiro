@@ -3,9 +3,21 @@ import * as T from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import type { Language, Place } from './domain/types'
 import type { Step } from './domain/graph'
-import { floors, nodes, station } from './model'
+import { floors, nodes, station, sites, inSite } from './model'
 import { sample } from './providers/service'
 
+import { shopWindows, type ShopWindow } from './shopWindows'
+import { signage, type Board } from './signage'
+import { architecturalMaterial, Finish } from './surfaces'
+import {
+  osakaShed,
+  terminalRoof,
+  concourseWalls,
+  undergroundPlatform,
+  passageEdges,
+  passengerCeiling,
+  plazaTree,
+} from './buildings'
 import * as architecture from './architecture'
 
 interface Props {
@@ -18,6 +30,9 @@ interface Props {
   reset: number
   zoom: { tick: number; factor: number }
   example: boolean
+  eye: string | null
+  shell: boolean
+  siteId: string | null
   onReset: () => void
   onInspect: (id: string) => void
   onFallback: () => void
@@ -42,11 +57,21 @@ export function Scene(props: Props) {
       return
     }
     gl.setPixelRatio(Math.min(devicePixelRatio, 2))
+    gl.shadowMap.enabled = true
+    gl.shadowMap.type = T.PCFSoftShadowMap
+    gl.shadowMap.autoUpdate = false
     gl.domElement.tabIndex = 0
     box.prepend(gl.domElement)
     const world = new T.Scene(),
       camera = new T.OrthographicCamera(-55, 55, 40, -40, 0.1, 800)
     const controls = new OrbitControls(camera, gl.domElement)
+    const eyeCamera = new T.PerspectiveCamera(62, 1, 0.05, 360)
+    let yaw = 0,
+      pitch = 0
+    function aim() {
+      eyeCamera.rotation.set(pitch, yaw, 0, 'YXZ')
+    }
+    const activeCamera = () => (propsNow?.eye ? eyeCamera : camera)
     controls.minZoom = 0.55
     controls.maxZoom = 5
     controls.maxPolarAngle = 1.44
@@ -56,15 +81,26 @@ export function Scene(props: Props) {
       MIDDLE: T.MOUSE.PAN,
       RIGHT: T.MOUSE.PAN,
     }
-    world.add(new T.HemisphereLight(0xffffff, 0xc4c3b8, 1.65))
-    const sun = new T.DirectionalLight(0xfff2da, 1.9)
-    sun.position.set(-28, 64, 36)
+    world.add(new T.HemisphereLight(0xf3f6ff, 0xc9bdad, 1.72))
+    const sun = new T.DirectionalLight(0xfff3dd, 2.15)
+    sun.position.set(-44, 98, 48)
+    sun.castShadow = true
+    sun.shadow.mapSize.set(2048, 2048)
+    Object.assign(sun.shadow.camera, {
+      left: -100,
+      right: 100,
+      top: 85,
+      bottom: -85,
+      near: 0.5,
+      far: 240,
+    })
+    sun.shadow.camera.updateProjectionMatrix()
+    sun.shadow.normalBias = 0.022
+    sun.shadow.bias = -0.00017
     world.add(sun)
     const unit = new T.BoxGeometry(),
-      material = new T.MeshStandardMaterial({
-        roughness: 0.74,
-        metalness: 0.08,
-      })
+      material = architecturalMaterial()
+    const signs = signage()
     const dummy = new T.Object3D(),
       labels: Label[] = []
     let owners: string[] = []
@@ -74,13 +110,15 @@ export function Scene(props: Props) {
       lastZoom = -1,
       lastFloor: number | null = null,
       frame = 0
-    const view = new T.Vector3(-39, 40, 90),
+    const shopDisplay = shopWindows(world, draw)
+    const view = new T.Vector3(53, 67, 116),
       right = new T.Vector3(view.z, 0, -view.x).normalize()
     const up = view.clone().normalize().cross(right).normalize()
     let bounds = { center: new T.Vector3(), width: 90, height: 70 }
     function fit(p: Props) {
       const corners: T.Vector3[] = []
       for (const n of station.places) {
+        if (!inSite(n, p.siteId)) continue
         const order = floors.get(n.levelId)!.ordinal
         if (p.floor !== null && p.floor !== order) continue
         for (const dx of [-1, 1])
@@ -93,6 +131,17 @@ export function Scene(props: Props) {
               ),
             )
           }
+      }
+      if (
+        p.shell &&
+        p.floor === null &&
+        (!p.siteId || p.siteId === 'sk:station:jr-osaka')
+      ) {
+        for (const x of [-23, 24])
+          for (const z of [-16, 16])
+            corners.push(
+              new T.Vector3(x, (p.spread ? 9 : 5) + 7.4 + (15 - z) * 0.2, z),
+            )
       }
       const xs = corners.map((v) => v.dot(right)),
         ys = corners.map((v) => v.dot(up))
@@ -117,15 +166,20 @@ export function Scene(props: Props) {
       if (!propsNow) return
       const w = box.clientWidth,
         h = box.clientHeight
-      camera.updateMatrixWorld()
-      gl.domElement.dataset.zoom = String(camera.zoom)
+      const lens = activeCamera()
+      lens.updateMatrixWorld()
+      gl.domElement.dataset.view = propsNow.eye ? 'interior' : 'overview'
+      gl.domElement.dataset.zoom = String(lens.zoom)
       const placed: { x: number; y: number; w: number }[] = []
       for (const label of labels) {
-        const v = label.position.clone().project(camera),
+        const v = label.position.clone().project(lens),
           x = ((v.x + 1) * w) / 2,
           y = ((1 - v.y) * h) / 2
         const width = label.el.offsetWidth || 80
         const visible =
+          !propsNow.eye &&
+          v.z >= -1 &&
+          v.z <= 1 &&
           (label.priority <= 1 ||
             camera.zoom > (label.priority === 2 ? 1.35 : 2.3) ||
             propsNow.floor !== null) &&
@@ -145,7 +199,7 @@ export function Scene(props: Props) {
           placed.push({ x, y, w: width })
         }
       }
-      gl.render(world, camera)
+      gl.render(world, lens)
       gl.domElement.dataset.frame = String(++frame)
       gl.domElement.dataset.calls = String(gl.info.render.calls)
       gl.domElement.dataset.triangles = String(gl.info.render.triangles)
@@ -156,23 +210,52 @@ export function Scene(props: Props) {
         h = Math.max(1, box.clientHeight)
       const height = Math.max(
         28,
-        bounds.height * 1.18,
-        (bounds.width * 1.15 * h) / w,
+        bounds.height * 1.1,
+        (bounds.width * 1.08 * h) / w,
       )
       camera.left = (-height * w) / h / 2
       camera.right = -camera.left
       camera.top = height / 2
       camera.bottom = -height / 2
       camera.updateProjectionMatrix()
+      eyeCamera.aspect = w / h
+      eyeCamera.updateProjectionMatrix()
       gl.setSize(w, h)
       draw()
     }
     function rebuild(p: Props) {
       const refit =
-        !propsNow || propsNow.floor !== p.floor || propsNow.spread !== p.spread
+        !propsNow ||
+        propsNow.floor !== p.floor ||
+        propsNow.spread !== p.spread ||
+        propsNow.siteId !== p.siteId ||
+        propsNow.shell !== p.shell
       const previous = propsNow?.route[propsNow.step]?.link.id
       const current = p.route[p.step]
+      const oldEye = propsNow?.eye
       propsNow = p
+      controls.enabled = !p.eye
+      world.background = p.eye ? new T.Color(0xb5bdbe) : null
+      world.fog = p.eye ? new T.FogExp2(0xb5bdbe, 0.018) : null
+      if (p.eye && (p.eye !== oldEye || refit)) {
+        const place = nodes.get(p.eye)!
+        const alongX = place.size[0] >= place.size[1]
+        const inset = Math.min(9, Math.max(...place.size) * 0.37)
+        eyeCamera.position.set(
+          place.point[0] + (alongX ? -inset : 0.24),
+          floors.get(place.levelId)!.ordinal * (p.spread ? 9 : 5) + 1.78,
+          place.point[1] + (alongX ? 0.24 : inset),
+        )
+        yaw = alongX
+          ? -Math.PI / 2 + 0.055
+          : place.id.startsWith('sk:platform:hk-')
+            ? 0.38
+            : 0.045
+        pitch = -0.025
+        aim()
+        eyeCamera.zoom = 1
+        eyeCamera.updateProjectionMatrix()
+      }
       owners = []
       let owner = ''
       if (refit) bounds = fit(p)
@@ -187,19 +270,24 @@ export function Scene(props: Props) {
       }
       const matrices: T.Matrix4[] = [],
         colors: T.Color[] = []
-      const plate = p.dark ? 0x618d94 : 0x75a9a9,
-        rim = p.dark ? 0xb2c6bd : 0xc6d8cb
-      const hall = p.dark ? 0x8c8880 : 0xd4c9b0,
-        steel = p.dark ? 0x657781 : 0x667b7e
+      const panes: ShopWindow[] = []
+      const boards: Board[] = []
+      const finishes: number[] = []
+      let finish: number = Finish.metal
+      const plate = 0xb8b9b4,
+        rim = 0xd4d2c5,
+        hall = 0xddccb1,
+        steel = 0x686963
       const routeColor = 0xff870c,
         selected = 0xe14815
       const gap = p.spread ? 9 : 5
       const visible = (n: Place) =>
-        p.floor !== null
+        inSite(n, p.siteId) &&
+        (p.floor !== null
           ? floors.get(n.levelId)!.ordinal === p.floor
           : !current ||
             n.levelId === current.from.levelId ||
-            n.levelId === current.to.levelId
+            n.levelId === current.to.levelId)
       const pos = (n: Place, h = 0) =>
         new T.Vector3(
           n.point[0],
@@ -213,7 +301,9 @@ export function Scene(props: Props) {
         d: number,
         color: number,
         rotation?: T.Quaternion,
+        surface = finish,
       ) {
+        finishes.push(surface)
         owners.push(owner)
         dummy.position.copy(at)
         dummy.scale.set(w, h, d)
@@ -274,6 +364,7 @@ export function Scene(props: Props) {
               ? [{ top: pos(upper), foot: pos(lower) }]
               : []
           })
+        finish = n.kind === 'Platform' ? Finish.concrete : Finish.tile
         architecture.deck(
           n,
           deckLevel,
@@ -281,11 +372,38 @@ export function Scene(props: Props) {
           n.kind === 'Platform' ? plate : n.zone === 'unpaid' ? hall : rim,
           block,
         )
+        finish = Finish.metal
+        if (
+          p.eye &&
+          p.shell &&
+          (n.id === 'sk:concourse:hk-headhall' ||
+            n.id.includes('whity-') ||
+            (n.kind === 'Platform' && floors.get(n.levelId)!.ordinal < 0))
+        )
+          passengerCeiling(n, at, block)
+        if (n.id === 'sk:concourse:whity-izumi' && p.shell)
+          plazaTree(at, block, beam)
         if (n.kind === 'Platform') {
           const landings = station.places
             .filter((s) => s.kind === 'Landing' && s.levelId === n.levelId)
             .map((s) => pos(s))
-          architecture.platformFittings(n, at, landings, block)
+          architecture.platformFittings(
+            n,
+            at,
+            landings,
+            block,
+            (position, alongX) =>
+              boards.push({ position, alongX, platform: n.id }),
+          )
+          const sides: (-1 | 1)[] =
+            n.boarding?.trackSides ??
+            (n.id.endsWith('jr-11')
+              ? [1]
+              : n.id.endsWith('metro-1')
+                ? [-1]
+                : [-1, 1])
+          if (p.shell && floors.get(n.levelId)!.ordinal < 0)
+            undergroundPlatform(n, at, sides, block)
           if (!current && p.floor === null && n.id.endsWith('21-22')) {
             label(
               pos(n, 2.5),
@@ -331,7 +449,7 @@ export function Scene(props: Props) {
           const alongX = w > d,
             length = Math.max(w, d),
             breadth = Math.min(w, d)
-          for (const side of [-1, 1]) {
+          for (const side of sides) {
             const offset = (x: number, lateral: number, y: number) =>
               at
                 .clone()
@@ -354,31 +472,46 @@ export function Scene(props: Props) {
                 alongX ? width : length,
                 color,
               )
+            finish = Finish.tactile
             slat(
               0,
               side * (breadth / 2 - 0.22),
               0.385,
               length - 0.25,
-              0.11,
+              0.19,
               0.04,
-              0xffdb78,
+              0xe8ba56,
             )
-            if (
-              (n.id.endsWith('11') && side === -1) ||
-              (n.id === 'sk:platform:metro-1' && side === 1)
-            )
-              continue
             const track = side * (breadth / 2 + 0.54)
-            for (let x = -length / 2 + 0.5; x < length / 2; x += 1.35)
-              slat(x, track, -0.43, 0.25, 0.98, 0.17, steel)
+            finish = Finish.ballast
+            slat(0, track, -0.47, length, 1.12, 0.12, 0x786e61)
+            finish = Finish.metal
+            slat(
+              0,
+              side * (breadth / 2 - 0.075),
+              0.374,
+              length - 0.04,
+              0.1,
+              0.022,
+              0xe3ddd1,
+            )
+            if (n.boarding?.terminalEnd) {
+              const end = n.boarding.terminalEnd * (length / 2 - 0.42)
+              slat(end, track, -0.05, 0.25, 0.85, 0.44, 0x4f5150)
+              slat(end, track, 0.18, 0.18, 0.71, 0.13, 0xba9b62)
+            }
+            for (let x = -length / 2 + 0.3; x < length / 2; x += 0.62)
+              slat(x, track, -0.35, 0.14, 0.98, 0.12, 0x716a60)
             for (const shift of [-0.32, 0.32])
-              slat(0, track + shift, -0.23, length, 0.11, 0.2, steel)
+              slat(0, track + shift, -0.22, length, 0.085, 0.17, steel)
           }
-          const number = n.id
-            .split(':')
-            .pop()!
-            .replace(/^(jr|metro)-/, '')
-            .replace('-', ' · ')
+          const number =
+            n.boarding?.label ??
+            n.id
+              .split(':')
+              .pop()!
+              .replace(/^(jr|metro)-/, '')
+              .replace('-', ' · ')
           const end = pos(n, 1.03)
           if (alongX) end.x += w * 0.37
           else end.z += d * 0.32
@@ -389,7 +522,7 @@ export function Scene(props: Props) {
             '--stripe',
             n.serviceLineIds?.includes('sk:line:midosuji')
               ? '#b44041'
-              : n.id.endsWith('1-2')
+              : n.id.endsWith('jr-1-2')
                 ? '#b95436'
                 : '#537986',
           )
@@ -412,9 +545,42 @@ export function Scene(props: Props) {
                 at.clone().lerp(other, i / Math.max(1, samples)),
               )
             })
-          architecture.hallRails(n, deckLevel, openings, block)
+          if (n.id !== 'sk:concourse:hk-outer') {
+            if (p.shell)
+              concourseWalls(n, deckLevel, openings, block, panes, !!p.eye)
+            else architecture.hallRails(n, deckLevel, openings, block)
+          }
+          if (
+            n.id === 'sk:concourse:hk-headhall' &&
+            p.shell &&
+            p.floor === null &&
+            !current
+          )
+            terminalRoof(n, at, block, beam)
           if (!current || n.id === current.from.id || n.id === current.to.id)
             label(pos(n, 1), n.names[p.lang], 2)
+        }
+      }
+      if (
+        p.shell &&
+        p.floor === null &&
+        !current &&
+        (!p.siteId || p.siteId === 'sk:station:jr-osaka')
+      ) {
+        owner = 'sk:station:jr-osaka'
+        osakaShed(gap, block, beam)
+      }
+      if (!current) {
+        for (const site of station.context) {
+          const anchor = nodes.get(site.anchorId)!
+          const here = visible(anchor)
+            ? anchor
+            : station.places.find(
+                (n) => n.kind !== 'Landing' && inSite(n, site.id) && visible(n),
+              )
+          if (!here) continue
+          owner = site.id
+          label(pos(here, 2.65), site.names[p.lang], -2, false, true)
         }
       }
       if (!current && p.floor === null) {
@@ -432,7 +598,7 @@ export function Scene(props: Props) {
               k.id.endsWith(':' + suffix) &&
               floors.get(k.levelId)!.label === name,
           )
-          if (!n) continue
+          if (!n || !visible(n)) continue
           owner = n.id
           const corner = pos(n, 0.75)
           corner.x -= n.size[0] * 0.46
@@ -490,15 +656,41 @@ export function Scene(props: Props) {
                     Math.abs(v.point[1] - n.point[1]) <= n.size[1] / 2,
                 ),
             )
-            if (!covered)
+            const dx = Math.abs(end.x - start.x),
+              dz = Math.abs(end.z - start.z)
+            const fraction = (n: Place) =>
+              n.kind === 'Landing'
+                ? 0
+                : Math.min(
+                    dx ? n.size[0] / (2 * dx) : Infinity,
+                    dz ? n.size[1] / (2 * dz) : Infinity,
+                    1,
+                  )
+            const t1 = fraction(a),
+              t2 = 1 - fraction(b)
+            if (!covered && t2 > t1) {
+              const openStart = start.clone().lerp(end, t1),
+                openEnd = start.clone().lerp(end, t2)
+              finish = Finish.tile
               architecture.horizontalSpan(
-                start.clone().add(deckOffset),
-                end.clone().add(deckOffset),
+                openStart.clone().add(deckOffset),
+                openEnd.clone().add(deckOffset),
                 e.kind === 'Gate' ? 3.8 : 1.85,
                 0.32,
                 a.zone === 'unpaid' ? hall : rim,
                 block,
               )
+              finish = Finish.metal
+              if (
+                p.shell &&
+                e.kind === 'Passage' &&
+                e.from !== e.to &&
+                e.from.startsWith('sk:concourse:') &&
+                e.to.startsWith('sk:concourse:') &&
+                start.y < 0
+              )
+                passageEdges(openStart, openEnd, 1.85, block)
+            }
             if (e.kind === 'Gate') {
               architecture.gate(start, end, block)
               if (!focus)
@@ -581,11 +773,21 @@ export function Scene(props: Props) {
             true,
           )
       }
+      shopDisplay.rebuild(panes)
+      signs.rebuild(boards, world)
+      unit.dispose()
+      unit.setAttribute(
+        'finish',
+        new T.InstancedBufferAttribute(new Float32Array(finishes), 1),
+      )
       group = new T.InstancedMesh(unit, material, matrices.length)
       matrices.forEach((m, i) => {
         group!.setMatrixAt(i, m)
         group!.setColorAt(i, colors[i])
       })
+      group.castShadow = true
+      group.receiveShadow = true
+      gl.shadowMap.needsUpdate = true
       world.add(group)
       labels.sort((a, b) => a.priority - b.priority)
       if (
@@ -599,8 +801,9 @@ export function Scene(props: Props) {
         lastFloor = p.floor
       }
       if (lastZoom !== p.zoom.tick) {
-        camera.zoom = T.MathUtils.clamp(camera.zoom * p.zoom.factor, 0.55, 5)
-        camera.updateProjectionMatrix()
+        const lens = activeCamera()
+        lens.zoom = T.MathUtils.clamp(lens.zoom * p.zoom.factor, 0.55, 5)
+        lens.updateProjectionMatrix()
         lastZoom = p.zoom.tick
       }
       size()
@@ -640,11 +843,46 @@ export function Scene(props: Props) {
       gl.domElement.dataset.focus = current?.link.id ?? ''
     }
     let pressed: { x: number; y: number } | null = null
+    let drag: { x: number; y: number } | null = null
+    let moved = false
+    const pointerMove = (e: PointerEvent) => {
+      if (!drag || !propsNow.eye) return
+      yaw -= (e.clientX - drag.x) * 0.005
+      pitch = T.MathUtils.clamp(
+        pitch - (e.clientY - drag.y) * 0.005,
+        -1.35,
+        1.35,
+      )
+      moved ||=
+        !!pressed &&
+        Math.hypot(e.clientX - pressed.x, e.clientY - pressed.y) > 5
+      drag = { x: e.clientX, y: e.clientY }
+      aim()
+      draw()
+    }
+    const wheel = (e: WheelEvent) => {
+      if (!propsNow.eye) return
+      e.preventDefault()
+      eyeCamera.zoom = T.MathUtils.clamp(
+        eyeCamera.zoom * Math.exp(-e.deltaY * 0.001),
+        0.6,
+        3,
+      )
+      eyeCamera.updateProjectionMatrix()
+      draw()
+    }
     const pointerDown = (e: PointerEvent) => {
       pressed = e.button === 0 ? { x: e.clientX, y: e.clientY } : null
+      moved = false
+      if (propsNow.eye && pressed) {
+        drag = { ...pressed }
+        gl.domElement.setPointerCapture(e.pointerId)
+      }
     }
     const pointerUp = (e: PointerEvent) => {
+      drag = null
       if (
+        moved ||
         !pressed ||
         !group ||
         Math.hypot(e.clientX - pressed.x, e.clientY - pressed.y) > 5
@@ -672,12 +910,19 @@ export function Scene(props: Props) {
           (2 * (e.clientX - r.left)) / r.width - 1,
           1 - (2 * (e.clientY - r.top)) / r.height,
         ),
-        camera,
+        activeCamera(),
       )
       const hit = ray.intersectObject(group, false)[0]
       if (hit?.instanceId !== undefined)
         propsNow.onInspect(owners[hit.instanceId])
     }
+    const cancel = () => {
+      drag = null
+      pressed = null
+    }
+    gl.domElement.addEventListener('pointercancel', cancel)
+    gl.domElement.addEventListener('pointermove', pointerMove)
+    gl.domElement.addEventListener('wheel', wheel, { passive: false })
     gl.domElement.addEventListener('pointerdown', pointerDown)
     gl.domElement.addEventListener('pointerup', pointerUp)
     const keyboard = (ev: KeyboardEvent) => {
@@ -690,18 +935,26 @@ export function Scene(props: Props) {
       if (delta[ev.key]) {
         ev.preventDefault()
         const [x, z] = delta[ev.key]
+        if (propsNow.eye) {
+          yaw -= x * 0.07
+          pitch = T.MathUtils.clamp(pitch - z * 0.07, -1.35, 1.35)
+          aim()
+          draw()
+          return
+        }
         camera.position.x += x
         controls.target.x += x
         camera.position.z += z
         controls.target.z += z
       } else if (ev.key === '+' || ev.key === '-') {
         ev.preventDefault()
-        camera.zoom = T.MathUtils.clamp(
-          camera.zoom * (ev.key === '+' ? 1.2 : 1 / 1.2),
+        const lens = activeCamera()
+        lens.zoom = T.MathUtils.clamp(
+          lens.zoom * (ev.key === '+' ? 1.2 : 1 / 1.2),
           0.55,
           5,
         )
-        camera.updateProjectionMatrix()
+        lens.updateProjectionMatrix()
       } else if (ev.key.toLowerCase() === 'r') propsNow.onReset()
       else return
       if (!controls.update()) draw()
@@ -714,9 +967,17 @@ export function Scene(props: Props) {
     return () => {
       update.current = null
       observer.disconnect()
+      gl.domElement.removeEventListener('wheel', wheel)
+      gl.domElement.removeEventListener('pointermove', pointerMove)
+      gl.domElement.removeEventListener('pointercancel', cancel)
+      gl.domElement.removeEventListener('pointerdown', pointerDown)
+      gl.domElement.removeEventListener('pointerup', pointerUp)
+      gl.domElement.removeEventListener('keydown', keyboard)
       controls.dispose()
       labels.forEach((l) => l.el.remove())
       group?.dispose()
+      shopDisplay.dispose()
+      signs.dispose()
       material.dispose()
       unit.dispose()
       gl.dispose()

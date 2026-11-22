@@ -2,6 +2,138 @@
 
 AI 对照运营商和大阪市公开资料录入；无实地或人工复核。资料日期、读取日期和业务有效期分别保存。手绘坐标与尺寸仅用于示意；原图未随项目分发。所有 UI 字体使用本机字体，无底图。
 
+### sk:source:higashi-map
+
+東梅田 駅構内図 · Osaka Metro
+
+[原文](https://subway.osakametro.co.jp/station_guide/station/T20_%E6%9D%B1%E6%A2%85%E7%94%B0_%E6%A7%8B%E5%86%85%E5%9B%B3.pdf)
+
+资料日期 未知，读取日期 2026-11-21。核对 1 番经南改札，2 番经中西改札。图中关闭的是 6 号出入口侧的楼宇电梯；6、7 号出口及其外部电梯均不进入模型。
+
+运营商网站条款，原作保留权利。商业使用 unknown，原件再分发 no，相同方式共享 unknown。 [条款](https://www.osakametro.co.jp/site_info.php)
+
+署名 Osaka Metro · 東梅田 駅構内図
+
+### sk:source:district-south
+
+梅田地区 駅周辺② · 大阪市
+
+[原文](https://www.city.osaka.lg.jp/toshikeikaku/cmsfiles/contents/0000369/369380/umeda02-2%28202606%29.pdf)
+
+资料日期 2026-06，读取日期 2026-11-21。图例与分层电梯表核对四座南部车站。
+
+未确认原作再分发授权。商业使用 unknown，原件再分发 unknown，相同方式共享 unknown。
+
+署名 大阪市 · 梅田地区 駅周辺②
+
+### sk:source:district-def
+
+梅田地区 乗り換え経路 D・E・F · 大阪市
+
+[原文](https://www.city.osaka.lg.jp/toshikeikaku/cmsfiles/contents/0000369/369380/umeda04-2%28202606%29.pdf)
+
+资料日期 2026-06，读取日期 2026-11-21。南改札外分别经 Whity、东口电梯、ディアモール通往东梅田、阪神及北新地。
+
+未确认原作再分发授权。商业使用 unknown，原件再分发 unknown，相同方式共享 unknown。
+
+署名 大阪市 · 梅田地区 乗り換え経路 D・E・F
+
+### sk:source:district-ghi
+
+梅田地区 乗り換え経路 G・H・I · 大阪市
+
+[原文](https://www.city.osaka.lg.jp/toshikeikaku/cmsfiles/contents/0000369/369380/umeda04-3%28202606%29.pdf)
+
+资料日期 2026-06，读取日期 2026-11-21。采用 G 段北新地西改札外至西梅田南改札外。
+
+未确认原作再分发授权。商业使用 unknown，原件再分发 unknown，相同方式共享 unknown。
+
+署名 大阪市 · 梅田地区 乗り換え経路 G・H・I
+
+### sk:source:whity-district
+
+大阪梅田 地下街MAP · 大阪地下街株式会社
+
+[原文](https://whity.osaka-chikagai.jp/front/whity/img/floor/inbound.pdf)
+
+资料日期 2026-04，读取日期 2026-11-22。第2页核对东西主廊、向 HEP FIVE 的北侧分支和泉の広場一侧的南北分支。
+
+未确认原作再分发授权。商业使用 unknown，原件再分发 unknown，相同方式共享 unknown。
+
+署名 大阪地下街株式会社 · 大阪梅田 地下街MAP
+
+### sk:source:whity-plaza
+
+管理施設・Whityうめだ · 大阪地下街株式会社
+
+[原文](https://www.osaka-chikagai.jp/facility/whity)
+
+资料日期 未知，读取日期 2026-11-22。确认泉の広場的 Water Tree 地标。外形和照明只做静态抽象表达。
+
+未确认原作再分发授权。商业使用 unknown，原件再分发 unknown，相同方式共享 unknown。
+
+署名 大阪地下街株式会社 · 管理施設・Whityうめだ
+
+### sk:source:whity-floor
+
+Whityうめだ フロアガイド · 大阪地下街株式会社
+
+[原文](https://whity.osaka-chikagai.jp/floor)
+
+资料日期 未知，读取日期 2026-11-21。核对地下街及泉の広場；商铺和通行时间没有录入。
+
+未确认原作再分发授权。商业使用 unknown，原件再分发 unknown，相同方式共享 unknown。
+
+署名 大阪地下街株式会社 · Whityうめだ フロアガイド
+
+### sk:source:whity-city
+
+地下ルート及び歩道橋の詳細情報① · 大阪市
+
+[原文](https://www.city.osaka.lg.jp/toshikeikaku/cmsfiles/contents/0000369/369380/umeda05-1%28202606%29.pdf)
+
+资料日期 2026-06，读取日期 2026-11-21。Whity B1F、主通道与泉の広場。
+
+未确认原作再分发授权。商业使用 unknown，原件再分发 unknown，相同方式共享 unknown。
+
+署名 大阪市 · 地下ルート及び歩道橋の詳細情報①
+
+### sk:source:kitashinchi
+
+北新地駅 構内図・のりば案内 · JR西日本
+
+[原文](https://eki.jr-odekake.net/premises?id=0612303)
+
+资料日期 2026-10-02，读取日期 2026-11-21。日期取自官网图版。B1F 西改札至 B2F 1・2 番站台另以大阪市表核对。
+
+运营商网站条款，原作保留权利。商业使用 unknown，原件再分发 no，相同方式共享 unknown。 [条款](https://www.jr-odekake.net/use/about.html)
+
+署名 JR西日本 · 北新地駅 構内図・のりば案内
+
+### sk:source:hankyu-current
+
+大阪梅田 現行駅構内図 · 阪急電鉄
+
+[原文](https://www.hankyu.co.jp/station/map/img/umeda.svg)
+
+资料日期 未知，读取日期 2026-11-21。从现行站页核对 3F 九条尽端股道、头端站厅、2F 中央口及 1 号线电梯；图版日期未知。
+
+运营商网站条款，原作保留权利。商业使用 unknown，原件再分发 no，相同方式共享 unknown。 [条款](https://www.hankyu.co.jp/sitepolicy/index.html)
+
+署名 阪急電鉄 · 大阪梅田 現行駅構内図
+
+### sk:source:osaka-roof
+
+大阪駅の大屋根 · 大阪ステーションシティ
+
+[原文](https://media.osakastationcity.com/5144/)
+
+资料日期 2023-03-27，读取日期 2026-11-21。核对既有站台上方大屋顶及南北坡向。模型仅绘结构剖面；杆件、截面、间距与材质为原创示意。
+
+未确认原作再分发授权。商业使用 unknown，原件再分发 unknown，相同方式共享 unknown。
+
+署名 大阪ステーションシティ · 大阪駅の大屋根
+
 ### sk:source:city-metro
 
 梅田地区バリアフリーマップ 駅周辺① · 大阪市
@@ -52,15 +184,15 @@ AI 对照运营商和大阪市公开资料录入；无实地或人工复核。�
 
 ### sk:source:city-b
 
-梅田 各鉄道駅間の乗り換え経路 B · 大阪市
+梅田 各鉄道駅間の乗り換え経路 A・B・C · 大阪市
 
 [原文](https://www.city.osaka.lg.jp/toshikeikaku/cmsfiles/contents/0000369/369380/umeda04-1%28202606%29.pdf)
 
-资料日期 2026-06，读取日期 2026-11-21。B 段明确横道、⑥号电梯与中北東改札。⑥是图内编号。
+资料日期 2026-06，读取日期 2026-11-21。A、B、C 分别核对阪急 3F、中北東改札和南改札外的路径。编号仅为图内编号。
 
 未确认原作再分发授权。商业使用 unknown，原件再分发 unknown，相同方式共享 unknown。
 
-署名 大阪市 · 梅田 各鉄道駅間の乗り換え経路 B
+署名 大阪市 · 梅田 各鉄道駅間の乗り換え経路 A・B・C
 
 ### sk:source:city-index
 
@@ -212,7 +344,7 @@ AI 对照运营商和大阪市公开资料录入；无实地或人工复核。�
 
 [原文](https://www.hanshin.co.jp/uploads/guidemap/umeda.pdf)
 
-资料日期 2024-06-13，读取日期 2026-11-21。历史图版；不用于本模型的路径。
+资料日期 2025-12-24，读取日期 2026-11-21。重读当前 PDF 印刷日期。B2F 东口与站台无台阶，B1F 西口及百货店口另设。
 
 运营商网站条款，原作保留权利。商业使用 unknown，原件再分发 no，相同方式共享 unknown。 [条款](https://hanshin.co.jp/terms/)
 
@@ -338,6 +470,18 @@ Repository license。商业使用 yes，原件再分发 yes，相同方式共享
 
 署名 SENKIRO Lab · Synthetic platform service fixture
 
+### sk:source:shop-windows
+
+Commercial window materials · synthetic · SENKIRO Lab
+
+本项目自制。
+
+资料日期 2026-11-22，读取日期 2026-11-22。本项目生成的四幅匿名橱窗材质，烘焙、花艺、书架、陶器。未使用现场照片、店名或运营商图件。
+
+Repository license。商业使用 yes，原件再分发 yes，相同方式共享 unknown。
+
+署名 SENKIRO Lab · Commercial window materials · synthetic
+
 ### sk:source:terms-0
 
 网站使用条款 · JR西日本
@@ -392,14 +536,28 @@ Repository license。商业使用 yes，原件再分发 yes，相同方式共享
 |---|---|---|---|
 | sk:operator:jr-west | JR西日本 | sk:source:jr-map (2026-01-14) | schematic |
 | sk:operator:osaka-metro | Osaka Metro | sk:source:metro-access (未知)<br>sk:source:metro-map (未知)<br>sk:source:city-metro (2026-06) | schematic |
-| sk:station:jr-osaka | 大阪 | sk:source:jr-map (2026-01-14) | schematic |
+| sk:operator:hankyu | 阪急電鉄 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:operator:hanshin | 阪神電気鉄道 | sk:source:hanshin-map (2025-12-24)<br>sk:source:hanshin (未知) | schematic |
+| sk:station:jr-osaka | 大阪 | sk:source:jr-map (2026-01-14)<br>sk:source:osaka-roof (2023-03-27) | schematic |
 | sk:station:metro-umeda | 梅田 | sk:source:metro-access (未知)<br>sk:source:metro-map (未知)<br>sk:source:city-metro (2026-06) | schematic |
+| sk:station:hankyu-osaka-umeda | 大阪梅田（阪急） | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:station:hanshin-osaka-umeda | 大阪梅田（阪神） | sk:source:hanshin-map (2025-12-24)<br>sk:source:hanshin (未知) | schematic |
+| sk:station:metro-higashiumeda | 東梅田 | sk:source:higashi (未知)<br>sk:source:higashi-map (未知)<br>sk:source:district-south (2026-06) | schematic |
+| sk:station:jr-kitashinchi | 北新地 | sk:source:kitashinchi (2026-10-02)<br>sk:source:district-south (2026-06) | schematic |
+| sk:station:metro-nishiumeda | 西梅田 | sk:source:nishi (未知)<br>sk:source:district-south (2026-06) | schematic |
 | sk:line:midosuji | 御堂筋線 | sk:source:metro-access (未知)<br>sk:source:metro-map (未知)<br>sk:source:city-metro (2026-06) | schematic |
+| sk:line:hk-kyoto | 京都線 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:line:hk-takarazuka | 宝塚線 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:line:hk-kobe | 神戸線 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:line:hs-main | 阪神本線 | sk:source:hanshin-map (2025-12-24)<br>sk:source:hanshin (未知) | schematic |
+| sk:line:tanimachi | 谷町線 | sk:source:higashi (未知)<br>sk:source:higashi-map (未知)<br>sk:source:district-south (2026-06) | schematic |
+| sk:line:jr-tozai | JR東西線 | sk:source:kitashinchi (2026-10-02)<br>sk:source:district-south (2026-06) | schematic |
+| sk:line:yotsubashi | 四つ橋線 | sk:source:nishi (未知)<br>sk:source:district-south (2026-06) | schematic |
 | sk:line:loop | 大阪環状線 | sk:source:jr-index (2026-01-14) | schematic |
 | sk:line:kobe | JR神戸線 | sk:source:jr-index (2026-01-14) | schematic |
 | sk:line:kyoto | JR京都線 | sk:source:jr-index (2026-01-14) | schematic |
 | sk:line:east | おおさか東線 | sk:source:jr-index (2026-01-14) | schematic |
-| sk:complex:osaka-umeda | 大阪・梅田 | sk:source:city-b (2026-06) | schematic |
+| sk:complex:osaka-umeda | 大阪・梅田 | sk:source:city-b (2026-06)<br>sk:source:district-def (2026-06)<br>sk:source:district-ghi (2026-06)<br>sk:source:district-def (2026-06)<br>sk:source:district-ghi (2026-06) | schematic |
 | sk:interchange:osaka-metro-umeda | 改札外乗り換え | sk:source:city-b (2026-06) | schematic |
 | sk:level:jr-1f | 1F | sk:source:jr-map (2026-01-14) | schematic |
 | sk:level:jr-2f | 2F | sk:source:jr-map (2026-01-14) | schematic |
@@ -411,6 +569,16 @@ Repository license。商业使用 yes，原件再分发 yes，相同方式共享
 | sk:level:outside-b1 | B1F | sk:source:city-b (2026-06) | schematic |
 | sk:level:metro-b1 | B1F | sk:source:metro-access (未知)<br>sk:source:metro-map (未知)<br>sk:source:city-metro (2026-06) | schematic |
 | sk:level:metro-b2 | B2F | sk:source:metro-access (未知)<br>sk:source:metro-map (未知)<br>sk:source:city-metro (2026-06) | schematic |
+| sk:level:hk-3f | 3F | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:level:hk-2f | 2F | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:level:hs-b2 | B2F | sk:source:hanshin-map (2025-12-24)<br>sk:source:hanshin (未知) | schematic |
+| sk:level:hs-b1 | B1F | sk:source:hanshin-map (2025-12-24)<br>sk:source:hanshin (未知) | schematic |
+| sk:level:higashi-b1 | B1F | sk:source:higashi (未知)<br>sk:source:higashi-map (未知)<br>sk:source:district-south (2026-06) | schematic |
+| sk:level:higashi-b2 | B2F | sk:source:higashi (未知)<br>sk:source:higashi-map (未知)<br>sk:source:district-south (2026-06) | schematic |
+| sk:level:kita-b1 | B1F | sk:source:kitashinchi (2026-10-02)<br>sk:source:district-south (2026-06) | schematic |
+| sk:level:kita-b2 | B2F | sk:source:kitashinchi (2026-10-02)<br>sk:source:district-south (2026-06) | schematic |
+| sk:level:nishi-b1 | B1F | sk:source:nishi (未知)<br>sk:source:district-south (2026-06) | schematic |
+| sk:level:nishi-b2 | B2F | sk:source:nishi (未知)<br>sk:source:district-south (2026-06) | schematic |
 | sk:concourse:jr-west-inside | 西口 改札内 | sk:source:jr-map (2026-01-14) | schematic |
 | sk:concourse:jr-west-outside | 西口 改札外 | sk:source:jr-map (2026-01-14) | schematic |
 | sk:platform:jr-3-4 | 大阪 3・4番のりば | sk:source:jr-map (2026-01-14)<br>sk:source:jr-index (2026-01-14) | schematic |
@@ -517,6 +685,71 @@ Repository license。商业使用 yes，原件再分发 yes，相同方式共享
 | sk:concourse:metro-gate-in | 中北東改札口 改札内 | sk:source:metro-access (未知)<br>sk:source:metro-map (未知)<br>sk:source:city-metro (2026-06) | schematic |
 | sk:landing:metro-lift-b1 | スロープ・ホーム行 EV | sk:source:metro-access (未知)<br>sk:source:metro-map (未知)<br>sk:source:city-metro (2026-06) | schematic |
 | sk:platform:metro-1 | 御堂筋線 梅田 1番線 | sk:source:metro-access (未知)<br>sk:source:metro-map (未知)<br>sk:source:city-metro (2026-06) | schematic |
+| sk:concourse:hankyu-crossing | 阪急方面 横断歩道 | sk:source:city-b (2026-06) | schematic |
+| sk:concourse:hankyu-front | 阪急百貨店付近通路 | sk:source:city-b (2026-06) | schematic |
+| sk:concourse:hankyu-lift-ground | 阪急側 地上 EV④ | sk:source:city-b (2026-06) | schematic |
+| sk:concourse:hk-gate-out | 3階改札口 改札外 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:concourse:hk-headhall | 3階改札口 改札内 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:platform:hk-1 | 阪急 1号線 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:landing:hk-1-head | ホーム端 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:platform:hk-2 | 阪急 2号線 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:landing:hk-2-head | ホーム端 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:platform:hk-3 | 阪急 3号線 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:landing:hk-3-head | ホーム端 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:platform:hk-4 | 阪急 4号線 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:landing:hk-4-head | ホーム端 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:platform:hk-5 | 阪急 5号線 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:landing:hk-5-head | ホーム端 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:platform:hk-6 | 阪急 6号線 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:landing:hk-6-head | ホーム端 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:platform:hk-7 | 阪急 7号線 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:landing:hk-7-head | ホーム端 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:platform:hk-8 | 阪急 8号線 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:landing:hk-8-head | ホーム端 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:platform:hk-9 | 阪急 9号線 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:landing:hk-9-head | ホーム端 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:concourse:hk-outer | 9号線外側 ホーム端 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:landing:hk-outer-head | ホーム端 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:concourse:hk-central-out | 2階中央改札口 改札外 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:concourse:hk-central-in | 2階中央改札口 改札内 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:landing:hk-central-lift | 1号線方面 EV | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:concourse:city-eight-ground | 南改札方面 地上 EV⑧ | sk:source:city-b (2026-06) | schematic |
+| sk:concourse:metro-south-out | 御堂筋線 南改札前 | sk:source:city-b (2026-06) | schematic |
+| sk:concourse:hs-east-lift | 東口方面 EV⑫ | sk:source:district-def (2026-06) | schematic |
+| sk:concourse:hs-east-out | 東口 改札外 | sk:source:hanshin-map (2025-12-24)<br>sk:source:hanshin (未知) | schematic |
+| sk:concourse:hs-east-in | 東口 改札内 | sk:source:hanshin-map (2025-12-24)<br>sk:source:hanshin (未知) | schematic |
+| sk:platform:hs-1-2 | 阪神 1・2番のりば | sk:source:hanshin-map (2025-12-24)<br>sk:source:hanshin (未知) | schematic |
+| sk:landing:hs-1-2-head | ホーム端 | sk:source:hanshin-map (2025-12-24)<br>sk:source:hanshin (未知) | schematic |
+| sk:platform:hs-3-4 | 阪神 3・4番のりば | sk:source:hanshin-map (2025-12-24)<br>sk:source:hanshin (未知) | schematic |
+| sk:landing:hs-3-4-head | ホーム端 | sk:source:hanshin-map (2025-12-24)<br>sk:source:hanshin (未知) | schematic |
+| sk:concourse:hs-west-out | 西口 改札外 | sk:source:hanshin-map (2025-12-24)<br>sk:source:hanshin (未知) | schematic |
+| sk:concourse:hs-west-in | 西口・百貨店口 改札内 | sk:source:hanshin-map (2025-12-24)<br>sk:source:hanshin (未知) | schematic |
+| sk:landing:hs-ev-up-0 | 西側 EV | sk:source:hanshin-map (2025-12-24)<br>sk:source:hanshin (未知) | schematic |
+| sk:landing:hs-ev-down-0 | ホーム EV | sk:source:hanshin-map (2025-12-24)<br>sk:source:hanshin (未知) | schematic |
+| sk:landing:hs-ev-up-1 | 西側 EV | sk:source:hanshin-map (2025-12-24)<br>sk:source:hanshin (未知) | schematic |
+| sk:landing:hs-ev-down-1 | ホーム EV | sk:source:hanshin-map (2025-12-24)<br>sk:source:hanshin (未知) | schematic |
+| sk:concourse:whity-main | ホワイティうめだ | sk:source:whity-floor (未知)<br>sk:source:whity-city (2026-06)<br>sk:source:district-def (2026-06)<br>sk:source:whity-district (2026-04) | schematic |
+| sk:concourse:whity-izumi | 泉の広場 | sk:source:whity-plaza (未知)<br>sk:source:whity-floor (未知)<br>sk:source:whity-city (2026-06)<br>sk:source:district-def (2026-06)<br>sk:source:whity-district (2026-04) | schematic |
+| sk:concourse:whity-east | イーストモール | sk:source:whity-floor (未知)<br>sk:source:whity-city (2026-06)<br>sk:source:district-def (2026-06)<br>sk:source:whity-district (2026-04) | schematic |
+| sk:concourse:whity-north | ノースモール方面 | sk:source:whity-floor (未知)<br>sk:source:whity-city (2026-06)<br>sk:source:district-def (2026-06)<br>sk:source:whity-district (2026-04) | schematic |
+| sk:concourse:whity-nomoka | NOMOKA方面 | sk:source:whity-floor (未知)<br>sk:source:whity-city (2026-06)<br>sk:source:district-def (2026-06)<br>sk:source:whity-district (2026-04) | schematic |
+| sk:concourse:higashi-out-2 | 中西改札前 | sk:source:higashi (未知)<br>sk:source:higashi-map (未知)<br>sk:source:district-south (2026-06) | schematic |
+| sk:concourse:higashi-in-2 | 中西改札内 | sk:source:higashi (未知)<br>sk:source:higashi-map (未知)<br>sk:source:district-south (2026-06) | schematic |
+| sk:platform:higashi-2 | 東梅田 2番線 | sk:source:higashi (未知)<br>sk:source:higashi-map (未知)<br>sk:source:district-south (2026-06) | schematic |
+| sk:landing:higashi-stop-2 | ホーム EV | sk:source:higashi (未知)<br>sk:source:higashi-map (未知)<br>sk:source:district-south (2026-06) | schematic |
+| sk:concourse:higashi-out-1 | 南改札前 | sk:source:higashi (未知)<br>sk:source:higashi-map (未知)<br>sk:source:district-south (2026-06) | schematic |
+| sk:concourse:higashi-in-1 | 南改札内 | sk:source:higashi (未知)<br>sk:source:higashi-map (未知)<br>sk:source:district-south (2026-06) | schematic |
+| sk:platform:higashi-1 | 東梅田 1番線 | sk:source:higashi (未知)<br>sk:source:higashi-map (未知)<br>sk:source:district-south (2026-06) | schematic |
+| sk:landing:higashi-stop-1 | ホーム EV | sk:source:higashi (未知)<br>sk:source:higashi-map (未知)<br>sk:source:district-south (2026-06) | schematic |
+| sk:concourse:diamor | ディアモール大阪 経由 | sk:source:district-def (2026-06) | schematic |
+| sk:concourse:kita-exterior | 西改札口前 | sk:source:kitashinchi (2026-10-02)<br>sk:source:district-south (2026-06) | schematic |
+| sk:concourse:kita-hall | 西改札口内 | sk:source:kitashinchi (2026-10-02)<br>sk:source:district-south (2026-06) | schematic |
+| sk:platform:kita-1-2 | 北新地 1・2番線 | sk:source:kitashinchi (2026-10-02)<br>sk:source:district-south (2026-06) | schematic |
+| sk:landing:kita-platform-ev | ホーム EV | sk:source:kitashinchi (2026-10-02)<br>sk:source:district-south (2026-06) | schematic |
+| sk:concourse:nishi-exterior | 南改札前 | sk:source:nishi (未知)<br>sk:source:district-south (2026-06) | schematic |
+| sk:concourse:nishi-hall | 南改札内 | sk:source:nishi (未知)<br>sk:source:district-south (2026-06) | schematic |
+| sk:platform:nishi-1-2 | 西梅田 1・2番線 | sk:source:nishi (未知)<br>sk:source:district-south (2026-06) | schematic |
+| sk:landing:nishi-platform-ev | ホーム EV | sk:source:nishi (未知)<br>sk:source:district-south (2026-06) | schematic |
 | sk:gate:jr-west | 西口 | sk:source:jr-map (2026-01-14)<br>sk:source:jr-access (未知) | schematic |
 | sk:passage:west-3-4 | 西口 改札内通路 | sk:source:jr-map (2026-01-14)<br>sk:source:jr-access (未知) | schematic |
 | sk:elevator:west-3-4 | エレベーター W | sk:source:jr-map (2026-01-14) | schematic |
@@ -645,10 +878,76 @@ Repository license。商业使用 yes，原件再分发 yes，相同方式共享
 | sk:gate:metro-northeast | 中北東改札口を通る | sk:source:metro-access (未知)<br>sk:source:metro-map (未知)<br>sk:source:city-metro (2026-06) | schematic |
 | sk:passage:metro-ramp | スロープを進む | sk:source:metro-access (未知)<br>sk:source:metro-map (未知)<br>sk:source:city-metro (2026-06) | schematic |
 | sk:elevator:metro-platform | 1番線ホームへ下りる | sk:source:metro-access (未知)<br>sk:source:metro-map (未知)<br>sk:source:city-metro (2026-06) | schematic |
-| sk:context:hankyu | 阪急 大阪梅田 | sk:source:hankyu (未知) | unknown |
-| sk:context:hanshin | 阪神 大阪梅田 | sk:source:hanshin (未知) | unknown |
-| sk:context:higashi | 東梅田 | sk:source:higashi (未知) | unknown |
-| sk:context:nishi | 西梅田 | sk:source:nishi (未知) | unknown |
-| sk:context:kitashinchi | 北新地 | sk:source:jr-map (2026-01-14) | unknown |
-| sk:context:whity | ホワイティうめだ | sk:source:metro-exits (未知) | unknown |
+| sk:passage:hankyu-crossing-via-jr-midosuji-out | 通路 → 阪急方面 横断歩道 | sk:source:city-b (2026-06) | schematic |
+| sk:passage:hankyu-front-via-hankyu-crossing | 通路 → 阪急百貨店付近通路 | sk:source:city-b (2026-06) | schematic |
+| sk:passage:hankyu-lift-ground-via-hankyu-front | 通路 → 阪急側 地上 EV④ | sk:source:city-b (2026-06) | schematic |
+| sk:elevator:hk-04 | 3階改札方面 EV④ | sk:source:city-b (2026-06) | schematic |
+| sk:gate:hk-3f | 阪急 3階改札口 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:passage:hk-1-head-via-hk-headhall | 通路 → ホーム端 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:passage:hk-1-via-hk-1-head | 通路 → 阪急 1号線 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:passage:hk-2-head-via-hk-headhall | 通路 → ホーム端 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:passage:hk-2-via-hk-2-head | 通路 → 阪急 2号線 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:passage:hk-3-head-via-hk-headhall | 通路 → ホーム端 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:passage:hk-3-via-hk-3-head | 通路 → 阪急 3号線 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:passage:hk-4-head-via-hk-headhall | 通路 → ホーム端 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:passage:hk-4-via-hk-4-head | 通路 → 阪急 4号線 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:passage:hk-5-head-via-hk-headhall | 通路 → ホーム端 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:passage:hk-5-via-hk-5-head | 通路 → 阪急 5号線 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:passage:hk-6-head-via-hk-headhall | 通路 → ホーム端 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:passage:hk-6-via-hk-6-head | 通路 → 阪急 6号線 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:passage:hk-7-head-via-hk-headhall | 通路 → ホーム端 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:passage:hk-7-via-hk-7-head | 通路 → 阪急 7号線 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:passage:hk-8-head-via-hk-headhall | 通路 → ホーム端 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:passage:hk-8-via-hk-8-head | 通路 → 阪急 8号線 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:passage:hk-9-head-via-hk-headhall | 通路 → ホーム端 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:passage:hk-9-via-hk-9-head | 通路 → 阪急 9号線 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:passage:hk-outer-head-via-hk-headhall | 通路 → ホーム端 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:passage:hk-outer-via-hk-outer-head | 通路 → 9号線外側 ホーム端 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:gate:hk-2f | 阪急 2階中央改札口 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:passage:hk-central-lift-via-hk-central-in | 通路 → 1号線方面 EV | sk:source:hankyu-current (未知)<br>sk:source:hankyu-lift (2019-12) | schematic |
+| sk:elevator:hk-track-one | 1号線エレベーター | sk:source:hankyu-current (未知)<br>sk:source:hankyu-lift (2019-12) | schematic |
+| sk:passage:city-eight-ground-via-civic-lift-1f | 通路 → 南改札方面 地上 EV⑧ | sk:source:city-b (2026-06) | schematic |
+| sk:elevator:city-eight | 南改札前へ EV⑧ | sk:source:city-b (2026-06) | schematic |
+| sk:passage:hs-east-lift-via-metro-south-out | 通路 → 東口方面 EV⑫ | sk:source:district-def (2026-06) | schematic |
+| sk:elevator:city-twelve | 東口へ EV⑫ | sk:source:district-def (2026-06) | schematic |
+| sk:gate:hs-east | 阪神 東口 | sk:source:hanshin-map (2025-12-24)<br>sk:source:hanshin (未知) | schematic |
+| sk:passage:hs-1-2-head-via-hs-east-in | 通路 → ホーム端 | sk:source:hanshin-map (2025-12-24)<br>sk:source:hanshin (未知) | schematic |
+| sk:passage:hs-1-2-via-hs-1-2-head | 通路 → 阪神 1・2番のりば | sk:source:hanshin-map (2025-12-24)<br>sk:source:hanshin (未知) | schematic |
+| sk:passage:hs-3-4-head-via-hs-east-in | 通路 → ホーム端 | sk:source:hanshin-map (2025-12-24)<br>sk:source:hanshin (未知) | schematic |
+| sk:passage:hs-3-4-via-hs-3-4-head | 通路 → 阪神 3・4番のりば | sk:source:hanshin-map (2025-12-24)<br>sk:source:hanshin (未知) | schematic |
+| sk:gate:hs-west | 阪神 西口 | sk:source:hanshin-map (2025-12-24)<br>sk:source:hanshin (未知) | schematic |
+| sk:passage:hs-ev-up-0-via-hs-west-in | 通路 → 西側 EV | sk:source:hanshin-map (2025-12-24)<br>sk:source:hanshin (未知) | schematic |
+| sk:elevator:hs-west-0 | ホームエレベーター | sk:source:hanshin-map (2025-12-24)<br>sk:source:hanshin (未知) | schematic |
+| sk:passage:hs-1-2-via-hs-ev-down-0 | 通路 → 阪神 1・2番のりば | sk:source:hanshin-map (2025-12-24)<br>sk:source:hanshin (未知) | schematic |
+| sk:passage:hs-ev-up-1-via-hs-west-in | 通路 → 西側 EV | sk:source:hanshin-map (2025-12-24)<br>sk:source:hanshin (未知) | schematic |
+| sk:elevator:hs-west-1 | ホームエレベーター | sk:source:hanshin-map (2025-12-24)<br>sk:source:hanshin (未知) | schematic |
+| sk:passage:hs-3-4-via-hs-ev-down-1 | 通路 → 阪神 3・4番のりば | sk:source:hanshin-map (2025-12-24)<br>sk:source:hanshin (未知) | schematic |
+| sk:passage:whity-main-via-metro-south-out | 通路 → ホワイティうめだ | sk:source:district-def (2026-06) | schematic |
+| sk:passage:whity-north-via-whity-main | 通路 → ノースモール方面 | sk:source:whity-floor (未知)<br>sk:source:whity-city (2026-06)<br>sk:source:district-def (2026-06)<br>sk:source:whity-district (2026-04) | schematic |
+| sk:passage:whity-east-via-whity-main | 通路 → イーストモール | sk:source:whity-floor (未知)<br>sk:source:whity-city (2026-06)<br>sk:source:district-def (2026-06)<br>sk:source:whity-district (2026-04) | schematic |
+| sk:passage:whity-izumi-via-whity-east | 通路 → 泉の広場 | sk:source:whity-floor (未知)<br>sk:source:whity-city (2026-06)<br>sk:source:district-def (2026-06)<br>sk:source:whity-district (2026-04) | schematic |
+| sk:passage:whity-nomoka-via-whity-izumi | 通路 → NOMOKA方面 | sk:source:whity-floor (未知)<br>sk:source:whity-city (2026-06)<br>sk:source:district-def (2026-06)<br>sk:source:whity-district (2026-04) | schematic |
+| sk:passage:higashi-out-2-via-whity-main | 通路 → 中西改札前 | sk:source:district-def (2026-06) | schematic |
+| sk:gate:higashi-2 | 中西改札 | sk:source:higashi (未知)<br>sk:source:higashi-map (未知)<br>sk:source:district-south (2026-06) | schematic |
+| sk:elevator:higashi-2 | ホームエレベーター | sk:source:higashi (未知)<br>sk:source:higashi-map (未知)<br>sk:source:district-south (2026-06) | schematic |
+| sk:passage:higashi-2-via-higashi-stop-2 | 通路 → 東梅田 2番線 | sk:source:higashi (未知)<br>sk:source:higashi-map (未知)<br>sk:source:district-south (2026-06) | schematic |
+| sk:passage:higashi-out-1-via-whity-main | 通路 → 南改札前 | sk:source:district-def (2026-06) | schematic |
+| sk:gate:higashi-1 | 南改札 | sk:source:higashi (未知)<br>sk:source:higashi-map (未知)<br>sk:source:district-south (2026-06) | schematic |
+| sk:elevator:higashi-1 | ホームエレベーター | sk:source:higashi (未知)<br>sk:source:higashi-map (未知)<br>sk:source:district-south (2026-06) | schematic |
+| sk:passage:higashi-1-via-higashi-stop-1 | 通路 → 東梅田 1番線 | sk:source:higashi (未知)<br>sk:source:higashi-map (未知)<br>sk:source:district-south (2026-06) | schematic |
+| sk:passage:diamor-via-metro-south-out | 通路 → ディアモール大阪 経由 | sk:source:district-def (2026-06) | schematic |
+| sk:gate:kita-gate | 西改札口 | sk:source:kitashinchi (2026-10-02)<br>sk:source:district-south (2026-06) | schematic |
+| sk:elevator:kita-platform | ホームエレベーター | sk:source:kitashinchi (2026-10-02)<br>sk:source:district-south (2026-06) | schematic |
+| sk:passage:kita-1-2-via-kita-platform-ev | 通路 → 北新地 1・2番線 | sk:source:kitashinchi (2026-10-02)<br>sk:source:district-south (2026-06) | schematic |
+| sk:passage:kita-exterior-via-diamor | 通路 → 西改札口前 | sk:source:district-def (2026-06) | schematic |
+| sk:gate:nishi-gate | 南改札 | sk:source:nishi (未知)<br>sk:source:district-south (2026-06) | schematic |
+| sk:elevator:nishi-platform | ホームエレベーター | sk:source:nishi (未知)<br>sk:source:district-south (2026-06) | schematic |
+| sk:passage:nishi-1-2-via-nishi-platform-ev | 通路 → 西梅田 1・2番線 | sk:source:nishi (未知)<br>sk:source:district-south (2026-06) | schematic |
+| sk:passage:nishi-exterior-via-kita-exterior | 通路 → 南改札前 | sk:source:district-ghi (2026-06) | schematic |
+| sk:context:hankyu | 阪急 大阪梅田 | sk:source:hankyu-current (未知)<br>sk:source:hankyu (未知) | schematic |
+| sk:context:hanshin | 阪神 大阪梅田 | sk:source:hanshin-map (2025-12-24)<br>sk:source:hanshin (未知) | schematic |
+| sk:context:whity | ホワイティうめだ | sk:source:whity-floor (未知)<br>sk:source:whity-city (2026-06)<br>sk:source:district-def (2026-06)<br>sk:source:whity-district (2026-04) | schematic |
+| sk:context:higashi | 東梅田 | sk:source:higashi (未知)<br>sk:source:higashi-map (未知)<br>sk:source:district-south (2026-06) | schematic |
+| sk:context:kitashinchi | 北新地 | sk:source:kitashinchi (2026-10-02)<br>sk:source:district-south (2026-06) | schematic |
+| sk:context:nishi | 西梅田 | sk:source:nishi (未知)<br>sk:source:district-south (2026-06) | schematic |
 | sk:update:demo-umeda-one | サンプル運行情報 | sk:source:fixture (未知) | unknown |

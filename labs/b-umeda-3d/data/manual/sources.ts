@@ -28,7 +28,9 @@ function record(
     url,
     sourceDate,
     notes,
-    retrievedAt: checked,
+    retrievedAt: ['whity-district', 'whity-plaza'].includes(id)
+      ? '2026-11-22'
+      : checked,
     license: terms[publisher]
       ? '运营商网站条款，原作保留权利'
       : '未确认原作再分发授权',
@@ -40,6 +42,95 @@ function record(
   }
 }
 export const sources: SourceRecord[] = [
+  record(
+    'higashi-map',
+    metro,
+    '東梅田 駅構内図',
+    metroUrl +
+      'station/T20_%E6%9D%B1%E6%A2%85%E7%94%B0_%E6%A7%8B%E5%86%85%E5%9B%B3.pdf',
+    null,
+    '核对 1 番经南改札，2 番经中西改札。图中关闭的是 6 号出入口侧的楼宇电梯；6、7 号出口及其外部电梯均不进入模型。',
+  ),
+  record(
+    'district-south',
+    city,
+    '梅田地区 駅周辺②',
+    cityUrl + 'cmsfiles/contents/0000369/369380/umeda02-2%28202606%29.pdf',
+    '2026-06',
+    '图例与分层电梯表核对四座南部车站。',
+  ),
+  record(
+    'district-def',
+    city,
+    '梅田地区 乗り換え経路 D・E・F',
+    cityUrl + 'cmsfiles/contents/0000369/369380/umeda04-2%28202606%29.pdf',
+    '2026-06',
+    '南改札外分别经 Whity、东口电梯、ディアモール通往东梅田、阪神及北新地。',
+  ),
+  record(
+    'district-ghi',
+    city,
+    '梅田地区 乗り換え経路 G・H・I',
+    cityUrl + 'cmsfiles/contents/0000369/369380/umeda04-3%28202606%29.pdf',
+    '2026-06',
+    '采用 G 段北新地西改札外至西梅田南改札外。',
+  ),
+  record(
+    'whity-district',
+    '大阪地下街株式会社',
+    '大阪梅田 地下街MAP',
+    'https://whity.osaka-chikagai.jp/front/whity/img/floor/inbound.pdf',
+    '2026-04',
+    '第2页核对东西主廊、向 HEP FIVE 的北侧分支和泉の広場一侧的南北分支。',
+  ),
+  record(
+    'whity-plaza',
+    '大阪地下街株式会社',
+    '管理施設・Whityうめだ',
+    'https://www.osaka-chikagai.jp/facility/whity',
+    null,
+    '确认泉の広場的 Water Tree 地标。外形和照明只做静态抽象表达。',
+  ),
+  record(
+    'whity-floor',
+    '大阪地下街株式会社',
+    'Whityうめだ フロアガイド',
+    'https://whity.osaka-chikagai.jp/floor',
+    null,
+    '核对地下街及泉の広場；商铺和通行时间没有录入。',
+  ),
+  record(
+    'whity-city',
+    city,
+    '地下ルート及び歩道橋の詳細情報①',
+    cityUrl + 'cmsfiles/contents/0000369/369380/umeda05-1%28202606%29.pdf',
+    '2026-06',
+    'Whity B1F、主通道与泉の広場。',
+  ),
+  record(
+    'kitashinchi',
+    jr,
+    '北新地駅 構内図・のりば案内',
+    'https://eki.jr-odekake.net/premises?id=0612303',
+    '2026-10-02',
+    '日期取自官网图版。B1F 西改札至 B2F 1・2 番站台另以大阪市表核对。',
+  ),
+  record(
+    'hankyu-current',
+    hankyu,
+    '大阪梅田 現行駅構内図',
+    'https://www.hankyu.co.jp/station/map/img/umeda.svg',
+    null,
+    '从现行站页核对 3F 九条尽端股道、头端站厅、2F 中央口及 1 号线电梯；图版日期未知。',
+  ),
+  record(
+    'osaka-roof',
+    '大阪ステーションシティ',
+    '大阪駅の大屋根',
+    'https://media.osakastationcity.com/5144/',
+    '2023-03-27',
+    '核对既有站台上方大屋顶及南北坡向。模型仅绘结构剖面；杆件、截面、间距与材质为原创示意。',
+  ),
   record(
     'city-metro',
     city,
@@ -75,10 +166,10 @@ export const sources: SourceRecord[] = [
   record(
     'city-b',
     city,
-    '梅田 各鉄道駅間の乗り換え経路 B',
+    '梅田 各鉄道駅間の乗り換え経路 A・B・C',
     cityUrl + 'cmsfiles/contents/0000369/369380/umeda04-1%28202606%29.pdf',
     '2026-06',
-    'B 段明确横道、⑥号电梯与中北東改札。⑥是图内编号。',
+    'A、B、C 分别核对阪急 3F、中北東改札和南改札外的路径。编号仅为图内编号。',
   ),
   record(
     'city-index',
@@ -182,8 +273,8 @@ export const sources: SourceRecord[] = [
     hanshin,
     '大阪梅田 構内案内図',
     'https://www.hanshin.co.jp/uploads/guidemap/umeda.pdf',
-    '2024-06-13',
-    '历史图版；不用于本模型的路径。',
+    '2025-12-24',
+    '重读当前 PDF 印刷日期。B2F 东口与站台无台阶，B1F 西口及百货店口另设。',
   ),
   record(
     'odpt',
@@ -241,6 +332,20 @@ export const sources: SourceRecord[] = [
       null,
       '本地固定示例。时间戳为 2000 年；无外部实时数据。',
     ),
+    license: 'Repository license',
+    redistribution: 'yes',
+    commercialUse: 'yes',
+  },
+  {
+    ...record(
+      'shop-windows',
+      'SENKIRO Lab',
+      'Commercial window materials · synthetic',
+      null,
+      '2026-11-22',
+      '本项目生成的四幅匿名橱窗材质，烘焙、花艺、书架、陶器。未使用现场照片、店名或运营商图件。',
+    ),
+    retrievedAt: '2026-11-22',
     license: 'Repository license',
     redistribution: 'yes',
     commercialUse: 'yes',

@@ -1,6 +1,6 @@
 # SENKIRO Lab · Umeda Station 3D
 
-旋转大阪・梅田的六层示意模型，沿 JR 西日本与 Osaka Metro 的改札外换乘路线逐段查看设施。可切换日文／英文、深浅色和独立的 SVG 楼层图。默认不开启运行示例。
+旋转大阪・梅田的六层建筑剖面模型，查看七座独立车站和 Whity 地下街。选择站台、地下街或改札作为起终点，可逐段检查换乘路线。可切换日文／英文、深浅色和独立的 SVG 楼层图。默认不开启运行示例。
 
 ## 本地运行
 
@@ -17,7 +17,7 @@ npm run dev
 npm install && npm run build && npm test
 ```
 
-`npm test` 顺序运行 Vitest 和针对已有生产构建的 Playwright。浏览器探测顺序为 `SENKIRO_CHROMIUM` 指定的可执行文件、已安装的 Playwright Chromium、常见系统 Chrome／Edge／Chromium。均不可用时下载 Playwright Chromium。Linux 精简环境还需浏览器系统依赖，可运行 `npx playwright install --with-deps chromium`。测试默认独占本机 5193 端口，可通过 `SENKIRO_E2E_PORT` 修改。
+`npm test` 顺序运行 Vitest 和针对已有生产构建的 Playwright。浏览器探测顺序为 `SENKIRO_CHROMIUM` 指定的可执行文件、已安装的 Playwright Chromium、常见系统 Chrome／Edge／Chromium。均不可用时下载 Playwright Chromium。Linux 精简环境还需浏览器系统依赖，可运行 `npx playwright install --with-deps chromium`。测试默认独占本机 27193 端口，可通过 `SENKIRO_E2E_PORT` 修改。
 
 ## 浏览模型
 
@@ -26,7 +26,7 @@ npm install && npm run build && npm test
 - JR 中 2 阶可查看中央口、桜橋口的楼梯通路。御堂筋口到环状线站台的已核实无台阶路线在该层从电梯 O 换乘电梯 P。
 - 左键旋转，右键或中键平移，滚轮缩放。触屏用单指旋转、双指缩放或平移。聚焦画布后用方向键平移，用 +、− 缩放，R 或 ⟲ 重置机位。
 - 「モデル情報 / Model guide」可查区域的楼层、闸内外、管理方和原始资料。勾选运行示例后，固定的虚构时刻与延误会关联到指定站台。界面同时显示示例来源与时间戳。
-- 「周辺区画 / Surroundings」中的六个独立体块只标识周边名称，位置、内部和连接未核实。
+- 在场景的车站选择器中打开阪急大阪梅田、阪神大阪梅田、東梅田、西梅田、北新地或 Whity。可逐层查看阪急 3F 的九条尽端股道、阪神 B2F 的东口、B1F 的泉の広場等。选择「乗客目線 / Passenger view」进入站台或地下街，拖动或用方向键环顾，再按一次返回。所有建筑尺寸、装修、灯具和商铺布置为原创示意。
 - 段数随建模粒度而变。这里没有步行距离、耗时、实时开闭状态或可用于实地导航的测量精度。
 
 ## 修改数据

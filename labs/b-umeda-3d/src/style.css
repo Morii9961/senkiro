@@ -210,7 +210,7 @@ button[aria-pressed='true'] {
   --ink: #233b3b;
   --sub: #526662;
   --line: #c8cfc4;
-  --map: #e4e9dc;
+  --map: #e6e3dd;
   min-height: 100vh;
   background: var(--paper);
   color: var(--ink);
@@ -432,10 +432,10 @@ nav,
   margin-right: 5px;
 }
 .platform-key {
-  background: #76a6a4;
+  background: #a7aaa5;
 }
 .hall-key {
-  background: #c6b99b;
+  background: #d1be9d;
 }
 .path-key {
   background: #e78c23;
@@ -1035,4 +1035,71 @@ header {
   font:
     600 10px/1.45 Consolas,
     monospace;
+}
+.surround {
+  font-family: inherit;
+  max-width: min(235px, 62%);
+  border-color: var(--line);
+  border-radius: 5px;
+  box-shadow: 0 2px 9px #15272b16;
+}
+.surround summary {
+  font-weight: 650;
+  font-size: 12px;
+  padding: 3px;
+}
+.site-list {
+  display: grid;
+  margin-top: 5px;
+  max-height: min(52vh, 360px);
+  overflow: auto;
+}
+.site-list button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  text-align: start;
+  border-radius: 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+  padding: 6px 7px;
+  font-size: 12px;
+}
+.site-list span {
+  color: var(--sub);
+}
+.site-list button:hover {
+  background: var(--map);
+  color: var(--ink);
+}
+.pin.station-pin {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-bottom: 2px solid #887659;
+  color: var(--ink);
+  font-size: 12px;
+  box-shadow: 0 2px 7px #20272425;
+}
+@media (max-width: 700px) {
+  .site-list {
+    max-height: 21vh;
+  }
+  .site-list button {
+    padding: 5px;
+  }
+  .pin.station-pin {
+    font-size: 10px;
+  }
+}
+.eye-hint {
+  position: absolute;
+  left: 1rem;
+  bottom: 3.5rem;
+  background: #24343beb;
+  color: #fff;
+  padding: 0.38rem 0.68rem;
+  border-radius: 3px;
+  font-size: 0.8rem;
+  pointer-events: none;
 }

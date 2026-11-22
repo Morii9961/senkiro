@@ -34,12 +34,11 @@ export function Guide({
     source = records.find((s) => s.id === data.sourceId)!
   return (
     <div className="guide">
-      <div className="eyebrow">MODEL GUIDE</div>
       <h2>{t('モデルの範囲', 'Model coverage')}</h2>
       <p>
         {t(
-          'JR 大阪駅・御堂筋線 梅田駅。座標、高さ、方位は模式的です。通路の営業時間と設備の稼働状況は未確認です。',
-          'JR Osaka and Midosuji Line Umeda. Coordinates, heights and orientation are schematic. Passage hours and lift availability are unknown.',
+          '梅田地区の7駅とホワイティうめだ。建築部材と材質は断面を読み取るための表現です。座標・寸法は模式的です。通路の営業時間と設備の稼働状況は未確認です。',
+          'Seven stations and Whity Umeda. Architectural finishes and structural bays illustrate the cutaway. Coordinates and dimensions are schematic. Passage hours and lift availability are unknown.',
         )}
       </p>
       <details open>
@@ -104,19 +103,20 @@ export function Guide({
         )}
       </details>
       <details open>
-        <summary>
-          {t('未確認の周辺区画', 'Unverified surrounding areas')}
-        </summary>
+        <summary>{t('周辺駅・地下街', 'District stations & arcades')}</summary>
         <p>
           {t(
-            '模式ブロック・位置と接続は未確認',
-            'Schematic blocks · location and links unverified',
+            '駅ごとに改札を分け、資料で確認した通路を収録しています。',
+            'Separate fare areas. The map includes the documented walking connections.',
           )}
         </p>
         {station.context.map((b) => (
           <div className="context-block" key={b.id}>
             <i aria-hidden="true" />
-            {b.names[lang]} · {t('未確認', 'Unverified')}
+            {b.names[lang]} ·{' '}
+            {b.stationId
+              ? t('鉄道駅', 'Station')
+              : t('地下街', 'Shopping arcade')}
           </div>
         ))}
       </details>
