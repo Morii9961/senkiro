@@ -1,21 +1,31 @@
 /**
- * Procedural 3D Tokyo Building, Landmark, Spatial Chunk & Multi-Tier LOD System (P2).
+ * Procedural 3D Tokyo Building, Landmark, Spatial Chunk & Multi-Tier LOD System (Atlas v2).
  *
  * All geometry is procedurally generated in code from real OpenStreetMap building footprints,
- * heights, typologies, and clearly tagged schematic street-block infill (NO imported city models!):
- *  - LOD0 (Near, < 2050m / exit 2600m): Extruded footprints with meter-accurate wall UVs,
- *    separate concrete/gravel rooftop meshes, rooftop mechanical penthouses & setback crowns,
- *    per-building low-saturation Japanese architectural color variation & baked ground-contact AO.
- *  - LOD1/LOD2 (Mid/Far): Single textured InstancedMesh per chunk using real oriented bounding boxes
- *    and per-instance architectural tone variation.
- *  - Landmarks: 13 custom multi-part procedural silhouettes across Shibuya, Shinjuku,
- *    Tokyo/Marunouchi, Shinagawa, Ikebukuro, Roppongi, Shiba & Oshiage.
+ * heights, typologies, and clearly tagged schematic street-block infill:
+ *  - Grounded foundation skirts (-1.25m .. 0m) eliminate floating buildings across all ground tiers.
+ *  - Ground-floor retail/lobby plinths (y = 0 .. ~4.4m) articulate street-level architecture.
+ *  - Varied multi-part massing: podiums, setback shafts, crowns, pitched low-rise roofs, and
+ *    rooftop mechanical equipment clusters across 9 distinct facade material families.
+ *  - LOD0 (Near, < 2050m / exit 2600m): Extruded footprints with meter-accurate UVs, per-building
+ *    horizontal UV phase offset, architectural contact/setback AO, and separated roof materials.
+ *  - LOD1/LOD2 (Mid/Far): Single textured InstancedMesh per chunk using real oriented bounding boxes.
+ *  - Landmarks: 13 custom multi-part procedural silhouettes across Tokyo's major hubs.
  */
 
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import {
+  SHIBUYA_SHOWCASE_ZONE,
+  getStreetscapeForCutaway,
+} from '../city/streetscapeRegistry.js';
 import { injectRadialCutaway, type CutawayUniforms } from '../materials/cutawayShader.js';
-import { FacadeMaterialLibrary, getBuildingTintHex } from '../materials/facadeLibrary.js';
+import {
+  FacadeMaterialLibrary,
+  getBuildingTintHex,
+  selectFacadeVariant,
+  type BuildingFacadeVariant,
+} from '../materials/facadeLibrary.js';
 import type {
   UrbanBuildingRecord,
   UrbanChunkData,
@@ -23,6 +33,13 @@ import type {
   UrbanLandmarkRecord,
   UrbanManifest,
 } from '../types.js';
+
+export interface BuildingProvenanceCounts {
+  osmExplicitHeight: number;
+  osmLevels: number;
+  osmEstimated: number;
+  schematicInfill: number;
+}
 
 const _tmpColor = new THREE.Color();
 
@@ -32,14 +49,19 @@ interface SplitWallRoof {
 }
 
 /**
- * Splits a non-indexed BufferGeometry into vertical walls (with meter-scale box UVs &
- * ground-contact AO vertex colors) and upward-facing roofs (planar world UVs), while
- * discarding hidden downward-facing bottom caps to save ~15% triangles.
+ * Splits a non-indexed BufferGeometry into vertical walls (with meter-scale box UVs,
+ * per-building horizontal phase offset & architectural contact/setback AO) and upward-facing roofs,
+ * while discarding hidden downward-facing bottom caps and optional flush top caps.
  */
 function splitWallsAndRoof(
   source: THREE.BufferGeometry,
   tintHex: number,
-  buildingTotalHeight: number,
+  uOffsetM: number,
+  options: {
+    discardRoof?: boolean;
+    creaseBaseY?: number;
+    aoRoofTint?: number;
+  } = {},
 ): SplitWallRoof {
   const g = source.index ? source.toNonIndexed() : source;
   g.computeVertexNormals();
@@ -62,50 +84,54 @@ function splitWallsAndRoof(
   const roofCol: number[] = [];
 
   const triCount = Math.floor(pos.count / 3);
-  const aoSpan = Math.min(10, Math.max(4, buildingTotalHeight * 0.22));
+  const creaseBaseY = options.creaseBaseY ?? -999;
+  const roofTint = options.aoRoofTint ?? 0.94;
 
   for (let t = 0; t < triCount; t++) {
     const i0 = t * 3;
     const ny = (norm.getY(i0) + norm.getY(i0 + 1) + norm.getY(i0 + 2)) / 3;
 
-    // Discard invisible underground bottom caps
+    // Discard invisible downward bottom caps
     if (ny < -0.68) continue;
 
-    if (ny > 0.68) {
-      // Flat architectural roof cap (slightly muted tone)
+    // Upward flat roofs or sloped pitched roofs (ny > 0.32 catches gable slopes cleanly!)
+    if (ny > 0.32) {
+      if (options.discardRoof) continue;
       for (let k = 0; k < 3; k++) {
         const idx = i0 + k;
         const x = pos.getX(idx);
         const y = pos.getY(idx);
         const z = pos.getZ(idx);
         roofPos.push(x, y, z);
-        roofNorm.push(0, 1, 0);
-        roofUv.push(x, z);
-        roofCol.push(br * 0.93, bg * 0.93, bb * 0.94);
+        roofNorm.push(norm.getX(idx), norm.getY(idx), norm.getZ(idx));
+        roofUv.push(x + uOffsetM, z);
+        roofCol.push(br * roofTint, bg * roofTint, bb * roofTint);
       }
     } else {
-      // Vertical facade wall with meter-consistent UVs and ground-contact AO
-      const avgAbsNx =
-        (Math.abs(norm.getX(i0)) + Math.abs(norm.getX(i0 + 1)) + Math.abs(norm.getX(i0 + 2))) / 3;
-      const avgAbsNz =
-        (Math.abs(norm.getZ(i0)) + Math.abs(norm.getZ(i0 + 1)) + Math.abs(norm.getZ(i0 + 2))) / 3;
-      const useZForU = avgAbsNx > avgAbsNz;
+      const avgNx = (norm.getX(i0) + norm.getX(i0 + 1) + norm.getX(i0 + 2)) / 3;
+      const avgNz = (norm.getZ(i0) + norm.getZ(i0 + 1) + norm.getZ(i0 + 2)) / 3;
+      const useZForU = Math.abs(avgNx) > Math.abs(avgNz);
+
+      // Subtle architectural facet contrast across cardinal wall orientations
+      const facetShade =
+        avgNx > 0.3 ? 1.0 : avgNz > 0.3 ? 0.97 : avgNx < -0.3 ? 0.93 : 0.91;
 
       for (let k = 0; k < 3; k++) {
         const idx = i0 + k;
         const x = pos.getX(idx);
         const y = pos.getY(idx);
         const z = pos.getZ(idx);
-        const nx = norm.getX(idx);
-        const nny = norm.getY(idx);
-        const nz = norm.getZ(idx);
         wallPos.push(x, y, z);
-        wallNorm.push(nx, nny, nz);
-        wallUv.push(useZForU ? z : x, y);
+        wallNorm.push(norm.getX(idx), norm.getY(idx), norm.getZ(idx));
+        wallUv.push((useZForU ? z : x) + uOffsetM, Math.max(0, y));
 
-        // Soft ground-contact AO darkening near street level (0..aoSpan meters)
-        const ao = y < aoSpan ? 0.78 + 0.22 * Math.max(0, y / aoSpan) : 1.0;
-        wallCol.push(br * ao, bg * ao, bb * ao);
+        // Ground-contact & sub-grade plinth darkening (-1.25..0m -> 0.48, 0..6m -> 0.75..1.0) + setback crease AO
+        let ao = y < 0 ? 0.48 : y < 6.0 ? 0.75 + 0.25 * (y / 6.0) : 1.0;
+        if (y >= creaseBaseY && y < creaseBaseY + 2.5) {
+          ao *= 0.84 + 0.16 * ((y - creaseBaseY) / 2.5);
+        }
+        const mul = ao * facetShade;
+        wallCol.push(br * mul, bg * mul, bb * mul);
       }
     }
   }
@@ -141,7 +167,7 @@ function extrudeFootprintRaw(
   height: number,
   scaleXY = 1.0,
 ): THREE.BufferGeometry | null {
-  if (poly.length < 3 || height <= 0.5) return null;
+  if (poly.length < 3 || height <= 0.4) return null;
   const shape = new THREE.Shape();
   shape.moveTo(poly[0]![0] * scaleXY, -poly[0]![1] * scaleXY);
   for (let i = 1; i < poly.length; i++) {
@@ -175,125 +201,263 @@ function makeOrientedBoxRaw(
 }
 
 /**
- * Generates procedural architectural building massing for one building in LOD0:
- *  - High-rise offices: podium + shaft + upper terrace crown + rooftop mechanical core
- *  - Commercial blocks: lower retail mass + setback upper floors + rooftop parapet/equipment
- *  - Stations/civic halls: articulated concourse body + clerestory monitor skylight roof
- *  - Residential mansions: clean real footprint + rooftop elevator shaft / penthouse
+ * Generates an oriented Japanese pitched gable roof prism atop a rectangular footprint.
  */
-function buildProceduralBuildingSplit(
+function makeGableRoofRaw(
+  cx: number,
+  cz: number,
+  w: number,
+  d: number,
+  angle: number,
+  baseY: number,
+  ridgeH: number,
+): THREE.BufferGeometry {
+  const hw = w * 0.5;
+  const hd = d * 0.5;
+  // Ridge always runs along the longer horizontal dimension
+  const ridgeAlongX = w >= d;
+  const rx = ridgeAlongX ? hw * 0.86 : 0;
+  const rz = ridgeAlongX ? 0 : hd * 0.86;
+
+  // 6 vertices of hipped/gable roof: 4 base corners + 2 ridge ends
+  const p = [
+    [-hw, 0, -hd], // 0: NW
+    [hw, 0, -hd], // 1: NE
+    [hw, 0, hd], // 2: SE
+    [-hw, 0, hd], // 3: SW
+    [-rx, ridgeH, -rz], // 4: ridge start
+    [rx, ridgeH, rz], // 5: ridge end
+  ];
+
+  const tris: number[][] = ridgeAlongX
+    ? [
+        [0, 4, 5],
+        [0, 5, 1], // north slope
+        [2, 5, 4],
+        [2, 4, 3], // south slope
+        [3, 4, 0], // west hip
+        [1, 5, 2], // east hip
+      ]
+    : [
+        [0, 4, 5],
+        [0, 5, 3], // west slope
+        [2, 5, 4],
+        [2, 4, 1], // east slope
+        [0, 1, 4], // north hip
+        [3, 5, 2], // south hip
+      ];
+
+  const pos: number[] = [];
+  for (const [ia, ib, ic] of tris) {
+    for (const idx of [ia!, ib!, ic!]) {
+      pos.push(p[idx]![0]!, p[idx]![1]!, p[idx]![2]!);
+    }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.computeVertexNormals();
+  g.rotateY(-angle);
+  g.translate(cx, baseY, cz);
+  return g;
+}
+
+type WallBucketKey =
+  | BuildingFacadeVariant
+  | 'groundStorefront'
+  | 'roofEquipment';
+
+type RoofBucketKey = 'roof' | 'roofPitched';
+
+interface BuildingGeometryBuckets {
+  walls: Record<WallBucketKey, THREE.BufferGeometry[]>;
+  roofs: Record<RoofBucketKey, THREE.BufferGeometry[]>;
+}
+
+function makeMassPart(
+  b: UrbanBuildingRecord,
+  baseY: number,
+  height: number,
+  scaleXY = 1.0,
+): THREE.BufferGeometry | null {
+  if (height <= 0.4) return null;
+  if (b.p && b.p.length >= 3) {
+    return extrudeFootprintRaw(b.cx, b.cz, b.p, baseY, height, scaleXY);
+  }
+  return makeOrientedBoxRaw(b.cx, b.cz, b.w * scaleXY, b.d * scaleXY, b.a, baseY, height);
+}
+
+function appendBuildingToBuckets(
   b: UrbanBuildingRecord,
   isDark: boolean,
-): { walls: THREE.BufferGeometry[]; roofs: THREE.BufferGeometry[] } {
-  const rawParts: THREE.BufferGeometry[] = [];
-  const hasPoly = Boolean(b.p && b.p.length >= 3);
-
-  if (b.t === 'o' && b.h >= 45) {
-    const podiumH = Math.min(14, b.h * 0.16);
-    const shaftH = b.h * 0.72;
-    const crownH = Math.max(4, b.h - podiumH - shaftH);
-    const coreH = Math.min(7.5, Math.max(3.5, b.h * 0.05));
-
-    if (hasPoly) {
-      const p1 = extrudeFootprintRaw(b.cx, b.cz, b.p!, 0, podiumH, 1.0);
-      const p2 = extrudeFootprintRaw(b.cx, b.cz, b.p!, podiumH, shaftH, 0.88);
-      const p3 = extrudeFootprintRaw(b.cx, b.cz, b.p!, podiumH + shaftH, crownH, 0.72);
-      if (p1) rawParts.push(p1);
-      if (p2) rawParts.push(p2);
-      if (p3) rawParts.push(p3);
-    } else {
-      rawParts.push(makeOrientedBoxRaw(b.cx, b.cz, b.w, b.d, b.a, 0, podiumH));
-      rawParts.push(makeOrientedBoxRaw(b.cx, b.cz, b.w * 0.86, b.d * 0.86, b.a, podiumH, shaftH));
-      rawParts.push(
-        makeOrientedBoxRaw(b.cx, b.cz, b.w * 0.68, b.d * 0.68, b.a, podiumH + shaftH, crownH),
-      );
-    }
-    rawParts.push(
-      makeOrientedBoxRaw(
-        b.cx,
-        b.cz,
-        Math.min(16, b.w * 0.38),
-        Math.min(14, b.d * 0.36),
-        b.a,
-        b.h,
-        coreH,
-      ),
-    );
-  } else if (b.t === 'c' && b.h >= 22) {
-    const lowerH = b.h * 0.78;
-    const upperH = b.h - lowerH;
-    if (hasPoly) {
-      const p1 = extrudeFootprintRaw(b.cx, b.cz, b.p!, 0, lowerH, 1.0);
-      const p2 = extrudeFootprintRaw(b.cx, b.cz, b.p!, lowerH, upperH, 0.84);
-      if (p1) rawParts.push(p1);
-      if (p2) rawParts.push(p2);
-    } else {
-      rawParts.push(makeOrientedBoxRaw(b.cx, b.cz, b.w, b.d, b.a, 0, lowerH));
-      rawParts.push(makeOrientedBoxRaw(b.cx, b.cz, b.w * 0.84, b.d * 0.84, b.a, lowerH, upperH));
-    }
-    // Rooftop HVAC penthouse
-    rawParts.push(
-      makeOrientedBoxRaw(
-        b.cx,
-        b.cz,
-        Math.min(10, b.w * 0.32),
-        Math.min(9, b.d * 0.32),
-        b.a,
-        b.h,
-        3.2,
-      ),
-    );
-  } else if (b.t === 's') {
-    const mainH = b.h * 0.82;
-    const roofH = Math.max(2.8, b.h * 0.18);
-    if (hasPoly) {
-      const p1 = extrudeFootprintRaw(b.cx, b.cz, b.p!, 0, mainH, 1.0);
-      const p2 = extrudeFootprintRaw(b.cx, b.cz, b.p!, mainH, roofH, 0.74);
-      if (p1) rawParts.push(p1);
-      if (p2) rawParts.push(p2);
-    } else {
-      rawParts.push(makeOrientedBoxRaw(b.cx, b.cz, b.w, b.d, b.a, 0, mainH));
-      rawParts.push(makeOrientedBoxRaw(b.cx, b.cz, b.w * 0.74, b.d * 0.74, b.a, mainH, roofH));
-    }
-  } else {
-    if (hasPoly) {
-      const p1 = extrudeFootprintRaw(b.cx, b.cz, b.p!, 0, b.h, 1.0);
-      if (p1) rawParts.push(p1);
-    } else {
-      rawParts.push(makeOrientedBoxRaw(b.cx, b.cz, b.w, b.d, b.a, 0, b.h));
-    }
-    if (b.h >= 16) {
-      rawParts.push(
-        makeOrientedBoxRaw(
-          b.cx,
-          b.cz,
-          Math.min(7, b.w * 0.34),
-          Math.min(7, b.d * 0.34),
-          b.a,
-          b.h,
-          2.8,
-        ),
-      );
-    }
-  }
-
+  buckets: BuildingGeometryBuckets,
+): void {
   const tintHex = getBuildingTintHex(b.id, b.t, isDark);
-  const walls: THREE.BufferGeometry[] = [];
-  const roofs: THREE.BufferGeometry[] = [];
+  const variant = selectFacadeVariant(b.id, b.t, b.h);
+  const uOffset = ((Math.abs(b.id) % 97) / 97) * 19.0;
 
-  for (const raw of rawParts) {
-    const { wall, roof } = splitWallsAndRoof(raw, tintHex, b.h);
-    if (wall) walls.push(wall);
-    if (roof) roofs.push(roof);
+  const pushSplit = (
+    raw: THREE.BufferGeometry | null,
+    wallBucket: WallBucketKey,
+    roofBucket: RoofBucketKey | 'roofEquipment',
+    opts: { discardRoof?: boolean; creaseBaseY?: number; tintOverride?: number } = {},
+  ) => {
+    if (!raw) return;
+    const { wall, roof } = splitWallsAndRoof(raw, opts.tintOverride ?? tintHex, uOffset, {
+      discardRoof: opts.discardRoof,
+      creaseBaseY: opts.creaseBaseY,
+    });
+    if (wall) buckets.walls[wallBucket].push(wall);
+    if (roof) {
+      if (roofBucket === 'roofEquipment') buckets.walls.roofEquipment.push(roof);
+      else buckets.roofs[roofBucket].push(roof);
+    }
     raw.dispose();
+  };
+
+  const pushEquipment = (eqW: number, eqD: number, baseY: number, eqH: number, dx = 0, dz = 0) => {
+    const cosA = Math.cos(-b.a);
+    const sinA = Math.sin(-b.a);
+    const ox = dx * cosA - dz * sinA;
+    const oz = dx * sinA + dz * cosA;
+    const eqRaw = makeOrientedBoxRaw(b.cx + ox, b.cz + oz, eqW, eqD, b.a, baseY, eqH);
+    pushSplit(eqRaw, 'roofEquipment', 'roofEquipment', { tintOverride: 0xe6eaef });
+  };
+
+  // Typology-specific architectural massing; lowest base starts at y = -1.25m for watertight grounding
+  if (b.t === 'o' && b.h >= 40) {
+    const groundH = Math.min(4.6, b.h * 0.1);
+    const podiumTop = Math.min(16, Math.max(groundH + 4, b.h * 0.18));
+    const podiumUpperH = podiumTop - groundH;
+    const shaftH = (b.h - podiumTop) * 0.78;
+    const crownH = Math.max(4, b.h - podiumTop - shaftH);
+    const coreH = Math.min(7.5, Math.max(3.5, b.h * 0.045));
+
+    pushSplit(makeMassPart(b, -1.25, groundH + 1.25, 1.0), 'groundStorefront', 'roof', {
+      discardRoof: true,
+      tintOverride: 0xf4f1ec,
+    });
+    pushSplit(makeMassPart(b, groundH, podiumUpperH, 1.0), variant, 'roof', {
+      creaseBaseY: groundH,
+    });
+    pushSplit(makeMassPart(b, podiumTop, shaftH, 0.88), variant, 'roof', {
+      creaseBaseY: podiumTop,
+    });
+    pushSplit(makeMassPart(b, podiumTop + shaftH, crownH, 0.72), variant, 'roof', {
+      creaseBaseY: podiumTop + shaftH,
+    });
+
+    const coreW = Math.max(4, Math.min(15, b.w * 0.34));
+    const coreD = Math.max(4, Math.min(13, b.d * 0.32));
+    pushEquipment(coreW, coreD, b.h, coreH);
+    if (b.w > 28 && b.d > 24) {
+      pushEquipment(Math.min(5.5, b.w * 0.14), Math.min(4.5, b.d * 0.14), b.h, 2.2, b.w * 0.18, 0);
+    }
+    return;
   }
 
-  return { walls, roofs };
+  if (b.t === 'c' && b.h >= 22) {
+    const groundH = 4.2;
+    const lowerUpperH = Math.max(4, b.h * 0.76 - groundH);
+    const upperBase = groundH + lowerUpperH;
+    const upperH = Math.max(3.5, b.h - upperBase);
+
+    pushSplit(makeMassPart(b, -1.25, groundH + 1.25, 1.0), 'groundStorefront', 'roof', {
+      discardRoof: true,
+      tintOverride: 0xf4f1ec,
+    });
+    pushSplit(makeMassPart(b, groundH, lowerUpperH, 1.0), variant, 'roof', {
+      creaseBaseY: groundH,
+    });
+    pushSplit(makeMassPart(b, upperBase, upperH, 0.84), variant, 'roof', {
+      creaseBaseY: upperBase,
+    });
+    pushEquipment(Math.max(3.5, Math.min(10, b.w * 0.28)), Math.max(3.5, Math.min(8, b.d * 0.28)), b.h, 3.0);
+    return;
+  }
+
+  if (b.t === 's') {
+    const hasGround = b.h >= 9.5;
+    const groundH = hasGround ? 4.2 : 0;
+    const mainH = Math.max(3.5, b.h * 0.82 - groundH);
+    const monitorH = Math.max(2.6, b.h - groundH - mainH);
+
+    if (hasGround) {
+      pushSplit(makeMassPart(b, -1.25, groundH + 1.25, 1.0), 'groundStorefront', 'roof', {
+        discardRoof: true,
+        tintOverride: 0xf4f1ec,
+      });
+      pushSplit(makeMassPart(b, groundH, mainH, 1.0), 'stationCivic', 'roof', {
+        creaseBaseY: groundH,
+      });
+    } else {
+      pushSplit(makeMassPart(b, -1.25, mainH + 1.25, 1.0), 'stationCivic', 'roof');
+    }
+    pushSplit(makeMassPart(b, groundH + mainH, monitorH, 0.74), 'stationCivic', 'roof', {
+      creaseBaseY: groundH + mainH,
+    });
+    return;
+  }
+
+  // Mid-rise commercial / office or residential with street-level retail/lobby plinth
+  const hasRetailPlinth =
+    b.h >= 8.0 && (b.t === 'c' || b.t === 'o' || (b.t === 'r' && b.h >= 13.5));
+
+  if (hasRetailPlinth) {
+    const groundH = Math.min(4.2, Math.max(3.3, b.h * 0.26));
+    const upperH = b.h - groundH;
+    pushSplit(makeMassPart(b, -1.25, groundH + 1.25, 1.0), 'groundStorefront', 'roof', {
+      discardRoof: true,
+      tintOverride: 0xf4f1ec,
+    });
+    pushSplit(makeMassPart(b, groundH, upperH, 1.0), variant, 'roof', {
+      creaseBaseY: groundH,
+    });
+    if (b.h >= 15) {
+      pushEquipment(
+        Math.max(3, Math.min(7.5, b.w * 0.28)),
+        Math.max(3, Math.min(7.5, b.d * 0.28)),
+        b.h,
+        2.6,
+      );
+    }
+    return;
+  }
+
+  // Low-rise residential / compact buildings: option for authentic Japanese pitched roof!
+  const isCompactRect = !b.p || b.p.length <= 5;
+  const wantPitched =
+    b.t === 'r' &&
+    b.h < 13 &&
+    b.w <= 22 &&
+    b.d <= 22 &&
+    isCompactRect &&
+    (Math.abs(b.id) % 11) < 6;
+
+  if (wantPitched) {
+    const wallH = Math.max(4.0, b.h * 0.86);
+    const ridgeH = Math.min(3.2, Math.max(1.4, Math.min(b.w, b.d) * 0.24));
+    pushSplit(makeMassPart(b, -1.25, wallH + 1.25, 1.0), variant, 'roof', { discardRoof: true });
+    if (b.p && b.p.length >= 3) {
+      pushSplit(makeMassPart(b, wallH - 0.15, 0.25, 1.0), variant, 'roof');
+    }
+    const gableRaw = makeGableRoofRaw(
+      b.cx,
+      b.cz,
+      b.p ? b.w * 0.94 : b.w + 0.5,
+      b.p ? b.d * 0.94 : b.d + 0.5,
+      b.a,
+      wallH,
+      ridgeH,
+    );
+    pushSplit(gableRaw, variant, 'roofPitched', { tintOverride: 0xd8dce0 });
+  } else {
+    pushSplit(makeMassPart(b, -1.25, b.h + 1.25, 1.0), variant, 'roof');
+  }
 }
 
 /**
- * Generates distinctive multi-part procedural silhouettes for Tokyo's 13 major landmarks
- * covering Shibuya, Shinjuku, Tokyo/Marunouchi, Shinagawa, Ikebukuro, Roppongi, Shiba & Oshiage.
+ * Generates distinctive multi-part procedural silhouettes for Tokyo's 13 major landmarks.
+ * All pedestals extend down to y = -1.25m for watertight grounding.
  */
 function buildProceduralLandmark(
   lm: UrbanLandmarkRecord,
@@ -304,14 +468,15 @@ function buildProceduralLandmark(
   g.position.set(lm.x, 0, lm.z);
 
   const glassMat = lib.materials.landmarkGlass;
-  const stoneMat = lib.materials.instanced;
+  const stoneMat = lib.materials.commercialStone;
+  const metalMat = lib.materials.commercialMetal;
   const brickMat = lib.materials.brick;
   const orangeMat = lib.materials.towerOrange;
   const whiteMat = lib.materials.towerWhite;
+  const plinthMat = lib.materials.foundationPlinth;
 
   switch (lm.kind) {
     case 'lattice_tower_orange': {
-      // Tokyo Tower: alternating international orange & white tapered lattice sections + decks + spire
       const bands: [number, number, number, number, boolean][] = [
         [0, 75, 28, 17, true],
         [75, 145, 17, 11, false],
@@ -330,13 +495,14 @@ function buildProceduralLandmark(
         m.rotation.y = Math.PI / 4;
         g.add(m);
       }
-      // FootTown base podium
-      const foot = new THREE.Mesh(new THREE.BoxGeometry(58, 18, 58), stoneMat);
-      foot.position.y = 9;
+      const foot = new THREE.Mesh(new THREE.BoxGeometry(58, 19.25, 58), stoneMat);
+      foot.position.y = 8.375;
       g.add(foot);
       break;
     }
     case 'skytree_tower': {
+      const base = new THREE.Mesh(new THREE.CylinderGeometry(34, 36, 4, 6), plinthMat);
+      base.position.y = 0.75;
       const lower = new THREE.Mesh(new THREE.CylinderGeometry(16, 34, 340, 6), whiteMat);
       lower.position.y = 170;
       const deck1 = new THREE.Mesh(new THREE.CylinderGeometry(24, 22, 22, 16), glassMat);
@@ -347,13 +513,12 @@ function buildProceduralLandmark(
       deck2.position.y = 455;
       const spire = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 8, 172, 10), whiteMat);
       spire.position.y = 548;
-      g.add(lower, deck1, mid, deck2, spire);
+      g.add(base, lower, deck1, mid, deck2, spire);
       break;
     }
     case 'twin_stepped_tower': {
-      // Tokyo Metropolitan Government Building (Shinjuku iconic twin Gothic-modern towers)
-      const podium = new THREE.Mesh(new THREE.BoxGeometry(96, 150, 48), stoneMat);
-      podium.position.y = 75;
+      const podium = new THREE.Mesh(new THREE.BoxGeometry(96, 151.25, 48), stoneMat);
+      podium.position.y = 74.375;
       const northTower = new THREE.Mesh(new THREE.BoxGeometry(36, 93, 44), glassMat);
       northTower.position.set(0, 150 + 46.5, -24);
       const southTower = new THREE.Mesh(new THREE.BoxGeometry(36, 93, 44), glassMat);
@@ -368,13 +533,12 @@ function buildProceduralLandmark(
       break;
     }
     case 'triple_stepped_tower': {
-      // Shinjuku Park Tower (Kenzo Tange iconic triple stepped pyramidal crowns!)
-      const b1 = new THREE.Mesh(new THREE.BoxGeometry(44, 162, 42), glassMat);
-      b1.position.set(-22, 81, 0);
-      const b2 = new THREE.Mesh(new THREE.BoxGeometry(44, 198, 42), glassMat);
-      b2.position.set(0, 99, 0);
-      const b3 = new THREE.Mesh(new THREE.BoxGeometry(44, 232, 42), glassMat);
-      b3.position.set(22, 116, 0);
+      const b1 = new THREE.Mesh(new THREE.BoxGeometry(44, 163.25, 42), glassMat);
+      b1.position.set(-22, 80.375, 0);
+      const b2 = new THREE.Mesh(new THREE.BoxGeometry(44, 199.25, 42), glassMat);
+      b2.position.set(0, 98.375, 0);
+      const b3 = new THREE.Mesh(new THREE.BoxGeometry(44, 233.25, 42), glassMat);
+      b3.position.set(22, 115.375, 0);
       const cap1 = new THREE.Mesh(new THREE.ConeGeometry(28, 16, 4), stoneMat);
       cap1.rotation.y = Math.PI / 4;
       cap1.position.set(-22, 170, 0);
@@ -386,18 +550,19 @@ function buildProceduralLandmark(
       break;
     }
     case 'cocoon_ellipsoid': {
+      const plinth = new THREE.Mesh(new THREE.CylinderGeometry(20, 22, 6, 12), plinthMat);
+      plinth.position.y = 1.75;
       const body = new THREE.Mesh(new THREE.SphereGeometry(24, 16, 14), glassMat);
       body.scale.set(1.0, 4.25, 0.85);
       body.position.y = 102;
-      g.add(body);
+      g.add(plinth, body);
       break;
     }
     case 'heritage_brick_station': {
-      // Tokyo Station Marunouchi Heritage Red-Brick Hall (central portico + twin octagonal slate domes)
-      const mainHall = new THREE.Mesh(new THREE.BoxGeometry(28, 20, 316), brickMat);
-      mainHall.position.y = 10;
-      const centerPavilion = new THREE.Mesh(new THREE.BoxGeometry(38, 27, 64), brickMat);
-      centerPavilion.position.y = 13.5;
+      const mainHall = new THREE.Mesh(new THREE.BoxGeometry(28, 21.25, 316), brickMat);
+      mainHall.position.y = 9.375;
+      const centerPavilion = new THREE.Mesh(new THREE.BoxGeometry(38, 28.25, 64), brickMat);
+      centerPavilion.position.y = 12.875;
       const roofRidge = new THREE.Mesh(new THREE.BoxGeometry(22, 6, 306), stoneMat);
       roofRidge.position.y = 23;
       const northDome = new THREE.Mesh(new THREE.CylinderGeometry(11, 17, 15, 8), stoneMat);
@@ -408,11 +573,10 @@ function buildProceduralLandmark(
       break;
     }
     case 'marunouchi_tower': {
-      // Marunouchi / Shin-Marunouchi iconic 31m limestone podium + setback glass high-rise
       const w = lm.width ?? 68;
       const d = lm.depth ?? 62;
-      const podium = new THREE.Mesh(new THREE.BoxGeometry(w, 34, d), stoneMat);
-      podium.position.y = 17;
+      const podium = new THREE.Mesh(new THREE.BoxGeometry(w, 35.25, d), stoneMat);
+      podium.position.y = 16.375;
       const shaftH = Math.max(90, lm.height - 46);
       const shaft = new THREE.Mesh(new THREE.BoxGeometry(w * 0.78, shaftH, d * 0.78), glassMat);
       shaft.position.y = 34 + shaftH * 0.5;
@@ -422,44 +586,55 @@ function buildProceduralLandmark(
       break;
     }
     case 'glass_stepped_hub': {
-      // Shibuya Scramble Square: crisp tall glass shaft + sky deck + lower retail terrace
+      // Shibuya Scramble Square: grounded plinth, stacked vertical fin podium, glass tower + sky deck
       const w = lm.width ?? 62;
       const d = lm.depth ?? 48;
-      const lower = new THREE.Mesh(new THREE.BoxGeometry(w, 60, d), stoneMat);
-      lower.position.y = 30;
-      const main = new THREE.Mesh(new THREE.BoxGeometry(w * 0.86, 154, d * 0.82), glassMat);
-      main.position.set(4, 60 + 77, 0);
-      const skyDeck = new THREE.Mesh(new THREE.BoxGeometry(w * 0.92, 16, d * 0.86), glassMat);
-      skyDeck.position.set(4, 222, 0);
-      g.add(lower, main, skyDeck);
+      const plinth = new THREE.Mesh(new THREE.BoxGeometry(w + 2, 6.25, d + 2), plinthMat);
+      plinth.position.y = 1.875;
+      const lower = new THREE.Mesh(new THREE.BoxGeometry(w, 55, d), metalMat);
+      lower.position.y = 5 + 27.5;
+      const main = new THREE.Mesh(new THREE.BoxGeometry(w * 0.86, 152, d * 0.82), glassMat);
+      main.position.set(4, 60 + 76, 0);
+      const deckCollar = new THREE.Mesh(new THREE.BoxGeometry(w * 0.9, 5, d * 0.85), metalMat);
+      deckCollar.position.set(4, 212.5, 0);
+      const skyDeck = new THREE.Mesh(new THREE.BoxGeometry(w * 0.92, 14, d * 0.86), glassMat);
+      skyDeck.position.set(4, 221, 0);
+      g.add(plinth, lower, main, deckCollar, skyDeck);
       break;
     }
     case 'stepped_stream_tower': {
-      // Shibuya Stream: modern stepped urban glass hub along Shibuya River
+      // Shibuya Stream: riverfront granite plinth + stepped staggered glass volumes
       const w = lm.width ?? 56;
       const d = lm.depth ?? 42;
-      const podium = new THREE.Mesh(new THREE.BoxGeometry(w, 32, d), stoneMat);
-      podium.position.y = 16;
+      const plinth = new THREE.Mesh(new THREE.BoxGeometry(w + 2, 6.25, d + 2), plinthMat);
+      plinth.position.y = 1.875;
+      const podium = new THREE.Mesh(new THREE.BoxGeometry(w, 27, d), stoneMat);
+      podium.position.y = 5 + 13.5;
       const mid = new THREE.Mesh(new THREE.BoxGeometry(w * 0.84, 96, d * 0.84), glassMat);
       mid.position.set(-3, 32 + 48, 0);
-      const top = new THREE.Mesh(new THREE.BoxGeometry(w * 0.7, 52, d * 0.74), glassMat);
-      top.position.set(2, 128 + 26, 0);
-      g.add(podium, mid, top);
+      const band = new THREE.Mesh(new THREE.BoxGeometry(w * 0.78, 4, d * 0.8), metalMat);
+      band.position.set(0, 128, 0);
+      const top = new THREE.Mesh(new THREE.BoxGeometry(w * 0.7, 50, d * 0.74), glassMat);
+      top.position.set(2, 130 + 25, 0);
+      g.add(plinth, podium, mid, band, top);
       break;
     }
     case 'tiered_cultural_tower': {
-      // Shibuya Hikarie: stacked cantilevered cultural cubes
-      const b1 = new THREE.Mesh(new THREE.BoxGeometry(58, 52, 44), stoneMat);
-      b1.position.y = 26;
+      // Shibuya Hikarie: stacked cantilevered cultural cubes with metallic structural collars
+      const plinth = new THREE.Mesh(new THREE.BoxGeometry(60, 6.25, 46), plinthMat);
+      plinth.position.y = 1.875;
+      const b1 = new THREE.Mesh(new THREE.BoxGeometry(58, 47, 44), metalMat);
+      b1.position.y = 5 + 23.5;
       const b2 = new THREE.Mesh(new THREE.BoxGeometry(50, 56, 38), glassMat);
       b2.position.set(3, 52 + 28, 0);
-      const b3 = new THREE.Mesh(new THREE.BoxGeometry(44, 74, 34), glassMat);
-      b3.position.set(-2, 108 + 37, 0);
-      g.add(b1, b2, b3);
+      const collar = new THREE.Mesh(new THREE.BoxGeometry(52, 4, 40), stoneMat);
+      collar.position.set(1, 108, 0);
+      const b3 = new THREE.Mesh(new THREE.BoxGeometry(44, 72, 34), glassMat);
+      b3.position.set(-2, 110 + 36, 0);
+      g.add(plinth, b1, b2, collar, b3);
       break;
     }
     case 'intercity_trio': {
-      // Shinagawa Intercity A/B/C: three sculpted glass towers framing Shinagawa East Konan concourse
       const offsets: [number, number, number][] = [
         [0, -95, 144],
         [0, 0, 142],
@@ -472,25 +647,24 @@ function buildProceduralLandmark(
         cap.position.set(ox, h + 5, oz);
         g.add(tower, cap);
       }
-      const deck = new THREE.Mesh(new THREE.BoxGeometry(56, 12, 240), stoneMat);
-      deck.position.set(0, 6, 0);
+      const deck = new THREE.Mesh(new THREE.BoxGeometry(56, 13.25, 240), stoneMat);
+      deck.position.set(0, 5.375, 0);
       g.add(deck);
       break;
     }
     case 'octagonal_crown_tower': {
-      const shaft = new THREE.Mesh(new THREE.CylinderGeometry(36, 40, 210, 8), glassMat);
-      shaft.position.y = 105;
+      const shaft = new THREE.Mesh(new THREE.CylinderGeometry(36, 40, 211.25, 8), glassMat);
+      shaft.position.y = 104.375;
       const crown = new THREE.Mesh(new THREE.CylinderGeometry(28, 34, 28, 8), stoneMat);
       crown.position.y = 224;
       g.add(shaft, crown);
       break;
     }
     default: {
-      // Sunshine 60 slab skyscraper with twin mechanical shoulders
       const w = lm.width ?? 64;
       const d = lm.depth ?? 38;
-      const podium = new THREE.Mesh(new THREE.BoxGeometry(w * 1.18, 22, d * 1.3), stoneMat);
-      podium.position.y = 11;
+      const podium = new THREE.Mesh(new THREE.BoxGeometry(w * 1.18, 23.25, d * 1.3), stoneMat);
+      podium.position.y = 10.375;
       const slab = new THREE.Mesh(new THREE.BoxGeometry(w, lm.height, d), glassMat);
       slab.position.y = lm.height * 0.5;
       const crown = new THREE.Mesh(new THREE.BoxGeometry(w * 0.72, 10, d * 0.72), stoneMat);
@@ -500,12 +674,13 @@ function buildProceduralLandmark(
     }
   }
 
+  const byMaterial = new Map<THREE.Material, THREE.BufferGeometry[]>();
+  const toRemove: THREE.Object3D[] = [];
+
   g.traverse((obj) => {
     if (obj instanceof THREE.Mesh) {
-      obj.castShadow = true;
-      obj.receiveShadow = true;
-      // Scale UVs to true world meters so procedural facade textures render realistic floor heights on landmarks!
-      const geom = obj.geometry;
+      obj.updateMatrix();
+      const geom = obj.geometry as THREE.BufferGeometry;
       const pos = geom.getAttribute('position');
       const norm = geom.getAttribute('normal');
       if (pos && norm) {
@@ -513,6 +688,7 @@ function buildProceduralLandmark(
         const sy = obj.scale.y;
         const sz = obj.scale.z;
         const uvs = new Float32Array(pos.count * 2);
+        const cols = new Float32Array(pos.count * 3);
         for (let i = 0; i < pos.count; i++) {
           const x = pos.getX(i) * sx;
           const y = pos.getY(i) * sy;
@@ -527,11 +703,52 @@ function buildProceduralLandmark(
             uvs[i * 2] = nx > nz ? z : x;
             uvs[i * 2 + 1] = y;
           }
+          cols[i * 3] = 1.0;
+          cols[i * 3 + 1] = 1.0;
+          cols[i * 3 + 2] = 1.0;
         }
         geom.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+        if (!geom.getAttribute('color')) {
+          geom.setAttribute('color', new THREE.BufferAttribute(cols, 3));
+        }
       }
+
+      const baked = geom.index ? geom.toNonIndexed() : geom.clone();
+      for (const attrName of Object.keys(baked.attributes)) {
+        if (
+          attrName !== 'position' &&
+          attrName !== 'normal' &&
+          attrName !== 'uv' &&
+          attrName !== 'color'
+        ) {
+          baked.deleteAttribute(attrName);
+        }
+      }
+      baked.applyMatrix4(obj.matrix);
+      geom.dispose();
+
+      const mat = obj.material as THREE.Material;
+      const bucket = byMaterial.get(mat);
+      if (bucket) bucket.push(baked);
+      else byMaterial.set(mat, [baked]);
+      toRemove.push(obj);
     }
   });
+
+  for (const child of toRemove) g.remove(child);
+
+  let partIdx = 0;
+  for (const [mat, parts] of byMaterial) {
+    const merged = mergeGeometries(parts, false);
+    for (const p of parts) p.dispose();
+    if (merged) {
+      const m = new THREE.Mesh(merged, mat);
+      m.name = `landmark-${lm.id}-${partIdx++}`;
+      m.castShadow = true;
+      m.receiveShadow = true;
+      g.add(m);
+    }
+  }
   return g;
 }
 
@@ -551,32 +768,58 @@ export class CityChunkManager {
   private readonly loadingKeys = new Set<string>();
   private readonly unitBoxGeom = new THREE.BoxGeometry(1, 1, 1);
   private readonly facadeLib: FacadeMaterialLibrary;
+  private readonly cutawayUniforms?: CutawayUniforms;
+  private readonly onChunkLoadedCb?: (meta: UrbanChunkMeta, buildings: UrbanBuildingRecord[]) => void;
 
   private isDark: boolean;
   private buildingsVisible = true;
   private currentOpacity = 1.0;
 
-  constructor(isDark: boolean, clipPlanes: THREE.Plane[], cutawayUniforms?: CutawayUniforms) {
+  constructor(
+    isDark: boolean,
+    clipPlanes: THREE.Plane[],
+    cutawayUniforms?: CutawayUniforms,
+    onChunkLoaded?: (meta: UrbanChunkMeta, buildings: UrbanBuildingRecord[]) => void,
+  ) {
     this.isDark = isDark;
+    this.cutawayUniforms = cutawayUniforms;
+    this.onChunkLoadedCb = onChunkLoaded;
     this.group.name = 'city-buildings-chunked';
     this.landmarksGroup.name = 'tokyo-procedural-landmarks';
     this.group.add(this.landmarksGroup);
     this.facadeLib = new FacadeMaterialLibrary(isDark, clipPlanes);
 
     if (cutawayUniforms) {
-      // Discard generic city buildings cleanly inside the cutaway aperture while keeping outer Tokyo 100% opaque!
-      // Hero landmarks (landmarkGlass/brick/towerOrange/towerWhite) stay as spatial orientation anchors!
-      for (const mat of [
-        this.facadeLib.materials.office,
-        this.facadeLib.materials.commercial,
-        this.facadeLib.materials.residential,
-        this.facadeLib.materials.station,
-        this.facadeLib.materials.roof,
-        this.facadeLib.materials.instanced,
-      ]) {
+      for (const mat of this.getGenericCityMaterials()) {
         injectRadialCutaway(mat, cutawayUniforms, 'building');
       }
     }
+  }
+
+  private getGenericCityMaterials(): THREE.MeshStandardMaterial[] {
+    const m = this.facadeLib.materials;
+    return [
+      m.officeGlassCool,
+      m.officeGlassWarm,
+      m.commercialStone,
+      m.commercialMetal,
+      m.commercialTile,
+      m.concreteModern,
+      m.residentialBalcony,
+      m.residentialPlaster,
+      m.groundStorefront,
+      m.stationCivic,
+      m.roof,
+      m.roofPitched,
+      m.roofEquipment,
+      m.foundationPlinth,
+      m.instanced,
+    ];
+  }
+
+  private getLandmarkMaterials(): THREE.MeshStandardMaterial[] {
+    const m = this.facadeLib.materials;
+    return [m.landmarkGlass, m.brick, m.towerOrange, m.towerWhite];
   }
 
   setManifest(manifest: UrbanManifest, landmarks: UrbanLandmarkRecord[]): void {
@@ -587,11 +830,29 @@ export class CityChunkManager {
     }
   }
 
+  getBuildingsInBounds(
+    minX: number,
+    maxX: number,
+    minZ: number,
+    maxZ: number,
+  ): UrbanBuildingRecord[] {
+    const out: UrbanBuildingRecord[] = [];
+    for (const chunk of this.loaded.values()) {
+      for (const b of chunk.buildings) {
+        if (b.cx >= minX && b.cx <= maxX && b.cz >= minZ && b.cz <= maxZ) {
+          out.push(b);
+        }
+      }
+    }
+    return out;
+  }
+
   /**
-   * Streams chunks within range, switches LOD0 <-> LOD1 with P0 hysteresis band,
-   * and applies frustum visibility checks!
+   * Streams chunks within range, switches LOD0 <-> LOD1 with hysteresis band,
+   * and applies frustum visibility checks.
    */
   updateForCamera(camera: THREE.PerspectiveCamera, target: THREE.Vector3): void {
+    getStreetscapeForCutaway(this.cutawayUniforms)?.updateForCamera(camera, target);
     if (!this.manifest) return;
     const frustum = new THREE.Frustum();
     const projScreen = new THREE.Matrix4().multiplyMatrices(
@@ -601,9 +862,11 @@ export class CityChunkManager {
     frustum.setFromProjectionMatrix(projScreen);
 
     const camPos = camera.position;
-    const loadRadius = Math.min(14_000, Math.max(5_400, camPos.distanceTo(target) * 2.2));
-    const lod0EnterRadius = 2050;
-    const lod0ExitRadius = 2600;
+    const camDist = camPos.distanceTo(target);
+    const allowLod0 = camDist < 2400;
+    const loadRadius = Math.min(14_000, Math.max(5_400, camDist * 2.2));
+    const lod0EnterRadius = 1550;
+    const lod0ExitRadius = 2000;
 
     const candidates: { meta: UrbanChunkMeta; distToTarget: number }[] = [];
     for (const meta of this.manifest.chunks) {
@@ -635,7 +898,6 @@ export class CityChunkManager {
       const distToCam = Math.hypot(chunk.meta.centerX - camPos.x, chunk.meta.centerZ - camPos.z);
       const distToTarget = Math.hypot(chunk.meta.centerX - target.x, chunk.meta.centerZ - target.z);
 
-      // P7 GPU Memory Eviction: dispose heavy LOD0 geometry for distant chunks while keeping LOD1 skyline!
       if (chunk.lod0Group && distToTarget > lod0EvictRadius && distToCam > lod0EvictRadius) {
         this.disposeLod0(chunk);
       }
@@ -646,9 +908,10 @@ export class CityChunkManager {
         chunk.activeLod = -1;
       } else {
         const wantLod0 =
-          chunk.activeLod === 0
-            ? distToCam < lod0ExitRadius || (chunk.meta.hub && distToTarget < 2100)
-            : distToCam < lod0EnterRadius || (chunk.meta.hub && distToTarget < 1700);
+          allowLod0 &&
+          (chunk.activeLod === 0
+            ? distToCam < lod0ExitRadius || (chunk.meta.hub && distToTarget < 1800)
+            : distToCam < lod0EnterRadius || (chunk.meta.hub && distToTarget < 1400));
         if (wantLod0) {
           if (!chunk.lod0Group && lazyBuiltThisTick < 2) {
             chunk.lod0Group = this.buildLod0Group(chunk.meta, chunk.buildings);
@@ -687,10 +950,23 @@ export class CityChunkManager {
       const res = await fetch(`./data/urban-chunks/${meta.file}`);
       if (!res.ok) return;
       const data = (await res.json()) as UrbanChunkData;
-      // P7 Lazy LOD0: build only ultra-light InstancedMesh LOD1 on fetch; LOD0 extrudes on demand!
       const built = this.buildChunkLod1(meta, data.buildings);
       this.loaded.set(meta.key, built);
       this.group.add(built.lod1Mesh);
+      if (
+        Math.abs(meta.centerX - SHIBUYA_SHOWCASE_ZONE.centerX) <= 1650 &&
+        Math.abs(meta.centerZ - SHIBUYA_SHOWCASE_ZONE.centerZ) <= 1650
+      ) {
+        getStreetscapeForCutaway(this.cutawayUniforms)?.rebuildWithBuildings(
+          this.getBuildingsInBounds(
+            SHIBUYA_SHOWCASE_ZONE.centerX - SHIBUYA_SHOWCASE_ZONE.halfSizeM - 60,
+            SHIBUYA_SHOWCASE_ZONE.centerX + SHIBUYA_SHOWCASE_ZONE.halfSizeM + 60,
+            SHIBUYA_SHOWCASE_ZONE.centerZ - SHIBUYA_SHOWCASE_ZONE.halfSizeM - 60,
+            SHIBUYA_SHOWCASE_ZONE.centerZ + SHIBUYA_SHOWCASE_ZONE.halfSizeM + 60,
+          ),
+        );
+      }
+      this.onChunkLoadedCb?.(meta, data.buildings);
     } catch {
       // Graceful degradation if chunk fetch fails offline
     } finally {
@@ -698,67 +974,87 @@ export class CityChunkManager {
     }
   }
 
-  private buildLod0Group(
-    meta: UrbanChunkMeta,
-    buildings: UrbanBuildingRecord[],
-  ): THREE.Group {
+  private buildLod0Group(meta: UrbanChunkMeta, buildings: UrbanBuildingRecord[]): THREE.Group {
     const lod0Group = new THREE.Group();
     lod0Group.name = `chunk-lod0-${meta.key}`;
-    const byTypology: Record<'o' | 'c' | 'r' | 's', THREE.BufferGeometry[]> = {
-      o: [],
-      c: [],
-      r: [],
-      s: [],
+
+    const buckets: BuildingGeometryBuckets = {
+      walls: {
+        officeGlassCool: [],
+        officeGlassWarm: [],
+        commercialStone: [],
+        commercialMetal: [],
+        commercialTile: [],
+        concreteModern: [],
+        residentialBalcony: [],
+        residentialPlaster: [],
+        groundStorefront: [],
+        stationCivic: [],
+        roofEquipment: [],
+      },
+      roofs: {
+        roof: [],
+        roofPitched: [],
+      },
     };
-    const allRoofs: THREE.BufferGeometry[] = [];
 
     for (const b of buildings) {
-      const { walls, roofs } = buildProceduralBuildingSplit(b, this.isDark);
-      byTypology[b.t].push(...walls);
-      allRoofs.push(...roofs);
+      appendBuildingToBuckets(b, this.isDark, buckets);
     }
 
-    const matFor = (t: 'o' | 'c' | 'r' | 's') =>
-      t === 'o'
-        ? this.facadeLib.materials.office
-        : t === 'c'
-          ? this.facadeLib.materials.commercial
-          : t === 's'
-            ? this.facadeLib.materials.station
-            : this.facadeLib.materials.residential;
+    const m = this.facadeLib.materials;
+    const wallMaterials: Record<WallBucketKey, THREE.MeshStandardMaterial> = {
+      officeGlassCool: m.officeGlassCool,
+      officeGlassWarm: m.officeGlassWarm,
+      commercialStone: m.commercialStone,
+      commercialMetal: m.commercialMetal,
+      commercialTile: m.commercialTile,
+      concreteModern: m.concreteModern,
+      residentialBalcony: m.residentialBalcony,
+      residentialPlaster: m.residentialPlaster,
+      groundStorefront: m.groundStorefront,
+      stationCivic: m.stationCivic,
+      roofEquipment: m.roofEquipment,
+    };
 
-    for (const key of ['o', 'c', 'r', 's'] as const) {
-      const geoms = byTypology[key];
+    for (const key of Object.keys(buckets.walls) as WallBucketKey[]) {
+      const geoms = buckets.walls[key];
       if (geoms.length === 0) continue;
       const merged = mergeGeometries(geoms, false);
       if (merged) {
-        const mesh = new THREE.Mesh(merged, matFor(key));
-        mesh.castShadow = key === 'o' || key === 'c' || key === 's';
+        const mesh = new THREE.Mesh(merged, wallMaterials[key]);
+        mesh.castShadow =
+          key !== 'groundStorefront' &&
+          key !== 'residentialPlaster' &&
+          key !== 'roofEquipment';
         mesh.receiveShadow = true;
         lod0Group.add(mesh);
       }
       geoms.forEach((g) => g.dispose());
     }
 
-    if (allRoofs.length > 0) {
-      const mergedRoofs = mergeGeometries(allRoofs, false);
-      if (mergedRoofs) {
-        const roofMesh = new THREE.Mesh(mergedRoofs, this.facadeLib.materials.roof);
+    const roofMaterials: Record<RoofBucketKey, THREE.MeshStandardMaterial> = {
+      roof: m.roof,
+      roofPitched: m.roofPitched,
+    };
+
+    for (const rKey of Object.keys(buckets.roofs) as RoofBucketKey[]) {
+      const geoms = buckets.roofs[rKey];
+      if (geoms.length === 0) continue;
+      const merged = mergeGeometries(geoms, false);
+      if (merged) {
+        const roofMesh = new THREE.Mesh(merged, roofMaterials[rKey]);
         roofMesh.castShadow = false;
         roofMesh.receiveShadow = true;
         lod0Group.add(roofMesh);
       }
-      allRoofs.forEach((g) => g.dispose());
+      geoms.forEach((g) => g.dispose());
     }
 
     return lod0Group;
   }
 
-  private buildChunkLod1(
-    meta: UrbanChunkMeta,
-    buildings: UrbanBuildingRecord[],
-  ): LoadedChunk {
-    // --- LOD1/LOD2: Single textured InstancedMesh with natural Japanese architectural palette ---
+  private buildChunkLod1(meta: UrbanChunkMeta, buildings: UrbanBuildingRecord[]): LoadedChunk {
     const lod1Mesh = new THREE.InstancedMesh(
       this.unitBoxGeom,
       this.facadeLib.materials.instanced,
@@ -772,9 +1068,10 @@ export class CityChunkManager {
     const color = new THREE.Color();
     for (let i = 0; i < buildings.length; i++) {
       const b = buildings[i]!;
-      dummy.position.set(b.cx, b.h * 0.5, b.cz);
+      // Extend LOD1 boxes down to y = -1.25m for watertight grounding
+      dummy.position.set(b.cx, (b.h - 1.25) * 0.5, b.cz);
       dummy.rotation.set(0, -b.a, 0);
-      dummy.scale.set(b.w, b.h, b.d);
+      dummy.scale.set(b.w, b.h + 1.25, b.d);
       dummy.updateMatrix();
       lod1Mesh.setMatrixAt(i, dummy.matrix);
 
@@ -796,19 +1093,14 @@ export class CityChunkManager {
     const outerTranslucent = !cutawayActive && this.currentOpacity < 0.99;
     this.landmarksGroup.visible = visible;
 
-    // Generic buildings: stay 100% OPAQUE outside the circular cutaway pit (zero ghost soup!),
-    // unless outer opacity is explicitly lowered below 0.55!
-    const genericOpacity = cutawayActive ? (this.currentOpacity < 0.55 ? 0.65 : 1.0) : this.currentOpacity;
+    const genericOpacity = cutawayActive
+      ? this.currentOpacity < 0.55
+        ? 0.65
+        : 1.0
+      : this.currentOpacity;
     const genericTranslucent = genericOpacity < 0.99;
 
-    for (const mat of [
-      this.facadeLib.materials.office,
-      this.facadeLib.materials.commercial,
-      this.facadeLib.materials.residential,
-      this.facadeLib.materials.station,
-      this.facadeLib.materials.roof,
-      this.facadeLib.materials.instanced,
-    ]) {
+    for (const mat of this.getGenericCityMaterials()) {
       const needRecompile = mat.transparent !== genericTranslucent;
       mat.transparent = genericTranslucent;
       mat.opacity = genericOpacity;
@@ -816,15 +1108,9 @@ export class CityChunkManager {
       if (needRecompile) mat.needsUpdate = true;
     }
 
-    // Hero landmarks: crisp translucent spatial anchors inside Underground Cutaway Mode!
     const lmOpacity = cutawayActive ? 0.34 : outerTranslucent ? this.currentOpacity : 1.0;
     const lmTranslucent = lmOpacity < 0.99;
-    for (const mat of [
-      this.facadeLib.materials.landmarkGlass,
-      this.facadeLib.materials.brick,
-      this.facadeLib.materials.towerOrange,
-      this.facadeLib.materials.towerWhite,
-    ]) {
+    for (const mat of this.getLandmarkMaterials()) {
       const needRecompile = mat.transparent !== lmTranslucent;
       mat.transparent = lmTranslucent;
       mat.opacity = lmOpacity;
@@ -838,6 +1124,11 @@ export class CityChunkManager {
         chunk.lod1Mesh.visible = false;
       }
     }
+    getStreetscapeForCutaway(this.cutawayUniforms)?.setVisibilityAndOpacity(
+      visible,
+      opacity,
+      cutawayActive,
+    );
   }
 
   setTheme(isDark: boolean): void {
@@ -845,7 +1136,6 @@ export class CityChunkManager {
     this.isDark = isDark;
     this.facadeLib.setTheme(isDark);
 
-    // Refresh LOD1 instance colors cleanly for Day / Night palette
     const color = new THREE.Color();
     for (const chunk of this.loaded.values()) {
       for (let i = 0; i < chunk.buildings.length; i++) {
@@ -865,12 +1155,19 @@ export class CityChunkManager {
     infillBuildings: number;
     lod0Chunks: number;
     lod1Chunks: number;
+    landmarkCount: number;
+    provenance: BuildingProvenanceCounts;
   } {
     let renderedBuildings = 0;
     let realOsmBuildings = 0;
     let infillBuildings = 0;
     let lod0Chunks = 0;
     let lod1Chunks = 0;
+    let osmExplicitHeight = 0;
+    let osmLevels = 0;
+    let osmEstimated = 0;
+    let schematicInfill = 0;
+
     for (const c of this.loaded.values()) {
       if (c.activeLod === 0 || c.activeLod === 1) {
         if (c.activeLod === 0) lod0Chunks++;
@@ -878,6 +1175,13 @@ export class CityChunkManager {
         renderedBuildings += c.meta.count;
         realOsmBuildings += c.meta.realCount ?? c.meta.count;
         infillBuildings += c.meta.infillCount ?? 0;
+
+        for (const b of c.buildings) {
+          if (b.hb === 'o') osmExplicitHeight++;
+          else if (b.hb === 'l') osmLevels++;
+          else if (b.hb === 'i') osmEstimated++;
+          else if (b.hb === 'p') schematicInfill++;
+        }
       }
     }
     return {
@@ -888,6 +1192,13 @@ export class CityChunkManager {
       infillBuildings,
       lod0Chunks,
       lod1Chunks,
+      landmarkCount: this.landmarksGroup.children.length,
+      provenance: {
+        osmExplicitHeight,
+        osmLevels,
+        osmEstimated,
+        schematicInfill,
+      },
     };
   }
 

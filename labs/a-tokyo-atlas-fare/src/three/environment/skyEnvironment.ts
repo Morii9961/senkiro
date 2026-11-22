@@ -8,6 +8,7 @@
  */
 
 import * as THREE from 'three';
+import type { CityLightingPreset } from '../../contracts/atlasV2.js';
 
 const SKY_VERTEX_SHADER = /* glsl */ `
 varying vec3 vWorldDir;
@@ -74,6 +75,17 @@ const DAY_PALETTE: SkyPalette = {
   fogFar: 34000,
 };
 
+const DUSK_PALETTE: SkyPalette = {
+  top: 0x3a527a,
+  mid: 0x8c7b8f,
+  horizon: 0xf2be8e,
+  ground: 0x685a50,
+  sun: 0xffb670,
+  sunIntensity: 1.35,
+  fogNear: 6800,
+  fogFar: 32000,
+};
+
 const NIGHT_PALETTE: SkyPalette = {
   top: 0x060d19,
   mid: 0x0f1d33,
@@ -85,21 +97,34 @@ const NIGHT_PALETTE: SkyPalette = {
   fogFar: 30000,
 };
 
+function paletteForPreset(preset: CityLightingPreset): SkyPalette {
+  if (preset === 'dusk') return DUSK_PALETTE;
+  if (preset === 'night') return NIGHT_PALETTE;
+  return DAY_PALETTE;
+}
+
 export class SkyEnvironmentSystem {
   readonly skyMesh: THREE.Mesh;
-  readonly sunDirection = new THREE.Vector3(0.58, 0.68, 0.44).normalize();
+  readonly sunDirection = new THREE.Vector3(0.62, 0.56, 0.54).normalize();
 
   private readonly skyMaterial: THREE.ShaderMaterial;
   private readonly pmremGenerator: THREE.PMREMGenerator;
   private envRenderTarget: THREE.WebGLRenderTarget | null = null;
   private isDark: boolean;
+  private preset: CityLightingPreset;
 
-  constructor(renderer: THREE.WebGLRenderer, scene: THREE.Scene, isDark: boolean) {
+  constructor(
+    renderer: THREE.WebGLRenderer,
+    scene: THREE.Scene,
+    isDark: boolean,
+    preset?: CityLightingPreset,
+  ) {
     this.isDark = isDark;
+    this.preset = preset ?? (isDark ? 'night' : 'day');
     this.pmremGenerator = new THREE.PMREMGenerator(renderer);
     this.pmremGenerator.compileEquirectangularShader();
 
-    const pal = isDark ? NIGHT_PALETTE : DAY_PALETTE;
+    const pal = paletteForPreset(this.preset);
     this.skyMaterial = new THREE.ShaderMaterial({
       vertexShader: SKY_VERTEX_SHADER,
       fragmentShader: SKY_FRAGMENT_SHADER,
@@ -123,11 +148,11 @@ export class SkyEnvironmentSystem {
     this.skyMesh.renderOrder = -10;
     scene.add(this.skyMesh);
 
-    this.applyToScene(scene, isDark);
+    this.applyToScene(scene, isDark, this.preset);
   }
 
-  private buildPmrem(isDark: boolean): THREE.WebGLRenderTarget {
-    const pal = isDark ? NIGHT_PALETTE : DAY_PALETTE;
+  private buildPmrem(preset: CityLightingPreset): THREE.WebGLRenderTarget {
+    const pal = paletteForPreset(preset);
     const envScene = new THREE.Scene();
 
     // Soft studio-sky hemisphere shell for smooth realistic glass & water reflections
@@ -142,7 +167,7 @@ export class SkyEnvironmentSystem {
         uGroundColor: { value: new THREE.Color(pal.ground) },
         uSunColor: { value: new THREE.Color(pal.sun) },
         uSunDir: { value: this.sunDirection.clone() },
-        uSunIntensity: { value: isDark ? 0.65 : 1.35 },
+        uSunIntensity: { value: preset === 'night' ? 0.65 : preset === 'dusk' ? 1.45 : 1.35 },
       },
     });
     const sphere = new THREE.Mesh(new THREE.SphereGeometry(20, 24, 14), envMat);
@@ -152,7 +177,7 @@ export class SkyEnvironmentSystem {
     const sunCard = new THREE.Mesh(
       new THREE.PlaneGeometry(6, 6),
       new THREE.MeshBasicMaterial({
-        color: isDark ? 0x9ec5f8 : 0xfff8ea,
+        color: preset === 'night' ? 0x9ec5f8 : preset === 'dusk' ? 0xffb670 : 0xfff8ea,
         side: THREE.DoubleSide,
       }),
     );
@@ -169,9 +194,11 @@ export class SkyEnvironmentSystem {
     return rt;
   }
 
-  applyToScene(scene: THREE.Scene, isDark: boolean): void {
-    this.isDark = isDark;
-    const pal = isDark ? NIGHT_PALETTE : DAY_PALETTE;
+  applyToScene(scene: THREE.Scene, isDark: boolean, preset?: CityLightingPreset): void {
+    const resolvedPreset: CityLightingPreset = preset ?? (isDark ? 'night' : 'day');
+    this.isDark = resolvedPreset === 'night' ? true : isDark;
+    this.preset = resolvedPreset;
+    const pal = paletteForPreset(resolvedPreset);
 
     (this.skyMaterial.uniforms.uTopColor!.value as THREE.Color).setHex(pal.top);
     (this.skyMaterial.uniforms.uMidColor!.value as THREE.Color).setHex(pal.mid);
@@ -185,7 +212,7 @@ export class SkyEnvironmentSystem {
     scene.fog = new THREE.Fog(pal.horizon, pal.fogNear, pal.fogFar);
 
     const prevRt = this.envRenderTarget;
-    this.envRenderTarget = this.buildPmrem(isDark);
+    this.envRenderTarget = this.buildPmrem(resolvedPreset);
     scene.environment = this.envRenderTarget.texture;
     prevRt?.dispose();
   }
@@ -196,6 +223,10 @@ export class SkyEnvironmentSystem {
 
   getIsDark(): boolean {
     return this.isDark;
+  }
+
+  getPreset(): CityLightingPreset {
+    return this.preset;
   }
 
   dispose(): void {

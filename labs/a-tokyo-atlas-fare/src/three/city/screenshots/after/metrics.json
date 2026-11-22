@@ -1,0 +1,581 @@
+{
+  "stage": "after",
+  "timestamp": "2026-11-22T15:11:08.017Z",
+  "rendererMode": "Headless Chrome + SwiftShader CPU WebGL (1440x900)",
+  "initialLoadMs": 8687,
+  "consoleErrors": [],
+  "pageErrors": [],
+  "shots": [
+    {
+      "label": "overview-day",
+      "path": "labs\\a-tokyo-atlas-fare\\src\\three\\city\\screenshots\\after\\overview-day.png",
+      "fps": 1.4,
+      "avgFrameMs": 713.7,
+      "maxFrameMs": 766.8,
+      "telemetryText": "1.5 FPS · DC:360 · Tris:548k · Rail:far · Chunks 64/145 (L0:0/L1:38) · Buildings 23,692 (OSM 18,412 + Infill 5,280)",
+      "debugMetrics": {
+        "loadedChunks": 67,
+        "totalChunks": 145,
+        "renderedBuildings": 24086,
+        "realOsmBuildings": 18733,
+        "infillBuildings": 5353,
+        "lod0Chunks": 0,
+        "lod1Chunks": 39,
+        "landmarkCount": 13,
+        "provenance": {
+          "osmExplicitHeight": 12157,
+          "osmLevels": 4106,
+          "osmEstimated": 2470,
+          "schematicInfill": 5353
+        },
+        "deconflictedCrossings": 27,
+        "tunnelPortals": 48,
+        "fps": 1.5,
+        "drawCalls": 361,
+        "triangles": 552780,
+        "loadTimeMs": 2754,
+        "railwayLod": "far",
+        "activeTrains": 108,
+        "undergroundTrains": 56,
+        "simRunning": true,
+        "simTimeScale": 1,
+        "simClockSec": 2.4,
+        "cameraModeV2": "map",
+        "cameraUnderground": false,
+        "tunnelCutawayStyle": "translucent_shell",
+        "rollingStockCars": 648
+      },
+      "cameraState": {
+        "mode": "map",
+        "pos": [
+          -3747,
+          4186,
+          5166
+        ],
+        "target": [
+          -2450,
+          0,
+          -33
+        ]
+      }
+    },
+    {
+      "label": "shibuya-surface-day",
+      "path": "labs\\a-tokyo-atlas-fare\\src\\three\\city\\screenshots\\after\\shibuya-surface-day.png",
+      "fps": 0.9,
+      "avgFrameMs": 1115,
+      "maxFrameMs": 1266,
+      "telemetryText": "1 FPS · DC:308 · Tris:2091k · Rail:near · Chunks 88/145 (L0:2/L1:7) · Buildings 6,536 (OSM 5,026 + Infill 1,510)",
+      "debugMetrics": {
+        "loadedChunks": 88,
+        "totalChunks": 145,
+        "renderedBuildings": 6536,
+        "realOsmBuildings": 5026,
+        "infillBuildings": 1510,
+        "lod0Chunks": 2,
+        "lod1Chunks": 7,
+        "landmarkCount": 13,
+        "provenance": {
+          "osmExplicitHeight": 3021,
+          "osmLevels": 940,
+          "osmEstimated": 1065,
+          "schematicInfill": 1510
+        },
+        "deconflictedCrossings": 27,
+        "tunnelPortals": 48,
+        "fps": 1,
+        "drawCalls": 308,
+        "triangles": 2090538,
+        "loadTimeMs": 2754,
+        "railwayLod": "near",
+        "activeTrains": 108,
+        "undergroundTrains": 56,
+        "simRunning": true,
+        "simTimeScale": 1,
+        "simClockSec": 4.8,
+        "cameraModeV2": "map",
+        "cameraUnderground": false,
+        "tunnelCutawayStyle": "translucent_shell",
+        "rollingStockCars": 648
+      },
+      "cameraState": {
+        "mode": "map",
+        "pos": [
+          -6260,
+          287,
+          3010
+        ],
+        "target": [
+          -5923,
+          -4,
+          2578
+        ]
+      }
+    },
+    {
+      "label": "shibuya-street-day",
+      "path": "labs\\a-tokyo-atlas-fare\\src\\three\\city\\screenshots\\after\\shibuya-street-day.png",
+      "fps": 0.9,
+      "avgFrameMs": 1089.8,
+      "maxFrameMs": 1193.1,
+      "telemetryText": "0.9 FPS · DC:300 · Tris:2063k · Rail:near · Chunks 88/145 (L0:2/L1:5) · Buildings 5,461 (OSM 4,288 + Infill 1,173)",
+      "debugMetrics": {
+        "loadedChunks": 88,
+        "totalChunks": 145,
+        "renderedBuildings": 5461,
+        "realOsmBuildings": 4288,
+        "infillBuildings": 1173,
+        "lod0Chunks": 2,
+        "lod1Chunks": 5,
+        "landmarkCount": 13,
+        "provenance": {
+          "osmExplicitHeight": 2826,
+          "osmLevels": 632,
+          "osmEstimated": 830,
+          "schematicInfill": 1173
+        },
+        "deconflictedCrossings": 27,
+        "tunnelPortals": 48,
+        "fps": 0.9,
+        "drawCalls": 300,
+        "triangles": 2063418,
+        "loadTimeMs": 2754,
+        "railwayLod": "near",
+        "activeTrains": 108,
+        "undergroundTrains": 56,
+        "simRunning": true,
+        "simTimeScale": 1,
+        "simClockSec": 9.9,
+        "cameraModeV2": "map",
+        "cameraUnderground": false,
+        "tunnelCutawayStyle": "translucent_shell",
+        "rollingStockCars": 648
+      },
+      "cameraState": {
+        "mode": "map",
+        "pos": [
+          -6134,
+          175,
+          2813
+        ],
+        "target": [
+          -5926,
+          -4,
+          2548
+        ]
+      }
+    },
+    {
+      "label": "shibuya-scramble-closeup",
+      "path": "labs\\a-tokyo-atlas-fare\\src\\three\\city\\screenshots\\after\\shibuya-scramble-closeup.png",
+      "fps": 1,
+      "avgFrameMs": 970.5,
+      "maxFrameMs": 987.2,
+      "telemetryText": "1 FPS · DC:294 · Tris:2051k · Rail:near · Chunks 88/145 (L0:2/L1:4) · Buildings 4,521 (OSM 3,468 + Infill 1,053)",
+      "debugMetrics": {
+        "loadedChunks": 88,
+        "totalChunks": 145,
+        "renderedBuildings": 4521,
+        "realOsmBuildings": 3468,
+        "infillBuildings": 1053,
+        "lod0Chunks": 2,
+        "lod1Chunks": 4,
+        "landmarkCount": 13,
+        "provenance": {
+          "osmExplicitHeight": 2466,
+          "osmLevels": 558,
+          "osmEstimated": 444,
+          "schematicInfill": 1053
+        },
+        "deconflictedCrossings": 27,
+        "tunnelPortals": 48,
+        "fps": 1,
+        "drawCalls": 294,
+        "triangles": 2050608,
+        "loadTimeMs": 2754,
+        "railwayLod": "near",
+        "activeTrains": 108,
+        "undergroundTrains": 57,
+        "simRunning": true,
+        "simTimeScale": 1,
+        "simClockSec": 15.6,
+        "cameraModeV2": "map",
+        "cameraUnderground": false,
+        "tunnelCutawayStyle": "translucent_shell",
+        "rollingStockCars": 648
+      },
+      "cameraState": {
+        "mode": "map",
+        "pos": [
+          -6098,
+          144,
+          2761
+        ],
+        "target": [
+          -5927,
+          -4,
+          2542
+        ]
+      }
+    },
+    {
+      "label": "shibuya-street-night",
+      "path": "labs\\a-tokyo-atlas-fare\\src\\three\\city\\screenshots\\after\\shibuya-street-night.png",
+      "fps": 1,
+      "avgFrameMs": 1007.5,
+      "maxFrameMs": 1189.1,
+      "telemetryText": "1 FPS · DC:300 · Tris:2063k · Rail:near · Chunks 88/145 (L0:2/L1:5) · Buildings 5,461 (OSM 4,288 + Infill 1,173)",
+      "debugMetrics": {
+        "loadedChunks": 88,
+        "totalChunks": 145,
+        "renderedBuildings": 5461,
+        "realOsmBuildings": 4288,
+        "infillBuildings": 1173,
+        "lod0Chunks": 2,
+        "lod1Chunks": 5,
+        "landmarkCount": 13,
+        "provenance": {
+          "osmExplicitHeight": 2826,
+          "osmLevels": 632,
+          "osmEstimated": 830,
+          "schematicInfill": 1173
+        },
+        "deconflictedCrossings": 27,
+        "tunnelPortals": 48,
+        "fps": 1,
+        "drawCalls": 300,
+        "triangles": 2062650,
+        "loadTimeMs": 2754,
+        "railwayLod": "near",
+        "activeTrains": 108,
+        "undergroundTrains": 57,
+        "simRunning": true,
+        "simTimeScale": 1,
+        "simClockSec": 20.85,
+        "cameraModeV2": "map",
+        "cameraUnderground": false,
+        "tunnelCutawayStyle": "translucent_shell",
+        "rollingStockCars": 648
+      },
+      "cameraState": {
+        "mode": "map",
+        "pos": [
+          -6134,
+          175,
+          2809
+        ],
+        "target": [
+          -5927,
+          -4,
+          2544
+        ]
+      }
+    },
+    {
+      "label": "shibuya-mid-lod",
+      "path": "labs\\a-tokyo-atlas-fare\\src\\three\\city\\screenshots\\after\\shibuya-mid-lod.png",
+      "fps": 1,
+      "avgFrameMs": 997.8,
+      "maxFrameMs": 1132.9,
+      "telemetryText": "1 FPS · DC:311 · Tris:2098k · Rail:near · Chunks 88/145 (L0:2/L1:12) · Buildings 9,987 (OSM 7,773 + Infill 2,214)",
+      "debugMetrics": {
+        "loadedChunks": 88,
+        "totalChunks": 145,
+        "renderedBuildings": 9987,
+        "realOsmBuildings": 7773,
+        "infillBuildings": 2214,
+        "lod0Chunks": 2,
+        "lod1Chunks": 12,
+        "landmarkCount": 13,
+        "provenance": {
+          "osmExplicitHeight": 4385,
+          "osmLevels": 1576,
+          "osmEstimated": 1812,
+          "schematicInfill": 2214
+        },
+        "deconflictedCrossings": 27,
+        "tunnelPortals": 48,
+        "fps": 1,
+        "drawCalls": 311,
+        "triangles": 2097506,
+        "loadTimeMs": 2754,
+        "railwayLod": "near",
+        "activeTrains": 108,
+        "undergroundTrains": 56,
+        "simRunning": true,
+        "simTimeScale": 1,
+        "simClockSec": 24.55,
+        "cameraModeV2": "map",
+        "cameraUnderground": false,
+        "tunnelCutawayStyle": "translucent_shell",
+        "rollingStockCars": 648
+      },
+      "cameraState": {
+        "mode": "map",
+        "pos": [
+          -6420,
+          425,
+          3212
+        ],
+        "target": [
+          -5923,
+          -4,
+          2576
+        ]
+      }
+    },
+    {
+      "label": "shibuya-underground",
+      "path": "labs\\a-tokyo-atlas-fare\\src\\three\\city\\screenshots\\after\\shibuya-underground.png",
+      "fps": 0.8,
+      "avgFrameMs": 1270.8,
+      "maxFrameMs": 1338.7,
+      "telemetryText": "0.9 FPS · DC:480 · Tris:2920k · Rail:near · Chunks 88/145 (L0:2/L1:7) · Buildings 6,536 (OSM 5,026 + Infill 1,510)",
+      "debugMetrics": {
+        "loadedChunks": 88,
+        "totalChunks": 145,
+        "renderedBuildings": 6536,
+        "realOsmBuildings": 5026,
+        "infillBuildings": 1510,
+        "lod0Chunks": 2,
+        "lod1Chunks": 7,
+        "landmarkCount": 13,
+        "provenance": {
+          "osmExplicitHeight": 3021,
+          "osmLevels": 940,
+          "osmEstimated": 1065,
+          "schematicInfill": 1510
+        },
+        "deconflictedCrossings": 27,
+        "tunnelPortals": 48,
+        "fps": 0.8,
+        "drawCalls": 480,
+        "triangles": 2920002,
+        "loadTimeMs": 2754,
+        "railwayLod": "near",
+        "activeTrains": 108,
+        "undergroundTrains": 56,
+        "simRunning": true,
+        "simTimeScale": 1,
+        "simClockSec": 26.75,
+        "cameraModeV2": "underground_inspect",
+        "cameraUnderground": false,
+        "tunnelCutawayStyle": "translucent_shell",
+        "rollingStockCars": 648
+      },
+      "cameraState": {
+        "mode": "map",
+        "pos": [
+          -6260,
+          287,
+          3010
+        ],
+        "target": [
+          -5923,
+          -4,
+          2578
+        ]
+      }
+    },
+    {
+      "label": "shinjuku-surface-day",
+      "path": "labs\\a-tokyo-atlas-fare\\src\\three\\city\\screenshots\\after\\shinjuku-surface-day.png",
+      "fps": 1.1,
+      "avgFrameMs": 944.1,
+      "maxFrameMs": 1187.2,
+      "telemetryText": "1 FPS · DC:282 · Tris:1845k · Rail:near · Chunks 88/145 (L0:3/L1:6) · Buildings 7,086 (OSM 5,659 + Infill 1,427)",
+      "debugMetrics": {
+        "loadedChunks": 88,
+        "totalChunks": 145,
+        "renderedBuildings": 7086,
+        "realOsmBuildings": 5659,
+        "infillBuildings": 1427,
+        "lod0Chunks": 3,
+        "lod1Chunks": 6,
+        "landmarkCount": 13,
+        "provenance": {
+          "osmExplicitHeight": 4378,
+          "osmLevels": 684,
+          "osmEstimated": 597,
+          "schematicInfill": 1427
+        },
+        "deconflictedCrossings": 27,
+        "tunnelPortals": 48,
+        "fps": 1,
+        "drawCalls": 282,
+        "triangles": 1845456,
+        "loadTimeMs": 2754,
+        "railwayLod": "near",
+        "activeTrains": 108,
+        "undergroundTrains": 56,
+        "simRunning": true,
+        "simTimeScale": 1,
+        "simClockSec": 29.05,
+        "cameraModeV2": "map",
+        "cameraUnderground": false,
+        "tunnelCutawayStyle": "translucent_shell",
+        "rollingStockCars": 648
+      },
+      "cameraState": {
+        "mode": "map",
+        "pos": [
+          -6311,
+          407,
+          -334
+        ],
+        "target": [
+          -6031,
+          -5,
+          -934
+        ]
+      }
+    },
+    {
+      "label": "tokyo-surface-day",
+      "path": "labs\\a-tokyo-atlas-fare\\src\\three\\city\\screenshots\\after\\tokyo-surface-day.png",
+      "fps": 1.3,
+      "avgFrameMs": 792.6,
+      "maxFrameMs": 1053.9,
+      "telemetryText": "1.2 FPS · DC:300 · Tris:1610k · Rail:near · Chunks 88/145 (L0:4/L1:5) · Buildings 6,570 (OSM 5,344 + Infill 1,226)",
+      "debugMetrics": {
+        "loadedChunks": 88,
+        "totalChunks": 145,
+        "renderedBuildings": 6570,
+        "realOsmBuildings": 5344,
+        "infillBuildings": 1226,
+        "lod0Chunks": 4,
+        "lod1Chunks": 5,
+        "landmarkCount": 13,
+        "provenance": {
+          "osmExplicitHeight": 1655,
+          "osmLevels": 1896,
+          "osmEstimated": 1793,
+          "schematicInfill": 1226
+        },
+        "deconflictedCrossings": 27,
+        "tunnelPortals": 48,
+        "fps": 1.2,
+        "drawCalls": 300,
+        "triangles": 1609891,
+        "loadTimeMs": 2754,
+        "railwayLod": "near",
+        "activeTrains": 108,
+        "undergroundTrains": 56,
+        "simRunning": true,
+        "simTimeScale": 1,
+        "simClockSec": 31.45,
+        "cameraModeV2": "map",
+        "cameraUnderground": false,
+        "tunnelCutawayStyle": "translucent_shell",
+        "rollingStockCars": 648
+      },
+      "cameraState": {
+        "mode": "map",
+        "pos": [
+          288,
+          464,
+          435
+        ],
+        "target": [
+          -81,
+          -5,
+          -156
+        ]
+      }
+    }
+  ],
+  "dragStability": {
+    "steps": 8,
+    "allNonBlank": true,
+    "samples": [
+      {
+        "drawCalls": 287,
+        "triangles": 2036578,
+        "fps": 0.9,
+        "target": [
+          -5924,
+          -4,
+          2576
+        ],
+        "nonZeroPixel": true
+      },
+      {
+        "drawCalls": 288,
+        "triangles": 2036602,
+        "fps": 1,
+        "target": [
+          -5926,
+          -4,
+          2572
+        ],
+        "nonZeroPixel": true
+      },
+      {
+        "drawCalls": 288,
+        "triangles": 2036602,
+        "fps": 1.1,
+        "target": [
+          -5929,
+          -4,
+          2567
+        ],
+        "nonZeroPixel": true
+      },
+      {
+        "drawCalls": 288,
+        "triangles": 2036602,
+        "fps": 1.2,
+        "target": [
+          -5932,
+          -4,
+          2561
+        ],
+        "nonZeroPixel": true
+      },
+      {
+        "drawCalls": 288,
+        "triangles": 2036602,
+        "fps": 1.4,
+        "target": [
+          -5935,
+          -4,
+          2554
+        ],
+        "nonZeroPixel": true
+      },
+      {
+        "drawCalls": 288,
+        "triangles": 2036602,
+        "fps": 1.5,
+        "target": [
+          -5939,
+          -4,
+          2548
+        ],
+        "nonZeroPixel": true
+      },
+      {
+        "drawCalls": 288,
+        "triangles": 2036602,
+        "fps": 1.7,
+        "target": [
+          -5942,
+          -4,
+          2541
+        ],
+        "nonZeroPixel": true
+      },
+      {
+        "drawCalls": 288,
+        "triangles": 2036602,
+        "fps": 2,
+        "target": [
+          -5946,
+          -4,
+          2534
+        ],
+        "nonZeroPixel": true
+      }
+    ]
+  }
+}
