@@ -25,6 +25,7 @@ import type {
   OsmVerticalDataset,
   SkId,
 } from '../domain/types.js';
+import { SkyEnvironmentSystem } from './environment/skyEnvironment.js';
 import { CityChunkManager } from './generators/buildingGenerator.js';
 import { CityTerrainLayer } from './generators/cityTerrainGenerator.js';
 import { RailTrackLayer } from './generators/railTrackGenerator.js';
@@ -72,6 +73,7 @@ export class Metropolitan3DScene {
   private readonly clipPlane: THREE.Plane;
   private readonly clipPlanes: THREE.Plane[];
 
+  private readonly skyEnv: SkyEnvironmentSystem;
   private readonly terrainLayer: CityTerrainLayer;
   private readonly buildingManager: CityChunkManager;
   private readonly railLayer: RailTrackLayer;
@@ -81,6 +83,7 @@ export class Metropolitan3DScene {
 
   private readonly sunLight: THREE.DirectionalLight;
   private readonly hemiLight: THREE.HemisphereLight;
+  private readonly subFillLight: THREE.DirectionalLight;
 
   private readonly dataset: AtlasDataset;
   private readonly fareSliceLineIds: Set<SkId<'line'>>;
@@ -149,9 +152,9 @@ export class Metropolitan3DScene {
     this.renderer.domElement.setAttribute('data-testid', 'three-3d-canvas');
     container.appendChild(this.renderer.domElement);
 
-    // 3. Scene, Sky & Atmospheric Fog
+    // 3. Scene, Procedural Sky Dome, PMREM Reflections & Clean Distance Fog (P3)
     this.scene = new THREE.Scene();
-    this.applySceneAtmosphere(isDark);
+    this.skyEnv = new SkyEnvironmentSystem(this.renderer, this.scene, isDark);
 
     // 4. Camera & OrbitControls
     const aspect = (container.clientWidth || 960) / Math.max(1, container.clientHeight || 640);
@@ -165,33 +168,37 @@ export class Metropolitan3DScene {
     this.controls.minPolarAngle = 0.14;
     this.controls.maxPolarAngle = Math.PI * 0.47;
 
-    // 5. Lighting (Architectural Viz Soft Daylight + Underground Clarity Fill)
+    // 5. Lighting (Semi-Realistic Architectural Viz Sunlight + Soft Shadows + Bounce Fill)
     this.hemiLight = new THREE.HemisphereLight(
-      isDark ? 0x94b8db : 0xf4f8ff,
-      isDark ? 0x1e293b : 0x8f9aa8,
-      isDark ? 0.9 : 1.05,
+      isDark ? 0x7da4cc : 0xdcebf9,
+      isDark ? 0x16202e : 0xa6a096,
+      isDark ? 0.58 : 0.78,
     );
     this.scene.add(this.hemiLight);
 
-    this.sunLight = new THREE.DirectionalLight(0xfffbf2, isDark ? 1.15 : 1.45);
-    this.sunLight.position.set(1600, 2600, 1400);
+    this.sunLight = new THREE.DirectionalLight(
+      isDark ? 0xa3c4f0 : 0xfff3de,
+      isDark ? 0.92 : 1.78,
+    );
+    this.sunLight.position.set(1750, 2050, 1320);
     this.sunLight.castShadow = true;
-    this.sunLight.shadow.mapSize.set(2048, 2048);
-    this.sunLight.shadow.camera.near = 200;
-    this.sunLight.shadow.camera.far = 9000;
-    const sc = 2400;
+    this.sunLight.shadow.mapSize.set(1536, 1536);
+    this.sunLight.shadow.camera.near = 250;
+    this.sunLight.shadow.camera.far = 7200;
+    const sc = 1650;
     this.sunLight.shadow.camera.left = -sc;
     this.sunLight.shadow.camera.right = sc;
     this.sunLight.shadow.camera.top = sc;
     this.sunLight.shadow.camera.bottom = -sc;
-    this.sunLight.shadow.bias = -0.0006;
+    this.sunLight.shadow.bias = -0.00035;
+    this.sunLight.shadow.normalBias = 1.6;
     this.scene.add(this.sunLight);
     this.scene.add(this.sunLight.target);
 
-    // Subtle subterranean upward fill light so underground tunnel shells & rails pop clearly!
-    const subFill = new THREE.DirectionalLight(0x60a5fa, 0.45);
-    subFill.position.set(-800, -350, -600);
-    this.scene.add(subFill);
+    // Subtle cool sky fill opposite the sun + subterranean tunnel readability fill
+    this.subFillLight = new THREE.DirectionalLight(isDark ? 0x3b82f6 : 0xbdd7f0, isDark ? 0.48 : 0.34);
+    this.subFillLight.position.set(-1200, -320, -900);
+    this.scene.add(this.subFillLight);
 
     // 6. Horizontal Clipping Plane (disabled by default via large constant)
     this.clipPlane = new THREE.Plane(new THREE.Vector3(0, -1, 0), 10_000);
@@ -272,20 +279,17 @@ export class Metropolitan3DScene {
     }
   }
 
-  private applySceneAtmosphere(isDark: boolean): void {
-    const bgHex = isDark ? 0x0b111a : 0xdde7f0;
-    this.scene.background = new THREE.Color(bgHex);
-    this.scene.fog = new THREE.FogExp2(bgHex, isDark ? 0.000048 : 0.000042);
-  }
-
   setTheme(isDark: boolean): void {
     if (this.isDark === isDark) return;
     this.isDark = isDark;
-    this.applySceneAtmosphere(isDark);
-    this.hemiLight.color.setHex(isDark ? 0x94b8db : 0xf4f8ff);
-    this.hemiLight.groundColor.setHex(isDark ? 0x1e293b : 0x8f9aa8);
-    this.hemiLight.intensity = isDark ? 0.9 : 1.05;
-    this.sunLight.intensity = isDark ? 1.15 : 1.45;
+    this.skyEnv.applyToScene(this.scene, isDark);
+    this.hemiLight.color.setHex(isDark ? 0x7da4cc : 0xdcebf9);
+    this.hemiLight.groundColor.setHex(isDark ? 0x16202e : 0xa6a096);
+    this.hemiLight.intensity = isDark ? 0.58 : 0.78;
+    this.sunLight.color.setHex(isDark ? 0xa3c4f0 : 0xfff3de);
+    this.sunLight.intensity = isDark ? 0.92 : 1.78;
+    this.subFillLight.color.setHex(isDark ? 0x3b82f6 : 0xbdd7f0);
+    this.subFillLight.intensity = isDark ? 0.48 : 0.34;
     this.terrainLayer.setTheme(isDark);
     this.buildingManager.setTheme(isDark);
   }
@@ -759,13 +763,14 @@ export class Metropolitan3DScene {
     }
 
     this.controls.update();
+    this.skyEnv.updateForCamera(this.camera.position);
 
-    // Keep shadow frustum centered near camera target for crisp local building & viaduct shadows!
+    // Keep shadow frustum centered near camera target along solar direction for crisp local shadows!
     this.sunLight.target.position.set(this.controls.target.x, 0, this.controls.target.z);
     this.sunLight.position.set(
-      this.controls.target.x + 1500,
-      2500,
-      this.controls.target.z + 1300,
+      this.controls.target.x + this.skyEnv.sunDirection.x * 3000,
+      this.skyEnv.sunDirection.y * 3000,
+      this.controls.target.z + this.skyEnv.sunDirection.z * 3000,
     );
 
     // Throttled chunk streaming & LOD update (~4Hz)
@@ -787,6 +792,7 @@ export class Metropolitan3DScene {
     this.controls.removeEventListener('end', this.handleControlsEnd);
     this.controls.dispose();
 
+    this.skyEnv.dispose();
     this.terrainLayer.dispose();
     this.buildingManager.dispose();
     this.railLayer.dispose();

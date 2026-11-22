@@ -9,7 +9,7 @@ export interface UrbanBuildingRecord {
   d: number;
   a: number; // radians orientation
   h: number; // meters
-  hb: 'o' | 'l' | 'i'; // osm height | osm levels | inferred schematic
+  hb: 'o' | 'l' | 'i' | 'p'; // osm height | osm levels | osm inferred | procedural schematic infill
   t: 'c' | 'o' | 'r' | 's'; // commercial | office | residential | station/civic
   p?: [number, number][]; // optional simplified footprint relative to (cx, cz)
 }
@@ -29,6 +29,8 @@ export interface UrbanChunkMeta {
   file: string;
   hub: boolean;
   count: number;
+  realCount?: number;
+  infillCount?: number;
   centerX: number;
   centerZ: number;
 }
@@ -46,7 +48,11 @@ export interface UrbanLandmarkRecord {
     | 'tiered_cultural_tower'
     | 'heritage_brick_station'
     | 'octagonal_crown_tower'
-    | 'slab_skyscraper';
+    | 'slab_skyscraper'
+    | 'triple_stepped_tower'
+    | 'marunouchi_tower'
+    | 'intercity_trio'
+    | 'stepped_stream_tower';
   lon: number;
   lat: number;
   x: number;
@@ -58,6 +64,18 @@ export interface UrbanLandmarkRecord {
   heightBasis: string;
 }
 
+export interface UrbanCoverageDiagnostics {
+  osmExplicitHeight: number;
+  osmLevels: number;
+  osmInferred: number;
+  schematicInfill: number;
+  totalRealOsm: number;
+  landuseBlocks: number;
+  roadSegments: number;
+  parks: number;
+  waterBodies: number;
+}
+
 export interface UrbanManifest {
   generatedAt: string;
   license: string;
@@ -67,7 +85,21 @@ export interface UrbanManifest {
   totalChunks: number;
   totalBuildings: number;
   totalDetailedFootprints: number;
+  coverage?: UrbanCoverageDiagnostics;
   chunks: UrbanChunkMeta[];
+}
+
+export interface UrbanLanduseBlock {
+  kind: 'commercial' | 'residential' | 'industrial' | 'railway';
+  pts: [number, number][];
+}
+
+export interface UrbanStationPlaza {
+  x: number;
+  z: number;
+  rx: number;
+  rz: number;
+  a: number;
 }
 
 export interface UrbanBaseEnvironment {
@@ -77,6 +109,10 @@ export interface UrbanBaseEnvironment {
   waterPolygons: { name: string | null; pts: [number, number][] }[];
   riverLines: { name: string | null; width: number; pts: [number, number][] }[];
   parkPolygons: { name: string | null; pts: [number, number][] }[];
+  landuseBlocks?: UrbanLanduseBlock[];
+  stationPlazas?: UrbanStationPlaza[];
+  plazaPolygons?: { pts: [number, number][] }[];
+  railCorridors?: { width: number; pts: [number, number][] }[];
   roads: { hw: string; w: number; el: number; pts: [number, number][] }[];
   intersections: [number, number, number][];
   landmarks: UrbanLandmarkRecord[];

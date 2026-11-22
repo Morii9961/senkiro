@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Eye, EyeOff, Pause, Play, RotateCcw, Scissors, Square } from 'lucide-react';
+import { Eye, EyeOff, Moon, Pause, Play, RotateCcw, Scissors, Square, Sun } from 'lucide-react';
 import {
   SCHEMATIC_TIERS,
   type SchematicTierId,
@@ -88,6 +88,12 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
     currentY: null,
   });
   const [hudCollapsed, setHudCollapsed] = useState(false);
+  const [sceneNight, setSceneNight] = useState(theme === 'dark');
+
+  // Sync 3D lighting when global light/dark theme switches
+  useEffect(() => {
+    setSceneNight(theme === 'dark');
+  }, [theme]);
 
   const selectedLine = useMemo(
     () => dataset.railLines.find((l) => l.id === selectedLineId) ?? null,
@@ -101,7 +107,7 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
       mountRef.current,
       dataset,
       osmVertical,
-      theme === 'dark',
+      sceneNight,
       {
         onSelectStation: (sid) => cbRef.current.onSelectStation(sid),
         onSelectLine: (lid) => cbRef.current.onSelectLine(lid),
@@ -119,10 +125,10 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
     };
   }, [dataset, osmVertical]);
 
-  // Sync theme without recreating scene
+  // Sync Day / Night 3D lighting without recreating scene
   useEffect(() => {
-    sceneRef.current?.setTheme(theme === 'dark');
-  }, [theme]);
+    sceneRef.current?.setTheme(sceneNight);
+  }, [sceneNight]);
 
   // Sync filters, selection & Underground View settings
   useEffect(() => {
@@ -231,6 +237,24 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
               {locale === 'ja' ? hub.labelJa : hub.labelEn}
             </button>
           ))}
+          <button
+            type="button"
+            className="hub-chip"
+            data-testid="toggle-3d-day-night"
+            title={locale === 'ja' ? '昼 / 夜間照明切替' : 'Toggle Day / Night Lighting'}
+            onClick={() => setSceneNight((n) => !n)}
+          >
+            {sceneNight ? <Sun size={12} /> : <Moon size={12} />}
+            <span>
+              {sceneNight
+                ? locale === 'ja'
+                  ? '昼間'
+                  : 'Day'
+                : locale === 'ja'
+                  ? '夜間'
+                  : 'Night'}
+            </span>
+          </button>
           <button
             type="button"
             className="hub-chip"
@@ -442,7 +466,10 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
           {telemetry.fps > 0 ? `${telemetry.fps} FPS · ` : ''}
           DC:{telemetry.drawCalls} · Tris:{Math.round(telemetry.triangles / 1000)}k · Chunks{' '}
           {telemetry.loadedChunks}/{telemetry.totalChunks} (L0:{telemetry.lod0Chunks}/L1:
-          {telemetry.lod1Chunks}) · Buildings {telemetry.renderedBuildings.toLocaleString()}
+          {telemetry.lod1Chunks}) · Bldgs {telemetry.renderedBuildings.toLocaleString()}
+          {typeof telemetry.infillBuildings === 'number' && telemetry.infillBuildings > 0
+            ? ` (OSM ${(telemetry.realOsmBuildings ?? 0).toLocaleString()} + Infill ${telemetry.infillBuildings.toLocaleString()})`
+            : ''}
         </div>
       )}
     </div>

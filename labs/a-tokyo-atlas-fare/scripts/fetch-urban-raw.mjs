@@ -30,9 +30,9 @@ const ENDPOINTS = [
 async function runOverpass(name, query, outFile, timeoutMs = 95_000) {
   const dest = path.join(OUT_DIR, outFile);
   if (fs.existsSync(dest) && fs.statSync(dest).size > 200) {
-    console.log(`[${name}] Using existing cached ${outFile}`);
-    const parsed = JSON.parse(fs.readFileSync(dest, 'utf8'));
-    return { ok: true, cached: true, elements: parsed.elements?.length ?? 0 };
+    const bytes = fs.statSync(dest).size;
+    console.log(`[${name}] Using existing cached ${outFile} (${(bytes / (1024 * 1024)).toFixed(1)} MB)`);
+    return { ok: true, cached: true, bytes };
   }
 
   for (const endpoint of ENDPOINTS) {
@@ -115,6 +115,26 @@ out tags geom;`;
 );
 out tags geom;`;
 
+  // 5. Urban Landuse Districts, Railway Yards, Secondary/Tertiary Streets & Station Plazas (ODbL 1.0)
+  const landuseStreetsQuery = `[out:json][timeout:75];
+(
+  way["highway"="secondary"](35.60,139.65,35.76,139.83);
+  way["highway"="tertiary"](35.62,139.68,35.74,139.79);
+  way["landuse"~"^(commercial|retail|residential|industrial|railway)$"](35.60,139.65,35.76,139.83);
+  way["leisure"="park"](35.62,139.67,35.74,139.81);
+  way["place"="square"](35.62,139.68,35.74,139.79);
+  way["highway"="pedestrian"]["area"="yes"](35.62,139.68,35.74,139.79);
+);
+out tags geom;`;
+
+  // 6. Expanded Real Building Footprints around Shinagawa & Ikebukuro Hubs
+  const shinagawaIkebukuroQuery = `[out:json][timeout:75];
+(
+  way["building"](35.6210,139.7310,35.6350,139.7480);
+  way["building"](35.7220,139.7020,35.7360,139.7210);
+);
+out tags geom;`;
+
   const water = await runOverpass('Water & Parks', waterParksQuery, 'urban-water-parks.json');
   await new Promise((r) => setTimeout(r, 1500));
   const roads = await runOverpass('Major Roads', roadsQuery, 'urban-roads.json');
@@ -130,11 +150,23 @@ out tags geom;`;
     secondaryAndTallQuery,
     'urban-buildings-23w-tall.json',
   );
+  await new Promise((r) => setTimeout(r, 1500));
+  const landuseStreets = await runOverpass(
+    'Urban Landuse, Secondary/Tertiary Streets & Plazas',
+    landuseStreetsQuery,
+    'urban-landuse-streets.json',
+  );
+  await new Promise((r) => setTimeout(r, 1500));
+  const shinagawaIkebukuro = await runOverpass(
+    'Expanded Shinagawa & Ikebukuro Buildings',
+    shinagawaIkebukuroQuery,
+    'urban-buildings-shinagawa-ikebukuro.json',
+  );
 
   const manifest = {
     retrievedAt: new Date().toISOString(),
     license: 'ODbL 1.0 (OpenStreetMap Contributors)',
-    datasets: { water, roads, coreHubs, secondaryTall },
+    datasets: { water, roads, coreHubs, secondaryTall, landuseStreets, shinagawaIkebukuro },
   };
   fs.writeFileSync(path.join(OUT_DIR, 'urban-fetch-manifest.json'), JSON.stringify(manifest, null, 2));
   console.log('\nUrban raw fetch complete:\n', JSON.stringify(manifest, null, 2));
