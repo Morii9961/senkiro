@@ -135,6 +135,14 @@ function compare(a: Step[], b: Step[]) {
     y = cost(b)
   return x.gates - y.gates || x.changes - y.changes || x.segments - y.segments
 }
+
+export function nextPlaceId(link: Link, at: string, liftsOnly = false) {
+  if (link.connection !== 'verified' || link.direction === 'unknown' ||
+    (liftsOnly && link.stepFree !== true)) return null
+  if (link.from === at) return link.to
+  return link.to === at && link.direction === 'both' ? link.from : null
+}
+
 export function route(
   m: Model,
   start: string,
@@ -152,18 +160,7 @@ export function route(
     if (seen.has(at)) continue
     seen.add(at)
     for (const link of m.links) {
-      if (
-        link.connection !== 'verified' ||
-        link.direction === 'unknown' ||
-        (liftsOnly && link.stepFree !== true)
-      )
-        continue
-      const next =
-        link.from === at
-          ? link.to
-          : link.to === at && link.direction === 'both'
-            ? link.from
-            : null
+      const next = nextPlaceId(link, at, liftsOnly)
       if (next && !seen.has(next))
         queue.push({
           at: next,

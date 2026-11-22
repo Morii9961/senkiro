@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ownersOf } from '../src/domain/ownersOf'
+import { ownersOf } from '../src/domain/index'
 import { station } from '../src/model'
 import { selectionReducer, targetFromOwner } from '../src/state/selection'
 

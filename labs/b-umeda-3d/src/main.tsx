@@ -8,7 +8,7 @@ import { floorLabels, floors, nodes, station, sites, inSite } from './model'
 import records from '../data/sources.json'
 import { Guide, areaText } from './Guide'
 import { exampleService } from './providers/service'
-import { ownersOf } from './domain/ownersOf'
+import { ownersOf } from './domain/index'
 import { initialSelection, selectionReducer, targetFromOwner, type SelectionTarget } from './state/selection'
 import './style.css'
 

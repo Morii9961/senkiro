@@ -1,4 +1,5 @@
 import { nodes, sites, station } from '../model'
+import { linkTarget, placeTarget } from '../domain/index'
 
 export type SelectionKind =
   | 'station'
@@ -40,27 +41,13 @@ export function selectionReducer(state: SelectionState, action: Action): Selecti
   }
 }
 
-const linkKinds = new Map(
-  station.links.map(({ id, kind }) => [
-    id,
-    kind === 'Gate' ? 'gate' : kind === 'Passage' ? 'passage' : 'vertical',
-  ] as const),
-)
+const links = new Map(station.links.map((link) => [link.id, link]))
 
 export function targetFromOwner(id: string): SelectionTarget | null {
   const place = nodes.get(id)
-  switch (place?.kind) {
-    case 'Platform':
-      return { kind: 'platform', id }
-    case 'Entrance':
-      return { kind: 'entrance', id }
-    case 'Concourse':
-      return { kind: 'concourse', id }
-    case 'Landing':
-      return null
-  }
-  const kind = linkKinds.get(id)
-  if (kind) return { kind, id }
+  if (place) return placeTarget(place)
+  const link = links.get(id)
+  if (link) return linkTarget(link)
   return sites.some((site) => site.id === id) || station.stations.some((site) => site.id === id)
     ? { kind: 'station', id }
     : null
