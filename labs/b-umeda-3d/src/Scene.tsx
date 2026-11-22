@@ -4,10 +4,11 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import type { Language, Place } from './domain/types'
 import type { Step } from './domain/graph'
 import { ownersOf } from './domain/index'
-import { unverifiedLineColor } from './domain/lines'
-import { floors, nodes, station, sites, inSite, lineStyleById } from './model'
+import { lineBadgeTextColor, unverifiedLineColor } from './domain/lines'
+import { floors, nodes, station, sites, inSite, lineStyleById, linesById } from './model'
 import { buildLabels, objectLabel, type SceneLabelSpec } from './scene/labels/build'
 import { labelAttachment, layoutLabels, type LabelCandidate, type PlacedLabel } from './scene/labels/layout'
+import { effectiveBand, nextBand, permitsLabel, type LabelDepth, type ZoomBand } from './scene/labels/config'
 import { scenePlaceFilter } from './scene/view'
 import { targetFromOwner, type SelectionTarget } from './state/selection'
 
@@ -28,6 +29,7 @@ import * as architecture from './architecture'
 interface Props {
   lang: Language
   dark: boolean
+  detail: LabelDepth
   floor: number | null
   spread: boolean
   route: Step[]
@@ -122,6 +124,7 @@ export function Scene(props: Props) {
     box.appendChild(labelLeaders)
     const clusterPins = new Map<string, { el: HTMLSpanElement; members: string[] }>()
     let previousLabels = new Map<string, PlacedLabel>()
+    let zoomBand: ZoomBand = 'far'
     let supplementalLabel: Label | null = null
     let owners: string[] = []
     let group: T.InstancedMesh | null = null,
@@ -191,6 +194,7 @@ export function Scene(props: Props) {
       return { center, width: maxX - minX, height: maxY - minY }
     }
     function reset() {
+      zoomBand = 'far'
       controls.target.copy(bounds.center)
       camera.position.copy(controls.target).add(view)
       camera.zoom = 1
@@ -205,11 +209,15 @@ export function Scene(props: Props) {
       lens.updateMatrixWorld()
       gl.domElement.dataset.view = propsNow.eye ? 'interior' : 'overview'
       gl.domElement.dataset.zoom = String(lens.zoom)
+      const density = h / (camera.top - camera.bottom) * camera.zoom
+      zoomBand = nextBand(zoomBand, density)
+      const band = effectiveBand(zoomBand, propsNow.floor !== null || propsNow.step >= 0)
+      gl.domElement.dataset.band = zoomBand
       gl.domElement.dataset.camera = [...controls.target.toArray(), lens.zoom]
         .map((value) => value.toFixed(2)).join(',')
       const stage = box.getBoundingClientRect()
       const reserved = Array.from(box.parentElement!.querySelectorAll<HTMLElement>(
-        '.view-tag, .surround, .zoom, .place-card, .walk-hud, .sample-tag, .eye-hint',
+        '.view-tag, .surround, .zoom, .place-card, .walk-hud, .sample-tag, .eye-hint, .detail-control',
       )).filter((element) => element.offsetWidth > 0).map((element) => {
         const rect = element.getBoundingClientRect()
         return { x: rect.x - stage.x, y: rect.y - stage.y, width: rect.width, height: rect.height }
@@ -222,24 +230,33 @@ export function Scene(props: Props) {
           : label.priority
         const emphasized = label.el.classList.contains('selected') || label.el.classList.contains('hovered')
         const level = emphasized || (label.active && propsNow.step >= 0) ? 0 : label.level
+        label.el.dataset.labelLevel = String(level)
+        if (label.icon) {
+          const text = level === 0 ? label.icon + ' ' + label.text : label.icon
+          if (label.el.textContent !== text) label.el.textContent = text
+        }
         const v = label.position.clone().project(lens),
           x = ((v.x + 1) * w) / 2,
           y = ((1 - v.y) * h) / 2
         if (propsNow.eye || (label.routeOnly && !propsNow.showRoute) ||
           (level !== 0 && (v.z < -1 || v.z > 1))) continue
-        if (level !== 0 && priority > 1 && propsNow.floor === null &&
-          camera.zoom <= (priority === 2 ? 1.35 : 2.3)) continue
         const platform = label.variant === 'platform' && label.targetId ? nodes.get(label.targetId) : null
         const singleNumber = platform && /^\d+$/.test(label.text)
+        const clusterOnly = level !== 0 && band === 'far' && !!singleNumber
+        if (label.variant === 'lines' ? band !== 'far'
+          : !clusterOnly && !permitsLabel(level, band, propsNow.detail)) continue
         candidates.push({
           key: label.key, x, y, level,
+          // In structure mode, give concourses space before placing the numerous facility icons.
+          rank: propsNow.detail === 'structure' && level === 4 ? 3 : undefined,
           priority: emphasized ? -20 : priority,
           width: Math.min(label.el.offsetWidth || 80, Math.max(1, w - 16)),
           height: label.el.offsetHeight || 18,
           previous: previousLabels.has(label.key),
           preferred: label.el.classList.contains('hovered') ? previousLabels.get(label.key)?.rect : undefined,
           meaning: label.targetKind + ':' + label.text,
-          clusterKey: singleNumber ? platform.stationId ?? undefined : undefined,
+          clusterKey: singleNumber && band !== 'near' ? platform.stationId ?? undefined : undefined,
+          clusterOnly,
           number: singleNumber ? Number(label.text) : undefined,
         })
       }
@@ -264,6 +281,7 @@ export function Scene(props: Props) {
             const el = document.createElement('span')
             el.className = 'pin cluster-pin'
             el.dataset.key = entry.key
+            el.dataset.labelLevel = '2'
             el.textContent = entry.text ?? ''
             box.appendChild(el)
             cluster = { el, members: entry.members }
@@ -309,8 +327,27 @@ export function Scene(props: Props) {
       if (spec.variant) el.classList.add(spec.variant + '-pin')
       if (spec.targetId) el.dataset.owner = spec.targetId
       el.dataset.key = spec.key
-      el.textContent = spec.text
+      el.textContent = spec.icon ?? spec.text
       if (spec.title) el.title = spec.title
+      if (spec.variant === 'lines') {
+        el.textContent = ''
+        for (const { lineId } of spec.badges ?? []) {
+          const line = linesById.get(lineId)
+          if (!line) continue
+          const style = lineStyleById.get(lineId)
+          const hex = style?.color?.hex
+          const badge = document.createElement('span')
+          badge.className = 'line-badge'
+          badge.dataset.size = 'xs'
+          badge.textContent = style?.shortName?.[propsNow.lang] ?? line.names[propsNow.lang]
+          badge.title = hex ? line.names[propsNow.lang] : unverifiedLineColor(propsNow.lang)
+          if (hex) {
+            badge.style.backgroundColor = hex
+            badge.style.color = lineBadgeTextColor(hex)
+          }
+          el.appendChild(badge)
+        }
+      }
       if (spec.variant === 'platform') {
         const lineId = spec.badges?.[0]?.lineId
         const color = lineId ? lineStyleById.get(lineId)?.color : null
@@ -1048,7 +1085,7 @@ export function Scene(props: Props) {
       if (rebuildGeometry || changedSelection || p.hovered !== previous?.hovered ||
           p.dark !== previous?.dark || p.showRoute !== previous?.showRoute) {
         applyAppearance(rebuildGeometry, previous)
-      } else if (needsView) draw()
+      } else if (needsView || p.detail !== previous?.detail) draw()
       if (changedSelection || (rebuildGeometry && !wasVisible && selectedIndices.length > 0)) {
         focusSelection()
       }

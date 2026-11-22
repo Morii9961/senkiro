@@ -11,7 +11,7 @@ const output = 'shots/' + directory
 await mkdir(output, { recursive: true })
 const server = await preview({
   build: { outDir },
-  preview: { host: '127.0.0.1', port: 0 },
+  preview: { host: '127.0.0.1', port: 27240, strictPort: true },
 })
 const url = 'http://127.0.0.1:' + server.httpServer.address().port
 let browser
@@ -82,6 +82,12 @@ try {
       await button('Routes & places').click()
       await button('Model guide').click()
     }
+    const featurePicker = name === 'platform' &&
+      !(await page.locator(`.pin[data-owner="${id}"]:visible`).first().isVisible())
+    if (featurePicker) {
+      await button('Routes & places').click()
+      await button('Model guide').click()
+    }
     const before = await canvas.getAttribute('data-camera')
     if (before) {
       await canvas.evaluate((element) => {
@@ -94,7 +100,7 @@ try {
         stopFocus.observe(element, { attributeFilter: ['data-selected'] })
       })
     }
-    if (name === 'entrance') {
+    if (name === 'entrance' || featurePicker) {
       await page.getByLabel('Facility', { exact: true }).selectOption(id)
     } else {
       const pin = page.locator(`.pin[data-owner="${id}"]:visible`).first()
@@ -107,6 +113,7 @@ try {
       await expect(canvas).toHaveAttribute('data-camera', before)
       await page.waitForTimeout(200)
     }
+    if (featurePicker) await button('Routes & places').click()
     await capture('07-selection-' + name)
   }
   expect(errors).toEqual([])

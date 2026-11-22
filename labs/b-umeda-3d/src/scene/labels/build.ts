@@ -20,7 +20,8 @@ export interface SceneLabelSpec {
   meaningKey?: string
   floorOrdinal: number | null
   // The existing renderer uses these flags until the label layout changes.
-  variant?: 'station' | 'platform' | 'floor'
+  variant?: 'station' | 'platform' | 'floor' | 'lines' | 'facility'
+  icon?: string
   title?: string
   active?: boolean
   routePriority?: number
@@ -101,10 +102,15 @@ export function buildLabels(
         anchor, floorOrdinal: ordinal(place), text: number, title: place.names[lang],
         variant: 'platform', badges: place.serviceLineIds?.map((lineId) => ({ lineId })),
       })
+    } else if (place.kind === 'Entrance' && place.id !== 'sk:entrance:surface-crossing') {
+      labels.push({
+        key: 'entrance:' + place.id, targetId: place.id, targetKind: 'entrance', level: 2, priority: 1,
+        anchor: position(place, 1.5), floorOrdinal: ordinal(place), text: place.names[lang],
+      })
     } else if (place.kind === 'Concourse' && !place.id.includes('landing') &&
       (!current || place.id === current.from.id || place.id === current.to.id)) {
       labels.push({
-        key: 'concourse:' + place.id, targetId: place.id, targetKind: 'concourse', level: 3, priority: 2,
+        key: 'concourse:' + place.id, targetId: place.id, targetKind: 'concourse', level: 4, priority: 2,
         anchor: position(place, 1), floorOrdinal: ordinal(place), text: place.names[lang],
       })
     }
@@ -124,6 +130,17 @@ export function buildLabels(
         text: site.names[lang], variant: 'station',
       })
     }
+  }
+  for (const name of labels.filter((label) => label.variant === 'station')) {
+    const context = model.context.find((site) => site.id === name.targetId)
+    const station = model.stations.find((entry) => entry.id === (context ? context.stationId : name.targetId))
+    if (!station?.lineIds.length || name.key.endsWith(':umekita')) continue
+    const badges = station.lineIds.map((lineId) => ({ lineId }))
+    labels.push({
+      ...name, key: 'lines:' + name.targetId, variant: 'lines', level: 2, badges,
+      anchor: [name.anchor[0], name.anchor[1] - 2, name.anchor[2]],
+      text: model.lines.filter((line) => station.lineIds.includes(line.id)).map((line) => line.names[lang]).join(' · '),
+    })
   }
   if (!current && floor === null) {
     for (const [name, suffix] of Object.entries(floorAnchors)) {
@@ -172,6 +189,16 @@ export function buildLabels(
         anchor: [anchor[0], anchor[1] + 1.5, anchor[2]], floorOrdinal: linkFloor,
         text: focus && current.from.id !== link.from ? current.to.names[lang] : link.names[lang],
         active: true, routeOnly: !current,
+      })
+    } else if (link.kind === 'Elevator' || link.kind === 'Stairs' || link.kind === 'Escalator') {
+      const anchor = fromVisible && toVisible ? middle : fromVisible ? start : end
+      labels.push({
+        key: 'facility:' + link.id, targetId: link.id, targetKind: 'vertical', variant: 'facility',
+        icon: link.kind === 'Elevator' ? '↕' : link.kind === 'Stairs' ? '↗' : '⇅',
+        level: 3, priority: 3,
+        anchor: [anchor[0], anchor[1] + 1.5, anchor[2]],
+        floorOrdinal: fromVisible && toVisible ? null : ordinal(fromVisible ? from : to),
+        text: link.names[lang], title: link.names[lang],
       })
     }
   }

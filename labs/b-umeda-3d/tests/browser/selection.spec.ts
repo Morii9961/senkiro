@@ -20,6 +20,15 @@ async function openEnglish(page: Page) {
   await expect(canvas(page)).toHaveAttribute('data-triangles', /^[1-9]\d*$/)
 }
 
+async function showPlatformLabels(page: Page) {
+  const view = canvas(page)
+  await view.focus()
+  for (let i = 0; i < 6 && await view.getAttribute('data-band') === 'far'; i++) {
+    await page.keyboard.press('+')
+  }
+  await expect(view).not.toHaveAttribute('data-band', 'far')
+}
+
 function pose(value: string | null) {
   const coordinates = value?.split(',').map(Number) ?? []
   expect(coordinates).toHaveLength(4)
@@ -71,6 +80,7 @@ test('AT-PERF-02: five kinds of selection leave the geometry in place', async ({
     await expect(view).toHaveAttribute('data-selected', expected)
   }
 
+  await showPlatformLabels(page)
   await stableClick('platform:' + platform, () => clickPin(page, platform))
   await button(page, 'Reset view').click()
   await stableClick('station:' + station, () => clickPin(page, station))
@@ -97,6 +107,7 @@ test('AT-SEL-01 and AT-SEL-03: platform selection and switching stay in sync', a
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await openEnglish(page)
   const view = canvas(page)
+  await showPlatformLabels(page)
   await clickPin(page, platform)
   await expect(view).toHaveAttribute('data-selected', 'platform:' + platform)
   await expect(view).toHaveAttribute('data-highlighted', /^[1-9]\d*$/)
@@ -113,6 +124,7 @@ test('AT-SEL-02: camera focuses with and without reduced motion', async ({ page 
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await openEnglish(page)
   const view = canvas(page)
+  await showPlatformLabels(page)
   const start = pose(await view.getAttribute('data-camera'))
   await clickPin(page, platform)
   const finish = (await view.getAttribute('data-camera'))!
@@ -121,6 +133,7 @@ test('AT-SEL-02: camera focuses with and without reduced motion', async ({ page 
 
   await page.emulateMedia({ reducedMotion: 'no-preference' })
   await button(page, 'Reset view').click()
+  await showPlatformLabels(page)
   await clickPin(page, platform)
   await page.waitForTimeout(800)
   await expect.poll(async () => pose(await view.getAttribute('data-camera'))[3])
@@ -155,6 +168,7 @@ test('AT-SEL-05: Escape, blank canvas and closing clear color without resetting 
     () => page.locator('.place-card').getByRole('button', { name: 'Close' }).click(),
   ]) {
     await button(page, 'Reset view').click()
+    await showPlatformLabels(page)
     await clickPin(page, platform)
     await expect(view).toHaveAttribute('data-selected', 'platform:' + platform)
     const focused = (await view.getAttribute('data-camera'))!

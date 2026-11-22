@@ -12,11 +12,13 @@ export interface LabelCandidate extends Rect {
   key: string
   level: 0 | 1 | 2 | 3 | 4
   priority: number
+  rank?: number
   previous?: boolean
   preferred?: Rect
   occluded?: boolean
   meaning?: string
   clusterKey?: string
+  clusterOnly?: boolean
   number?: number
   members?: string[]
   text?: string
@@ -127,7 +129,8 @@ export function layoutLabels(
   let ordinaryCount = 0
   const eligible = candidates.filter((label) => label.level === 0 || !label.occluded)
   const priority = (label: LabelCandidate) => label.priority - (label.previous ? 0.25 : 0)
-  const ranked = cluster(eligible).sort((a, b) => a.level - b.level || priority(a) - priority(b))
+  const ranked = cluster(eligible).filter((label) => !label.clusterOnly || label.members)
+    .sort((a, b) => (a.rank ?? a.level) - (b.rank ?? b.level) || priority(a) - priority(b))
   for (const label of ranked) {
     const mandatory = label.level === 0
     if (!mandatory && ordinaryCount >= budget) continue

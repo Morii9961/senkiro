@@ -1,0 +1,20 @@
+.app {
+  --label-station-bg: #233b3b;
+  --label-station-ink: #f5f5eb;
+  --label-outline: #c54316;
+  --label-l1: 14px;
+  --label-l2: 12px;
+  --label-l3: 11px;
+  --label-l4: 11px;
+  --label-fast: 120ms;
+}
+.app.dark {
+  --label-station-bg: #d9e8df;
+  --label-station-ink: #1a302f;
+  --label-outline: #ff8152;
+}
+@media (prefers-reduced-motion: reduce) {
+  .app {
+    --label-fast: 0ms;
+  }
+}

@@ -11,6 +11,7 @@ import { initialSelection, selectionReducer, targetFromOwner, type SelectionTarg
 import { parseUrl, serializeUrl } from './state/url'
 import { AppHeader } from './ui/controls/AppHeader'
 import { FloorControls } from './ui/controls/FloorControls'
+import { DetailControl } from './ui/controls/DetailControl'
 import { FeatureCard } from './ui/panels/FeatureCard'
 import { InfoDialog } from './ui/panels/InfoDialog'
 import { RoutePanel, instruction, tours } from './ui/panels/RoutePanel'
@@ -106,6 +107,7 @@ export function App() {
   const [routeStep, selectStep] = useState(initial.step),
     [lift, setLift] = useState(initial.stepFreeOnly)
   const [feed, setFeed] = useState(initial.feed)
+  const [detail, setDetail] = useState(initial.detail)
   const example = feed === 'demo'
   const [panel, setPanel] = useState<'route' | 'layers'>('route'),
     [dialog, setDialog] = useState<'help' | 'sources' | null>(null)
@@ -125,7 +127,7 @@ export function App() {
       site: siteId,
       floor,
       mode: plan ? '2d' : '3d',
-      detail: initial.detail,
+      detail,
       selection,
       from: trip.start === tours[0].start ? null : trip.start,
       to: trip.end === tours[0].end ? null : trip.end,
@@ -136,7 +138,7 @@ export function App() {
       feed,
     }, url.searchParams).toString()
     if (url.href !== window.location.href) window.history.replaceState(window.history.state, '', url)
-  }, [dark, feed, floor, initial.detail, lang, lift, plan, selection, siteId, step, trip.start, trip.end])
+  }, [dark, detail, feed, floor, lang, lift, plan, selection, siteId, step, trip.start, trip.end])
   const floorNow = floor ?? 0,
     shownFloor = floorLabels.find((f) => f[0] === floorNow)?.[1]
   function togglePlan(next: boolean) {
@@ -264,6 +266,7 @@ export function App() {
                   reset,
                   zoom,
                   example,
+                  detail,
                   siteId,
                   shell,
                   eye,
@@ -377,6 +380,7 @@ export function App() {
                 ))}
               </div>
             </details>
+            {!plan && <DetailControl lang={lang} value={detail} onChange={setDetail} />}
             <div className="zoom">
               <button
                 onClick={() => changeZoom(1.2)}
