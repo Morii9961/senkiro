@@ -6,7 +6,8 @@ import type { Step } from './domain/graph'
 import { ownersOf } from './domain/index'
 import { unverifiedLineColor } from './domain/lines'
 import { floors, nodes, station, sites, inSite, lineStyleById } from './model'
-import { buildLabels, type SceneLabelSpec } from './scene/labels/build'
+import { buildLabels, objectLabel, type SceneLabelSpec } from './scene/labels/build'
+import { labelAttachment, layoutLabels, type LabelCandidate, type PlacedLabel } from './scene/labels/layout'
 import { scenePlaceFilter } from './scene/view'
 import { targetFromOwner, type SelectionTarget } from './state/selection'
 
@@ -115,6 +116,13 @@ export function Scene(props: Props) {
     const signs = signage()
     const dummy = new T.Object3D(),
       labels: Label[] = []
+    const labelLeaders = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+    labelLeaders.setAttribute('class', 'label-leaders')
+    labelLeaders.setAttribute('aria-hidden', 'true')
+    box.appendChild(labelLeaders)
+    const clusterPins = new Map<string, { el: HTMLSpanElement; members: string[] }>()
+    let previousLabels = new Map<string, PlacedLabel>()
+    let supplementalLabel: Label | null = null
     let owners: string[] = []
     let group: T.InstancedMesh | null = null,
       propsNow: Props,
@@ -199,47 +207,119 @@ export function Scene(props: Props) {
       gl.domElement.dataset.zoom = String(lens.zoom)
       gl.domElement.dataset.camera = [...controls.target.toArray(), lens.zoom]
         .map((value) => value.toFixed(2)).join(',')
-      const placed: { x: number; y: number; w: number }[] = []
-      const visibleKeys: string[] = []
-      for (const label of labels) {
+      const stage = box.getBoundingClientRect()
+      const reserved = Array.from(box.parentElement!.querySelectorAll<HTMLElement>(
+        '.view-tag, .surround, .zoom, .place-card, .walk-hud, .sample-tag, .eye-hint',
+      )).filter((element) => element.offsetWidth > 0).map((element) => {
+        const rect = element.getBoundingClientRect()
+        return { x: rect.x - stage.x, y: rect.y - stage.y, width: rect.width, height: rect.height }
+      })
+      const currentLabels = supplementalLabel ? [...labels, supplementalLabel] : labels
+      const candidates: LabelCandidate[] = []
+      for (const label of currentLabels) {
         const priority = propsNow.showRoute
           ? label.routePriority ?? label.priority
           : label.priority
         const emphasized = label.el.classList.contains('selected') || label.el.classList.contains('hovered')
+        const level = emphasized || (label.active && propsNow.step >= 0) ? 0 : label.level
         const v = label.position.clone().project(lens),
           x = ((v.x + 1) * w) / 2,
           y = ((1 - v.y) * h) / 2
-        const width = label.el.offsetWidth || 80
-        const visible =
-          !propsNow.eye &&
-          (!label.routeOnly || propsNow.showRoute) &&
-          v.z >= -1 &&
-          v.z <= 1 &&
-          (emphasized || priority <= 1 ||
-            camera.zoom > (priority === 2 ? 1.35 : 2.3) ||
-            propsNow.floor !== null) &&
-          x > width / 2 + 4 &&
-          x < w - width / 2 - 4 &&
-          y > 18 &&
-          y < h - 16 &&
-          !placed.some(
-            (p) =>
-              Math.abs(p.x - x) < (p.w + width) / 2 + 5 &&
-              Math.abs(p.y - y) < 24,
-          )
-        label.el.style.visibility = visible ? 'visible' : 'hidden'
-        if (visible) {
-          label.el.style.transform =
-            'translate(' + x + 'px,' + y + 'px) translate(-50%,-100%)'
-          placed.push({ x, y, w: width })
-          visibleKeys.push(label.key)
+        if (propsNow.eye || (label.routeOnly && !propsNow.showRoute) ||
+          (level !== 0 && (v.z < -1 || v.z > 1))) continue
+        if (level !== 0 && priority > 1 && propsNow.floor === null &&
+          camera.zoom <= (priority === 2 ? 1.35 : 2.3)) continue
+        const platform = label.variant === 'platform' && label.targetId ? nodes.get(label.targetId) : null
+        const singleNumber = platform && /^\d+$/.test(label.text)
+        candidates.push({
+          key: label.key, x, y, level,
+          priority: emphasized ? -20 : priority,
+          width: Math.min(label.el.offsetWidth || 80, Math.max(1, w - 16)),
+          height: label.el.offsetHeight || 18,
+          previous: previousLabels.has(label.key),
+          preferred: label.el.classList.contains('hovered') ? previousLabels.get(label.key)?.rect : undefined,
+          meaning: label.targetKind + ':' + label.text,
+          clusterKey: singleNumber ? platform.stationId ?? undefined : undefined,
+          number: singleNumber ? Number(label.text) : undefined,
+        })
+      }
+      const placed = layoutLabels(candidates, { width: w, height: h }, reserved)
+      const visible = new Map(placed.map((entry) => [entry.key, entry]))
+      for (const label of currentLabels) {
+        const entry = visible.get(label.key)
+        label.el.style.visibility = entry ? 'visible' : 'hidden'
+        if (entry) positionPin(label.el, entry)
+      }
+      for (const [key, cluster] of clusterPins) {
+        if (!visible.has(key)) {
+          cluster.el.remove()
+          clusterPins.delete(key)
         }
       }
-      gl.domElement.dataset.labels = JSON.stringify(visibleKeys.sort())
+      const leaders: SVGLineElement[] = []
+      for (const entry of placed) {
+        if (entry.members) {
+          let cluster = clusterPins.get(entry.key)
+          if (!cluster) {
+            const el = document.createElement('span')
+            el.className = 'pin cluster-pin'
+            el.dataset.key = entry.key
+            el.textContent = entry.text ?? ''
+            box.appendChild(el)
+            cluster = { el, members: entry.members }
+            clusterPins.set(entry.key, cluster)
+          }
+          positionPin(cluster.el, entry)
+        }
+        if (entry.leader) {
+          const line = document.createElementNS('http://www.w3.org/2000/svg', 'line')
+          const attachment = labelAttachment(entry.rect, entry.anchor)
+          line.setAttribute('x1', String(entry.anchor.x))
+          line.setAttribute('y1', String(entry.anchor.y))
+          line.setAttribute('x2', String(attachment.x))
+          line.setAttribute('y2', String(attachment.y))
+          leaders.push(line)
+        }
+      }
+      labelLeaders.replaceChildren(...leaders)
+      previousLabels = visible
+      gl.domElement.dataset.labels = JSON.stringify([...previousLabels.keys()].sort())
       gl.render(world, lens)
       gl.domElement.dataset.frame = String(++frame)
       gl.domElement.dataset.calls = String(gl.info.render.calls)
       gl.domElement.dataset.triangles = String(gl.info.render.triangles)
+    }
+
+    function positionPin(el: HTMLSpanElement, entry: PlacedLabel) {
+      el.classList.toggle('positioned', previousLabels.has(entry.key))
+      el.classList.toggle('occluded-pin', entry.occluded)
+      if (entry.edge) {
+        const { x, y, width, height } = entry.rect
+        const dx = entry.anchor.x - x - width / 2
+        const dy = entry.anchor.y - y - height / 2
+        el.dataset.edge = Math.abs(dx) > Math.abs(dy)
+          ? (dx < 0 ? '←' : '→') : (dy < 0 ? '↑' : '↓')
+      } else delete el.dataset.edge
+      el.style.transform = 'translate(' + entry.rect.x + 'px,' + entry.rect.y + 'px)'
+    }
+
+    function createLabel(spec: SceneLabelSpec): Label {
+      const el = document.createElement('span')
+      el.className = 'pin' + (spec.active ? ' active' : '')
+      if (spec.variant) el.classList.add(spec.variant + '-pin')
+      if (spec.targetId) el.dataset.owner = spec.targetId
+      el.dataset.key = spec.key
+      el.textContent = spec.text
+      if (spec.title) el.title = spec.title
+      if (spec.variant === 'platform') {
+        const lineId = spec.badges?.[0]?.lineId
+        const color = lineId ? lineStyleById.get(lineId)?.color : null
+        if (!color) el.title += ' · ' + unverifiedLineColor(propsNow.lang)
+        el.dataset.lineColor = color ? 'known' : 'unknown'
+        if (color) el.style.setProperty('--line-stripe', color.hex)
+      }
+      box.appendChild(el)
+      return { ...spec, position: new T.Vector3(...spec.anchor), order: labels.length, el }
     }
 
     function scheduleFrame() {
@@ -316,7 +396,17 @@ export function Scene(props: Props) {
       data.highlighted = String(selectedIndices.length)
       data.dimmed = String(dimmed)
       box.style.cursor = hovered ? 'pointer' : ''
-      for (const { el, routePriority } of labels) {
+      const hasLabel = (id: string) => labels.some((label) =>
+        label.targetId === id && (!label.routeOnly || showRoute),
+      )
+      const emphasized = selection && selectedIndices.length > 0 && !hasLabel(selection.id)
+        ? selection : hovered && !hasLabel(hovered.id) ? hovered : null
+      if (supplementalLabel?.targetId !== emphasized?.id) {
+        supplementalLabel?.el.remove()
+        const spec = emphasized ? objectLabel(station, propsNow, emphasized) : null
+        supplementalLabel = spec ? createLabel(spec) : null
+      }
+      for (const { el, routePriority } of supplementalLabel ? [...labels, supplementalLabel] : labels) {
         const owner = el.dataset.owner
         el.classList.toggle('selected', !!selection && owner === selection.id)
         el.classList.toggle('hovered', !!hovered && owner === hovered.id)
@@ -366,6 +456,10 @@ export function Scene(props: Props) {
         group.getMatrixAt(index, matrix)
         selectedBounds.union(bounds.copy(unit.boundingBox!).applyMatrix4(matrix))
       }
+      focusBounds(selectedBounds)
+    }
+
+    function focusBounds(selectedBounds: T.Box3) {
       const center = selectedBounds.getCenter(new T.Vector3())
       const halfSize = selectedBounds.getSize(new T.Vector3()).multiplyScalar(0.5)
       const xAxis = new T.Vector3().setFromMatrixColumn(camera.matrixWorld, 0)
@@ -455,6 +549,9 @@ export function Scene(props: Props) {
         p.lang === 'ja' ? '駅構内の三次元図' : 'Interactive station model',
       )
       labels.splice(0).forEach((l) => l.el.remove())
+      supplementalLabel?.el.remove()
+      supplementalLabel = null
+      previousLabels.clear()
       if (group) {
         world.remove(group)
         group.dispose()
@@ -873,21 +970,7 @@ export function Scene(props: Props) {
       gl.shadowMap.needsUpdate = true
       world.add(group)
       for (const spec of buildLabels(station, p, p.selection, { steps: p.route, step: p.step })) {
-        const el = document.createElement('span')
-        el.className = 'pin' + (spec.active ? ' active' : '')
-        if (spec.variant) el.classList.add(spec.variant + '-pin')
-        if (spec.targetId) el.dataset.owner = spec.targetId
-        el.dataset.key = spec.key
-        el.textContent = spec.text
-        if (spec.variant === 'platform') {
-          const lineId = spec.badges?.[0]?.lineId
-          const color = lineId ? lineStyleById.get(lineId)?.color : null
-          el.title = color ? spec.title! : spec.title! + ' · ' + unverifiedLineColor(p.lang)
-          el.dataset.lineColor = color ? 'known' : 'unknown'
-          if (color) el.style.setProperty('--line-stripe', color.hex)
-        }
-        box.appendChild(el)
-        labels.push({ ...spec, position: new T.Vector3(...spec.anchor), order: labels.length, el })
+        labels.push(createLabel(spec))
       }
       labels.sort((a, b) => a.priority - b.priority)
       updateView(!!(previous && !current) || refit)
@@ -970,19 +1053,20 @@ export function Scene(props: Props) {
         focusSelection()
       }
     }
-    let pressed: { x: number; y: number } | null = null
+    let pressed: { x: number; y: number; owner: string; cluster?: string[] } | null = null
     let drag: { x: number; y: number } | null = null
     let moved = false
     const ray = new T.Raycaster()
     const pointer = new T.Vector2()
     let hoverFrame = 0
+    function contains(el: HTMLElement, x: number, y: number) {
+      const bounds = el.getBoundingClientRect()
+      return x >= bounds.left && x <= bounds.right && y >= bounds.top && y <= bounds.bottom
+    }
     function ownerAt(x: number, y: number) {
-      for (const { el } of labels) {
+      for (const { el } of supplementalLabel ? [supplementalLabel, ...labels] : labels) {
         if (el.style.visibility !== 'visible') continue
-        const bounds = el.getBoundingClientRect()
-        if (x >= bounds.left && x <= bounds.right && y >= bounds.top && y <= bounds.bottom) {
-          return el.dataset.owner ?? ''
-        }
+        if (contains(el, x, y)) return el.dataset.owner ?? ''
       }
       if (!group) return ''
       const r = gl.domElement.getBoundingClientRect()
@@ -1034,8 +1118,13 @@ export function Scene(props: Props) {
     }
     const pointerDown = (e: PointerEvent) => {
       focus = null
+      const cluster = [...clusterPins.values()].find(({ el }) => contains(el, e.clientX, e.clientY))
+      pressed = e.button === 0 ? {
+        x: e.clientX, y: e.clientY,
+        owner: cluster ? '' : ownerAt(e.clientX, e.clientY),
+        cluster: cluster?.members,
+      } : null
       clearHover()
-      pressed = e.button === 0 ? { x: e.clientX, y: e.clientY } : null
       moved = false
       if (propsNow.eye && pressed) {
         drag = { ...pressed }
@@ -1051,9 +1140,12 @@ export function Scene(props: Props) {
         Math.hypot(e.clientX - pressed.x, e.clientY - pressed.y) > 5
       )
         return
+      const { owner, cluster } = pressed
       pressed = null
-      const owner = ownerAt(e.clientX, e.clientY)
-      if (owner) propsNow.onInspect(owner)
+      if (cluster) {
+        const points = labels.filter((label) => cluster.includes(label.key)).map((label) => label.position)
+        if (points.length > 0) focusBounds(new T.Box3().setFromPoints(points))
+      } else if (owner) propsNow.onInspect(owner)
       else propsNow.onClear()
     }
     const cancel = () => {
@@ -1122,6 +1214,9 @@ export function Scene(props: Props) {
       gl.domElement.removeEventListener('keydown', keyboard)
       controls.dispose()
       labels.forEach((l) => l.el.remove())
+      supplementalLabel?.el.remove()
+      for (const { el } of clusterPins.values()) el.remove()
+      labelLeaders.remove()
       group?.dispose()
       outline?.dispose()
       shopDisplay.dispose()

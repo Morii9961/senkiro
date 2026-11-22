@@ -175,5 +175,39 @@ export function buildLabels(
       })
     }
   }
+  if (current) {
+    const start = route.steps[0].from
+    const end = route.steps[route.steps.length - 1].to
+    for (const [key, place, text] of [
+      ['route-start', start, lang === 'ja' ? '出発' : 'Start'],
+      ['route-end', end, lang === 'ja' ? '到着' : 'Destination'],
+    ] as const) {
+      const target = placeTarget(place)
+      if (target) labels.push({
+        key, targetId: target.id, targetKind: target.kind, level: 0, priority: -1,
+        anchor: position(place, 1.4), floorOrdinal: ordinal(place), text, active: true,
+        title: place.names[lang],
+      })
+    }
+  }
   return labels
+}
+
+export function objectLabel(model: Model, view: LabelView, target: SelectionTarget): SceneLabelSpec | null {
+  const link = model.links.find((entry) => entry.id === target.id)
+  const place = model.places.find((entry) => entry.id === (link?.from ?? target.id))
+  if (!place) return null
+  const level = model.levels.find((entry) => entry.id === place.levelId)!
+  const anchor: Anchor = [place.point[0], level.ordinal * (view.spread ? 9 : 5) + 1.6, place.point[1]]
+  if (link) {
+    const to = model.places.find((entry) => entry.id === link.to)!
+    const end = model.levels.find((entry) => entry.id === to.levelId)!
+    anchor[0] = (anchor[0] + to.point[0]) / 2
+    anchor[1] += (end.ordinal - level.ordinal) * (view.spread ? 9 : 5) / 2
+    anchor[2] = (anchor[2] + to.point[1]) / 2
+  }
+  return {
+    key: 'object:' + target.id, targetId: target.id, targetKind: target.kind, level: 0, priority: -2,
+    anchor, floorOrdinal: level.ordinal, text: (link ?? place).names[view.lang],
+  }
 }

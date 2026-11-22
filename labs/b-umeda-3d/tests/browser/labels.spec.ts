@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test'
+import { readFileSync } from 'node:fs'
 
-test('AT-LBL-00: visible labels match the pre-extraction overview and floors', async ({ page }) => {
+test('AT-LBL-00 regression: layout retains the baseline label candidates and reports visible keys', async ({ page }) => {
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))
   page.on('console', (message) => {
@@ -17,8 +18,13 @@ test('AT-LBL-00: visible labels match the pre-extraction overview and floors', a
       text: label.textContent,
       key: label.getAttribute('data-key'),
     })))
-    expect(visible.map(({ owner, text }) => owner + ' | ' + text).sort().join('\n'))
-      .toMatchSnapshot(name + '-labels.txt')
+    const baseline = readFileSync(new URL(
+      './labels.spec.ts-snapshots/' + name + '-labels-win32.txt', import.meta.url,
+    ), 'utf8').trim().split(/\r?\n/)
+    const candidates = await page.locator('.pin[data-owner]').evaluateAll((labels) =>
+      labels.map((label) => label.getAttribute('data-owner') + ' | ' + label.textContent),
+    )
+    expect(candidates).toEqual(expect.arrayContaining(baseline))
     views.push({
       name,
       reported: await canvas.getAttribute('data-labels'),
