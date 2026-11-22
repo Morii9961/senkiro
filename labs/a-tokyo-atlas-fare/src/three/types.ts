@@ -143,6 +143,36 @@ export interface LineTraceStatus {
 export type CameraNavMode = 'map' | 'free';
 export type CameraMoveSpeed = 'slow' | 'normal' | 'fast';
 
+export interface CameraOrientationInfo {
+  headingDeg: number;
+  cardinal: 'N' | 'NE' | 'E' | 'SE' | 'S' | 'SW' | 'W' | 'NW';
+  altitudeM: number;
+  distanceToFocusM: number;
+  nearestAnchor: {
+    nameJa: string;
+    nameEn: string;
+    distanceM: number;
+    bearingDeg: number;
+  } | null;
+}
+
+export interface UndergroundExplorerLocation {
+  lineId: SkId<'line'>;
+  lineNameJa: string;
+  lineNameEn: string;
+  lineColor: string;
+  tier: SchematicTierId;
+  trackY: number;
+  nearestStationId: SkId<'station'> | null;
+  nearestStationJa: string | null;
+  nearestStationEn: string | null;
+  nextStationJa: string | null;
+  distanceToNearestM: number;
+  headingDeg: number;
+  progress01: number;
+  nearbyLineIds: SkId<'line'>[];
+}
+
 export interface SceneTelemetry {
   loadedChunks: number;
   totalChunks: number;

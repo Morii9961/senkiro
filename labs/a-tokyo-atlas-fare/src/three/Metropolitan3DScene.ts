@@ -1,23 +1,27 @@
 /**
- * SENKIRO Lab — Tokyo Metropolitan 3D Railway Atlas Scene Controller.
+ * SENKIRO Atlas v2 — Tokyo Metropolitan 3D Railway Atlas Scene Controller.
  *
  * Pure Three.js engine module (zero React dependency) unifying:
- *  - Procedural Terrain, Rivers, Parks & Major Roads (CityTerrainLayer)
- *  - Chunked, Frustum-Culled, Multi-LOD Real OSM Buildings & 9 Hero Landmarks (CityChunkManager)
- *  - Continuous 3D Ballasted Tracks, Steel Rails, Sleepers & JR Fare Dual-Path Ribbons (RailTrackLayer)
- *  - Elevated Viaduct Decks, Piers & Elevated Station Platforms (ViaductLayer)
- *  - Continuous Circular/Rectangular Underground Tunnels, Portals & Complex Shafts (TunnelAndStationLayer)
- *  - Smooth OrbitControls, Underground View + Clipping Plane, Line Trace Fly-Through & 2D/3D Sync.
+ *  - Existing procedural urban terrain, buildings/landmarks, viaducts, tracks, and concrete tunnels
+ *  - Unified 5-Mode Spatial Camera State Machine & Collision-Guarded Controller
+ *  - Pluggable Train Simulation Provider + Lightweight Schematic Proxy Markers
+ *  - Screen-Space Hierarchical Deconflicted Label Projection
+ *  - True Subterranean Tunnel Explorer with Solid Wall/Ceiling Occlusion & Local Headlamp
  */
 
 import * as THREE from 'three';
 import {
-  classifyTier,
+  createInitialCameraModeState,
+  getCameraModeCapabilities,
+  transitionCameraMode,
+  type CameraModeAction,
+  type CameraModeState,
+} from '../domain/cameraModeStateMachine.js';
+import {
   solveRailwayNetwork3D,
-  type SolvedPoint3D,
   type SolvedRailwayNetwork3D,
-  type SolvedSegment3D,
 } from '../domain/elevationSolver.js';
+import type { PlacedMapLabel } from '../domain/labelLayout.js';
 import type {
   AtlasDataset,
   FareQuote,
@@ -38,22 +42,35 @@ import {
   worldToLonLat,
   type CameraHubPreset,
 } from './geoProjection.js';
+import { SpatialLabelRegistry } from './labelSystem.js';
 import { createCutawayUniforms, type CutawayUniforms } from './materials/cutawayShader.js';
+import { TrainMarkerLayer } from './trainMarkerLayer.js';
 import type {
-  CameraMoveSpeed,
-  CameraNavMode,
-  LineTraceStatus,
+  CameraOrientationInfo,
   SceneTelemetry,
-  UndergroundViewSettings,
+  UndergroundExplorerLocation,
   UrbanBaseEnvironment,
   UrbanManifest,
 } from './types.js';
+import {
+  SyntheticTrainSimulationProvider,
+  type EnvironmentCollisionProvider,
+  type TrainSimulationProvider,
+  type TrainSimulationSnapshot,
+} from './uxContracts.js';
 
 export interface SceneCallbacks {
   onSelectStation: (stationId: SkId<'station'>) => void;
   onSelectLine: (lineId: SkId<'line'>) => void;
+  onSelectTrain?: (trainId: string) => void;
+  onCameraModeChange?: (state: CameraModeState) => void;
+  onOrientationChange?: (
+    orientation: CameraOrientationInfo,
+    explorerLoc: UndergroundExplorerLocation | null,
+  ) => void;
+  onLabelsUpdated?: (labels: PlacedMapLabel[]) => void;
+  onSimulationUpdated?: (snapshot: TrainSimulationSnapshot) => void;
   onTelemetry?: (telemetry: SceneTelemetry) => void;
-  onTraceUpdate?: (status: LineTraceStatus) => void;
   onCameraMoved?: (lon: number, lat: number, zoomEquiv: number) => void;
 }
 
@@ -76,11 +93,16 @@ export class Metropolitan3DScene {
   private readonly railLayer: RailTrackLayer;
   private readonly viaductLayer: ViaductLayer;
   private readonly tunnelLayer: TunnelAndStationLayer;
-  private readonly traceProbe: THREE.Mesh;
+  private readonly trainMarkerLayer: TrainMarkerLayer;
+  private readonly labelRegistry: SpatialLabelRegistry;
 
   private readonly sunLight: THREE.DirectionalLight;
   private readonly hemiLight: THREE.HemisphereLight;
   private readonly subFillLight: THREE.DirectionalLight;
+  private readonly explorerHeadlamp: THREE.PointLight;
+
+  private simProvider: TrainSimulationProvider;
+  private modeState: CameraModeState = createInitialCameraModeState();
 
   private cutawayActive = false;
   private cutawayPinned = false;
@@ -91,17 +113,18 @@ export class Metropolitan3DScene {
   private readonly callbacks: SceneCallbacks;
   private readonly resizeObserver: ResizeObserver;
 
+  private visibleOperatorIds: Set<SkId<'operator'>>;
+  private selectedLineId: SkId<'line'> | null = null;
+  private selectedStationId: SkId<'station'> | null = null;
+  private selectedTrainId: string | null = null;
+  private fareSliceOnly = false;
+  private locale: 'ja' | 'en' = 'ja';
+
   private rafId: number | null = null;
   private disposed = false;
   private isDark: boolean;
   private lastChunkUpdateTime = 0;
-
-  // Line Trace Fly-Through state
-  private traceLineId: SkId<'line'> | null = null;
-  private tracePath: SolvedPoint3D[] = [];
-  private traceStationNames: { dist: number; name: string }[] = [];
-  private traceProgress = 0;
-  private tracePlaying = false;
+  private lastUiSyncTime = 0;
   private lastFrameTime = performance.now();
   private readonly sceneCreatedAt = performance.now();
   private urbanLoadedMs: number | null = null;
@@ -126,14 +149,19 @@ export class Metropolitan3DScene {
     this.dataset = dataset;
     this.isDark = isDark;
     this.callbacks = callbacks;
+    this.visibleOperatorIds = new Set(
+      dataset.operators.filter((o) => o.coverageStatus !== 'none').map((o) => o.id),
+    );
     this.fareSliceLineIds = new Set(
       dataset.railLines.filter((l) => l.inFareSlice).map((l) => l.id),
     );
 
-    // 1. Solve continuous 3D vertical railway network from shared AtlasDataset + OSM vertical tags
+    // 1. Solve continuous 3D vertical railway network
     this.solved = solveRailwayNetwork3D(dataset, osmVertical);
+    this.simProvider = new SyntheticTrainSimulationProvider(dataset, this.solved);
+    this.labelRegistry = new SpatialLabelRegistry(dataset, this.solved);
 
-    // 2. Renderer (logarithmicDepthBuffer: true eliminates distant coplanar ground/water Z-fighting!)
+    // 2. Renderer (logarithmicDepthBuffer enables near=0.45m inside tunnels without far Z-fighting!)
     this.renderer = new THREE.WebGLRenderer({
       antialias: true,
       powerPreference: 'high-performance',
@@ -153,20 +181,56 @@ export class Metropolitan3DScene {
     this.renderer.domElement.setAttribute('data-testid', 'three-3d-canvas');
     container.appendChild(this.renderer.domElement);
 
-    // 3. Scene, Procedural Sky Dome, PMREM Reflections & Clean Distance Fog (P3)
+    // 3. Scene & Atmospheric Sky Dome
     this.scene = new THREE.Scene();
     this.skyEnv = new SkyEnvironmentSystem(this.renderer, this.scene, isDark);
 
-    // 4. Camera & Unified Spatial Camera Controller (P6: Map Browse + Free Explore!)
+    // 4. Layers + GPU Radial Cutaway
+    this.clipPlane = new THREE.Plane(new THREE.Vector3(0, -1, 0), 10_000);
+    this.clipPlanes = [this.clipPlane];
+
+    this.cutawayUniforms = createCutawayUniforms();
+    this.cutawayVisuals = new CutawayPitVisuals(isDark);
+    this.terrainLayer = new CityTerrainLayer(isDark, this.clipPlanes, this.cutawayUniforms);
+    this.buildingManager = new CityChunkManager(isDark, this.clipPlanes, this.cutawayUniforms);
+    this.railLayer = new RailTrackLayer(this.solved, this.clipPlanes);
+    this.viaductLayer = new ViaductLayer(this.solved, null, this.clipPlanes);
+    this.tunnelLayer = new TunnelAndStationLayer(this.solved, this.clipPlanes);
+    this.trainMarkerLayer = new TrainMarkerLayer(this.clipPlanes);
+
+    this.scene.add(
+      this.terrainLayer.group,
+      this.cutawayVisuals.group,
+      this.buildingManager.group,
+      this.viaductLayer.group,
+      this.tunnelLayer.group,
+      this.railLayer.group,
+      this.trainMarkerLayer.group,
+    );
+
+    // 5. Read-only collision provider wrapping CityChunkManager
+    const collisionProvider: EnvironmentCollisionProvider = {
+      resolveCameraPosition: (pos, radius, allowUg, minY) => {
+        if (allowUg && pos.y < -1) return pos;
+        return this.buildingManager.resolveCameraCollision(pos, radius, minY);
+      },
+      describeNearestAnchor: (pos) => this.buildingManager.describeNearestLandmark(pos),
+    };
+
+    // 6. Camera & Unified 5-Mode Controller
     const aspect = (container.clientWidth || 960) / Math.max(1, container.clientHeight || 640);
-    this.camera = new THREE.PerspectiveCamera(46, aspect, 4, 90_000);
+    this.camera = new THREE.PerspectiveCamera(46, aspect, 3.5, 90_000);
     this.camCtrl = new SpatialCameraController(
       this.camera,
       this.renderer.domElement,
+      this.modeState,
+      dataset,
+      this.solved,
+      collisionProvider,
       this.handleControlsEnd,
     );
 
-    // 5. Lighting (Semi-Realistic Architectural Viz Sunlight + Soft Shadows + Bounce Fill)
+    // 7. Lighting + Local Subterranean Tunnel Headlamp (active only inside Underground Explorer)
     this.hemiLight = new THREE.HemisphereLight(
       isDark ? 0x7da4cc : 0xdcebf9,
       isDark ? 0x16202e : 0xa6a096,
@@ -193,46 +257,17 @@ export class Metropolitan3DScene {
     this.scene.add(this.sunLight);
     this.scene.add(this.sunLight.target);
 
-    // Subtle cool sky fill opposite the sun + subterranean tunnel readability fill
-    this.subFillLight = new THREE.DirectionalLight(isDark ? 0x3b82f6 : 0xbdd7f0, isDark ? 0.48 : 0.34);
+    this.subFillLight = new THREE.DirectionalLight(
+      isDark ? 0x3b82f6 : 0xbdd7f0,
+      isDark ? 0.48 : 0.34,
+    );
     this.subFillLight.position.set(-1200, -320, -900);
     this.scene.add(this.subFillLight);
 
-    // 6. Horizontal Clipping Plane (disabled by default via large constant)
-    this.clipPlane = new THREE.Plane(new THREE.Vector3(0, -1, 0), 10_000);
-    this.clipPlanes = [this.clipPlane];
+    this.explorerHeadlamp = new THREE.PointLight(0xf8fafc, 0, 190, 1.4);
+    this.scene.add(this.explorerHeadlamp);
 
-    // 7. Instantiate Procedural Layers + GPU Radial Cutaway System (P5)
-    this.cutawayUniforms = createCutawayUniforms();
-    this.cutawayVisuals = new CutawayPitVisuals(isDark);
-    this.terrainLayer = new CityTerrainLayer(isDark, this.clipPlanes, this.cutawayUniforms);
-    this.buildingManager = new CityChunkManager(isDark, this.clipPlanes, this.cutawayUniforms);
-    this.railLayer = new RailTrackLayer(this.solved, this.clipPlanes);
-    this.viaductLayer = new ViaductLayer(this.solved, null, this.clipPlanes);
-    this.tunnelLayer = new TunnelAndStationLayer(this.solved, this.clipPlanes);
-
-    this.scene.add(
-      this.terrainLayer.group,
-      this.cutawayVisuals.group,
-      this.buildingManager.group,
-      this.viaductLayer.group,
-      this.tunnelLayer.group,
-      this.railLayer.group,
-    );
-
-    // Glowing trace probe for Line Trace fly-through
-    this.traceProbe = new THREE.Mesh(
-      new THREE.SphereGeometry(7.5, 16, 16),
-      new THREE.MeshStandardMaterial({
-        color: 0xfacc15,
-        emissive: 0xf59e0b,
-        emissiveIntensity: 1.0,
-      }),
-    );
-    this.traceProbe.visible = false;
-    this.scene.add(this.traceProbe);
-
-    // 8. Initial camera positioning (preserve 2D center if passed, else showcase Shibuya/Central Tokyo!)
+    // 8. Initial camera positioning
     if (initialCenter) {
       this.setViewFromLonLat(initialCenter.lon, initialCenter.lat, initialCenter.zoom ?? 12.2);
     } else {
@@ -240,7 +275,7 @@ export class Metropolitan3DScene {
       this.jumpToHubPreset(shibuya);
     }
 
-    // 9. Async load real OSM base environment & chunk manifest (non-blocking — railway network renders frame 1!)
+    // 9. Async load real OSM urban assets
     void this.loadUrbanAssets();
 
     // 10. Event listeners
@@ -251,9 +286,103 @@ export class Metropolitan3DScene {
     this.resizeObserver = new ResizeObserver(() => this.handleResize());
     this.resizeObserver.observe(container);
 
-    // Start render loop
+    this.syncEnvironmentWithMode();
+    this.callbacks.onCameraModeChange?.(this.modeState);
+    this.callbacks.onSimulationUpdated?.(this.simProvider.getSnapshot());
+
     this.lastFrameTime = performance.now();
     this.animate();
+  }
+
+  /** Allows sibling simulation engine worktree to plug in an external TrainSimulationProvider */
+  setTrainSimulationProvider(provider: TrainSimulationProvider): void {
+    this.simProvider = provider;
+    this.callbacks.onSimulationUpdated?.(this.simProvider.getSnapshot());
+  }
+
+  getTrainSimulationSnapshot(): TrainSimulationSnapshot {
+    return this.simProvider.getSnapshot();
+  }
+
+  getCameraModeState(): CameraModeState {
+    return this.modeState;
+  }
+
+  dispatchCameraAction(action: CameraModeAction): void {
+    const next = transitionCameraMode(this.modeState, action);
+    if (next === this.modeState) return;
+    this.modeState = next;
+
+    if (action.type === 'FOLLOW_TRAIN') {
+      this.selectedTrainId = action.trainId;
+    } else if (action.type === 'RESET_OVERVIEW') {
+      this.selectedTrainId = null;
+      const tokyo23 = TOKYO_HUB_PRESETS.find((h) => h.id === 'tokyo23');
+      if (tokyo23) {
+        this.flyToHubPreset(tokyo23);
+      }
+    }
+
+    const followed = this.modeState.followedTrainId
+      ? this.simProvider.getTrainById(this.modeState.followedTrainId)
+      : null;
+
+    this.camCtrl.applyModeState(
+      this.modeState,
+      followed,
+      this.selectedLineId,
+      this.selectedStationId,
+    );
+    this.syncEnvironmentWithMode();
+    this.callbacks.onCameraModeChange?.(this.modeState);
+    this.emitTelemetry();
+    this.emitLabelsNow();
+  }
+
+  jumpToExplorerLine(lineId: SkId<'line'>): void {
+    if (this.modeState.mode !== 'underground_explorer') {
+      this.dispatchCameraAction({ type: 'SELECT_MODE', mode: 'underground_explorer' });
+    }
+    this.camCtrl.jumpToTunnelLine(lineId);
+    this.selectedLineId = lineId;
+    this.syncEnvironmentWithMode();
+    this.emitLabelsNow();
+  }
+
+  setSimulationPlaying(playing: boolean): void {
+    this.simProvider.setPlaying(playing);
+    this.callbacks.onSimulationUpdated?.(this.simProvider.getSnapshot());
+  }
+
+  setSimulationSpeed(speedMultiplier: number): void {
+    this.simProvider.setSpeedMultiplier(speedMultiplier);
+    this.callbacks.onSimulationUpdated?.(this.simProvider.getSnapshot());
+  }
+
+  setSimulationVisibleCount(count: number): void {
+    this.simProvider.setVisibleCount(count);
+    this.callbacks.onSimulationUpdated?.(this.simProvider.getSnapshot());
+  }
+
+  setSimulationTrainsVisible(visible: boolean): void {
+    this.simProvider.setTrainsVisible(visible);
+    if (!visible && this.modeState.mode === 'train_follow') {
+      this.dispatchCameraAction({ type: 'EXIT_TRAIN_FOLLOW' });
+    }
+    this.callbacks.onSimulationUpdated?.(this.simProvider.getSnapshot());
+    this.emitLabelsNow();
+  }
+
+  resetSimulation(): void {
+    this.simProvider.reset();
+    this.callbacks.onSimulationUpdated?.(this.simProvider.getSnapshot());
+    this.emitLabelsNow();
+  }
+
+  setLocale(locale: 'ja' | 'en'): void {
+    if (this.locale === locale) return;
+    this.locale = locale;
+    this.emitLabelsNow();
   }
 
   private async loadUrbanAssets(): Promise<void> {
@@ -270,24 +399,16 @@ export class Metropolitan3DScene {
         if (manifestRes.ok) {
           const manifest = (await manifestRes.json()) as UrbanManifest;
           this.buildingManager.setManifest(manifest, env.landmarks);
+          this.labelRegistry.setLandmarks(env.landmarks);
           this.buildingManager.updateForCamera(this.camera, this.camCtrl.getFocusTarget());
           this.urbanLoadedMs = Math.round(performance.now() - this.sceneCreatedAt);
           this.emitTelemetry();
+          this.emitLabelsNow();
         }
       }
     } catch {
-      // Graceful fallback: 3D railway & terrain continue running cleanly even if urban chunks fail
+      // Graceful fallback
     }
-  }
-
-  setCameraMode(mode: CameraNavMode): void {
-    this.tracePlaying = false;
-    this.camCtrl.setMode(mode);
-    this.emitTelemetry();
-  }
-
-  setCameraSpeed(speed: CameraMoveSpeed): void {
-    this.camCtrl.setSpeed(speed);
   }
 
   setTheme(isDark: boolean): void {
@@ -306,99 +427,131 @@ export class Metropolitan3DScene {
     this.cutawayVisuals.setTheme(isDark);
   }
 
-  applyFilters(params: {
+  applySelectionAndFilters(params: {
     visibleOperatorIds: Set<SkId<'operator'>>;
     selectedLineId: SkId<'line'> | null;
     selectedStationId: SkId<'station'> | null;
+    selectedTrainId: string | null;
     fareSliceOnly: boolean;
-    underground: UndergroundViewSettings;
   }): void {
-    const { visibleOperatorIds, selectedLineId, selectedStationId, fareSliceOnly, underground } =
-      params;
+    this.visibleOperatorIds = params.visibleOperatorIds;
+    this.selectedLineId = params.selectedLineId;
+    this.selectedStationId = params.selectedStationId;
+    this.selectedTrainId = params.selectedTrainId;
+    this.fareSliceOnly = params.fareSliceOnly;
+    this.syncEnvironmentWithMode();
+    this.emitLabelsNow();
+  }
 
-    // P5 True 3D Cutaway / Underground Explorer state!
-    const wasActive = this.cutawayActive;
-    this.cutawayActive = underground.enabled;
-    this.cutawayPinned = underground.pinCutaway;
-    this.verticalExaggeration = underground.enabled
-      ? Math.max(1.0, Math.min(2.5, underground.verticalExaggeration))
-      : 1.0;
-
-    this.cutawayUniforms.uCutawayActive.value = underground.enabled ? 1.0 : 0.0;
-    this.cutawayUniforms.uCutawayRadius.value = Math.max(
-      250,
-      Math.min(3500, underground.cutawayRadius),
+  private syncEnvironmentWithMode(): void {
+    const followed = this.modeState.followedTrainId
+      ? this.simProvider.getTrainById(this.modeState.followedTrainId)
+      : null;
+    const caps = getCameraModeCapabilities(
+      this.modeState,
+      Boolean(followed?.isUnderground),
     );
-    if (underground.enabled && !wasActive) {
-      // Snap cutaway pit immediately onto current focus target upon entering Underground Mode!
-      const focus = this.camCtrl.getFocusTarget();
-      this.cutawayUniforms.uCutawayCenter.value.set(focus.x, 0, focus.z);
+    const cutaway = this.modeState.cutaway;
+
+    const wasCutaway = this.cutawayActive;
+    this.cutawayActive = caps.useRadialCutaway;
+    this.cutawayPinned = cutaway.pinCutaway && this.modeState.mode === 'underground_cutaway';
+    this.verticalExaggeration = caps.verticalExaggeration;
+
+    this.cutawayUniforms.uCutawayActive.value = caps.useRadialCutaway ? 1.0 : 0.0;
+    this.cutawayUniforms.uCutawayRadius.value =
+      this.modeState.mode === 'train_follow'
+        ? 460
+        : Math.max(250, Math.min(3500, cutaway.cutawayRadius));
+
+    if (caps.useRadialCutaway && !wasCutaway) {
+      const anchor =
+        this.modeState.mode === 'train_follow' && followed
+          ? followed.position
+          : this.camCtrl.getFocusTarget();
+      this.cutawayUniforms.uCutawayCenter.value.set(anchor.x, 0, anchor.z);
     }
 
-    // Visual-only vertical exaggeration on 3D railway layers (NEVER mutates legal operatingKm!)
+    // Visual-only vertical exaggeration
     this.railLayer.group.scale.y = this.verticalExaggeration;
     this.viaductLayer.group.scale.y = this.verticalExaggeration;
     this.tunnelLayer.group.scale.y = this.verticalExaggeration;
 
-    // Boost subterranean illumination gently inside cutaway pit so concrete tunnels pop crisply!
-    this.subFillLight.intensity = underground.enabled
-      ? this.isDark
-        ? 0.85
-        : 0.72
+    // Illumination & ceiling occlusion for true subterranean interior view
+    const tunnelInterior = caps.useExplorerSolidTunnels;
+    this.explorerHeadlamp.intensity = tunnelInterior ? 2.6 : 0;
+    this.subFillLight.intensity = caps.allowUndergroundGeometry
+      ? tunnelInterior
+        ? 1.05
+        : this.isDark
+          ? 0.85
+          : 0.72
       : this.isDark
         ? 0.48
         : 0.34;
 
-    // Outer ground stays crisp around cutaway pit unless user dials down Outer Surface Opacity!
-    const effectiveGroundOpacity = underground.enabled ? underground.groundOpacity : 1.0;
-    this.terrainLayer.setSurfaceOpacity(effectiveGroundOpacity, underground.enabled);
+    const effectiveGroundOpacity = caps.useRadialCutaway
+      ? cutaway.groundOpacity
+      : 1.0;
 
-    const bldgVisible = !underground.hideBuildings;
+    this.terrainLayer.setSurfaceOpacity(
+      effectiveGroundOpacity,
+      caps.useRadialCutaway,
+    );
+    this.terrainLayer.setUndergroundCeilingOcclusion(caps.enableSurfaceCeilingOcclusion);
+
+    const bldgVisible =
+      this.modeState.mode === 'underground_cutaway' ? !cutaway.hideBuildings : true;
     this.buildingManager.setVisibilityAndOpacity(
       bldgVisible,
       effectiveGroundOpacity,
-      underground.enabled,
+      caps.useRadialCutaway,
     );
 
     this.cutawayVisuals.update(
-      underground.enabled,
+      caps.useRadialCutaway,
       this.cutawayUniforms.uCutawayCenter.value.x,
       this.cutawayUniforms.uCutawayCenter.value.z,
       this.cutawayUniforms.uCutawayRadius.value,
       this.verticalExaggeration,
     );
 
-    // Allow diving cleanly underneath ground level when Underground Explorer is active!
-    this.camCtrl.setUndergroundBounds(underground.enabled, this.verticalExaggeration);
-    this.clipPlane.constant = underground.clipEnabled ? underground.clipY : 10_000;
+    this.clipPlane.constant =
+      this.modeState.mode === 'underground_cutaway' && cutaway.clipEnabled
+        ? cutaway.clipY
+        : 10_000;
+
+    const clipActive =
+      this.modeState.mode === 'underground_cutaway' && cutaway.clipEnabled;
 
     this.railLayer.applyFilters({
-      visibleOperatorIds,
-      visibleTiers: underground.visibleTiers,
-      selectedLineId,
-      fareSliceOnly,
+      visibleOperatorIds: this.visibleOperatorIds,
+      visibleTiers: cutaway.visibleTiers,
+      selectedLineId: this.selectedLineId,
+      fareSliceOnly: this.fareSliceOnly,
       fareSliceLineIds: this.fareSliceLineIds,
-      undergroundActive: underground.enabled,
-      clipEnabled: underground.clipEnabled,
+      undergroundActive: caps.allowUndergroundGeometry,
+      clipEnabled: clipActive,
     });
 
     this.viaductLayer.applyFilters({
-      visibleOperatorIds,
-      visibleTiers: underground.visibleTiers,
-      selectedLineId,
-      fareSliceOnly,
+      visibleOperatorIds: this.visibleOperatorIds,
+      visibleTiers: cutaway.visibleTiers,
+      selectedLineId: this.selectedLineId,
+      fareSliceOnly: this.fareSliceOnly,
       fareSliceLineIds: this.fareSliceLineIds,
     });
 
     this.tunnelLayer.applyFilters({
-      visibleOperatorIds,
-      visibleTiers: underground.visibleTiers,
-      selectedLineId,
-      selectedStationId,
-      fareSliceOnly,
+      visibleOperatorIds: this.visibleOperatorIds,
+      visibleTiers: cutaway.visibleTiers,
+      selectedLineId: this.selectedLineId,
+      selectedStationId: this.selectedStationId,
+      fareSliceOnly: this.fareSliceOnly,
       fareSliceLineIds: this.fareSliceLineIds,
-      undergroundActive: underground.enabled,
-      clipEnabled: underground.clipEnabled,
+      undergroundActive: caps.allowUndergroundGeometry,
+      clipEnabled: clipActive,
+      explorerInterior: tunnelInterior,
     });
   }
 
@@ -423,7 +576,7 @@ export class Metropolitan3DScene {
         const cx = (minX + maxX) * 0.5;
         const cz = (minZ + maxZ) * 0.5;
         const span = Math.max(850, Math.hypot(maxX - minX, maxZ - minZ) * 0.9);
-        this.animateCameraTo(
+        this.camCtrl.animateTo(
           new THREE.Vector3(cx, 0, cz),
           Math.min(12_000, span),
           54,
@@ -435,14 +588,22 @@ export class Metropolitan3DScene {
   }
 
   flyToHubPreset(preset: CameraHubPreset): void {
+    if (this.modeState.mode === 'train_follow') {
+      this.dispatchCameraAction({ type: 'EXIT_TRAIN_FOLLOW' });
+    }
     const { x, z } = lonLatToWorld(preset.lon, preset.lat);
-    this.animateCameraTo(
-      new THREE.Vector3(x, preset.targetY, z),
-      preset.distance,
-      preset.polarDeg,
-      preset.azimuthDeg,
-      700,
-    );
+    if (this.modeState.mode === 'underground_explorer') {
+      this.camCtrl.jumpTo(new THREE.Vector3(x, 0, z), 500, 56, -24);
+      this.camCtrl.enterUndergroundExplorer(this.selectedLineId, this.selectedStationId);
+      return;
+    }
+    const dist =
+      this.modeState.mode === 'street_level'
+        ? Math.min(240, preset.distance * 0.3)
+        : preset.distance;
+    const polar = this.modeState.mode === 'street_level' ? 78 : preset.polarDeg;
+    const ty = this.modeState.mode === 'street_level' ? 1.5 : preset.targetY;
+    this.camCtrl.animateTo(new THREE.Vector3(x, ty, z), dist, polar, preset.azimuthDeg, 700);
   }
 
   private jumpToHubPreset(preset: CameraHubPreset): void {
@@ -458,12 +619,25 @@ export class Metropolitan3DScene {
   flyToStation(stationId: SkId<'station'>): void {
     const node = this.solved.stationNodes.find((n) => n.stationId === stationId);
     if (!node) return;
-    this.animateCameraTo(new THREE.Vector3(node.x, node.y, node.z), 560, 58, -28, 650);
+    if (this.modeState.mode === 'train_follow') {
+      this.dispatchCameraAction({ type: 'EXIT_TRAIN_FOLLOW' });
+    }
+    if (this.modeState.mode === 'underground_explorer') {
+      this.camCtrl.enterUndergroundExplorer(node.lineId, stationId);
+      return;
+    }
+    const dist = this.modeState.mode === 'street_level' ? 150 : 540;
+    const polar = this.modeState.mode === 'street_level' ? 76 : 58;
+    const ty = this.modeState.mode === 'street_level' ? Math.max(0, node.y) : node.y;
+    this.camCtrl.animateTo(new THREE.Vector3(node.x, ty, node.z), dist, polar, -28, 650);
   }
 
   flyToLine(lineId: SkId<'line'>): void {
     const segs = this.solved.segments.filter((s) => s.primaryLineId === lineId);
     if (segs.length === 0) return;
+    if (this.modeState.mode === 'train_follow') {
+      this.dispatchCameraAction({ type: 'EXIT_TRAIN_FOLLOW' });
+    }
     let minX = Infinity,
       maxX = -Infinity,
       minZ = Infinity,
@@ -484,7 +658,7 @@ export class Metropolitan3DScene {
     const cz = (minZ + maxZ) * 0.5;
     const cy = cnt > 0 ? sumY / cnt : 0;
     const span = Math.max(700, Math.min(8500, Math.hypot(maxX - minX, maxZ - minZ) * 0.85));
-    this.animateCameraTo(new THREE.Vector3(cx, cy, cz), span, 56, -24, 700);
+    this.camCtrl.animateTo(new THREE.Vector3(cx, cy, cz), span, 56, -24, 700);
   }
 
   setViewFromLonLat(lon: number, lat: number, mapZoom = 12): void {
@@ -501,179 +675,19 @@ export class Metropolitan3DScene {
     return { lon, lat, zoom };
   }
 
-  // ---- Section 6.3: Line Trace Smooth Camera Fly-Through ----
-  startLineTrace(lineId: SkId<'line'>, autoPlay = true): boolean {
-    const line = this.dataset.railLines.find((l) => l.id === lineId);
-    if (!line) return false;
-    const segsByPair = new Map<string, { seg: SolvedSegment3D; reversed: boolean }>();
-    for (const seg of this.solved.segments) {
-      if (!seg.railLineIds.includes(lineId)) continue;
-      segsByPair.set(`${seg.fromStationId}::${seg.toStationId}`, { seg, reversed: false });
-      segsByPair.set(`${seg.toStationId}::${seg.fromStationId}`, { seg, reversed: true });
-    }
-
-    const stitched: SolvedPoint3D[] = [];
-    const stationMarkers: { dist: number; name: string }[] = [];
-    const stMap = new Map(this.dataset.stations.map((s) => [s.id, s]));
-    let accumDist = 0;
-
-    for (let i = 0; i < line.stationIds.length - 1; i++) {
-      const a = line.stationIds[i]!;
-      const b = line.stationIds[i + 1]!;
-      const hit = segsByPair.get(`${a}::${b}`);
-      if (!hit) continue;
-      const pts = hit.reversed ? [...hit.seg.points].reverse() : hit.seg.points;
-      if (i === 0) {
-        stationMarkers.push({ dist: 0, name: stMap.get(a)?.names.ja ?? a });
-      }
-      for (let k = i === 0 ? 0 : 1; k < pts.length; k++) {
-        const pt = pts[k]!;
-        if (stitched.length > 0) {
-          const prev = stitched[stitched.length - 1]!;
-          accumDist += Math.hypot(pt.x - prev.x, pt.y - prev.y, pt.z - prev.z);
-        }
-        stitched.push({ ...pt, distFromStart: accumDist });
-      }
-      stationMarkers.push({ dist: accumDist, name: stMap.get(b)?.names.ja ?? b });
-    }
-
-    if (stitched.length < 2) return false;
-    this.traceLineId = lineId;
-    this.tracePath = stitched;
-    this.traceStationNames = stationMarkers;
-    this.traceProgress = 0;
-    this.tracePlaying = autoPlay;
-    this.traceProbe.visible = true;
-    this.camCtrl.cancelAnimation();
-    this.positionCameraOnTrace(0);
-    return true;
-  }
-
-  setLineTracePlaying(playing: boolean): void {
-    this.tracePlaying = playing;
-    this.emitTraceStatus();
-  }
-
-  setLineTraceProgress(progress: number): void {
-    this.traceProgress = Math.max(0, Math.min(1, progress));
-    this.positionCameraOnTrace(this.traceProgress);
-  }
-
-  stopLineTrace(): void {
-    this.tracePlaying = false;
-    this.traceLineId = null;
-    this.tracePath = [];
-    this.traceProbe.visible = false;
-    this.emitTraceStatus();
-  }
-
-  private positionCameraOnTrace(progress: number): void {
-    if (this.tracePath.length < 2) return;
-    const totalDist = this.tracePath[this.tracePath.length - 1]!.distFromStart || 1;
-    const targetDist = progress * totalDist;
-
-    let idx = 0;
-    while (idx < this.tracePath.length - 2 && this.tracePath[idx + 1]!.distFromStart < targetDist) {
-      idx++;
-    }
-    const p0 = this.tracePath[idx]!;
-    const p1 = this.tracePath[idx + 1]!;
-    const segLen = Math.max(0.01, p1.distFromStart - p0.distFromStart);
-    const f = Math.max(0, Math.min(1, (targetDist - p0.distFromStart) / segLen));
-
-    const x = p0.x + (p1.x - p0.x) * f;
-    const y = p0.y + (p1.y - p0.y) * f;
-    const z = p0.z + (p1.z - p0.z) * f;
-
-    this.traceProbe.position.set(x, y + 3, z);
-
-    // Smooth look-ahead tangent for cinematic railway chase camera
-    const lookIdx = Math.min(this.tracePath.length - 1, idx + 4);
-    const ahead = this.tracePath[lookIdx]!;
-    const dx = ahead.x - x;
-    const dz = ahead.z - z;
-    const hLen = Math.hypot(dx, dz) || 1;
-    const dirX = dx / hLen;
-    const dirZ = dz / hLen;
-
-    // Position camera behind and obliquely offset so height changes (tunnel <-> portal <-> viaduct) are super readable!
-    const sideX = -dirZ;
-    const sideZ = dirX;
-    const camPos = new THREE.Vector3(
-      x - dirX * 260 + sideX * 190,
-      Math.max(y + 135, 45),
-      z - dirZ * 260 + sideZ * 190,
-    );
-    const lookTarget = new THREE.Vector3(x + dirX * 90, y, z + dirZ * 90);
-
-    this.camera.position.lerp(camPos, 0.25);
-    this.camCtrl.controls.target.lerp(lookTarget, 0.25);
-    this.camCtrl.controls.update();
-    this.emitTraceStatus(y, targetDist);
-  }
-
-  private emitTraceStatus(currentY?: number, targetDist?: number): void {
-    if (!this.callbacks.onTraceUpdate) return;
-    if (!this.traceLineId || this.tracePath.length === 0) {
-      this.callbacks.onTraceUpdate({
-        active: false,
-        playing: false,
-        lineId: null,
-        progress: 0,
-        currentStationName: null,
-        currentTier: null,
-        currentY: null,
-      });
-      return;
-    }
-
-    let nearestSt: string | null = null;
-    if (targetDist !== undefined && this.traceStationNames.length > 0) {
-      let bestD = Infinity;
-      for (const sm of this.traceStationNames) {
-        const d = Math.abs(sm.dist - targetDist);
-        if (d < bestD) {
-          bestD = d;
-          nearestSt = sm.name;
-        }
-      }
-    }
-    const yVal = currentY ?? this.traceProbe.position.y - 3;
-    this.callbacks.onTraceUpdate({
-      active: true,
-      playing: this.tracePlaying,
-      lineId: this.traceLineId,
-      progress: this.traceProgress,
-      currentStationName: nearestSt,
-      currentTier: classifyTier(yVal),
-      currentY: Math.round(yVal * 10) / 10,
-    });
-  }
-
-  private animateCameraTo(
-    endTarget: THREE.Vector3,
-    distance: number,
-    polarDeg: number,
-    azimuthDeg: number,
-    durationMs: number,
-  ): void {
-    this.tracePlaying = false;
-    this.camCtrl.animateTo(endTarget, distance, polarDeg, azimuthDeg, durationMs);
-  }
-
   private handlePointerDown = (e: PointerEvent): void => {
     this.pointerDownPos = { x: e.clientX, y: e.clientY };
     this.camCtrl.cancelAnimation();
   };
 
   private handleDoubleClick = (e: MouseEvent): void => {
-    // P6: Double-click anywhere on buildings, stations, tracks, or ground to smoothly focus that location!
     const rect = this.renderer.domElement.getBoundingClientRect();
     this.pointerNdc.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
     this.pointerNdc.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
     this.raycaster.setFromCamera(this.pointerNdc, this.camera);
 
     const hitTargets: THREE.Object3D[] = [
+      ...this.trainMarkerLayer.interactiveMeshes,
       ...this.tunnelLayer.interactiveStationMeshes,
       ...this.railLayer.interactiveMeshes,
       this.buildingManager.landmarksGroup,
@@ -684,16 +698,13 @@ export class Metropolitan3DScene {
       .filter((h) => h.object.visible);
 
     if (hits.length > 0) {
-      this.tracePlaying = false;
       this.camCtrl.focusWorldPoint(hits[0]!.point);
       return;
     }
 
-    // Fallback: intersect horizontal ground plane y = 0 cleanly
     const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
     const pt = new THREE.Vector3();
     if (this.raycaster.ray.intersectPlane(groundPlane, pt)) {
-      this.tracePlaying = false;
       this.camCtrl.focusWorldPoint(pt);
     }
   };
@@ -702,14 +713,30 @@ export class Metropolitan3DScene {
     if (!this.pointerDownPos) return;
     const dist = Math.hypot(e.clientX - this.pointerDownPos.x, e.clientY - this.pointerDownPos.y);
     this.pointerDownPos = null;
-    if (dist > 6) return;
+    // Only Left Click (< 6px drag) triggers entity selection!
+    if (e.button !== 0 || dist > 6) return;
 
     const rect = this.renderer.domElement.getBoundingClientRect();
     this.pointerNdc.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
     this.pointerNdc.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
     this.raycaster.setFromCamera(this.pointerNdc, this.camera);
 
-    // Prioritize clickable 3D station volumes (batched InstancedMesh with instanceId resolution!)
+    // 1. Prioritize simulated train picking
+    if (this.trainMarkerLayer.group.visible) {
+      const trainHits = this.raycaster
+        .intersectObjects(this.trainMarkerLayer.interactiveMeshes, false)
+        .filter((h) => h.object.visible);
+      for (const hit of trainHits) {
+        const tid = this.trainMarkerLayer.resolveTrainHit(hit);
+        if (tid) {
+          this.selectedTrainId = tid;
+          this.callbacks.onSelectTrain?.(tid);
+          return;
+        }
+      }
+    }
+
+    // 2. Clickable 3D stations
     const stationHits = this.raycaster
       .intersectObjects(this.tunnelLayer.interactiveStationMeshes, false)
       .filter((h) => h.object.visible);
@@ -721,6 +748,7 @@ export class Metropolitan3DScene {
       }
     }
 
+    // 3. Clickable 3D rail lines
     const lineHits = this.raycaster
       .intersectObjects(this.railLayer.interactiveMeshes, false)
       .filter((h) => h.object.visible);
@@ -733,6 +761,7 @@ export class Metropolitan3DScene {
   };
 
   private handleControlsEnd = (): void => {
+    this.emitLabelsNow();
     if (!this.callbacks.onCameraMoved) return;
     const { lon, lat, zoom } = this.getViewLonLatZoom();
     this.callbacks.onCameraMoved(lon, lat, zoom);
@@ -746,6 +775,68 @@ export class Metropolitan3DScene {
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(w, h);
+    this.emitLabelsNow();
+  }
+
+  private emitLabelsNow(): void {
+    if (!this.callbacks.onLabelsUpdated) return;
+    const w = this.container.clientWidth;
+    const h = this.container.clientHeight;
+    if (w <= 0 || h <= 0) return;
+    const simSnap = this.simProvider.getSnapshot();
+    const labels = this.labelRegistry.computeVisibleLabels({
+      camera: this.camera,
+      mode: this.modeState.mode,
+      locale: this.locale,
+      viewportWidth: w,
+      viewportHeight: h,
+      cameraDistanceM: this.camCtrl.getDistanceToFocus(),
+      verticalExaggeration: this.verticalExaggeration,
+      cutawayCenterX: this.cutawayUniforms.uCutawayCenter.value.x,
+      cutawayCenterZ: this.cutawayUniforms.uCutawayCenter.value.z,
+      cutawayRadiusM: this.cutawayUniforms.uCutawayRadius.value,
+      visibleOperatorIds: this.visibleOperatorIds,
+      selectedStationId: this.selectedStationId,
+      selectedLineId: this.selectedLineId,
+      selectedTrainId: this.selectedTrainId,
+      trains: simSnap.trains,
+      trainsVisible: simSnap.trainsVisible,
+    });
+    this.callbacks.onLabelsUpdated(labels);
+    (
+      window as unknown as {
+        __SENKIRO_3D_LABELS__?: { count: number; tier: string | null; ids: string[] };
+      }
+    ).__SENKIRO_3D_LABELS__ = {
+      count: labels.length,
+      tier: labels[0]?.zoomTier ?? null,
+      ids: labels.map((l) => l.id),
+    };
+  }
+
+  private emitCameraDebug(): void {
+    const focus = this.camCtrl.getFocusTarget();
+    (
+      window as unknown as {
+        __SENKIRO_3D_CAMERA__?: {
+          mode: string;
+          freeLook: boolean;
+          followAngle: string;
+          pos: [number, number, number];
+          target: [number, number, number];
+        };
+      }
+    ).__SENKIRO_3D_CAMERA__ = {
+      mode: this.modeState.mode,
+      freeLook: this.modeState.freeLookEnabled,
+      followAngle: this.modeState.followAngle,
+      pos: [
+        Math.round(this.camera.position.x),
+        Math.round(this.camera.position.y),
+        Math.round(this.camera.position.z),
+      ],
+      target: [Math.round(focus.x), Math.round(focus.y), Math.round(focus.z)],
+    };
   }
 
   private emitTelemetry(): void {
@@ -764,24 +855,7 @@ export class Metropolitan3DScene {
     };
     (window as unknown as { __SENKIRO_3D_METRICS__?: SceneTelemetry }).__SENKIRO_3D_METRICS__ =
       telemetry;
-    const focus = this.camCtrl.getFocusTarget();
-    (
-      window as unknown as {
-        __SENKIRO_3D_CAMERA__?: {
-          mode: CameraNavMode;
-          pos: [number, number, number];
-          target: [number, number, number];
-        };
-      }
-    ).__SENKIRO_3D_CAMERA__ = {
-      mode: this.camCtrl.getMode(),
-      pos: [
-        Math.round(this.camera.position.x),
-        Math.round(this.camera.position.y),
-        Math.round(this.camera.position.z),
-      ],
-      target: [Math.round(focus.x), Math.round(focus.y), Math.round(focus.z)],
-    };
+    this.emitCameraDebug();
     this.callbacks.onTelemetry?.(telemetry);
   }
 
@@ -802,26 +876,68 @@ export class Metropolitan3DScene {
       this.smoothedFps = Math.round((1000 / Math.max(1, avg)) * 10) / 10;
     }
 
-    // Active Line Trace fly-through progression
-    if (this.tracePlaying && this.tracePath.length >= 2) {
-      this.traceProgress += dtSec * 0.045;
-      if (this.traceProgress >= 1) {
-        this.traceProgress = 1;
-        this.tracePlaying = false;
+    // 1. Step simulation provider
+    this.simProvider.step(dtSec);
+    const simSnap = this.simProvider.getSnapshot();
+    const followedTrain =
+      this.modeState.mode === 'train_follow' && this.modeState.followedTrainId
+        ? this.simProvider.getTrainById(this.modeState.followedTrainId)
+        : null;
+
+    // If followed train crosses portal between surface & underground, dynamically update occlusion/cutaway!
+    const caps = getCameraModeCapabilities(
+      this.modeState,
+      Boolean(followedTrain?.isUnderground),
+    );
+    if (this.modeState.mode === 'train_follow' && followedTrain) {
+      const wantCutaway = caps.useRadialCutaway;
+      const wantInterior = caps.useExplorerSolidTunnels;
+      if (
+        wantCutaway !== this.cutawayActive ||
+        wantInterior !== (this.explorerHeadlamp.intensity > 0)
+      ) {
+        this.camCtrl.applyModeState(
+          this.modeState,
+          followedTrain,
+          this.selectedLineId,
+          this.selectedStationId,
+        );
+        this.syncEnvironmentWithMode();
       }
-      this.positionCameraOnTrace(this.traceProgress);
-    } else {
-      this.camCtrl.update(now, dtSec);
+      if (wantCutaway) {
+        this.cutawayUniforms.uCutawayCenter.value.set(
+          followedTrain.position.x,
+          0,
+          followedTrain.position.z,
+        );
+      }
     }
+
+    // 2. Update camera controller
+    this.camCtrl.update(now, dtSec, followedTrain);
+
+    // Move subterranean headlamp with camera inside tunnels
+    if (this.explorerHeadlamp.intensity > 0) {
+      this.explorerHeadlamp.position.copy(this.camera.position);
+    }
+
+    // 3. Update simulated train proxy markers
+    this.trainMarkerLayer.update({
+      trains: simSnap.trains,
+      trainsVisible: simSnap.trainsVisible,
+      allowUnderground: caps.allowUndergroundGeometry,
+      verticalExaggeration: this.verticalExaggeration,
+      selectedTrainId: this.selectedTrainId,
+    });
 
     const focusTarget = this.camCtrl.getFocusTarget();
     const camDist = this.camCtrl.getDistanceToFocus();
 
-    // Adaptive near/far planes for optimal depth buffer precision across all zoom levels (P0)
-    const targetNear = Math.max(4, Math.min(75, camDist * 0.012));
+    // 4. Adaptive near/far clipping planes (0.45m inside street/tunnel/follow prevents wall slicing!)
+    const targetNear = Math.max(caps.nearPlaneMin, Math.min(60, camDist * 0.01));
     const targetFar = Math.max(28_000, camDist * 8.5);
     if (
-      Math.abs(targetNear - this.camera.near) / this.camera.near > 0.1 ||
+      Math.abs(targetNear - this.camera.near) / Math.max(0.1, this.camera.near) > 0.1 ||
       Math.abs(targetFar - this.camera.far) / this.camera.far > 0.15
     ) {
       this.camera.near = targetNear;
@@ -829,16 +945,16 @@ export class Metropolitan3DScene {
       this.camera.updateProjectionMatrix();
     }
 
-    // 3-Tier Railway Distance LOD (P4: near steel/sleepers/catenary -> mid deck -> far skeleton!)
+    // 5. Railway 3-tier LOD
     this.currentRailwayLod = this.railLayer.updateLod(camDist);
     this.viaductLayer.updateLod(camDist);
     this.tunnelLayer.updateLod(camDist);
 
     this.skyEnv.updateForCamera(this.camera.position);
 
-    // Smoothly track cutaway pit center onto camera focus target unless pinned (P5)
+    // 6. Track cutaway pit center smoothly unless pinned
     if (this.cutawayActive) {
-      if (!this.cutawayPinned) {
+      if (!this.cutawayPinned && this.modeState.mode === 'underground_cutaway') {
         this.cutawayUniforms.uCutawayCenter.value.x = THREE.MathUtils.lerp(
           this.cutawayUniforms.uCutawayCenter.value.x,
           focusTarget.x,
@@ -859,7 +975,7 @@ export class Metropolitan3DScene {
       );
     }
 
-    // Keep shadow frustum centered near camera target along solar direction for crisp local shadows!
+    // 7. Sun shadow frustum centered near camera target
     this.sunLight.target.position.set(focusTarget.x, 0, focusTarget.z);
     this.sunLight.position.set(
       focusTarget.x + this.skyEnv.sunDirection.x * 3000,
@@ -867,7 +983,18 @@ export class Metropolitan3DScene {
       focusTarget.z + this.skyEnv.sunDirection.z * 3000,
     );
 
-    // Throttled chunk streaming, lazy LOD0 & GPU memory eviction (~4Hz)
+    // 8. Throttled UI label & simulation snapshot sync (~15Hz) + chunk streaming (~4Hz)
+    if (now - this.lastUiSyncTime > 65) {
+      this.lastUiSyncTime = now;
+      this.emitCameraDebug();
+      this.emitLabelsNow();
+      this.callbacks.onSimulationUpdated?.(simSnap);
+      this.callbacks.onOrientationChange?.(
+        this.camCtrl.getOrientationInfo(),
+        this.camCtrl.getExplorerLocation(),
+      );
+    }
+
     if (now - this.lastChunkUpdateTime > 260) {
       this.lastChunkUpdateTime = now;
       this.buildingManager.updateForCamera(this.camera, focusTarget);
@@ -893,8 +1020,7 @@ export class Metropolitan3DScene {
     this.railLayer.dispose();
     this.viaductLayer.dispose();
     this.tunnelLayer.dispose();
-    this.traceProbe.geometry.dispose();
-    (this.traceProbe.material as THREE.Material).dispose();
+    this.trainMarkerLayer.dispose();
     this.renderer.dispose();
     if (this.renderer.domElement.parentElement === this.container) {
       this.container.removeChild(this.renderer.domElement);

@@ -312,16 +312,16 @@ export class TunnelAndStationLayer {
       if (!merged) continue;
 
       const lineColor = new THREE.Color(entry.color);
-      // Concrete-lined architectural cutaway tunnel shell subtly tinted with line identity
+      // Realistic precast concrete tunnel lining by default; line color appears only as subtle highlight when selected!
       const shellMaterial = new THREE.MeshStandardMaterial({
         map: this.tunnelTexture,
-        color: lineColor.clone().lerp(new THREE.Color(0xbac2cc), 0.7),
+        color: new THREE.Color(0x9ca5b0),
         emissive: lineColor,
-        emissiveIntensity: 0.12,
-        roughness: 0.76,
-        metalness: 0.08,
+        emissiveIntensity: 0.0,
+        roughness: 0.82,
+        metalness: 0.06,
         transparent: true,
-        opacity: 0.44,
+        opacity: 0.48,
         side: THREE.DoubleSide,
         depthWrite: false,
         clippingPlanes: clipPlanes,
@@ -607,6 +607,7 @@ export class TunnelAndStationLayer {
     fareSliceLineIds: Set<SkId<'line'>>;
     undergroundActive: boolean;
     clipEnabled?: boolean;
+    explorerInterior?: boolean;
   }): void {
     const {
       visibleOperatorIds,
@@ -617,6 +618,7 @@ export class TunnelAndStationLayer {
       fareSliceLineIds,
       undergroundActive,
       clipEnabled = false,
+      explorerInterior = false,
     } = params;
 
     this.undergroundActive = undergroundActive;
@@ -644,8 +646,25 @@ export class TunnelAndStationLayer {
 
       const isSelected = selectedLineId !== null && tb.lineId === selectedLineId;
       const isDimmed = selectedLineId !== null && !isSelected;
-      tb.shellMaterial.opacity = isSelected ? 0.66 : isDimmed ? 0.08 : 0.48;
-      tb.shellMaterial.emissiveIntensity = isSelected ? 0.44 : 0.14;
+      if (explorerInterior) {
+        // Inside tunnels: solid depth-writing concrete walls prevent wrong-perspective bleed-through!
+        const needUpdate = tb.shellMaterial.transparent !== false;
+        tb.shellMaterial.transparent = false;
+        tb.shellMaterial.opacity = 1.0;
+        tb.shellMaterial.depthWrite = true;
+        tb.shellMaterial.color.setHex(isDimmed ? 0x6b7480 : 0xa3acb8);
+        tb.shellMaterial.emissiveIntensity = isSelected ? 0.16 : 0.0;
+        if (needUpdate) tb.shellMaterial.needsUpdate = true;
+      } else {
+        // Cutaway analytical mode: semi-transparent concrete shells reveal crossing depths; line color highlights on select
+        const needUpdate = tb.shellMaterial.transparent !== true;
+        tb.shellMaterial.transparent = true;
+        tb.shellMaterial.depthWrite = false;
+        tb.shellMaterial.opacity = isSelected ? 0.64 : isDimmed ? 0.08 : 0.44;
+        tb.shellMaterial.color.setHex(0x9ca5b0);
+        tb.shellMaterial.emissiveIntensity = isSelected ? 0.28 : 0.0;
+        if (needUpdate) tb.shellMaterial.needsUpdate = true;
+      }
     }
 
     for (const m of this.stationMeta) {
