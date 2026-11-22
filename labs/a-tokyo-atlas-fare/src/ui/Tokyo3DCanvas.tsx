@@ -1,5 +1,16 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Eye, EyeOff, Moon, Pause, Play, RotateCcw, Scissors, Square, Sun } from 'lucide-react';
+import {
+  ArrowUpFromLine,
+  EyeOff,
+  Layers,
+  Moon,
+  Pause,
+  Play,
+  RotateCcw,
+  Scissors,
+  Square,
+  Sun,
+} from 'lucide-react';
 import {
   SCHEMATIC_TIERS,
   type SchematicTierId,
@@ -70,7 +81,10 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
 
   const [underground, setUnderground] = useState<UndergroundViewSettings>({
     enabled: false,
-    groundOpacity: 0.16,
+    groundOpacity: 0.94,
+    cutawayRadius: 850,
+    verticalExaggeration: 1.4,
+    pinCutaway: false,
     hideBuildings: false,
     clipEnabled: false,
     clipY: 20,
@@ -159,7 +173,21 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
     setUnderground((prev) => ({
       ...prev,
       enabled: !prev.enabled,
-      groundOpacity: !prev.enabled ? 0.16 : 1.0,
+      groundOpacity: !prev.enabled ? 0.94 : 1.0,
+      verticalExaggeration: !prev.enabled ? Math.max(1.3, prev.verticalExaggeration) : 1.0,
+    }));
+  };
+
+  const handleReturnToSurface = () => {
+    setUnderground((prev) => ({
+      ...prev,
+      enabled: false,
+      groundOpacity: 1.0,
+      hideBuildings: false,
+      clipEnabled: false,
+      pinCutaway: false,
+      verticalExaggeration: 1.0,
+      visibleTiers: { ...DEFAULT_VISIBLE_TIERS },
     }));
   };
 
@@ -181,7 +209,8 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
       setUnderground((prev) => ({
         ...prev,
         enabled: true,
-        groundOpacity: 0.16,
+        groundOpacity: 0.94,
+        verticalExaggeration: Math.max(1.3, prev.verticalExaggeration),
       }));
     }
   };
@@ -191,10 +220,16 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
     if (traceStatus.active && traceStatus.lineId === selectedLineId) {
       sceneRef.current.setLineTracePlaying(!traceStatus.playing);
     } else {
-      // Enable semi-transparent ground automatically when tracing an underground metro line!
+      // Enable radial underground cutaway automatically when tracing a metro line!
       const isMetro = selectedLine?.lineClass === 'metro';
       if (isMetro && !underground.enabled) {
-        setUnderground((prev) => ({ ...prev, enabled: true, groundOpacity: 0.18 }));
+        setUnderground((prev) => ({
+          ...prev,
+          enabled: true,
+          groundOpacity: 0.94,
+          pinCutaway: false,
+          verticalExaggeration: 1.4,
+        }));
       }
       sceneRef.current.startLineTrace(selectedLineId, true);
     }
@@ -265,6 +300,22 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
             <RotateCcw size={12} />
             <span>{locale === 'ja' ? 'リセット' : 'Reset'}</span>
           </button>
+          {underground.enabled && (
+            <button
+              type="button"
+              className="hub-chip"
+              style={{
+                background: 'var(--accent)',
+                color: '#ffffff',
+                borderColor: 'var(--accent)',
+              }}
+              data-testid="return-to-surface-btn"
+              onClick={handleReturnToSurface}
+            >
+              <ArrowUpFromLine size={12} />
+              <span>{locale === 'ja' ? '地上ビューへ戻る' : 'Return to Surface'}</span>
+            </button>
+          )}
         </div>
 
         {fareQuote && fareQuote.pathsDiffer && (
@@ -285,15 +336,15 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
             data-testid="toggle-underground-view"
             onClick={handleToggleUnderground}
           >
-            {underground.enabled ? <Eye size={14} /> : <EyeOff size={14} />}
+            {underground.enabled ? <Layers size={14} /> : <EyeOff size={14} />}
             <span>
               {locale === 'ja'
                 ? underground.enabled
-                  ? '地下透視モード ON'
-                  : '地下透視モード OFF'
+                  ? '地下カットアウェイ ON'
+                  : '地下エクスプローラー'
                 : underground.enabled
-                  ? 'Underground View ON'
-                  : 'Underground View OFF'}
+                  ? 'Underground Cutaway ON'
+                  : 'Underground Explorer'}
             </span>
           </button>
           <button
@@ -309,26 +360,84 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
         {!hudCollapsed && (
           <div className="underground-hud-body">
             {underground.enabled && (
-              <label className="hud-slider-row">
-                <span>
-                  {locale === 'ja' ? '地面透明度' : 'Ground Opacity'}:{' '}
-                  <strong className="mono">{Math.round(underground.groundOpacity * 100)}%</strong>
-                </span>
-                <input
-                  type="range"
-                  min={0.04}
-                  max={1}
-                  step={0.04}
-                  data-testid="ground-opacity-slider"
-                  value={underground.groundOpacity}
-                  onChange={(e) =>
-                    setUnderground((prev) => ({
-                      ...prev,
-                      groundOpacity: Number(e.target.value),
-                    }))
-                  }
-                />
-              </label>
+              <>
+                <label className="hud-slider-row">
+                  <span>
+                    {locale === 'ja' ? '開削半径' : 'Cutaway Radius'}:{' '}
+                    <strong className="mono">{underground.cutawayRadius}m</strong>
+                  </span>
+                  <input
+                    type="range"
+                    min={350}
+                    max={2400}
+                    step={50}
+                    data-testid="cutaway-radius-slider"
+                    value={underground.cutawayRadius}
+                    onChange={(e) =>
+                      setUnderground((prev) => ({
+                        ...prev,
+                        cutawayRadius: Number(e.target.value),
+                      }))
+                    }
+                  />
+                </label>
+
+                <label className="hud-slider-row">
+                  <span>
+                    {locale === 'ja' ? '縦方向誇張 (視認用)' : 'Vertical Exaggeration'}:{' '}
+                    <strong className="mono">{underground.verticalExaggeration.toFixed(1)}×</strong>
+                  </span>
+                  <input
+                    type="range"
+                    min={1.0}
+                    max={2.5}
+                    step={0.1}
+                    data-testid="vertical-exaggeration-slider"
+                    value={underground.verticalExaggeration}
+                    onChange={(e) =>
+                      setUnderground((prev) => ({
+                        ...prev,
+                        verticalExaggeration: Number(e.target.value),
+                      }))
+                    }
+                  />
+                </label>
+
+                <label className="hud-slider-row">
+                  <span>
+                    {locale === 'ja' ? '外周地表の不透明度' : 'Outer Ground Opacity'}:{' '}
+                    <strong className="mono">{Math.round(underground.groundOpacity * 100)}%</strong>
+                  </span>
+                  <input
+                    type="range"
+                    min={0.12}
+                    max={1}
+                    step={0.04}
+                    data-testid="ground-opacity-slider"
+                    value={underground.groundOpacity}
+                    onChange={(e) =>
+                      setUnderground((prev) => ({
+                        ...prev,
+                        groundOpacity: Number(e.target.value),
+                      }))
+                    }
+                  />
+                </label>
+
+                <label className="hud-check-row">
+                  <input
+                    type="checkbox"
+                    data-testid="pin-cutaway-checkbox"
+                    checked={underground.pinCutaway}
+                    onChange={(e) =>
+                      setUnderground((prev) => ({ ...prev, pinCutaway: e.target.checked }))
+                    }
+                  />
+                  <span>
+                    {locale === 'ja' ? '開削位置を固定 (カメラ追従OFF)' : 'Pin Cutaway Location'}
+                  </span>
+                </label>
+              </>
             )}
 
             <label className="hud-check-row">

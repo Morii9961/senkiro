@@ -14,6 +14,7 @@
 
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { injectRadialCutaway, type CutawayUniforms } from '../materials/cutawayShader.js';
 import { FacadeMaterialLibrary, getBuildingTintHex } from '../materials/facadeLibrary.js';
 import type {
   UrbanBuildingRecord,
@@ -555,12 +556,27 @@ export class CityChunkManager {
   private buildingsVisible = true;
   private currentOpacity = 1.0;
 
-  constructor(isDark: boolean, clipPlanes: THREE.Plane[]) {
+  constructor(isDark: boolean, clipPlanes: THREE.Plane[], cutawayUniforms?: CutawayUniforms) {
     this.isDark = isDark;
     this.group.name = 'city-buildings-chunked';
     this.landmarksGroup.name = 'tokyo-procedural-landmarks';
     this.group.add(this.landmarksGroup);
     this.facadeLib = new FacadeMaterialLibrary(isDark, clipPlanes);
+
+    if (cutawayUniforms) {
+      // Discard generic city buildings cleanly inside the cutaway aperture while keeping outer Tokyo 100% opaque!
+      // Hero landmarks (landmarkGlass/brick/towerOrange/towerWhite) stay as spatial orientation anchors!
+      for (const mat of [
+        this.facadeLib.materials.office,
+        this.facadeLib.materials.commercial,
+        this.facadeLib.materials.residential,
+        this.facadeLib.materials.station,
+        this.facadeLib.materials.roof,
+        this.facadeLib.materials.instanced,
+      ]) {
+        injectRadialCutaway(mat, cutawayUniforms, 'building');
+      }
+    }
   }
 
   setManifest(manifest: UrbanManifest, landmarks: UrbanLandmarkRecord[]): void {
@@ -742,17 +758,45 @@ export class CityChunkManager {
     return { meta, buildings, lod0Group, lod1Mesh, activeLod: 1 };
   }
 
-  setVisibilityAndOpacity(visible: boolean, opacity: number): void {
+  setVisibilityAndOpacity(visible: boolean, opacity: number, cutawayActive = false): void {
     this.buildingsVisible = visible;
     this.currentOpacity = Math.max(0.08, Math.min(1.0, opacity));
-    const isTranslucent = this.currentOpacity < 0.99;
+    const outerTranslucent = !cutawayActive && this.currentOpacity < 0.99;
     this.landmarksGroup.visible = visible;
 
-    for (const mat of Object.values(this.facadeLib.materials)) {
-      const needRecompile = mat.transparent !== isTranslucent;
-      mat.transparent = isTranslucent;
-      mat.opacity = this.currentOpacity;
-      mat.depthWrite = !isTranslucent;
+    // Generic buildings: stay 100% OPAQUE outside the circular cutaway pit (zero ghost soup!),
+    // unless outer opacity is explicitly lowered below 0.55!
+    const genericOpacity = cutawayActive ? (this.currentOpacity < 0.55 ? 0.65 : 1.0) : this.currentOpacity;
+    const genericTranslucent = genericOpacity < 0.99;
+
+    for (const mat of [
+      this.facadeLib.materials.office,
+      this.facadeLib.materials.commercial,
+      this.facadeLib.materials.residential,
+      this.facadeLib.materials.station,
+      this.facadeLib.materials.roof,
+      this.facadeLib.materials.instanced,
+    ]) {
+      const needRecompile = mat.transparent !== genericTranslucent;
+      mat.transparent = genericTranslucent;
+      mat.opacity = genericOpacity;
+      mat.depthWrite = !genericTranslucent;
+      if (needRecompile) mat.needsUpdate = true;
+    }
+
+    // Hero landmarks: crisp translucent spatial anchors inside Underground Cutaway Mode!
+    const lmOpacity = cutawayActive ? 0.34 : outerTranslucent ? this.currentOpacity : 1.0;
+    const lmTranslucent = lmOpacity < 0.99;
+    for (const mat of [
+      this.facadeLib.materials.landmarkGlass,
+      this.facadeLib.materials.brick,
+      this.facadeLib.materials.towerOrange,
+      this.facadeLib.materials.towerWhite,
+    ]) {
+      const needRecompile = mat.transparent !== lmTranslucent;
+      mat.transparent = lmTranslucent;
+      mat.opacity = lmOpacity;
+      mat.depthWrite = !lmTranslucent;
       if (needRecompile) mat.needsUpdate = true;
     }
 

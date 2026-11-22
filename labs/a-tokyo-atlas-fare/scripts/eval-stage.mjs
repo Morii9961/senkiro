@@ -46,13 +46,16 @@ async function main() {
   const initialLoadMs = Date.now() - t0;
 
   const hubs = [
-    { id: 'tokyo23', label: 'overview', underground: false },
-    { id: 'shibuya', label: 'shibuya-surface', underground: false },
-    { id: 'shibuya', label: 'shibuya-underground', underground: true },
-    { id: 'shinjuku', label: 'shinjuku-surface', underground: false },
-    { id: 'tokyo', label: 'tokyo-surface', underground: false },
-    { id: 'shinagawa', label: 'shinagawa-surface', underground: false },
-    { id: 'ikebukuro', label: 'ikebukuro-surface', underground: false },
+    { id: 'tokyo23', label: 'overview', underground: false, night: false },
+    { id: 'shibuya', label: 'shibuya-surface', underground: false, night: false },
+    { id: 'shibuya', label: 'shibuya-underground', underground: true, night: false },
+    { id: 'shinjuku', label: 'shinjuku-surface', underground: false, night: false },
+    { id: 'shinjuku', label: 'shinjuku-underground', underground: true, night: false },
+    { id: 'tokyo', label: 'tokyo-surface', underground: false, night: false },
+    { id: 'tokyo', label: 'tokyo-underground', underground: true, night: false },
+    { id: 'shinagawa', label: 'shinagawa-surface', underground: false, night: false },
+    { id: 'ikebukuro', label: 'ikebukuro-surface', underground: false, night: false },
+    { id: 'shinjuku', label: 'shinjuku-night', underground: false, night: true },
   ];
 
   const report = {
@@ -69,15 +72,22 @@ async function main() {
     await page.getByTestId(`hub-btn-${h.id}`).click();
     await page.waitForTimeout(1600);
 
-    // Ensure underground mode matches target
+    // Ensure underground mode & night lighting match target
     const ugBtn = page.getByTestId('toggle-underground-view');
     const isOn = (await ugBtn.textContent())?.includes('ON');
     if (h.underground && !isOn) {
       await ugBtn.click();
-      await page.waitForTimeout(600);
+      await page.waitForTimeout(700);
     } else if (!h.underground && isOn) {
       await ugBtn.click();
-      await page.waitForTimeout(600);
+      await page.waitForTimeout(700);
+    }
+
+    const dnBtn = page.getByTestId('toggle-3d-day-night');
+    const isCurrentlyNight = (await dnBtn.textContent())?.includes('昼間') || (await dnBtn.textContent())?.includes('Day');
+    if (h.night !== isCurrentlyNight) {
+      await dnBtn.click();
+      await page.waitForTimeout(500);
     }
 
     // Measure live FPS & Three.js render info if exposed

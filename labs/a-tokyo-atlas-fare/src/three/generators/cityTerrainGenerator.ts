@@ -14,6 +14,7 @@
 
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { injectRadialCutaway, type CutawayUniforms } from '../materials/cutawayShader.js';
 import { createParkCanopyTexture, createUrbanGroundTexture } from '../materials/facadeLibrary.js';
 import type { UrbanBaseEnvironment } from '../types.js';
 
@@ -111,7 +112,7 @@ export class CityTerrainLayer {
   private parkTexture: THREE.CanvasTexture;
   private isDark: boolean;
 
-  constructor(isDark: boolean, clipPlanes: THREE.Plane[]) {
+  constructor(isDark: boolean, clipPlanes: THREE.Plane[], cutawayUniforms?: CutawayUniforms) {
     this.isDark = isDark;
     this.group.name = 'city-terrain-layer';
 
@@ -234,6 +235,13 @@ export class CityTerrainLayer {
       this.secondaryRoadMaterial,
       this.roadMaterial,
     ];
+
+    if (cutawayUniforms) {
+      for (const mat of this.surfaceMaterials) {
+        injectRadialCutaway(mat, cutawayUniforms, 'terrain');
+      }
+      injectRadialCutaway(this.elevatedRoadMaterial, cutawayUniforms, 'terrain');
+    }
 
     // Base metropolitan ground plane at y = -1.25
     const basePlane = new THREE.Mesh(

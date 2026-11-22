@@ -120,7 +120,10 @@ export interface UrbanBaseEnvironment {
 
 export interface UndergroundViewSettings {
   enabled: boolean;
-  groundOpacity: number; // 0..1
+  groundOpacity: number; // 0..1 (outer surface opacity around cutaway pit)
+  cutawayRadius: number; // meters (350..2400)
+  verticalExaggeration: number; // 1.0..2.5 (visual-only 3D railway vertical separation)
+  pinCutaway: boolean; // lock cutaway center vs follow camera focus target
   hideBuildings: boolean;
   clipEnabled: boolean;
   clipY: number; // -45 .. +35

@@ -25,6 +25,7 @@ import type {
   OsmVerticalDataset,
   SkId,
 } from '../domain/types.js';
+import { CutawayPitVisuals } from './environment/cutawayVisuals.js';
 import { SkyEnvironmentSystem } from './environment/skyEnvironment.js';
 import { CityChunkManager } from './generators/buildingGenerator.js';
 import { CityTerrainLayer } from './generators/cityTerrainGenerator.js';
@@ -37,6 +38,7 @@ import {
   worldToLonLat,
   type CameraHubPreset,
 } from './geoProjection.js';
+import { createCutawayUniforms, type CutawayUniforms } from './materials/cutawayShader.js';
 import type {
   LineTraceStatus,
   SceneTelemetry,
@@ -74,6 +76,8 @@ export class Metropolitan3DScene {
   private readonly clipPlanes: THREE.Plane[];
 
   private readonly skyEnv: SkyEnvironmentSystem;
+  private readonly cutawayUniforms: CutawayUniforms;
+  private readonly cutawayVisuals: CutawayPitVisuals;
   private readonly terrainLayer: CityTerrainLayer;
   private readonly buildingManager: CityChunkManager;
   private readonly railLayer: RailTrackLayer;
@@ -84,6 +88,10 @@ export class Metropolitan3DScene {
   private readonly sunLight: THREE.DirectionalLight;
   private readonly hemiLight: THREE.HemisphereLight;
   private readonly subFillLight: THREE.DirectionalLight;
+
+  private cutawayActive = false;
+  private cutawayPinned = false;
+  private verticalExaggeration = 1.0;
 
   private readonly dataset: AtlasDataset;
   private readonly fareSliceLineIds: Set<SkId<'line'>>;
@@ -205,15 +213,18 @@ export class Metropolitan3DScene {
     this.clipPlane = new THREE.Plane(new THREE.Vector3(0, -1, 0), 10_000);
     this.clipPlanes = [this.clipPlane];
 
-    // 7. Instantiate Procedural Layers
-    this.terrainLayer = new CityTerrainLayer(isDark, this.clipPlanes);
-    this.buildingManager = new CityChunkManager(isDark, this.clipPlanes);
+    // 7. Instantiate Procedural Layers + GPU Radial Cutaway System (P5)
+    this.cutawayUniforms = createCutawayUniforms();
+    this.cutawayVisuals = new CutawayPitVisuals(isDark);
+    this.terrainLayer = new CityTerrainLayer(isDark, this.clipPlanes, this.cutawayUniforms);
+    this.buildingManager = new CityChunkManager(isDark, this.clipPlanes, this.cutawayUniforms);
     this.railLayer = new RailTrackLayer(this.solved, this.clipPlanes);
     this.viaductLayer = new ViaductLayer(this.solved, null, this.clipPlanes);
     this.tunnelLayer = new TunnelAndStationLayer(this.solved, this.clipPlanes);
 
     this.scene.add(
       this.terrainLayer.group,
+      this.cutawayVisuals.group,
       this.buildingManager.group,
       this.viaductLayer.group,
       this.tunnelLayer.group,
@@ -293,6 +304,7 @@ export class Metropolitan3DScene {
     this.subFillLight.intensity = isDark ? 0.48 : 0.34;
     this.terrainLayer.setTheme(isDark);
     this.buildingManager.setTheme(isDark);
+    this.cutawayVisuals.setTheme(isDark);
   }
 
   applyFilters(params: {
@@ -305,17 +317,62 @@ export class Metropolitan3DScene {
     const { visibleOperatorIds, selectedLineId, selectedStationId, fareSliceOnly, underground } =
       params;
 
-    // Underground View surface fading, building visibility, polar angle allowance & depth slicing!
+    // P5 True 3D Cutaway / Underground Explorer state!
+    const wasActive = this.cutawayActive;
+    this.cutawayActive = underground.enabled;
+    this.cutawayPinned = underground.pinCutaway;
+    this.verticalExaggeration = underground.enabled
+      ? Math.max(1.0, Math.min(2.5, underground.verticalExaggeration))
+      : 1.0;
+
+    this.cutawayUniforms.uCutawayActive.value = underground.enabled ? 1.0 : 0.0;
+    this.cutawayUniforms.uCutawayRadius.value = Math.max(
+      250,
+      Math.min(3500, underground.cutawayRadius),
+    );
+    if (underground.enabled && !wasActive) {
+      // Snap cutaway pit immediately onto current focus target upon entering Underground Mode!
+      this.cutawayUniforms.uCutawayCenter.value.set(
+        this.controls.target.x,
+        0,
+        this.controls.target.z,
+      );
+    }
+
+    // Visual-only vertical exaggeration on 3D railway layers (NEVER mutates legal operatingKm!)
+    this.railLayer.group.scale.y = this.verticalExaggeration;
+    this.viaductLayer.group.scale.y = this.verticalExaggeration;
+    this.tunnelLayer.group.scale.y = this.verticalExaggeration;
+
+    // Boost subterranean illumination gently inside cutaway pit so concrete tunnels pop crisply!
+    this.subFillLight.intensity = underground.enabled
+      ? this.isDark
+        ? 0.85
+        : 0.72
+      : this.isDark
+        ? 0.48
+        : 0.34;
+
+    // Outer ground stays crisp around cutaway pit unless user dials down Outer Surface Opacity!
     const effectiveGroundOpacity = underground.enabled ? underground.groundOpacity : 1.0;
     this.terrainLayer.setSurfaceOpacity(effectiveGroundOpacity, underground.enabled);
 
     const bldgVisible = !underground.hideBuildings;
-    const bldgOpacity = underground.enabled
-      ? Math.max(0.18, Math.min(0.65, underground.groundOpacity + 0.16))
-      : 1.0;
-    this.buildingManager.setVisibilityAndOpacity(bldgVisible, bldgOpacity);
+    this.buildingManager.setVisibilityAndOpacity(
+      bldgVisible,
+      effectiveGroundOpacity,
+      underground.enabled,
+    );
 
-    // Allow diving underneath ground level when Underground View is active!
+    this.cutawayVisuals.update(
+      underground.enabled,
+      this.cutawayUniforms.uCutawayCenter.value.x,
+      this.cutawayUniforms.uCutawayCenter.value.z,
+      this.cutawayUniforms.uCutawayRadius.value,
+      this.verticalExaggeration,
+    );
+
+    // Allow diving cleanly underneath ground level when Underground Explorer is active!
     this.controls.maxPolarAngle = underground.enabled ? Math.PI * 0.72 : Math.PI * 0.47;
     this.clipPlane.constant = underground.clipEnabled ? underground.clipY : 10_000;
 
@@ -775,6 +832,29 @@ export class Metropolitan3DScene {
     this.controls.update();
     this.skyEnv.updateForCamera(this.camera.position);
 
+    // Smoothly track cutaway pit center onto camera focus target unless pinned (P5)
+    if (this.cutawayActive) {
+      if (!this.cutawayPinned) {
+        this.cutawayUniforms.uCutawayCenter.value.x = THREE.MathUtils.lerp(
+          this.cutawayUniforms.uCutawayCenter.value.x,
+          this.controls.target.x,
+          0.18,
+        );
+        this.cutawayUniforms.uCutawayCenter.value.z = THREE.MathUtils.lerp(
+          this.cutawayUniforms.uCutawayCenter.value.z,
+          this.controls.target.z,
+          0.18,
+        );
+      }
+      this.cutawayVisuals.update(
+        true,
+        this.cutawayUniforms.uCutawayCenter.value.x,
+        this.cutawayUniforms.uCutawayCenter.value.z,
+        this.cutawayUniforms.uCutawayRadius.value,
+        this.verticalExaggeration,
+      );
+    }
+
     // Keep shadow frustum centered near camera target along solar direction for crisp local shadows!
     this.sunLight.target.position.set(this.controls.target.x, 0, this.controls.target.z);
     this.sunLight.position.set(
@@ -803,6 +883,7 @@ export class Metropolitan3DScene {
     this.controls.dispose();
 
     this.skyEnv.dispose();
+    this.cutawayVisuals.dispose();
     this.terrainLayer.dispose();
     this.buildingManager.dispose();
     this.railLayer.dispose();
