@@ -8,7 +8,7 @@
  * All entries are explicitly tagged `Simulation / 模拟运行`.
  */
 
-import type { LineClass, SkId } from '../types.js';
+import type { LineClass, SkId } from '../domain/types.js';
 import {
   SIMULATION_LABEL,
   type RollingStockSpec,

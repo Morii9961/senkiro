@@ -16,8 +16,8 @@ import {
   type SolvedRailwayNetwork3D,
   type SolvedSegment3D,
   type SolvedStationNode3D,
-} from '../elevationSolver.js';
-import type { AtlasDataset, OsmVerticalDataset, SkId } from '../types.js';
+} from '../domain/elevationSolver.js';
+import type { AtlasDataset, OsmVerticalDataset, SkId } from '../domain/types.js';
 import { TrackSpline3D } from './trackSpline3D.js';
 import {
   SIMULATION_LABEL,

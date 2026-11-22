@@ -17,8 +17,8 @@ import type {
   SolvedPoint3D,
   SolvedStationNode3D,
   TrackStructureKind,
-} from '../elevationSolver.js';
-import type { DataNature, LineClass, SkId } from '../types.js';
+} from '../domain/elevationSolver.js';
+import type { DataNature, LineClass, SkId } from '../domain/types.js';
 
 export const SIMULATION_LABEL = 'Simulation / 模拟运行' as const;
 export type SimulationLabel = typeof SIMULATION_LABEL;

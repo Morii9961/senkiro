@@ -16,8 +16,8 @@
  *     3D orientation (Euler + unit quaternion) while strictly preserving inter-car spacing.
  */
 
-import type { SchematicTierId, TrackStructureKind } from '../elevationSolver.js';
-import type { SkId } from '../types.js';
+import type { SchematicTierId, TrackStructureKind } from '../domain/elevationSolver.js';
+import type { SkId } from '../domain/types.js';
 import type {
   Orientation3D,
   PhysicalTrackPathSegment,

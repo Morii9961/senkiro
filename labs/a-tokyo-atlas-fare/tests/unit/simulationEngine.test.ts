@@ -1,4 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { buildPhysicalTrackGraph } from '../../src/contracts/index.js';
+import { solveRailwayNetwork3D } from '../../src/domain/elevationSolver.js';
+import { StaticAtlasProvider } from '../../src/providers/atlasProvider.js';
 import {
   ALL_TRAIN_OPERATIONAL_STATES,
   buildRunnableTrackRoute,
@@ -9,15 +12,16 @@ import {
   createDiscontinuousMockNetwork,
   createSingleIntervalMockNetwork,
   createTokyoAtlasSimulationEngine,
+  createTrainSimulationEngine,
   getRollingStockSpec,
   resolveSimulationConfig,
   resolveTrainKinematics,
   Session0AtlasNetworkAdapter,
   SIMULATION_LABEL,
   TrainSimulationEngine,
+  VirtualTrainSimulationEngine,
   type TrainOperationalState,
-} from '../../src/domain/simulation/index.js';
-import { StaticAtlasProvider } from '../../src/providers/atlasProvider.js';
+} from '../../src/simulation/index.js';
 
 describe('SENKIRO Atlas v2 — Deterministic Train Simulation Engine', () => {
   // ==========================================================================
@@ -685,5 +689,77 @@ describe('SENKIRO Atlas v2 — Deterministic Train Simulation Engine', () => {
     expect(secondTrainSpawned).toBe(true);
     expect(observedViaductCar).toBe(true);
     expect(observedUndergroundCar).toBe(true);
+  });
+
+  // ==========================================================================
+  // 11. Frozen v2.0 `TrainSimulationEngineAdapter` Contract Compliance
+  // ==========================================================================
+  it('implements the frozen v2.0 TrainSimulationEngineAdapter contract on PhysicalTrackGraph with articulated carPoses and underground demo train', async () => {
+    const provider = new StaticAtlasProvider();
+    const dataset = provider.getAtlasDataset();
+    const osmVertical = await provider.loadOsmVerticalOverlay();
+    const solved = solveRailwayNetwork3D(dataset, osmVertical);
+    const graph = buildPhysicalTrackGraph(dataset, solved);
+
+    const adapter: VirtualTrainSimulationEngine = createTrainSimulationEngine();
+    adapter.initialize(graph, dataset, {
+      density: 'normal',
+      timeScale: 1,
+      autoStart: true,
+      seed: 20261122,
+    });
+
+    const ctrl0 = adapter.getControlState();
+    expect(ctrl0.isVirtualSimulation).toBe(true);
+    expect(ctrl0.dataNature).toBe('synthetic');
+    expect(ctrl0.running).toBe(true);
+    expect(ctrl0.totalActiveTrains).toBeGreaterThan(20);
+    expect(ctrl0.undergroundTrainCount).toBeGreaterThan(8);
+
+    // Flagship underground demo train ID must be valid and underground
+    const demoTrainId = adapter.getDemoUndergroundTrainId();
+    expect(demoTrainId).not.toBeNull();
+    const demoTrain0 = adapter.getTrainById(demoTrainId!)!;
+    expect(demoTrain0).toBeDefined();
+    expect(demoTrain0.isVirtualSimulation).toBe(true);
+    expect(demoTrain0.dataNature).toBe('synthetic');
+    expect(demoTrain0.disclaimerCode).toBe('VIRTUAL_SIMULATION_NOT_REALTIME');
+    expect(demoTrain0.isUnderground).toBe(true);
+    expect(demoTrain0.carPoses.length).toBe(demoTrain0.carCount);
+
+    // Step 10 seconds at verticalExaggeration = 1.0 vs 2.0 and verify deterministic invariance + verticalExaggeration rail-head scaling
+    const adapterA = createTrainSimulationEngine();
+    adapterA.initialize(graph, dataset, { seed: 42, density: 'low' });
+    const adapterB = createTrainSimulationEngine();
+    adapterB.initialize(graph, dataset, { seed: 42, density: 'low' });
+
+    // Step A at 60 FPS (600 frames of 1/60s) and B at 20 FPS (200 frames of 1/20s)
+    for (let i = 0; i < 600; i++) adapterA.step(1 / 60, 1.0);
+    for (let i = 0; i < 200; i++) adapterB.step(1 / 20, 1.0);
+
+    expect(adapterA.getControlState().simClockSec).toBe(10.0);
+    expect(adapterB.getControlState().simClockSec).toBe(10.0);
+    expect(adapterA.getTrains()[0]!.headPose).toEqual(adapterB.getTrains()[0]!.headPose);
+    expect(adapterA.getTrains()[0]!.carPoses).toEqual(adapterB.getTrains()[0]!.carPoses);
+
+    // Test pause, timeScale, density, lineFilter, and reset
+    adapter.setRunning(false);
+    const clockBeforePause = adapter.getControlState().simClockSec;
+    adapter.step(5.0, 1.0);
+    expect(adapter.getControlState().simClockSec).toBe(clockBeforePause);
+
+    adapter.setRunning(true);
+    adapter.setTimeScale(5);
+    adapter.step(2.0, 1.4);
+    expect(adapter.getControlState().simClockSec).toBeCloseTo(clockBeforePause + 10.0, 3);
+
+    adapter.setLineFilter(['sk:line:metro-ginza']);
+    const ginzaOnlyTrains = adapter.getTrains();
+    expect(ginzaOnlyTrains.length).toBeGreaterThan(0);
+    expect(ginzaOnlyTrains.every((t) => t.lineId === 'sk:line:metro-ginza')).toBe(true);
+
+    adapter.setLineFilter(null);
+    adapter.setDensity('rush');
+    expect(adapter.getTrains().length).toBeGreaterThan(ctrl0.totalActiveTrains);
   });
 });

@@ -17,8 +17,8 @@ import {
   type SolvedPoint3D,
   type SolvedRailwayNetwork3D,
   type SolvedStationNode3D,
-} from '../elevationSolver.js';
-import type { AtlasDataset, OsmVerticalDataset, SkId } from '../types.js';
+} from '../domain/elevationSolver.js';
+import type { AtlasDataset, OsmVerticalDataset, SkId } from '../domain/types.js';
 import { getDefaultRollingStockForLine } from './rollingStockCatalog.js';
 import {
   applyLateralTrackOffset3D,
