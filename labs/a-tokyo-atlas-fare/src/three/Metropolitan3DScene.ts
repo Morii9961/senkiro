@@ -100,6 +100,10 @@ export class Metropolitan3DScene {
   private traceProgress = 0;
   private tracePlaying = false;
   private lastFrameTime = performance.now();
+  private readonly sceneCreatedAt = performance.now();
+  private urbanLoadedMs: number | null = null;
+  private frameTimesMs: number[] = [];
+  private smoothedFps = 0;
 
   // Pointer click vs drag discrimination
   private pointerDownPos: { x: number; y: number } | null = null;
@@ -125,11 +129,12 @@ export class Metropolitan3DScene {
     // 1. Solve continuous 3D vertical railway network from shared AtlasDataset + OSM vertical tags
     this.solved = solveRailwayNetwork3D(dataset, osmVertical);
 
-    // 2. Renderer (preserveDrawingBuffer: true for clean screenshot & WebGL verification!)
+    // 2. Renderer (logarithmicDepthBuffer: true eliminates distant coplanar ground/water Z-fighting!)
     this.renderer = new THREE.WebGLRenderer({
       antialias: true,
       powerPreference: 'high-performance',
       preserveDrawingBuffer: true,
+      logarithmicDepthBuffer: true,
     });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     this.renderer.setSize(container.clientWidth || 960, container.clientHeight || 640);
@@ -258,6 +263,7 @@ export class Metropolitan3DScene {
           const manifest = (await manifestRes.json()) as UrbanManifest;
           this.buildingManager.setManifest(manifest, env.landmarks);
           this.buildingManager.updateForCamera(this.camera, this.controls.target);
+          this.urbanLoadedMs = Math.round(performance.now() - this.sceneCreatedAt);
           this.emitTelemetry();
         }
       }
@@ -301,7 +307,7 @@ export class Metropolitan3DScene {
     const bldgVisible = !underground.hideBuildings;
     const bldgOpacity = underground.enabled
       ? Math.max(0.18, Math.min(0.65, underground.groundOpacity + 0.16))
-      : 0.94;
+      : 1.0;
     this.buildingManager.setVisibilityAndOpacity(bldgVisible, bldgOpacity);
 
     // Allow diving underneath ground level when Underground View is active!
@@ -677,15 +683,21 @@ export class Metropolitan3DScene {
   }
 
   private emitTelemetry(): void {
-    if (!this.callbacks.onTelemetry) return;
     const bStats = this.buildingManager.getStats();
     const portalCount = this.solved.segments.reduce((s, seg) => s + seg.portals.length, 0);
     const adjustedCount = this.solved.crossings.filter((c) => c.wasAdjusted).length;
-    this.callbacks.onTelemetry({
+    const telemetry: SceneTelemetry = {
       ...bStats,
       deconflictedCrossings: adjustedCount,
       tunnelPortals: portalCount,
-    });
+      fps: this.smoothedFps,
+      drawCalls: this.renderer.info.render.calls,
+      triangles: this.renderer.info.render.triangles,
+      loadTimeMs: this.urbanLoadedMs,
+    };
+    (window as unknown as { __SENKIRO_3D_METRICS__?: SceneTelemetry }).__SENKIRO_3D_METRICS__ =
+      telemetry;
+    this.callbacks.onTelemetry?.(telemetry);
   }
 
   private animate = (): void => {
@@ -693,8 +705,30 @@ export class Metropolitan3DScene {
     this.rafId = requestAnimationFrame(this.animate);
 
     const now = performance.now();
-    const dtSec = Math.min(0.1, (now - this.lastFrameTime) / 1000);
+    const rawDtMs = now - this.lastFrameTime;
+    const dtSec = Math.min(0.1, rawDtMs / 1000);
     this.lastFrameTime = now;
+
+    if (rawDtMs > 0 && rawDtMs < 2000) {
+      this.frameTimesMs.push(rawDtMs);
+      if (this.frameTimesMs.length > 24) this.frameTimesMs.shift();
+      const avg =
+        this.frameTimesMs.reduce((a, b) => a + b, 0) / Math.max(1, this.frameTimesMs.length);
+      this.smoothedFps = Math.round((1000 / Math.max(1, avg)) * 10) / 10;
+    }
+
+    // Adaptive near/far planes for optimal depth buffer precision across all zoom levels (P0)
+    const camDist = this.camera.position.distanceTo(this.controls.target);
+    const targetNear = Math.max(4, Math.min(75, camDist * 0.012));
+    const targetFar = Math.max(28_000, camDist * 8.5);
+    if (
+      Math.abs(targetNear - this.camera.near) / this.camera.near > 0.1 ||
+      Math.abs(targetFar - this.camera.far) / this.camera.far > 0.15
+    ) {
+      this.camera.near = targetNear;
+      this.camera.far = targetFar;
+      this.camera.updateProjectionMatrix();
+    }
 
     // Smooth camera animation
     if (this.cameraAnim) {

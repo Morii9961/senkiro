@@ -409,7 +409,7 @@ export class CityChunkManager {
   private textures: THREE.CanvasTexture[];
   private isDark: boolean;
   private buildingsVisible = true;
-  private currentOpacity = 0.94;
+  private currentOpacity = 1.0;
 
   constructor(isDark: boolean, clipPlanes: THREE.Plane[]) {
     this.isDark = isDark;
@@ -423,10 +423,12 @@ export class CityChunkManager {
     const texBrick = createFacadeTexture('brick', isDark);
     this.textures = [texOffice, texComm, texRes, texBrick];
 
+    // P0 FIX: Buildings render STRICTLY OPAQUE in normal surface mode (zero glass-bleed sorting bugs!)
     const mkMat = (opts: THREE.MeshStandardMaterialParameters) =>
       new THREE.MeshStandardMaterial({
-        transparent: true,
-        opacity: this.currentOpacity,
+        transparent: false,
+        opacity: 1.0,
+        depthWrite: true,
         clippingPlanes: clipPlanes,
         ...opts,
       });
@@ -466,7 +468,9 @@ export class CityChunkManager {
 
     const camPos = camera.position;
     const loadRadius = Math.min(13_500, Math.max(5_200, camPos.distanceTo(target) * 2.2));
-    const lod0Radius = 2400;
+    // P0 FIX: Hysteresis band (enter LOD0 < 2050m, exit LOD0 > 2600m) prevents LOD popping flicker!
+    const lod0EnterRadius = 2050;
+    const lod0ExitRadius = 2600;
 
     // Sort candidates by distance to focus target so Shibuya/Shinjuku/Tokyo load instantaneously!
     const candidates: { meta: UrbanChunkMeta; distToTarget: number; distToCam: number }[] = [];
@@ -488,29 +492,35 @@ export class CityChunkManager {
       void this.loadChunk(c.meta);
     }
 
-    // Update LOD & frustum culling for all loaded chunks
+    // Update LOD & frustum culling with generous chunk margin so border buildings never pop out!
     const box = new THREE.Box3();
     for (const chunk of this.loaded.values()) {
-      const half = (this.manifest.chunkSizeMeters ?? 2000) * 0.55;
-      box.min.set(chunk.meta.centerX - half, 0, chunk.meta.centerZ - half);
-      box.max.set(chunk.meta.centerX + half, 360, chunk.meta.centerZ + half);
+      const half = (this.manifest.chunkSizeMeters ?? 2000) * 0.65;
+      box.min.set(chunk.meta.centerX - half, -10, chunk.meta.centerZ - half);
+      box.max.set(chunk.meta.centerX + half, 380, chunk.meta.centerZ + half);
 
       const inFrustum = frustum.intersectsBox(box);
       const distToCam = Math.hypot(chunk.meta.centerX - camPos.x, chunk.meta.centerZ - camPos.z);
       const distToTarget = Math.hypot(chunk.meta.centerX - target.x, chunk.meta.centerZ - target.z);
 
-      if (!this.buildingsVisible || !inFrustum || distToTarget > loadRadius + 2500) {
+      if (!this.buildingsVisible || !inFrustum || distToTarget > loadRadius + 2800) {
         chunk.lod0Group.visible = false;
         chunk.lod1Mesh.visible = false;
         chunk.activeLod = -1;
-      } else if (distToCam < lod0Radius || (chunk.meta.hub && distToTarget < 1800)) {
-        chunk.lod0Group.visible = true;
-        chunk.lod1Mesh.visible = false;
-        chunk.activeLod = 0;
       } else {
-        chunk.lod0Group.visible = false;
-        chunk.lod1Mesh.visible = true;
-        chunk.activeLod = 1;
+        const wantLod0 =
+          chunk.activeLod === 0
+            ? distToCam < lod0ExitRadius || (chunk.meta.hub && distToTarget < 2100)
+            : distToCam < lod0EnterRadius || (chunk.meta.hub && distToTarget < 1700);
+        if (wantLod0) {
+          chunk.lod0Group.visible = true;
+          chunk.lod1Mesh.visible = false;
+          chunk.activeLod = 0;
+        } else {
+          chunk.lod0Group.visible = false;
+          chunk.lod1Mesh.visible = true;
+          chunk.activeLod = 1;
+        }
       }
     }
   }
@@ -612,13 +622,15 @@ export class CityChunkManager {
   setVisibilityAndOpacity(visible: boolean, opacity: number): void {
     this.buildingsVisible = visible;
     this.currentOpacity = Math.max(0.08, Math.min(1.0, opacity));
-    const isTranslucent = this.currentOpacity < 0.92;
+    const isTranslucent = this.currentOpacity < 0.99;
     this.landmarksGroup.visible = visible;
 
     for (const mat of Object.values(this.materials)) {
+      const needRecompile = mat.transparent !== isTranslucent;
+      mat.transparent = isTranslucent;
       mat.opacity = this.currentOpacity;
       mat.depthWrite = !isTranslucent;
-      mat.needsUpdate = true;
+      if (needRecompile) mat.needsUpdate = true;
     }
 
     if (!visible) {

@@ -109,4 +109,10 @@ export interface SceneTelemetry {
   lod1Chunks: number;
   deconflictedCrossings: number;
   tunnelPortals: number;
+  fps: number;
+  drawCalls: number;
+  triangles: number;
+  loadTimeMs: number | null;
+  realOsmBuildings?: number;
+  infillBuildings?: number;
 }

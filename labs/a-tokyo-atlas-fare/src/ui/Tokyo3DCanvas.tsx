@@ -436,12 +436,13 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
         </div>
       )}
 
-      {/* Bottom-Right Live Streaming / LOD Telemetry */}
+      {/* Bottom-Right Live Streaming / LOD / GPU Telemetry */}
       {telemetry && (
         <div className="telemetry-chip mono" data-testid="three-telemetry">
-          Chunks {telemetry.loadedChunks}/{telemetry.totalChunks} (LOD0:{telemetry.lod0Chunks} /
-          LOD1:{telemetry.lod1Chunks}) · Buildings {telemetry.renderedBuildings.toLocaleString()} ·
-          Portals {telemetry.tunnelPortals}
+          {telemetry.fps > 0 ? `${telemetry.fps} FPS · ` : ''}
+          DC:{telemetry.drawCalls} · Tris:{Math.round(telemetry.triangles / 1000)}k · Chunks{' '}
+          {telemetry.loadedChunks}/{telemetry.totalChunks} (L0:{telemetry.lod0Chunks}/L1:
+          {telemetry.lod1Chunks}) · Buildings {telemetry.renderedBuildings.toLocaleString()}
         </div>
       )}
     </div>

@@ -105,6 +105,7 @@ function buildRibbonGeometryXZ(
 export class CityTerrainLayer {
   readonly group = new THREE.Group();
   private readonly groundMaterial: THREE.MeshStandardMaterial;
+  private readonly bayMaterial: THREE.MeshStandardMaterial;
   private readonly waterMaterial: THREE.MeshStandardMaterial;
   private readonly parkMaterial: THREE.MeshStandardMaterial;
   private readonly roadMaterial: THREE.MeshStandardMaterial;
@@ -119,57 +120,90 @@ export class CityTerrainLayer {
 
     this.groundTexture = createSubtleGroundGridTexture(isDark);
 
+    // P0 FIX: All surface materials start STRICTLY OPAQUE (transparent: false, depthWrite: true, FrontSide)
+    // with explicit polygonOffset stratification so zero transparent-queue sorting flicker or Z-fighting occurs!
     this.groundMaterial = new THREE.MeshStandardMaterial({
       map: this.groundTexture,
-      roughness: 0.92,
+      roughness: 0.94,
       metalness: 0.02,
-      transparent: true,
+      transparent: false,
       opacity: 1.0,
-      side: THREE.DoubleSide,
+      depthWrite: true,
+      side: THREE.FrontSide,
+      polygonOffset: true,
+      polygonOffsetFactor: 4,
+      polygonOffsetUnits: 4,
+      clippingPlanes: clipPlanes,
+    });
+
+    this.bayMaterial = new THREE.MeshStandardMaterial({
+      color: isDark ? 0x13304a : 0x7fb1d6,
+      roughness: 0.25,
+      metalness: 0.16,
+      transparent: false,
+      opacity: 1.0,
+      depthWrite: true,
+      polygonOffset: true,
+      polygonOffsetFactor: 3,
+      polygonOffsetUnits: 3,
       clippingPlanes: clipPlanes,
     });
 
     this.waterMaterial = new THREE.MeshStandardMaterial({
-      color: isDark ? 0x163856 : 0x8dbce0,
-      roughness: 0.28,
+      color: isDark ? 0x183c5c : 0x8bbde0,
+      roughness: 0.24,
       metalness: 0.18,
-      transparent: true,
-      opacity: 0.96,
+      transparent: false,
+      opacity: 1.0,
+      depthWrite: true,
+      polygonOffset: true,
+      polygonOffsetFactor: 2,
+      polygonOffsetUnits: 2,
       clippingPlanes: clipPlanes,
     });
 
     this.parkMaterial = new THREE.MeshStandardMaterial({
-      color: isDark ? 0x1d3b2c : 0xb5d6b2,
-      roughness: 0.95,
+      color: isDark ? 0x1e3f2d : 0x9ec49b,
+      roughness: 0.96,
       metalness: 0.0,
-      transparent: true,
-      opacity: 0.96,
+      transparent: false,
+      opacity: 1.0,
+      depthWrite: true,
+      polygonOffset: true,
+      polygonOffsetFactor: 1,
+      polygonOffsetUnits: 1,
       clippingPlanes: clipPlanes,
     });
 
     this.roadMaterial = new THREE.MeshStandardMaterial({
-      color: isDark ? 0x263140 : 0xc4ccd6,
+      color: isDark ? 0x2a3544 : 0xb8c0ca,
       roughness: 0.88,
-      metalness: 0.04,
-      transparent: true,
-      opacity: 0.95,
+      metalness: 0.03,
+      transparent: false,
+      opacity: 1.0,
+      depthWrite: true,
+      polygonOffset: true,
+      polygonOffsetFactor: -1,
+      polygonOffsetUnits: -1,
       clippingPlanes: clipPlanes,
     });
 
     this.elevatedRoadMaterial = new THREE.MeshStandardMaterial({
-      color: isDark ? 0x3b495c : 0xaab4c2,
+      color: isDark ? 0x3f4c5e : 0xa5aeb9,
       roughness: 0.82,
       metalness: 0.06,
-      transparent: true,
-      opacity: 0.94,
+      transparent: false,
+      opacity: 1.0,
+      depthWrite: true,
       clippingPlanes: clipPlanes,
     });
 
-    // Base metropolitan ground plane (90km x 90km covering Tokyo 23 wards + Omiya + Yokohama)
+    // Base metropolitan ground plane at y = -1.2 (clear vertical separation below water/parks/roads!)
     const basePlane = new THREE.Mesh(new THREE.PlaneGeometry(110_000, 110_000), this.groundMaterial);
     basePlane.rotation.x = -Math.PI / 2;
-    basePlane.position.y = -0.35;
+    basePlane.position.y = -1.2;
     basePlane.receiveShadow = true;
+    basePlane.renderOrder = 0;
     basePlane.name = 'metropolitan-ground';
     this.group.add(basePlane);
 
@@ -184,9 +218,7 @@ export class CityTerrainLayer {
   }
 
   populateFromEnvironment(env: UrbanBaseEnvironment): void {
-    // 1. Waterbodies (Tokyo Bay backdrop southeast + real OSM water polygons + river channels)
-    const waterGeoms: THREE.BufferGeometry[] = [];
-    // Simplified Tokyo Bay southeast water backdrop (real shoreline clipped visually by land/roads/buildings)
+    // 1a. Separate Tokyo Bay ocean backdrop at y = -0.85 (never overlaps inland water inside same mesh!)
     const bayPts: [number, number][] = [
       [1500, 4200],
       [18000, 2200],
@@ -194,15 +226,27 @@ export class CityTerrainLayer {
       [-6000, 24000],
       [-2000, 11500],
     ];
-    const bayGeom = buildPolygonGeometryXZ(bayPts, -0.22);
-    if (bayGeom) waterGeoms.push(bayGeom);
+    const bayGeom = buildPolygonGeometryXZ(bayPts, -0.85);
+    if (bayGeom) {
+      const bayMesh = new THREE.Mesh(bayGeom, this.bayMaterial);
+      bayMesh.receiveShadow = true;
+      bayMesh.renderOrder = 1;
+      bayMesh.name = 'tokyo-bay-ocean';
+      this.group.add(bayMesh);
+    }
 
-    for (const wp of env.waterPolygons) {
-      const g = buildPolygonGeometryXZ(wp.pts, -0.14);
+    // 1b. Real OSM Inland Waterbodies & Rivers (staggered slightly so overlapping polygons/ribbons never Z-fight!)
+    const waterGeoms: THREE.BufferGeometry[] = [];
+    for (let i = 0; i < env.waterPolygons.length; i++) {
+      const wp = env.waterPolygons[i]!;
+      const y = -0.58 + (i % 5) * 0.012;
+      const g = buildPolygonGeometryXZ(wp.pts, y);
       if (g) waterGeoms.push(g);
     }
-    for (const rv of env.riverLines) {
-      const g = buildRibbonGeometryXZ(rv.pts, rv.width * 0.55, -0.12);
+    for (let i = 0; i < env.riverLines.length; i++) {
+      const rv = env.riverLines[i]!;
+      const y = -0.49 + (i % 4) * 0.01;
+      const g = buildRibbonGeometryXZ(rv.pts, rv.width * 0.55, y);
       if (g) waterGeoms.push(g);
     }
     if (waterGeoms.length > 0) {
@@ -210,16 +254,19 @@ export class CityTerrainLayer {
       if (merged) {
         const waterMesh = new THREE.Mesh(merged, this.waterMaterial);
         waterMesh.receiveShadow = true;
+        waterMesh.renderOrder = 2;
         waterMesh.name = 'osm-water-layer';
         this.group.add(waterMesh);
       }
       waterGeoms.forEach((g) => g.dispose());
     }
 
-    // 2. Real OSM Parks (Imperial Palace, Yoyogi Park, Shinjuku Gyoen, Ueno Park, Hibiya Park...)
+    // 2. Real OSM Parks (deterministic micro-stagger prevents nested OSM park polygons from Z-fighting!)
     const parkGeoms: THREE.BufferGeometry[] = [];
-    for (const pk of env.parkPolygons) {
-      const g = buildPolygonGeometryXZ(pk.pts, -0.06);
+    for (let i = 0; i < env.parkPolygons.length; i++) {
+      const pk = env.parkPolygons[i]!;
+      const y = -0.32 + (i % 7) * 0.018;
+      const g = buildPolygonGeometryXZ(pk.pts, y);
       if (g) parkGeoms.push(g);
     }
     if (parkGeoms.length > 0) {
@@ -227,21 +274,24 @@ export class CityTerrainLayer {
       if (merged) {
         const parkMesh = new THREE.Mesh(merged, this.parkMaterial);
         parkMesh.receiveShadow = true;
+        parkMesh.renderOrder = 3;
         parkMesh.name = 'osm-parks-layer';
         this.group.add(parkMesh);
       }
       parkGeoms.forEach((g) => g.dispose());
     }
 
-    // 3. Real OSM Major Roads & Road Intersections (batched into 2 meshes: surface roads + elevated expressways)
+    // 3. Real OSM Major Roads & Road Intersections (micro-staggered by road class!)
     const surfaceRoadGeoms: THREE.BufferGeometry[] = [];
     const elevatedRoadGeoms: THREE.BufferGeometry[] = [];
-    for (const r of env.roads) {
+    for (let i = 0; i < env.roads.length; i++) {
+      const r = env.roads[i]!;
       if (r.el === 1) {
-        const g = buildRibbonGeometryXZ(r.pts, r.w * 0.85, 7.2);
+        const g = buildRibbonGeometryXZ(r.pts, r.w * 0.85, 7.4 + (i % 3) * 0.04);
         if (g) elevatedRoadGeoms.push(g);
       } else {
-        const g = buildRibbonGeometryXZ(r.pts, r.w, 0.08);
+        const classY = r.hw === 'trunk' ? 0.11 : r.hw === 'primary' ? 0.07 : 0.03;
+        const g = buildRibbonGeometryXZ(r.pts, r.w, classY + (i % 5) * 0.005);
         if (g) surfaceRoadGeoms.push(g);
       }
     }
@@ -249,10 +299,11 @@ export class CityTerrainLayer {
     // Add road intersection plazas cleanly (normalized to match ribbon attributes!)
     const discTemplate = normalizeFlatGeometry(new THREE.CircleGeometry(1, 10));
     discTemplate.rotateX(-Math.PI / 2);
-    for (const [ix, iz, rad] of env.intersections) {
+    for (let i = 0; i < env.intersections.length; i++) {
+      const [ix, iz, rad] = env.intersections[i]!;
       const g = discTemplate.clone();
       g.scale(rad, 1, rad);
-      g.translate(ix, 0.11, iz);
+      g.translate(ix, 0.145 + (i % 3) * 0.004, iz);
       surfaceRoadGeoms.push(g);
     }
     discTemplate.dispose();
@@ -262,6 +313,7 @@ export class CityTerrainLayer {
       if (merged) {
         const mesh = new THREE.Mesh(merged, this.roadMaterial);
         mesh.receiveShadow = true;
+        mesh.renderOrder = 4;
         mesh.name = 'osm-surface-roads';
         this.group.add(mesh);
       }
@@ -272,6 +324,7 @@ export class CityTerrainLayer {
       const merged = mergeGeometries(elevatedRoadGeoms, false);
       if (merged) {
         const mesh = new THREE.Mesh(merged, this.elevatedRoadMaterial);
+        mesh.renderOrder = 5;
         mesh.name = 'osm-elevated-roads';
         this.group.add(mesh);
       }
@@ -281,20 +334,27 @@ export class CityTerrainLayer {
 
   setSurfaceOpacity(opacity: number, undergroundActive: boolean): void {
     const clamped = Math.max(0.04, Math.min(1.0, opacity));
-    const isTranslucent = clamped < 0.95;
+    const isTranslucent = clamped < 0.99;
 
     for (const mat of [
       this.groundMaterial,
+      this.bayMaterial,
       this.waterMaterial,
       this.parkMaterial,
       this.roadMaterial,
     ]) {
+      const needRecompile = mat.transparent !== isTranslucent;
+      mat.transparent = isTranslucent;
       mat.opacity = clamped;
       mat.depthWrite = !isTranslucent;
-      mat.needsUpdate = true;
+      if (needRecompile) mat.needsUpdate = true;
     }
-    this.elevatedRoadMaterial.opacity = Math.min(1, clamped + 0.12);
-    this.elevatedRoadMaterial.depthWrite = !isTranslucent;
+    const elevTranslucent = isTranslucent && clamped < 0.85;
+    const elevNeed = this.elevatedRoadMaterial.transparent !== elevTranslucent;
+    this.elevatedRoadMaterial.transparent = elevTranslucent;
+    this.elevatedRoadMaterial.opacity = elevTranslucent ? Math.min(1, clamped + 0.18) : 1.0;
+    this.elevatedRoadMaterial.depthWrite = !elevTranslucent;
+    if (elevNeed) this.elevatedRoadMaterial.needsUpdate = true;
     this.undergroundReferenceGrid.visible = undergroundActive || clamped < 0.7;
   }
 
@@ -305,10 +365,11 @@ export class CityTerrainLayer {
     this.groundTexture = createSubtleGroundGridTexture(isDark);
     this.groundMaterial.map = this.groundTexture;
     this.groundMaterial.needsUpdate = true;
-    this.waterMaterial.color.setHex(isDark ? 0x163856 : 0x8dbce0);
-    this.parkMaterial.color.setHex(isDark ? 0x1d3b2c : 0xb5d6b2);
-    this.roadMaterial.color.setHex(isDark ? 0x263140 : 0xc4ccd6);
-    this.elevatedRoadMaterial.color.setHex(isDark ? 0x3b495c : 0xaab4c2);
+    this.bayMaterial.color.setHex(isDark ? 0x13304a : 0x7fb1d6);
+    this.waterMaterial.color.setHex(isDark ? 0x183c5c : 0x8bbde0);
+    this.parkMaterial.color.setHex(isDark ? 0x1e3f2d : 0x9ec49b);
+    this.roadMaterial.color.setHex(isDark ? 0x2a3544 : 0xb8c0ca);
+    this.elevatedRoadMaterial.color.setHex(isDark ? 0x3f4c5e : 0xa5aeb9);
   }
 
   dispose(): void {
@@ -319,6 +380,7 @@ export class CityTerrainLayer {
     });
     this.groundTexture.dispose();
     this.groundMaterial.dispose();
+    this.bayMaterial.dispose();
     this.waterMaterial.dispose();
     this.parkMaterial.dispose();
     this.roadMaterial.dispose();
