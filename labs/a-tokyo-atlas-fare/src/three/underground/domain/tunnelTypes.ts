@@ -11,8 +11,8 @@ import type {
   HeightBasis,
   SchematicTierId,
   TrackStructureKind,
-} from '../elevationSolver.js';
-import type { SkId } from '../types.js';
+} from '../../../domain/elevationSolver.js';
+import type { SkId } from '../../../domain/types.js';
 
 export type TunnelStructureType =
   | 'shield_single'

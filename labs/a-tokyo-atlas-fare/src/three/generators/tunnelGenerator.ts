@@ -16,11 +16,21 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import type {
+  UndergroundCutawayState,
+  UndergroundRenderStats,
+} from '../../contracts/atlasV2.js';
+import type {
   SchematicTierId,
   SolvedRailwayNetwork3D,
   SolvedStationNode3D,
 } from '../../domain/elevationSolver.js';
 import type { SkId } from '../../domain/types.js';
+import type {
+  UndergroundFilterParams,
+  UndergroundLayerAdapter,
+} from '../contracts/adapters.js';
+import type { UndergroundRailwayQueryAPI } from '../underground/domain/tunnelTypes.js';
+import { UndergroundRailwaySystem } from '../underground/UndergroundRailwaySystem.js';
 
 interface TunnelBatch {
   lineId: SkId<'line'>;
@@ -109,15 +119,18 @@ function makeBoxTunnelProfile(halfW: number, bottomY: number, topY: number): [nu
   ];
 }
 
-export class TunnelAndStationLayer {
+export class TunnelAndStationLayer implements UndergroundLayerAdapter {
   readonly group = new THREE.Group();
   readonly interactiveStationMeshes: THREE.Object3D[] = [];
+  readonly undergroundSystem: UndergroundRailwaySystem;
 
   private readonly tunnelBatches: TunnelBatch[] = [];
   private readonly stationMeta: StationInstanceMeta[] = [];
   private readonly portalGroup = new THREE.Group();
   private readonly concourseGroup = new THREE.Group();
   private readonly transferGroup = new THREE.Group();
+  private readonly transferConnectorCount: number;
+  private verticalScale = 1.0;
 
   private readonly stationSlabInst: THREE.InstancedMesh | null = null;
   private readonly stationCanopyInst: THREE.InstancedMesh | null = null;
@@ -151,7 +164,16 @@ export class TunnelAndStationLayer {
     this.portalGroup.name = 'tunnel-portals';
     this.concourseGroup.name = 'underground-station-concourses';
     this.transferGroup.name = 'complex-vertical-transfers';
-    this.group.add(this.portalGroup, this.concourseGroup, this.transferGroup);
+    this.transferConnectorCount = solved.transferConnectors.length;
+    this.undergroundSystem = new UndergroundRailwaySystem(solved, clipPlanes);
+    this.group.add(
+      this.portalGroup,
+      this.concourseGroup,
+      this.transferGroup,
+      this.undergroundSystem.group,
+      this.undergroundSystem.lightingSystem.group,
+    );
+    this.interactiveStationMeshes.push(...this.undergroundSystem.interactiveStationMeshes);
 
     this.tunnelTexture = createTunnelConcreteTexture();
 
@@ -403,13 +425,43 @@ export class TunnelAndStationLayer {
   }
 
   /**
-   * Resolves a Three.js Raycaster intersection against batched InstancedMesh station platforms.
+   * Resolves a Three.js Raycaster intersection against batched InstancedMesh surface/elevated
+   * station platforms OR Atlas v2 underground station cavern meshes.
    */
   resolveStationHit(hit: THREE.Intersection): SkId<'station'> | null {
+    const ugHit = this.undergroundSystem.resolveStationHit(hit);
+    if (ugHit) return ugHit;
     if (typeof hit.instanceId !== 'number') return null;
     const meta = this.stationMeta[hit.instanceId];
     if (!meta || !meta.visible) return null;
     return meta.node.stationId;
+  }
+
+  getUndergroundAPI(): UndergroundRailwayQueryAPI {
+    return this.undergroundSystem;
+  }
+
+  setCutawayState(state: UndergroundCutawayState): void {
+    this.verticalScale = Math.max(1.0, state.verticalExaggeration || 1.0);
+    this.undergroundSystem.setCutawayStyle(state.tunnelCutawayStyle);
+    const isInterior = state.tunnelCutawayStyle === 'interior_view';
+    this.setInteriorMode(isInterior);
+  }
+
+  setTheme(isDark: boolean): void {
+    this.undergroundSystem.setTheme(isDark);
+  }
+
+  getStats(): UndergroundRenderStats {
+    const t = this.undergroundSystem.getTelemetry();
+    return {
+      tunnelBatchCount: t.totalTunnelChunks,
+      undergroundStationCount: t.totalStationCaverns,
+      portalCount: t.portalCount,
+      transferConnectorCount: this.transferConnectorCount,
+      tunnelCutawayStyle: this.undergroundSystem.getCutawayStyle(),
+      activeInteriorLightCount: t.activePointLights,
+    };
   }
 
   private updateStationInstanceMatrices(): void {
@@ -492,7 +544,7 @@ export class TunnelAndStationLayer {
     this.transferGroup.visible = !active && (allowUnderground || this.selectedStationId !== null);
   }
 
-  updateLod(camDist: number): void {
+  updateLod(camDist: number, cameraPos?: THREE.Vector3): void {
     const prevCanopies = this.camDist < 4800;
     const nextCanopies = camDist < 4800;
     this.camDist = camDist;
@@ -501,21 +553,18 @@ export class TunnelAndStationLayer {
     if (this.entranceKioskInst) {
       this.entranceKioskInst.visible = camDist < 2400 && !this.undergroundActive;
     }
+    const { isCameraInsideTunnel } = this.undergroundSystem.updateForLod(
+      camDist,
+      cameraPos,
+      this.verticalScale,
+    );
+    this.setInteriorMode(isCameraInsideTunnel);
     if (prevCanopies !== nextCanopies) {
       this.updateStationInstanceMatrices();
     }
   }
 
-  applyFilters(params: {
-    visibleOperatorIds: Set<SkId<'operator'>>;
-    visibleTiers: Record<SchematicTierId, boolean>;
-    selectedLineId: SkId<'line'> | null;
-    selectedStationId: SkId<'station'> | null;
-    fareSliceOnly: boolean;
-    fareSliceLineIds: Set<SkId<'line'>>;
-    undergroundActive: boolean;
-    clipEnabled?: boolean;
-  }): void {
+  applyFilters(params: Omit<UndergroundFilterParams, 'clipEnabled'> & { clipEnabled?: boolean }): void {
     const {
       visibleOperatorIds,
       visibleTiers,
@@ -566,10 +615,21 @@ export class TunnelAndStationLayer {
         (!fareSliceOnly || fareSliceLineIds.has(n.lineId));
     }
 
+    this.undergroundSystem.applyFilters({
+      visibleOperatorIds,
+      visibleTiers,
+      selectedLineId,
+      fareSliceOnly,
+      fareSliceLineIds,
+      undergroundActive,
+      clipEnabled,
+    });
+
     this.updateStationInstanceMatrices();
   }
 
   dispose(): void {
+    this.undergroundSystem.dispose();
     for (const tb of this.tunnelBatches) {
       tb.group.traverse((o) => {
         if (o instanceof THREE.Mesh) o.geometry.dispose();

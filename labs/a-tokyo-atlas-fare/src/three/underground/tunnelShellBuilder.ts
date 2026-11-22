@@ -13,14 +13,14 @@
 
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { interpolateProfile } from '../../domain/underground/tunnelProfileSpecs.js';
+import { interpolateProfile } from './domain/tunnelProfileSpecs.js';
 import type {
   ProfilePoint2D,
   StationCavernSpec,
   TrackFrame3D,
   TunnelPortalSpec,
   TunnelSubSpan,
-} from '../../domain/underground/tunnelTypes.js';
+} from './domain/tunnelTypes.js';
 import type { TunnelMaterialLibrary } from './tunnelMaterials.js';
 
 /**

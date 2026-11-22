@@ -15,7 +15,7 @@ import type {
   ProfilePoint2D,
   TrackFrame3D,
   TunnelSegmentChunkSpec,
-} from '../../domain/underground/tunnelTypes.js';
+} from './domain/tunnelTypes.js';
 
 interface LineOverlayEntry {
   segmentId: SkId<'segment'>;

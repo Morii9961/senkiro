@@ -19,8 +19,8 @@ import type {
   SolvedRailwayNetwork3D,
   SolvedSegment3D,
   SolvedStationNode3D,
-} from '../elevationSolver.js';
-import type { SkId } from '../types.js';
+} from '../../../domain/elevationSolver.js';
+import type { SkId } from '../../../domain/types.js';
 import {
   createTunnelCrossSectionSpec,
   getLineEngineeringSpec,

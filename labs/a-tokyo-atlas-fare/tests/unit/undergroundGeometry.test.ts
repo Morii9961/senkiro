@@ -1,13 +1,15 @@
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
+import { TRACK_CLEARANCE_STANDARDS } from '../../src/contracts/atlasV2.js';
 import { solveRailwayNetwork3D } from '../../src/domain/elevationSolver.js';
+import { StaticAtlasProvider } from '../../src/providers/atlasProvider.js';
 import {
   buildClearanceConstraintForChunk,
   buildUndergroundNetworkSpec,
   PILOT_CORRIDOR_SEGMENT_IDS,
   sliceFramesByDistance,
   TUNNEL_ELEVATION_THRESHOLD_Y,
-} from '../../src/domain/underground/tunnelCenterlineBuilder.js';
+} from '../../src/three/underground/domain/tunnelCenterlineBuilder.js';
 import {
   createTunnelCrossSectionSpec,
   getLineEngineeringSpec,
@@ -15,13 +17,12 @@ import {
   isPointInsideProfile2D,
   PROFILE_VERTEX_COUNT,
   validateTrainClearance,
-} from '../../src/domain/underground/tunnelProfileSpecs.js';
+} from '../../src/three/underground/domain/tunnelProfileSpecs.js';
 import type {
   ProfilePoint2D,
   TrackFrame3D,
   TunnelStructureType,
-} from '../../src/domain/underground/tunnelTypes.js';
-import { StaticAtlasProvider } from '../../src/providers/atlasProvider.js';
+} from '../../src/three/underground/domain/tunnelTypes.js';
 import {
   buildAnnularEndCap,
   sweepMorphingTunnelShell,
@@ -69,6 +70,24 @@ describe('SENKIRO Atlas v2 — Underground Railway Geometry & Tunnel System', as
         expect(check.minVerticalMarginM).toBeGreaterThanOrEqual(spec.clearanceEnvelope.safetyMarginM);
       }
     }
+
+    // Verify frozen Session 0 TRACK_CLEARANCE_STANDARDS.minTunnelClearance (conventional, Shinkansen, linear metro)
+    const convBox = createTunnelCrossSectionSpec('box_double', ginzaEng, true);
+    expect(convBox.innerWidthM * 0.5).toBeGreaterThanOrEqual(
+      TRACK_CLEARANCE_STANDARDS.minTunnelClearance.conventional.halfWidthM,
+    );
+    expect(convBox.slabTopOffsetM + convBox.innerHeightM - convBox.railTopOffsetM).toBeGreaterThanOrEqual(
+      TRACK_CLEARANCE_STANDARDS.minTunnelClearance.conventional.headroomAboveRailM,
+    );
+
+    const shinkEng = getLineEngineeringSpec('sk:line:jr-east-tohoku-shinkansen', 'tunnel_box');
+    const shinkBox = createTunnelCrossSectionSpec('box_double', shinkEng, true);
+    expect(shinkBox.innerWidthM * 0.5).toBeGreaterThanOrEqual(
+      TRACK_CLEARANCE_STANDARDS.minTunnelClearance.shinkansen.halfWidthM,
+    );
+    expect(shinkBox.slabTopOffsetM + shinkBox.innerHeightM - shinkBox.railTopOffsetM).toBeGreaterThanOrEqual(
+      TRACK_CLEARANCE_STANDARDS.minTunnelClearance.shinkansen.headroomAboveRailM,
+    );
   });
 
   it('morphs smoothly between any two 24-vertex tunnel profiles (e.g. box <-> shield, bore <-> station)', () => {

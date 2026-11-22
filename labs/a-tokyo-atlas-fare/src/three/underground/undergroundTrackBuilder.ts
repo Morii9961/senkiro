@@ -12,7 +12,7 @@ import type {
   ProfilePoint2D,
   TrackFrame3D,
   TunnelSegmentChunkSpec,
-} from '../../domain/underground/tunnelTypes.js';
+} from './domain/tunnelTypes.js';
 import type { TunnelMaterialLibrary } from './tunnelMaterials.js';
 
 /**

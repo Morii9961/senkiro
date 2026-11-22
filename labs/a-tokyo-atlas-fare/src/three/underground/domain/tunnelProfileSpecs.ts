@@ -7,8 +7,9 @@
  * island/side underground station caverns, and smooth transition collars.
  */
 
-import type { TrackStructureKind } from '../elevationSolver.js';
-import type { SkId } from '../types.js';
+import { TRACK_CLEARANCE_STANDARDS } from '../../../contracts/atlasV2.js';
+import type { TrackStructureKind } from '../../../domain/elevationSolver.js';
+import type { SkId } from '../../../domain/types.js';
 import type {
   ClearanceValidationResult,
   LineEngineeringSpec,
@@ -45,14 +46,15 @@ const SHIELD_PREFERRED_LINES = new Set<string>([
   'sk:line:tokyu-toyoko',
 ]);
 
-/** Matches railTrackGenerator.ts slab top (0.12) + rail height (0.36) = 0.48m */
-export const UNDERGROUND_SLAB_TOP_OFFSET_M = 0.12;
-export const UNDERGROUND_RAIL_TOP_OFFSET_M = 0.48;
-/** Matches railTrackGenerator.ts double-track centerlines (-1.85m, +1.85m) */
-export const DOUBLE_TRACK_HALF_SPACING_M = 1.85;
+/** Matches TRACK_CLEARANCE_STANDARDS slab top (0.12) + rail height (0.36) = 0.48m */
+export const UNDERGROUND_SLAB_TOP_OFFSET_M = TRACK_CLEARANCE_STANDARDS.slabRoadbedTopM;
+export const UNDERGROUND_RAIL_TOP_OFFSET_M = TRACK_CLEARANCE_STANDARDS.slabRailHeadOffsetM;
+/** Matches TRACK_CLEARANCE_STANDARDS double-track centerlines (-1.85m, +1.85m) */
+export const DOUBLE_TRACK_HALF_SPACING_M = TRACK_CLEARANCE_STANDARDS.conventionalHalfSpacingM;
 
 /**
- * Returns realistic civil & electrical engineering parameters per rail line.
+ * Returns realistic civil & electrical engineering parameters per rail line,
+ * strictly honoring Session 0's frozen `TRACK_CLEARANCE_STANDARDS`.
  */
 export function getLineEngineeringSpec(
   lineId: SkId<'line'>,
@@ -67,6 +69,14 @@ export function getLineEngineeringSpec(
       ? 'station_side'
       : 'station_island';
 
+  const isShinkansen = lineId.includes('shinkansen');
+  const isLinearMetro = lineId === 'sk:line:toei-oedo';
+  const doubleTrackHalfSpacingM = isShinkansen
+    ? TRACK_CLEARANCE_STANDARDS.shinkansenHalfSpacingM
+    : isLinearMetro
+      ? TRACK_CLEARANCE_STANDARDS.linearMetroHalfSpacingM
+      : TRACK_CLEARANCE_STANDARDS.conventionalHalfSpacingM;
+
   return {
     lineId,
     gaugeM,
@@ -74,7 +84,7 @@ export function getLineEngineeringSpec(
     preferShieldTunnel,
     shieldDoubleTrackSingleBore: true,
     defaultStationLayout,
-    doubleTrackHalfSpacingM: DOUBLE_TRACK_HALF_SPACING_M,
+    doubleTrackHalfSpacingM,
     railTopOffsetM: UNDERGROUND_RAIL_TOP_OFFSET_M,
     slabTopOffsetM: UNDERGROUND_SLAB_TOP_OFFSET_M,
   };
@@ -354,9 +364,13 @@ export function createTunnelCrossSectionSpec(
 
     case 'box_double':
     case 'transition_collar': {
-      const halfW = 4.75; // 9.5m inner clear width: tracks at ±1.85m (outer edge ±3.33m), walkways 3.65..4.75m
+      // Strictly satisfies TRACK_CLEARANCE_STANDARDS.minTunnelClearance:
+      //  - Conventional: halfW >= 4.6m (4.75m), headroomAboveRail >= 5.2m (5.76 - 0.48 = 5.28m)
+      //  - Shinkansen:   halfW >= 5.6m (5.75m), headroomAboveRail >= 5.8m (6.36 - 0.48 = 5.88m)
+      const isShink = engineering.lineId.includes('shinkansen');
+      const halfW = isShink ? 5.75 : 4.75;
       const bottomY = -0.35;
-      const topY = 5.65;
+      const topY = isShink ? 6.36 : 5.76;
       const wall = 0.5;
       return {
         structureType,

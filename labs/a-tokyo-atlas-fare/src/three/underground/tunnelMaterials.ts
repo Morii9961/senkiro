@@ -580,6 +580,24 @@ export class TunnelMaterialLibrary {
     this.attenuationUniforms.uTunnelAttenActive.value = active ? 1.0 : 0.0;
   }
 
+  /**
+   * Switches outer structural shell between opaque architectural concrete (`solid_shell` / `interior_view`)
+   * and translucent cutaway envelope (`translucent_shell`) so virtual trains running inside tunnels remain
+   * clearly visible from overhead cutaway angles without ever turning inner linings transparent!
+   */
+  setOuterShellTranslucent(translucent: boolean): void {
+    if (this.outerShellMat.transparent !== translucent) {
+      this.outerShellMat.transparent = translucent;
+      this.outerShellMat.depthWrite = !translucent;
+      this.outerShellMat.opacity = translucent ? 0.36 : 1.0;
+      this.outerShellMat.needsUpdate = true;
+    }
+  }
+
+  setTheme(isDark: boolean): void {
+    this.attenuationUniforms.uTunnelAttenColor.value.setHex(isDark ? 0x0b1018 : 0x111720);
+  }
+
   dispose(): void {
     this.textures.forEach((t) => t.dispose());
     this.shieldInnerMat.dispose();

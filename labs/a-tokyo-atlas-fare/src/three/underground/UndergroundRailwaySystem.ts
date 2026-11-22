@@ -8,14 +8,15 @@
  */
 
 import * as THREE from 'three';
+import type { TunnelCutawayStyle } from '../../contracts/atlasV2.js';
 import type { SchematicTierId, SolvedRailwayNetwork3D } from '../../domain/elevationSolver.js';
 import type { SkId } from '../../domain/types.js';
 import {
   buildClearanceConstraintForChunk,
   buildUndergroundNetworkSpec,
   sliceFramesByDistance,
-} from '../../domain/underground/tunnelCenterlineBuilder.js';
-import { isPointInsideProfile2D } from '../../domain/underground/tunnelProfileSpecs.js';
+} from './domain/tunnelCenterlineBuilder.js';
+import { isPointInsideProfile2D } from './domain/tunnelProfileSpecs.js';
 import type {
   BuiltUndergroundNetwork,
   StationCavernSpec,
@@ -28,7 +29,7 @@ import type {
   UndergroundSectionCutState,
   UndergroundSystemTelemetry,
   Vec3,
-} from '../../domain/underground/tunnelTypes.js';
+} from './domain/tunnelTypes.js';
 import { LineOverlayHighlightLayer } from './lineOverlayHighlight.js';
 import { TunnelLightingSystem } from './tunnelLightingSystem.js';
 import { TunnelMaterialLibrary } from './tunnelMaterials.js';
@@ -87,6 +88,7 @@ export class UndergroundRailwaySystem implements UndergroundRailwayQueryAPI {
   private allowUnderground = false;
   private forceInteriorActive = false;
   private interiorModeDetected = false;
+  private cutawayStyle: TunnelCutawayStyle = 'solid_shell';
   private sectionCutState: UndergroundSectionCutState = {
     mode: 'none',
     revealAllRoofs: false,
@@ -232,6 +234,192 @@ export class UndergroundRailwaySystem implements UndergroundRailwayQueryAPI {
   setInteriorMode(active: boolean): void {
     this.forceInteriorActive = active;
     this.applySectionCutVisuals();
+  }
+
+  setTheme(isDark: boolean): void {
+    this.materials.setTheme(isDark);
+  }
+
+  getCutawayStyle(): TunnelCutawayStyle {
+    return this.cutawayStyle;
+  }
+
+  /**
+   * Maps Session 0's frozen `TunnelCutawayStyle` directly onto dual-surface shell,
+   * roof-cutaway, translucent outer envelope, and interior lighting modes.
+   */
+  setCutawayStyle(style: TunnelCutawayStyle): void {
+    this.cutawayStyle = style;
+    this.materials.setOuterShellTranslucent(style === 'translucent_shell');
+    this.forceInteriorActive = style === 'interior_view';
+    this.sectionCutState = {
+      ...this.sectionCutState,
+      mode: style === 'section_cutaway' ? 'tunnel_roof_open' : 'radial_cutaway',
+      revealAllRoofs: style === 'section_cutaway',
+    };
+    this.applySectionCutVisuals();
+  }
+
+  /**
+   * Distance-only / camera-position-based update compatible with `UndergroundLayerAdapter.updateLod(camDist, cameraPos)`.
+   * Supports both full camera-position culling + PointLight pool AND legacy `updateLod(camDist)` calls.
+   */
+  updateForLod(
+    camDist: number,
+    cameraPos?: THREE.Vector3,
+    verticalScale = 1.0,
+  ): { isCameraInsideTunnel: boolean; isEnclosedInterior: boolean } {
+    this.portalsGroup.visible = camDist < 3200;
+
+    if (cameraPos) {
+      const camVec: Vec3 = {
+        x: cameraPos.x,
+        y: cameraPos.y / Math.max(0.01, verticalScale),
+        z: cameraPos.z,
+      };
+      const nearest = camVec.y < 3.5 ? this.projectPointToNearestTunnel(camVec, 24) : null;
+      this.interiorModeDetected =
+        this.forceInteriorActive || Boolean(nearest && (nearest.insideClearance || camVec.y < -1.5));
+    } else {
+      this.interiorModeDetected = this.forceInteriorActive;
+    }
+
+    const drawUnderground = this.allowUnderground || this.interiorModeDetected;
+    if (!drawUnderground) {
+      if (this.visibleChunkCount > 0 || this.visibleCavernCount > 0) {
+        for (const rt of this.chunkRuntimes) {
+          rt.group.visible = false;
+          rt.lastVisible = false;
+          rt.lastDetailed = false;
+        }
+        for (const cav of this.cavernRuntimes) {
+          cav.group.visible = false;
+          cav.lastVisible = false;
+        }
+        this.visibleChunkCount = 0;
+        this.detailedChunkCount = 0;
+        this.visibleCavernCount = 0;
+      }
+      this.materials.setInteriorAttenuationActive(false);
+      if (cameraPos) {
+        this.lightingSystem.update(cameraPos, false, this.nearestAnchorsScratch, verticalScale);
+      }
+      return { isCameraInsideTunnel: false, isEnclosedInterior: false };
+    }
+
+    const st = this.sectionCutState;
+    const globalRoofOpen = st.mode === 'tunnel_roof_open' && (st.revealAllRoofs ?? true);
+    const isEnclosedInterior =
+      Boolean(cameraPos) &&
+      this.interiorModeDetected &&
+      !globalRoofOpen &&
+      cameraPos!.y / Math.max(0.01, verticalScale) < -4.2;
+    const maxVisibleDistM = isEnclosedInterior ? 420 : this.interiorModeDetected ? 950 : 2400;
+    const detailRadiusM = this.interiorModeDetected ? 340 : 300;
+
+    let visChunks = 0;
+    let detChunks = 0;
+    let visCaverns = 0;
+    this.nearestAnchorsScratch.length = 0;
+
+    for (const rt of this.chunkRuntimes) {
+      if (!rt.filterVisible) {
+        rt.group.visible = false;
+        rt.lastVisible = false;
+        rt.lastDetailed = false;
+        continue;
+      }
+
+      let distToBox = camDist;
+      if (cameraPos) {
+        this.scaledBox.copy(rt.baseBox);
+        this.scaledBox.min.y *= verticalScale;
+        this.scaledBox.max.y *= verticalScale;
+        this.scaledBox.expandByScalar(18);
+        distToBox = this.scaledBox.distanceToPoint(cameraPos);
+        if (distToBox > maxVisibleDistM) {
+          rt.group.visible = false;
+          rt.lastVisible = false;
+          rt.lastDetailed = false;
+          continue;
+        }
+      }
+
+      rt.group.visible = true;
+      rt.lastVisible = true;
+      visChunks++;
+
+      const wantDetail = cameraPos ? distToBox < detailRadiusM : rt.spec.isPilotCorridor && camDist < 1850;
+      const openRoof =
+        globalRoofOpen || Boolean(st.revealRoofForSegmentIds?.has(rt.spec.segmentId));
+      const hideOuter = Boolean(st.hideOuterShellForSegmentIds?.has(rt.spec.segmentId));
+
+      if (wantDetail) {
+        this.ensureChunkTrackDetailBuilt(rt);
+        detChunks++;
+      }
+
+      rt.lastDetailed = wantDetail;
+      if (rt.shell.outerLowerMesh) rt.shell.outerLowerMesh.visible = !hideOuter;
+      if (rt.shell.outerRoofMesh) rt.shell.outerRoofMesh.visible = !hideOuter && !openRoof;
+      if (rt.shell.innerLowerMesh) rt.shell.innerLowerMesh.visible = wantDetail || openRoof || hideOuter;
+      if (rt.shell.innerRoofMesh) rt.shell.innerRoofMesh.visible = (wantDetail || hideOuter) && !openRoof;
+
+      if (rt.track) {
+        rt.track.baseGroup.visible = true;
+        rt.track.detailGroup.visible = wantDetail;
+        rt.track.ceilingDetailGroup.visible = wantDetail && !openRoof;
+        if (cameraPos && wantDetail && distToBox < 140) {
+          for (let i = 0; i < rt.track.luminairePositions.length; i++) {
+            this.nearestAnchorsScratch.push(rt.track.luminairePositions[i]!);
+          }
+        }
+      }
+    }
+
+    for (const cav of this.cavernRuntimes) {
+      if (!cav.filterVisible) {
+        cav.group.visible = false;
+        cav.lastVisible = false;
+        continue;
+      }
+
+      let distToBox = camDist;
+      if (cameraPos) {
+        this.scaledBox.copy(cav.baseBox);
+        this.scaledBox.min.y *= verticalScale;
+        this.scaledBox.max.y *= verticalScale;
+        this.scaledBox.expandByScalar(12);
+        distToBox = this.scaledBox.distanceToPoint(cameraPos);
+        if (distToBox > maxVisibleDistM) {
+          cav.group.visible = false;
+          cav.lastVisible = false;
+          continue;
+        }
+      }
+
+      cav.group.visible = true;
+      cav.lastVisible = true;
+      visCaverns++;
+      cav.roofGroup.visible = !globalRoofOpen;
+      if (cameraPos && distToBox < 140) {
+        for (let i = 0; i < cav.luminairePositions.length; i++) {
+          this.nearestAnchorsScratch.push(cav.luminairePositions[i]!);
+        }
+      }
+    }
+
+    this.visibleChunkCount = visChunks;
+    this.detailedChunkCount = detChunks;
+    this.visibleCavernCount = visCaverns;
+
+    const useInteriorLighting = Boolean(cameraPos) && (this.interiorModeDetected || (detChunks > 0 && camDist < 160));
+    this.materials.setInteriorAttenuationActive(this.interiorModeDetected && !globalRoofOpen);
+    if (cameraPos) {
+      this.lightingSystem.update(cameraPos, useInteriorLighting, this.nearestAnchorsScratch, verticalScale);
+    }
+
+    return { isCameraInsideTunnel: this.interiorModeDetected, isEnclosedInterior };
   }
 
   applyFilters(params: {
