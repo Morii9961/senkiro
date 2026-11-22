@@ -1,0 +1,7 @@
+sk:context:hankyu | 阪急 大阪梅田
+sk:platform:jr-1-2 | 1 · 2
+sk:platform:jr-11 | 11
+sk:platform:jr-3-4 | 3 · 4
+sk:platform:jr-5-6 | 5 · 6
+sk:platform:jr-7-8 | 7 · 8
+sk:platform:jr-9-10 | 9 · 10

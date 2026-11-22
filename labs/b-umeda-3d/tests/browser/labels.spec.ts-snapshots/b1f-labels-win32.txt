@@ -1,0 +1,20 @@
+sk:concourse:diamor | ディアモール大阪 経由
+sk:concourse:higashi-in-2 | 中西改札内
+sk:concourse:higashi-out-1 | 南改札前
+sk:concourse:hs-east-lift | 東口方面 EV⑫
+sk:concourse:hs-west-in | 西口・百貨店口 改札内
+sk:concourse:kita-hall | 西改札口内
+sk:concourse:metro-gate-out | 中北東改札口 改札外
+sk:concourse:metro-south-out | 御堂筋線 南改札前
+sk:concourse:umekita-in | うめきた地下口 改札内
+sk:concourse:umekita-out | うめきた地下口 改札外
+sk:concourse:whity-east | イーストモール
+sk:concourse:whity-izumi | 泉の広場
+sk:concourse:whity-nomoka | NOMOKA方面
+sk:concourse:whity-north | ノースモール方面
+sk:context:hanshin | 阪神 大阪梅田
+sk:context:higashi | 東梅田
+sk:context:kitashinchi | 北新地
+sk:context:nishi | 西梅田
+sk:context:whity | ホワイティうめだ
+sk:gate:metro-northeast | 中北東改札口を通る

@@ -1,0 +1,26 @@
+sk:concourse:jr-bridge | 3F
+sk:concourse:jr-sakura-mezz | 中2F
+sk:concourse:umekita-out | B1F
+sk:context:hankyu | 阪急 大阪梅田
+sk:context:hanshin | 阪神 大阪梅田
+sk:context:higashi | 東梅田
+sk:context:kitashinchi | 北新地
+sk:context:nishi | 西梅田
+sk:context:whity | ホワイティうめだ
+sk:entrance:jr-central-south | 1F
+sk:platform:higashi-1 | 1
+sk:platform:higashi-2 | 2
+sk:platform:hk-1 | 1
+sk:platform:hk-3 | 3
+sk:platform:hk-8 | 8
+sk:platform:jr-1-2 | 2F
+sk:platform:jr-11 | 11
+sk:platform:jr-23-24 | B2F
+sk:platform:jr-3-4 | 3 · 4
+sk:platform:jr-7-8 | 7 · 8
+sk:platform:kita-1-2 | 1・2
+sk:platform:metro-1 | 1
+sk:platform:nishi-1-2 | 1・2
+sk:station:jr-osaka | JR うめきた地下ホーム
+sk:station:jr-osaka | JR 大阪駅
+sk:station:metro-umeda | 御堂筋線 梅田

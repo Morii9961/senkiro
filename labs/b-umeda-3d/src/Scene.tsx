@@ -6,7 +6,8 @@ import type { Step } from './domain/graph'
 import { ownersOf } from './domain/index'
 import { unverifiedLineColor } from './domain/lines'
 import { floors, nodes, station, sites, inSite, lineStyleById } from './model'
-import { sample } from './providers/service'
+import { buildLabels, type SceneLabelSpec } from './scene/labels/build'
+import { scenePlaceFilter } from './scene/view'
 import { targetFromOwner, type SelectionTarget } from './state/selection'
 
 import { shopWindows, type ShopWindow } from './shopWindows'
@@ -45,13 +46,9 @@ interface Props {
   onHover: (target: SelectionTarget | null) => void
   onFallback: () => void
 }
-type Label = {
+type Label = SceneLabelSpec & {
   position: T.Vector3
-  text: string
-  priority: number
   order: number
-  routePriority?: number
-  routeOnly?: boolean
   el: HTMLSpanElement
 }
 const selected = 0xe14815
@@ -203,6 +200,7 @@ export function Scene(props: Props) {
       gl.domElement.dataset.camera = [...controls.target.toArray(), lens.zoom]
         .map((value) => value.toFixed(2)).join(',')
       const placed: { x: number; y: number; w: number }[] = []
+      const visibleKeys: string[] = []
       for (const label of labels) {
         const priority = propsNow.showRoute
           ? label.routePriority ?? label.priority
@@ -234,8 +232,10 @@ export function Scene(props: Props) {
           label.el.style.transform =
             'translate(' + x + 'px,' + y + 'px) translate(-50%,-100%)'
           placed.push({ x, y, w: width })
+          visibleKeys.push(label.key)
         }
       }
+      gl.domElement.dataset.labels = JSON.stringify(visibleKeys.sort())
       gl.render(world, lens)
       gl.domElement.dataset.frame = String(++frame)
       gl.domElement.dataset.calls = String(gl.info.render.calls)
@@ -475,13 +475,7 @@ export function Scene(props: Props) {
       const routeColor = 0xff870c
       const overviewTread = new T.Color(routeColor)
       const gap = p.spread ? 9 : 5
-      const visible = (n: Place) =>
-        inSite(n, p.siteId) &&
-        (p.floor !== null
-          ? floors.get(n.levelId)!.ordinal === p.floor
-          : !current ||
-            n.levelId === current.from.levelId ||
-            n.levelId === current.to.levelId)
+      const visible = scenePlaceFilter(station, p, current)
       const pos = (n: Place, h = 0) =>
         new T.Vector3(
           n.point[0],
@@ -530,22 +524,6 @@ export function Scene(props: Props) {
             delta.normalize(),
           ),
         )
-      }
-      function label(
-        position: T.Vector3,
-        text: string,
-        priority: number,
-        active = false,
-        stationName = false,
-        labelOwner = owner,
-      ) {
-        const el = document.createElement('span')
-        el.className = 'pin' + (active ? ' active' : '')
-        if (stationName) el.classList.add('station-pin')
-        el.dataset.owner = labelOwner
-        el.textContent = text
-        box.appendChild(el)
-        labels.push({ position, text, priority, order: labels.length, el })
       }
       for (const n of station.places.filter(visible)) {
         if (n.kind === 'Landing') continue
@@ -603,49 +581,6 @@ export function Scene(props: Props) {
                 : [-1, 1])
           if (p.shell && floors.get(n.levelId)!.ordinal < 0)
             undergroundPlatform(n, at, sides, block)
-          if (!current && p.floor === null && n.id.endsWith('21-22')) {
-            label(
-              pos(n, 2.5),
-              p.lang === 'ja'
-                ? 'JR うめきた地下ホーム'
-                : 'JR Umekita platforms',
-              -1,
-              false,
-              true,
-              n.stationId!,
-            )
-          }
-          if (
-            !current &&
-            p.floor === null &&
-            (n.id.endsWith('jr-11') || n.id.endsWith('metro-1'))
-          ) {
-            const metro = n.id.endsWith('metro-1')
-            label(
-              pos(n, 3.2),
-              metro
-                ? p.lang === 'ja'
-                  ? '御堂筋線 梅田'
-                  : 'Midosuji · Umeda'
-                : p.lang === 'ja'
-                  ? 'JR 大阪駅'
-                  : 'JR Osaka Station',
-              -1,
-              false,
-              true,
-              n.stationId!,
-            )
-          }
-          if (p.example && n.id === sample.platformId)
-            label(
-              pos(n, 3),
-              (p.lang === 'ja' ? 'サンプル' : 'EXAMPLE') +
-                ' · +' +
-                sample.delayMinutes +
-                ' min',
-              -3,
-              true,
-            )
           // Abstract safety strips, rails and sleepers. Spacing is an illustration convention.
           const alongX = w > d,
             length = Math.max(w, d),
@@ -706,24 +641,6 @@ export function Scene(props: Props) {
             for (const shift of [-0.32, 0.32])
               slat(0, track + shift, -0.22, length, 0.085, 0.17, steel)
           }
-          const number =
-            n.boarding?.label ??
-            n.id
-              .split(':')
-              .pop()!
-              .replace(/^(jr|metro)-/, '')
-              .replace('-', ' · ')
-          const end = pos(n, 1.03)
-          if (alongX) end.x += w * 0.37
-          else end.z += d * 0.32
-          label(end, number, 1)
-          const pin = labels[labels.length - 1].el
-          const lineId = n.serviceLineIds?.[0]
-          const color = lineId ? lineStyleById.get(lineId)?.color : null
-          pin.classList.add('platform-pin')
-          pin.title = color ? n.names[p.lang] : n.names[p.lang] + ' · ' + unverifiedLineColor(p.lang)
-          pin.dataset.lineColor = color ? 'known' : 'unknown'
-          if (color) pin.style.setProperty('--line-stripe', color.hex)
         } else if (n.id === 'sk:entrance:surface-crossing') {
           for (let x = -1.7; x <= 1.7; x += 0.7)
             block(
@@ -755,8 +672,6 @@ export function Scene(props: Props) {
             !current
           )
             terminalRoof(n, at, block, beam)
-          if (!current || n.id === current.from.id || n.id === current.to.id)
-            label(pos(n, 1), n.names[p.lang], 2)
         }
       }
       if (
@@ -768,43 +683,6 @@ export function Scene(props: Props) {
         owner = 'sk:station:jr-osaka'
         osakaShed(gap, block, beam)
       }
-      if (!current) {
-        for (const site of station.context) {
-          const anchor = nodes.get(site.anchorId)!
-          const here = visible(anchor)
-            ? anchor
-            : station.places.find(
-                (n) => n.kind !== 'Landing' && inSite(n, site.id) && visible(n),
-              )
-          if (!here) continue
-          owner = site.id
-          label(pos(here, 2.65), site.names[p.lang], -2, false, true)
-        }
-      }
-      if (!current && p.floor === null) {
-        const anchors: Record<string, string> = {
-          '3F': 'jr-bridge',
-          中2F: 'jr-sakura-mezz',
-          '1F': 'jr-central-south',
-          B1F: 'umekita-out',
-          B2F: 'jr-23-24',
-          '2F': 'jr-1-2',
-        }
-        for (const [name, suffix] of Object.entries(anchors)) {
-          const n = station.places.find(
-            (k) =>
-              k.id.endsWith(':' + suffix) &&
-              floors.get(k.levelId)!.label === name,
-          )
-          if (!n || !visible(n)) continue
-          owner = n.id
-          const corner = pos(n, 0.75)
-          corner.x -= n.size[0] * 0.46
-          corner.z += n.size[1] * 0.41
-          label(corner, name, 0)
-          labels[labels.length - 1].el.classList.add('floor-pin')
-        }
-      }
       const activeIds = new Set(p.route.map((s) => s.link.id))
       const liftStops = new Set<string>()
       for (const e of station.links) {
@@ -815,8 +693,7 @@ export function Scene(props: Props) {
           vb = visible(b)
         if (!va && !vb) continue
         const start = pos(a, 0.46),
-          end = pos(b, 0.46),
-          mid = start.clone().lerp(end, 0.5)
+          end = pos(b, 0.46)
         const active = activeIds.has(e.id),
           focus = p.route[p.step]?.link.id === e.id
         if (e.kind === 'Elevator') {
@@ -905,14 +782,6 @@ export function Scene(props: Props) {
             }
             if (e.kind === 'Gate') {
               architecture.gate(start, end, block)
-              if (!focus)
-                label(
-                  mid.clone().add(new T.Vector3(0, 2.7, 0)),
-                  e.names[p.lang],
-                  active && current ? 1 : 2,
-                  active && !!current,
-                )
-              if (active && !current) labels.at(-1)!.routePriority = 1
             }
           }
           if (active && e.kind !== 'Stairs' && e.kind !== 'Escalator') {
@@ -976,19 +845,6 @@ export function Scene(props: Props) {
             beam,
           )
         }
-        if (active && (e.kind === 'Elevator' || focus)) {
-          label(
-            (va && vb ? mid : va ? start : end)
-              .clone()
-              .add(new T.Vector3(0, 1.5, 0)),
-            current?.link.id === e.id && current.from.id !== e.from
-              ? current.to.names[p.lang]
-              : e.names[p.lang],
-            focus ? -2 : 0,
-            true,
-          )
-          if (!current) labels.at(-1)!.routeOnly = true
-        }
       }
       previewStart = matrices.length
       for (const mark of routeMarks) {
@@ -1016,6 +872,23 @@ export function Scene(props: Props) {
       group.receiveShadow = true
       gl.shadowMap.needsUpdate = true
       world.add(group)
+      for (const spec of buildLabels(station, p, p.selection, { steps: p.route, step: p.step })) {
+        const el = document.createElement('span')
+        el.className = 'pin' + (spec.active ? ' active' : '')
+        if (spec.variant) el.classList.add(spec.variant + '-pin')
+        if (spec.targetId) el.dataset.owner = spec.targetId
+        el.dataset.key = spec.key
+        el.textContent = spec.text
+        if (spec.variant === 'platform') {
+          const lineId = spec.badges?.[0]?.lineId
+          const color = lineId ? lineStyleById.get(lineId)?.color : null
+          el.title = color ? spec.title! : spec.title! + ' · ' + unverifiedLineColor(p.lang)
+          el.dataset.lineColor = color ? 'known' : 'unknown'
+          if (color) el.style.setProperty('--line-stripe', color.hex)
+        }
+        box.appendChild(el)
+        labels.push({ ...spec, position: new T.Vector3(...spec.anchor), order: labels.length, el })
+      }
       labels.sort((a, b) => a.priority - b.priority)
       updateView(!!(previous && !current) || refit)
       size()
