@@ -100,7 +100,7 @@ test('selects a model feature and navigates custom endpoints in either direction
   await expect(pin).toBeVisible()
   const rect = await pin.boundingBox()
   await page.mouse.click(rect!.x + rect!.width / 2, rect!.y + rect!.height / 2)
-  await expect(page.locator('.place-card')).toContainText(
+  await expect(page.getByTestId('detail-sheet')).toContainText(
     'Osaka platforms 3 / 4',
   )
   await page.getByRole('button', { name: 'Start here' }).click()

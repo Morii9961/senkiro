@@ -6,15 +6,20 @@ import type { Language } from './domain/types'
 import { floorLabels, floors, nodes, station, sites, inSite } from './model'
 import { Guide } from './Guide'
 import { exampleService } from './providers/service'
-import { ownersOf } from './domain/index'
+import { createFacilityIndex, ownersOf } from './domain/index'
+import { describePlatform } from './domain/describe/platform'
+import type { DetailAction } from './domain/describe/types'
 import { initialSelection, selectionReducer, targetFromOwner, type SelectionTarget } from './state/selection'
 import { parseUrl, serializeUrl } from './state/url'
 import { AppHeader } from './ui/controls/AppHeader'
 import { FloorControls } from './ui/controls/FloorControls'
 import { DetailControl } from './ui/controls/DetailControl'
 import { FeatureCard } from './ui/panels/FeatureCard'
+import { DetailSheet, type SheetHeight } from './ui/panels/DetailSheet'
 import { InfoDialog } from './ui/panels/InfoDialog'
 import { RoutePanel, instruction, tours } from './ui/panels/RoutePanel'
+
+const facilityIndex = createFacilityIndex(station)
 
 function targetPlaces(target: SelectionTarget) {
   if (target.kind === 'station' || target.kind === 'line') {
@@ -108,6 +113,7 @@ export function App() {
     [lift, setLift] = useState(initial.stepFreeOnly)
   const [feed, setFeed] = useState(initial.feed)
   const [detail, setDetail] = useState(initial.detail)
+  const [sheetHeight, setSheetHeight] = useState<SheetHeight>('half')
   const example = feed === 'demo'
   const [panel, setPanel] = useState<'route' | 'layers'>('route'),
     [dialog, setDialog] = useState<'help' | 'sources' | null>(null)
@@ -184,6 +190,25 @@ export function App() {
     clear()
     selectFloor(plan ? floors.get(nodes.get(id)!.levelId)!.ordinal : null)
   }
+  function openRoute(which: 'start' | 'end', id: string) {
+    endpoint(which, id)
+    setDrawer(true)
+    setPanel('route')
+  }
+  function detailAction(kind: DetailAction, target: SelectionTarget) {
+    if (kind === 'start' || kind === 'end') {
+      openRoute(kind, target.id)
+    } else if (kind === 'passenger') {
+      interior()
+    } else {
+      const level = facilityIndex.levelOf(target.id)
+      if (!level) return
+      setEye(null)
+      selectFloor(level.ordinal)
+      selectStep(-1)
+      setPlanZoom(1)
+    }
+  }
   function inspect(id: string) {
     const target = targetFromOwner(id)
     if (!target) return
@@ -199,6 +224,7 @@ export function App() {
       place.levelId === current.from.levelId || place.levelId === current.to.levelId
     )) selectStep(-1)
     setEye(null)
+    if (selection?.id !== id) setSheetHeight('half')
     dispatchSelection({ type: 'select', target })
   }
   function resetView() {
@@ -216,6 +242,9 @@ export function App() {
     return () => document.removeEventListener('keydown', onEscape)
   }, [dialog])
   const place = selection ? nodes.get(selection.id) : null
+  const platformDetail = useMemo(() => selection?.kind === 'platform'
+    ? describePlatform(facilityIndex, selection.id, { lang, example: example ? exampleService.updates[0] : null })
+    : null, [example, lang, selection])
   const selectionPlaces = useMemo(() => selection ? targetPlaces(selection) : [], [selection])
   const differentFloor = floor !== null && selectionPlaces.length > 0 &&
     !selectionPlaces.some((entry) => floors.get(entry.levelId)?.ordinal === floor)
@@ -228,7 +257,8 @@ export function App() {
         onTheme={() => theme(!dark)}
         onLanguage={() => language(lang === 'ja' ? 'en' : 'ja')}
       />
-      <div className={'workspace' + (drawer ? ' with-drawer' : '')}>
+      <div className={'workspace' + (drawer || platformDetail ? ' with-drawer' : '') +
+        (platformDetail ? ' with-detail' : '')} data-sheet-height={platformDetail ? sheetHeight : undefined}>
         <section className="viewer">
           <div className="viewer-bar">
             <strong>
@@ -291,12 +321,8 @@ export function App() {
               </div>
             )}
             <FeatureCard
-              {...{ lang, selection, clear }}
-              onRoute={(which, id) => {
-                endpoint(which, id)
-                setDrawer(true)
-                setPanel('route')
-              }}
+              lang={lang} selection={platformDetail ? null : selection} clear={clear}
+              onRoute={openRoute}
             />
             {!plan && differentFloor && (
               <div className="eye-hint">
@@ -432,44 +458,50 @@ export function App() {
             </small>
           </div>
         </section>
-        <aside hidden={!drawer}>
-          <nav>
-            <button
-              aria-pressed={panel === 'route'}
-              onClick={() => setPanel('route')}
-            >
-              {t('経路案内', 'Itinerary')}
-            </button>
-            <button
-              aria-pressed={panel === 'layers'}
-              onClick={() => setPanel('layers')}
-            >
-              {t('モデル情報', 'Model guide')}
-            </button>
-          </nav>
-          {panel === 'route' ? (
-            <RoutePanel
-              {...{ lang, tour, trip, step, lift, steps, stats, pickTour, endpoint, highlight }}
-              onSwap={() => {
-                setTrip({ start: trip.end, end: trip.start })
-                selectStep(-1)
-                clear()
-              }}
-              onLiftChange={(on) => {
-                setLift(on)
-                selectStep(-1)
-              }}
-            />
-          ) : (
-            <Guide
-              lang={lang}
-              selection={place ?? null}
-              onSelect={inspect}
-              onClear={clear}
-              example={example}
-              onExample={() => setFeed(example ? 'off' : 'demo')}
-              showSources={() => setDialog('sources')}
-            />
+        <aside hidden={!drawer && !platformDetail}>
+          {platformDetail && <DetailSheet spec={platformDetail} lang={lang} height={sheetHeight}
+            onHeight={setSheetHeight} onClose={clear} onSelect={(target) => inspect(target.id)} onAction={detailAction} />}
+          {drawer && (
+            <>
+              <nav>
+                <button
+                  aria-pressed={panel === 'route'}
+                  onClick={() => setPanel('route')}
+                >
+                  {t('経路案内', 'Itinerary')}
+                </button>
+                <button
+                  aria-pressed={panel === 'layers'}
+                  onClick={() => setPanel('layers')}
+                >
+                  {t('モデル情報', 'Model guide')}
+                </button>
+              </nav>
+              {panel === 'route' ? (
+                <RoutePanel
+                  {...{ lang, tour, trip, step, lift, steps, stats, pickTour, endpoint, highlight }}
+                  onSwap={() => {
+                    setTrip({ start: trip.end, end: trip.start })
+                    selectStep(-1)
+                    clear()
+                  }}
+                  onLiftChange={(on) => {
+                    setLift(on)
+                    selectStep(-1)
+                  }}
+                />
+              ) : (
+                <Guide
+                  lang={lang}
+                  selection={place ?? null}
+                  onSelect={inspect}
+                  onClear={clear}
+                  example={example}
+                  onExample={() => setFeed(example ? 'off' : 'demo')}
+                  showSources={() => setDialog('sources')}
+                />
+              )}
+            </>
           )}
         </aside>
       </div>

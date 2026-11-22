@@ -1158,6 +1158,9 @@ export function Scene(props: Props) {
         applyAppearance(rebuildGeometry, previous)
       } else if (needsView || p.detail !== previous?.detail) draw()
       if (changedSelection || (rebuildGeometry && !wasVisible && selectedIndices.length > 0)) {
+        // The detail sheet can resize the viewport before ResizeObserver runs.
+        if (p.selection && (gl.domElement.clientWidth !== box.clientWidth ||
+          gl.domElement.clientHeight !== box.clientHeight)) size()
         focusSelection()
       }
     }

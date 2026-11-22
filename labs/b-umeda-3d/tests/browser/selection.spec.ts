@@ -146,14 +146,21 @@ test('AT-SEL-05: Escape, blank canvas and closing clear color without resetting 
   await openEnglish(page)
   const view = canvas(page)
   async function clickBlank() {
+    await expect(view).toHaveAttribute('width', '1080')
+    await expect(view).toHaveAttribute('data-occluded', /"gate:/)
     const bounds = (await view.boundingBox())!
-    for (const [x, y] of [[0.5, 0.025], [0.97, 0.4], [0.04, 0.85], [0.65, 0.97]]) {
+    for (const [x, y] of [[0.96, 0.16], [0.97, 0.4], [0.04, 0.85], [0.65, 0.97]]) {
       const at = { x: bounds.x + bounds.width * x, y: bounds.y + bounds.height * y }
       await page.mouse.move(at.x, at.y)
       const blank = await view.evaluate(async (element, at) => {
         await new Promise<void>((done) => requestAnimationFrame(() => requestAnimationFrame(() => done())))
+        const overPin = Array.from(element.parentElement!.querySelectorAll('.pin')).some((pin) => {
+          if (getComputedStyle(pin).visibility !== 'visible') return false
+          const rect = pin.getBoundingClientRect()
+          return at.x >= rect.left && at.x <= rect.right && at.y >= rect.top && at.y <= rect.bottom
+        })
         return document.elementFromPoint(at.x, at.y) === element &&
-          getComputedStyle(element.parentElement!).cursor !== 'pointer'
+          !overPin && getComputedStyle(element.parentElement!).cursor !== 'pointer'
       }, at)
       if (blank) {
         await page.mouse.click(at.x, at.y)
@@ -165,7 +172,7 @@ test('AT-SEL-05: Escape, blank canvas and closing clear color without resetting 
   for (const clear of [
     () => page.keyboard.press('Escape'),
     clickBlank,
-    () => page.locator('.place-card').getByRole('button', { name: 'Close' }).click(),
+    () => page.getByTestId('detail-sheet').getByRole('button', { name: 'Close' }).click(),
   ]) {
     await button(page, 'Reset view').click()
     await showPlatformLabels(page)
@@ -176,7 +183,7 @@ test('AT-SEL-05: Escape, blank canvas and closing clear color without resetting 
     await expect(view).toHaveAttribute('data-selected', '')
     await expect(view).toHaveAttribute('data-dimmed', '0')
     await expect(view).toHaveAttribute('data-camera', focused)
-    await expect(page.locator('.place-card')).toHaveCount(0)
+    await expect(page.getByTestId('detail-sheet')).toHaveCount(0)
   }
   await button(page, 'Reset view').click()
   await expect(view).toHaveAttribute('data-zoom', '1')

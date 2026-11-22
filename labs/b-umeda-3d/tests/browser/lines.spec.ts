@@ -20,7 +20,7 @@ test('AT-LINE-02: unverified platform and facility badges use neutral styling', 
   await expect(pin).toHaveAttribute('data-line-color', 'unknown')
   await expect(pin).toHaveAttribute('title', /線色未確認/)
   await expect(pin).toHaveCSS('background-color', 'rgb(239, 239, 239)')
-  const badge = page.locator('.place-card .line-badge')
+  const badge = page.getByTestId('detail-sheet').locator('.line-badge')
   await expect(badge).toHaveAttribute('title', '線色未確認')
   await expect(badge).toContainText('JR神戸線')
   const source = readFileSync('src/Scene.tsx', 'utf8')
