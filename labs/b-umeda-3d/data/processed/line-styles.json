@@ -1,0 +1,86 @@
+[
+  {
+    "lineId": "sk:line:midosuji",
+    "kind": "subway",
+    "color": null,
+    "stationNumberPrefix": null,
+    "shortName": null
+  },
+  {
+    "lineId": "sk:line:hk-kyoto",
+    "kind": "private",
+    "color": null,
+    "stationNumberPrefix": null,
+    "shortName": null
+  },
+  {
+    "lineId": "sk:line:hk-takarazuka",
+    "kind": "private",
+    "color": null,
+    "stationNumberPrefix": null,
+    "shortName": null
+  },
+  {
+    "lineId": "sk:line:hk-kobe",
+    "kind": "private",
+    "color": null,
+    "stationNumberPrefix": null,
+    "shortName": null
+  },
+  {
+    "lineId": "sk:line:hs-main",
+    "kind": "private",
+    "color": null,
+    "stationNumberPrefix": null,
+    "shortName": null
+  },
+  {
+    "lineId": "sk:line:tanimachi",
+    "kind": "subway",
+    "color": null,
+    "stationNumberPrefix": null,
+    "shortName": null
+  },
+  {
+    "lineId": "sk:line:jr-tozai",
+    "kind": "jr",
+    "color": null,
+    "stationNumberPrefix": null,
+    "shortName": null
+  },
+  {
+    "lineId": "sk:line:yotsubashi",
+    "kind": "subway",
+    "color": null,
+    "stationNumberPrefix": null,
+    "shortName": null
+  },
+  {
+    "lineId": "sk:line:loop",
+    "kind": "jr",
+    "color": null,
+    "stationNumberPrefix": null,
+    "shortName": null
+  },
+  {
+    "lineId": "sk:line:kobe",
+    "kind": "jr",
+    "color": null,
+    "stationNumberPrefix": null,
+    "shortName": null
+  },
+  {
+    "lineId": "sk:line:kyoto",
+    "kind": "jr",
+    "color": null,
+    "stationNumberPrefix": null,
+    "shortName": null
+  },
+  {
+    "lineId": "sk:line:east",
+    "kind": "jr",
+    "color": null,
+    "stationNumberPrefix": null,
+    "shortName": null
+  }
+]

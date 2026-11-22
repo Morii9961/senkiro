@@ -1,5 +1,8 @@
 import { model as station } from '../data/manual/model'
+import { lineStyles } from '../data/manual/lines'
 export { station }
+export const linesById = new Map(station.lines.map((line) => [line.id, line]))
+export const lineStyleById = new Map(lineStyles.map((style) => [style.lineId, style]))
 export const nodes = new Map(station.places.map((p) => [p.id, p]))
 export const floors = new Map(station.levels.map((l) => [l.id, l]))
 export const floorLabels = [

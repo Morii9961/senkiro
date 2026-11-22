@@ -1,10 +1,13 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { model } from '../data/manual/model.ts'
+import { lineStyles } from '../data/manual/lines.ts'
 import { sources } from '../data/manual/sources.ts'
 import { entities, validate } from '../src/domain/graph.ts'
+import { validateLineStyles } from '../src/domain/lines.ts'
 import { sample } from '../src/providers/service.ts'
 const byId = new Map(sources.map((s) => [s.id, s]))
 validate(model, new Set(byId.keys()))
+validateLineStyles(model, lineStyles, new Set(byId.keys()))
 function output(path: string, value: string) {
   const contents = value + '\n'
   if (process.argv.includes('--check')) {
@@ -14,6 +17,7 @@ function output(path: string, value: string) {
 }
 mkdirSync('data/processed', { recursive: true })
 output('data/processed/station.json', JSON.stringify(model, null, 2))
+output('data/processed/line-styles.json', JSON.stringify(lineStyles, null, 2))
 output('data/sources.json', JSON.stringify(sources, null, 2))
 const records = sources
   .map((s) =>
@@ -78,5 +82,7 @@ console.log(
   model.places.length +
     ' nodes, ' +
     model.links.length +
-    ' links; sources validated',
+    ' links, ' +
+    lineStyles.length +
+    ' line styles; sources validated',
 )

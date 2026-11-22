@@ -4,7 +4,8 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import type { Language, Place } from './domain/types'
 import type { Step } from './domain/graph'
 import { ownersOf } from './domain/index'
-import { floors, nodes, station, sites, inSite } from './model'
+import { unverifiedLineColor } from './domain/lines'
+import { floors, nodes, station, sites, inSite, lineStyleById } from './model'
 import { sample } from './providers/service'
 import { targetFromOwner, type SelectionTarget } from './state/selection'
 
@@ -716,16 +717,13 @@ export function Scene(props: Props) {
           if (alongX) end.x += w * 0.37
           else end.z += d * 0.32
           label(end, number, 1)
-          labels[labels.length - 1].el.classList.add('platform-pin')
-          labels[labels.length - 1].el.title = n.names[p.lang]
-          labels[labels.length - 1].el.style.setProperty(
-            '--stripe',
-            n.serviceLineIds?.includes('sk:line:midosuji')
-              ? '#b44041'
-              : n.id.endsWith('jr-1-2')
-                ? '#b95436'
-                : '#537986',
-          )
+          const pin = labels[labels.length - 1].el
+          const lineId = n.serviceLineIds?.[0]
+          const color = lineId ? lineStyleById.get(lineId)?.color : null
+          pin.classList.add('platform-pin')
+          pin.title = color ? n.names[p.lang] : n.names[p.lang] + ' · ' + unverifiedLineColor(p.lang)
+          pin.dataset.lineColor = color ? 'known' : 'unknown'
+          if (color) pin.style.setProperty('--line-stripe', color.hex)
         } else if (n.id === 'sk:entrance:surface-crossing') {
           for (let x = -1.7; x <= 1.7; x += 0.7)
             block(

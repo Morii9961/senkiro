@@ -1,7 +1,8 @@
 import type { Language, Place } from './domain/types'
 import { exampleService } from './providers/service'
 import records from '../data/sources.json'
-import { floors, station } from './model'
+import { floors, linesById, station } from './model'
+import { LineBadge } from './ui/atoms/LineBadge'
 export function areaText(n: Place, lang: Language) {
   if (n.zone === 'paid') return lang === 'ja' ? '改札内' : 'Inside gates'
   const labels = {
@@ -67,9 +68,10 @@ export function Guide({
           <p>
             {floors.get(place.levelId)?.label} · {areaText(place, lang)}
             <br />
-            {place.serviceLineIds
-              ?.map((id) => station.lines.find((l) => l.id === id)?.names[lang])
-              .join(' / ')}
+            {place.serviceLineIds?.map((id) => {
+              const line = linesById.get(id)
+              return line && <LineBadge key={id} line={line} lang={lang} />
+            })}
           </p>
         )}
         {place?.provenance.sourceIds.map((id) => {

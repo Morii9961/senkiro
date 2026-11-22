@@ -1,8 +1,9 @@
 import type { Language } from '../../domain/types'
-import { floors, nodes, station } from '../../model'
+import { floors, linesById, nodes, station } from '../../model'
 import records from '../../../data/sources.json'
 import { areaText } from '../../Guide'
 import type { SelectionTarget } from '../../state/selection'
+import { LineBadge } from '../atoms/LineBadge'
 
 interface Props {
   lang: Language
@@ -79,12 +80,10 @@ export function FeatureCard({ lang, selection, clear, onRoute }: Props) {
           </small>
           <strong data-testid="detail-title">{place.names[lang]}</strong>
           <span>
-            {place.serviceLineIds
-              ?.map(
-                (id) =>
-                  station.lines.find((l) => l.id === id)?.names[lang],
-              )
-              .join(' / ')}
+            {place.serviceLineIds?.map((id) => {
+              const line = linesById.get(id)
+              return line && <LineBadge key={id} line={line} lang={lang} />
+            })}
           </span>
           <div>
             {(['start', 'end'] as const).map((key, i) => (

@@ -1026,14 +1026,45 @@ header {
   border-left: 0;
   border-radius: 4px;
 }
+.pin.platform-pin[data-line-color='unknown'] {
+  background: #efefef;
+  color: #303030;
+}
+.dark .pin.platform-pin[data-line-color='unknown'] {
+  background: #404040;
+  color: #f5f5f5;
+}
 .pin.platform-pin::after {
   content: '';
   display: inline-block;
   width: 6px;
   height: 6px;
   margin-left: 5px;
-  border-radius: 50%;
-  background: var(--stripe);
+  border-radius: 1px;
+  background: var(--line-stripe, #777777);
+}
+.line-badge {
+  display: inline-block;
+  margin-inline-end: 0.3em;
+  padding-inline: 0.4em;
+  border-radius: 3px;
+  background: #e9e9e9;
+  color: #303030;
+  font-size: 0.9em;
+  font-weight: 600;
+}
+.dark .line-badge {
+  background: #404040;
+  color: #f5f5f5;
+}
+.line-badge:empty {
+  height: 0.8em;
+}
+.line-badge[data-size='xs'] {
+  font-size: 0.8em;
+}
+.line-badge[data-size='md'] {
+  font-size: 1em;
 }
 .pin.floor-pin {
   padding: 1px 4px;
