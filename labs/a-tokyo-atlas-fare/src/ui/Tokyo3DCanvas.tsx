@@ -1,22 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ArrowUpFromLine,
-  Compass,
-  EyeOff,
-  Layers,
-  Moon,
-  Navigation,
-  Pause,
-  Play,
-  RotateCcw,
-  Scissors,
-  Square,
-  Sun,
-} from 'lucide-react';
-import {
-  SCHEMATIC_TIERS,
-  type SchematicTierId,
-} from '../domain/elevationSolver.js';
+  CAMERA_MODE_METADATA,
+  createInitialCameraModeState,
+  type CameraModeState,
+  type TrainFollowAngle,
+} from '../domain/cameraModeStateMachine.js';
+import type { PlacedMapLabel } from '../domain/labelLayout.js';
 import type {
   AtlasDataset,
   FareQuote,
@@ -26,13 +15,18 @@ import type {
 import { TOKYO_HUB_PRESETS } from '../three/geoProjection.js';
 import { Metropolitan3DScene } from '../three/Metropolitan3DScene.js';
 import type {
-  CameraMoveSpeed,
-  CameraNavMode,
-  LineTraceStatus,
+  CameraOrientationInfo,
   SceneTelemetry,
-  UndergroundViewSettings,
+  UndergroundExplorerLocation,
 } from '../three/types.js';
-import { UI_TEXT, type Locale } from './i18n.js';
+import type {
+  TrainSimulationSnapshot,
+  TrainSimulationState,
+} from '../three/uxContracts.js';
+import { CameraModeHud } from './CameraModeHud.js';
+import type { Locale } from './i18n.js';
+import { MapLabelsOverlay } from './MapLabelsOverlay.js';
+import { SimulationControlBar } from './SimulationControlBar.js';
 
 interface Tokyo3DCanvasProps {
   dataset: AtlasDataset;
@@ -42,23 +36,18 @@ interface Tokyo3DCanvasProps {
   visibleOperatorIds: Set<SkId<'operator'>>;
   selectedLineId: SkId<'line'> | null;
   selectedStationId: SkId<'station'> | null;
+  selectedTrainId: string | null;
   fareSliceOnly: boolean;
   fareQuote: FareQuote | null;
   initialViewport: { lon: number; lat: number; zoom: number } | null;
+  followTrainSignal?: { trainId: string; angle?: TrainFollowAngle; nonce: number } | null;
+  focusLineSignal?: { lineId: SkId<'line'>; nonce: number } | null;
   onViewportChange: (lon: number, lat: number, zoom: number) => void;
   onSelectStation: (stationId: SkId<'station'>) => void;
   onSelectLine: (lineId: SkId<'line'>) => void;
+  onSelectTrain: (trainId: string) => void;
+  onSimulationSnapshot?: (snapshot: TrainSimulationSnapshot) => void;
 }
-
-const DEFAULT_VISIBLE_TIERS: Record<SchematicTierId, boolean> = {
-  'L+2': true,
-  'L+1': true,
-  L0: true,
-  'L-1': true,
-  'L-2': true,
-  'L-3': true,
-  'L-4': true,
-};
 
 export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
   dataset,
@@ -68,59 +57,55 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
   visibleOperatorIds,
   selectedLineId,
   selectedStationId,
+  selectedTrainId,
   fareSliceOnly,
   fareQuote,
   initialViewport,
+  followTrainSignal,
+  focusLineSignal,
   onViewportChange,
   onSelectStation,
   onSelectLine,
+  onSelectTrain,
+  onSimulationSnapshot,
 }) => {
-  const t = UI_TEXT[locale];
   const mountRef = useRef<HTMLDivElement | null>(null);
   const sceneRef = useRef<Metropolitan3DScene | null>(null);
 
-  // Latest callbacks stored in refs so Three.js scene doesn't recreate on callback identity change
-  const cbRef = useRef({ onSelectStation, onSelectLine, onViewportChange });
-  cbRef.current = { onSelectStation, onSelectLine, onViewportChange };
-
-  const [underground, setUnderground] = useState<UndergroundViewSettings>({
-    enabled: false,
-    groundOpacity: 0.94,
-    cutawayRadius: 850,
-    verticalExaggeration: 1.4,
-    pinCutaway: false,
-    hideBuildings: false,
-    clipEnabled: false,
-    clipY: 20,
-    visibleTiers: { ...DEFAULT_VISIBLE_TIERS },
+  const cbRef = useRef({
+    onSelectStation,
+    onSelectLine,
+    onSelectTrain,
+    onViewportChange,
+    onSimulationSnapshot,
   });
+  cbRef.current = {
+    onSelectStation,
+    onSelectLine,
+    onSelectTrain,
+    onViewportChange,
+    onSimulationSnapshot,
+  };
 
-  const [telemetry, setTelemetry] = useState<SceneTelemetry | null>(null);
-  const [traceStatus, setTraceStatus] = useState<LineTraceStatus>({
-    active: false,
-    playing: false,
-    lineId: null,
-    progress: 0,
-    currentStationName: null,
-    currentTier: null,
-    currentY: null,
-  });
-  const [hudCollapsed, setHudCollapsed] = useState(false);
+  const [modeState, setModeState] = useState<CameraModeState>(createInitialCameraModeState);
   const [sceneNight, setSceneNight] = useState(theme === 'dark');
-  const [cameraMode, setCameraMode] = useState<CameraNavMode>('map');
-  const [cameraSpeed, setCameraSpeed] = useState<CameraMoveSpeed>('normal');
+  const [telemetry, setTelemetry] = useState<SceneTelemetry | null>(null);
+  const [labels, setLabels] = useState<PlacedMapLabel[]>([]);
+  const [orientation, setOrientation] = useState<CameraOrientationInfo | null>(null);
+  const [explorerLoc, setExplorerLoc] = useState<UndergroundExplorerLocation | null>(null);
+  const [simSnapshot, setSimSnapshot] = useState<TrainSimulationSnapshot>({
+    playing: true,
+    speedMultiplier: 1,
+    visibleCount: 12,
+    trainsVisible: true,
+    totalAvailable: 0,
+    trains: [],
+  });
 
-  // Sync 3D lighting when global light/dark theme switches
   useEffect(() => {
     setSceneNight(theme === 'dark');
   }, [theme]);
 
-  const selectedLine = useMemo(
-    () => dataset.railLines.find((l) => l.id === selectedLineId) ?? null,
-    [dataset.railLines, selectedLineId],
-  );
-
-  // Initialize Three.js Metropolitan3DScene once (re-init only if osmVertical arrives after mount)
   useEffect(() => {
     if (!mountRef.current) return;
     const ctrl = new Metropolitan3DScene(
@@ -131,8 +116,18 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
       {
         onSelectStation: (sid) => cbRef.current.onSelectStation(sid),
         onSelectLine: (lid) => cbRef.current.onSelectLine(lid),
+        onSelectTrain: (tid) => cbRef.current.onSelectTrain(tid),
+        onCameraModeChange: (st) => setModeState(st),
+        onOrientationChange: (ori, exp) => {
+          setOrientation(ori);
+          setExplorerLoc(exp);
+        },
+        onLabelsUpdated: (lbls) => setLabels(lbls),
+        onSimulationUpdated: (snap) => {
+          setSimSnapshot(snap);
+          cbRef.current.onSimulationSnapshot?.(snap);
+        },
         onTelemetry: (stats) => setTelemetry(stats),
-        onTraceUpdate: (st) => setTraceStatus(st),
         onCameraMoved: (lon, lat, zoom) => cbRef.current.onViewportChange(lon, lat, zoom),
       },
       initialViewport ?? undefined,
@@ -145,37 +140,28 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
     };
   }, [dataset, osmVertical]);
 
-  // Sync Day / Night 3D lighting without recreating scene
   useEffect(() => {
     sceneRef.current?.setTheme(sceneNight);
   }, [sceneNight]);
 
-  // Sync Camera Mode & Free-Explore Speed (P6)
   useEffect(() => {
-    sceneRef.current?.setCameraMode(cameraMode);
-  }, [cameraMode]);
+    sceneRef.current?.setLocale(locale);
+  }, [locale]);
 
   useEffect(() => {
-    sceneRef.current?.setCameraSpeed(cameraSpeed);
-  }, [cameraSpeed]);
-
-  // Sync filters, selection & Underground View settings
-  useEffect(() => {
-    sceneRef.current?.applyFilters({
+    sceneRef.current?.applySelectionAndFilters({
       visibleOperatorIds,
       selectedLineId,
       selectedStationId,
+      selectedTrainId,
       fareSliceOnly,
-      underground,
     });
-  }, [visibleOperatorIds, selectedLineId, selectedStationId, fareSliceOnly, underground]);
+  }, [visibleOperatorIds, selectedLineId, selectedStationId, selectedTrainId, fareSliceOnly]);
 
-  // Sync JR Fare dual-path highlight
   useEffect(() => {
     sceneRef.current?.setFareQuote(fareQuote);
   }, [fareQuote]);
 
-  // Auto-focus selected station when changed from search/sidebar
   const prevStationRef = useRef<SkId<'station'> | null>(null);
   useEffect(() => {
     if (selectedStationId && selectedStationId !== prevStationRef.current) {
@@ -184,71 +170,93 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
     prevStationRef.current = selectedStationId;
   }, [selectedStationId]);
 
-  const handleToggleUnderground = () => {
-    setUnderground((prev) => ({
-      ...prev,
-      enabled: !prev.enabled,
-      groundOpacity: !prev.enabled ? 0.94 : 1.0,
-      verticalExaggeration: !prev.enabled ? Math.max(1.3, prev.verticalExaggeration) : 1.0,
-    }));
+  useEffect(() => {
+    if (!followTrainSignal || !sceneRef.current) return;
+    sceneRef.current.dispatchCameraAction({
+      type: 'FOLLOW_TRAIN',
+      trainId: followTrainSignal.trainId,
+      angle: followTrainSignal.angle,
+    });
+  }, [followTrainSignal]);
+
+  useEffect(() => {
+    if (!focusLineSignal || !sceneRef.current) return;
+    sceneRef.current.flyToLine(focusLineSignal.lineId);
+  }, [focusLineSignal]);
+
+  // Global keyboard ergonomics: F (Free Look), R (Reset Overview), 1-4 (Train Follow rigs), Esc (Safe exit)
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.tagName === 'SELECT' ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+      const ctrl = sceneRef.current;
+      if (!ctrl) return;
+
+      if (e.code === 'KeyF') {
+        ctrl.dispatchCameraAction({ type: 'TOGGLE_FREE_LOOK' });
+      } else if (e.code === 'KeyR') {
+        ctrl.dispatchCameraAction({ type: 'RESET_OVERVIEW' });
+      } else if (e.code === 'Escape') {
+        const cur = ctrl.getCameraModeState().mode;
+        if (cur === 'train_follow') {
+          ctrl.dispatchCameraAction({ type: 'EXIT_TRAIN_FOLLOW' });
+        } else if (cur === 'underground_explorer' || cur === 'underground_cutaway') {
+          ctrl.dispatchCameraAction({ type: 'RETURN_TO_SURFACE' });
+        } else if (cur === 'street_level') {
+          ctrl.dispatchCameraAction({ type: 'SELECT_MODE', mode: 'city_overview' });
+        }
+      } else if (ctrl.getCameraModeState().mode === 'train_follow') {
+        const map: Record<string, TrainFollowAngle> = {
+          Digit1: 'front',
+          Digit2: 'side',
+          Digit3: 'rear',
+          Digit4: 'cab',
+        };
+        const rig = map[e.code];
+        if (rig) {
+          ctrl.dispatchCameraAction({ type: 'SET_FOLLOW_ANGLE', angle: rig });
+        }
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
+
+  const followedTrain: TrainSimulationState | null = useMemo(() => {
+    if (!modeState.followedTrainId) return null;
+    return simSnapshot.trains.find((t) => t.id === modeState.followedTrainId) ?? null;
+  }, [modeState.followedTrainId, simSnapshot.trains]);
+
+  const fallbackTrainId =
+    selectedTrainId && simSnapshot.trains.some((t) => t.id === selectedTrainId)
+      ? selectedTrainId
+      : simSnapshot.trains[0]?.id ?? null;
+
+  const handleLabelClick = (lbl: PlacedMapLabel) => {
+    if (lbl.entityKind === 'station' && lbl.entityId) {
+      onSelectStation(lbl.entityId as SkId<'station'>);
+    } else if (lbl.entityKind === 'line' && lbl.entityId) {
+      onSelectLine(lbl.entityId as SkId<'line'>);
+    } else if (lbl.entityKind === 'train' && lbl.entityId) {
+      onSelectTrain(lbl.entityId);
+    }
   };
 
-  const handleReturnToSurface = () => {
-    setUnderground((prev) => ({
-      ...prev,
-      enabled: false,
-      groundOpacity: 1.0,
-      hideBuildings: false,
-      clipEnabled: false,
-      pinCutaway: false,
-      verticalExaggeration: 1.0,
-      visibleTiers: { ...DEFAULT_VISIBLE_TIERS },
-    }));
-  };
-
-  const handleToggleTier = (tierId: SchematicTierId) => {
-    setUnderground((prev) => ({
-      ...prev,
-      visibleTiers: {
-        ...prev.visibleTiers,
-        [tierId]: !prev.visibleTiers[tierId],
-      },
-    }));
-  };
-
-  const handleHubClick = (presetId: string) => {
-    const preset = TOKYO_HUB_PRESETS.find((p) => p.id === presetId);
+  const handleHubClick = (hubId: string) => {
+    const preset = TOKYO_HUB_PRESETS.find((p) => p.id === hubId);
     if (!preset) return;
     sceneRef.current?.flyToHubPreset(preset);
-    if (preset.recommendUnderground) {
-      setUnderground((prev) => ({
-        ...prev,
-        enabled: true,
-        groundOpacity: 0.94,
-        verticalExaggeration: Math.max(1.3, prev.verticalExaggeration),
-      }));
-    }
   };
 
-  const handleStartOrToggleTrace = () => {
-    if (!selectedLineId || !sceneRef.current) return;
-    if (traceStatus.active && traceStatus.lineId === selectedLineId) {
-      sceneRef.current.setLineTracePlaying(!traceStatus.playing);
-    } else {
-      // Enable radial underground cutaway automatically when tracing a metro line!
-      const isMetro = selectedLine?.lineClass === 'metro';
-      if (isMetro && !underground.enabled) {
-        setUnderground((prev) => ({
-          ...prev,
-          enabled: true,
-          groundOpacity: 0.94,
-          pinCutaway: false,
-          verticalExaggeration: 1.4,
-        }));
-      }
-      sceneRef.current.startLineTrace(selectedLineId, true);
-    }
-  };
+  const modeHint = CAMERA_MODE_METADATA[modeState.mode];
 
   return (
     <div className="canvas-pane" data-testid="tokyo-3d-pane">
@@ -262,394 +270,61 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
         }
       />
 
-      {/* Top Honesty Banner + Hub Focus Shortcuts */}
-      <div className="map-overlay-top" style={{ right: 12 }}>
-        <div className="banner banner-warning" data-testid="vertical-3d-banner">
-          <span>
-            <strong>
-              {locale === 'ja'
-                ? '3D 都市鉄道アトラス（模式相対高度）:'
-                : '3D Metropolitan Atlas (Schematic Tiers):'}
-            </strong>{' '}
-            {t.vertical3dBanner}
-          </span>
-        </div>
+      {/* Hierarchical Deconflicted Screen-Space Labels */}
+      <MapLabelsOverlay labels={labels} onLabelClick={handleLabelClick} />
 
-        <div className="hub-bar" role="group" aria-label="Hub Focus Shortcuts">
-          {TOKYO_HUB_PRESETS.map((hub) => (
-            <button
-              key={hub.id}
-              type="button"
-              className="hub-chip"
-              data-testid={`hub-btn-${hub.id}`}
-              onClick={() => handleHubClick(hub.id)}
-            >
-              {locale === 'ja' ? hub.labelJa : hub.labelEn}
-            </button>
-          ))}
-          <button
-            type="button"
-            className="hub-chip"
-            style={
-              cameraMode === 'free'
-                ? { background: '#0ea5e9', color: '#ffffff', borderColor: '#0ea5e9' }
-                : undefined
-            }
-            data-testid="toggle-camera-mode"
-            title={
-              locale === 'ja'
-                ? '地図閲覧モード / 自由飛行モード切替'
-                : 'Toggle Map Browse / Free Explore Mode'
-            }
-            onClick={() => setCameraMode((m) => (m === 'map' ? 'free' : 'map'))}
-          >
-            {cameraMode === 'free' ? <Navigation size={12} /> : <Compass size={12} />}
-            <span>
-              {cameraMode === 'free'
-                ? locale === 'ja'
-                  ? '自由探索 ON'
-                  : 'Free Explore ON'
-                : locale === 'ja'
-                  ? '地図閲覧'
-                  : 'Map Browse'}
-            </span>
-          </button>
-          {cameraMode === 'free' && (
-            <select
-              className="hub-chip"
-              data-testid="free-speed-select"
-              aria-label={locale === 'ja' ? '移動速度' : 'Flight Speed'}
-              value={cameraSpeed}
-              onChange={(e) => setCameraSpeed(e.target.value as CameraMoveSpeed)}
-            >
-              <option value="slow">{locale === 'ja' ? '速度: 低速' : 'Speed: Slow'}</option>
-              <option value="normal">{locale === 'ja' ? '速度: 標準' : 'Speed: Normal'}</option>
-              <option value="fast">{locale === 'ja' ? '速度: 高速' : 'Speed: Fast'}</option>
-            </select>
-          )}
-          <button
-            type="button"
-            className="hub-chip"
-            data-testid="toggle-3d-day-night"
-            title={locale === 'ja' ? '昼 / 夜間照明切替' : 'Toggle Day / Night Lighting'}
-            onClick={() => setSceneNight((n) => !n)}
-          >
-            {sceneNight ? <Sun size={12} /> : <Moon size={12} />}
-            <span>
-              {sceneNight
-                ? locale === 'ja'
-                  ? '昼間'
-                  : 'Day'
-                : locale === 'ja'
-                  ? '夜間'
-                  : 'Night'}
-            </span>
-          </button>
-          <button
-            type="button"
-            className="hub-chip"
-            data-testid="reset-3d-camera"
-            title={locale === 'ja' ? '視点リセット' : 'Reset Camera'}
-            onClick={() => handleHubClick('tokyo23')}
-          >
-            <RotateCcw size={12} />
-            <span>{locale === 'ja' ? 'リセット' : 'Reset'}</span>
-          </button>
-          {underground.enabled && (
-            <button
-              type="button"
-              className="hub-chip"
-              style={{
-                background: 'var(--accent)',
-                color: '#ffffff',
-                borderColor: 'var(--accent)',
-              }}
-              data-testid="return-to-surface-btn"
-              onClick={handleReturnToSurface}
-            >
-              <ArrowUpFromLine size={12} />
-              <span>{locale === 'ja' ? '地上ビューへ戻る' : 'Return to Surface'}</span>
-            </button>
-          )}
-        </div>
+      {/* Unified 5-Mode Switcher + Contextual Mode Panel */}
+      <CameraModeHud
+        dataset={dataset}
+        locale={locale}
+        modeState={modeState}
+        sceneNight={sceneNight}
+        fareQuote={fareQuote}
+        orientation={orientation}
+        explorerLoc={explorerLoc}
+        followedTrain={followedTrain}
+        fallbackTrainId={fallbackTrainId}
+        onDispatch={(action) => sceneRef.current?.dispatchCameraAction(action)}
+        onSelectHub={handleHubClick}
+        onJumpExplorerLine={(lid) => sceneRef.current?.jumpToExplorerLine(lid)}
+        onToggleNight={() => setSceneNight((n) => !n)}
+      />
 
-        {fareQuote && fareQuote.pathsDiffer && (
-          <div className="banner banner-ok" data-testid="path-diff-banner">
-            <span>
-              <strong>{t.pathsDifferBadge}:</strong> {fareQuote.pathDiffSummary}
-            </span>
-          </div>
-        )}
-      </div>
-
-      {/* Underground View & Depth Tier Floating HUD (Bottom-Left) */}
-      <div className="underground-hud" data-testid="underground-control-panel">
-        <div className="underground-hud-header">
-          <button
-            type="button"
-            className={`btn-underground ${underground.enabled ? 'active' : ''}`}
-            data-testid="toggle-underground-view"
-            onClick={handleToggleUnderground}
-          >
-            {underground.enabled ? <Layers size={14} /> : <EyeOff size={14} />}
-            <span>
-              {locale === 'ja'
-                ? underground.enabled
-                  ? '地下カットアウェイ ON'
-                  : '地下エクスプローラー'
-                : underground.enabled
-                  ? 'Underground Cutaway ON'
-                  : 'Underground Explorer'}
-            </span>
-          </button>
-          <button
-            type="button"
-            className="btn-secondary"
-            style={{ padding: '3px 7px', fontSize: 11 }}
-            onClick={() => setHudCollapsed((c) => !c)}
-          >
-            {hudCollapsed ? '＋' : '－'}
-          </button>
-        </div>
-
-        {!hudCollapsed && (
-          <div className="underground-hud-body">
-            {underground.enabled && (
-              <>
-                <label className="hud-slider-row">
-                  <span>
-                    {locale === 'ja' ? '開削半径' : 'Cutaway Radius'}:{' '}
-                    <strong className="mono">{underground.cutawayRadius}m</strong>
-                  </span>
-                  <input
-                    type="range"
-                    min={350}
-                    max={2400}
-                    step={50}
-                    data-testid="cutaway-radius-slider"
-                    value={underground.cutawayRadius}
-                    onChange={(e) =>
-                      setUnderground((prev) => ({
-                        ...prev,
-                        cutawayRadius: Number(e.target.value),
-                      }))
-                    }
-                  />
-                </label>
-
-                <label className="hud-slider-row">
-                  <span>
-                    {locale === 'ja' ? '縦方向誇張 (視認用)' : 'Vertical Exaggeration'}:{' '}
-                    <strong className="mono">{underground.verticalExaggeration.toFixed(1)}×</strong>
-                  </span>
-                  <input
-                    type="range"
-                    min={1.0}
-                    max={2.5}
-                    step={0.1}
-                    data-testid="vertical-exaggeration-slider"
-                    value={underground.verticalExaggeration}
-                    onChange={(e) =>
-                      setUnderground((prev) => ({
-                        ...prev,
-                        verticalExaggeration: Number(e.target.value),
-                      }))
-                    }
-                  />
-                </label>
-
-                <label className="hud-slider-row">
-                  <span>
-                    {locale === 'ja' ? '外周地表の不透明度' : 'Outer Ground Opacity'}:{' '}
-                    <strong className="mono">{Math.round(underground.groundOpacity * 100)}%</strong>
-                  </span>
-                  <input
-                    type="range"
-                    min={0.12}
-                    max={1}
-                    step={0.04}
-                    data-testid="ground-opacity-slider"
-                    value={underground.groundOpacity}
-                    onChange={(e) =>
-                      setUnderground((prev) => ({
-                        ...prev,
-                        groundOpacity: Number(e.target.value),
-                      }))
-                    }
-                  />
-                </label>
-
-                <label className="hud-check-row">
-                  <input
-                    type="checkbox"
-                    data-testid="pin-cutaway-checkbox"
-                    checked={underground.pinCutaway}
-                    onChange={(e) =>
-                      setUnderground((prev) => ({ ...prev, pinCutaway: e.target.checked }))
-                    }
-                  />
-                  <span>
-                    {locale === 'ja' ? '開削位置を固定 (カメラ追従OFF)' : 'Pin Cutaway Location'}
-                  </span>
-                </label>
-              </>
-            )}
-
-            <label className="hud-check-row">
-              <input
-                type="checkbox"
-                data-testid="hide-buildings-checkbox"
-                checked={underground.hideBuildings}
-                onChange={(e) =>
-                  setUnderground((prev) => ({ ...prev, hideBuildings: e.target.checked }))
-                }
-              />
-              <span>{locale === 'ja' ? '地上建物を非表示' : 'Hide Ground Buildings'}</span>
-            </label>
-
-            <label className="hud-check-row">
-              <input
-                type="checkbox"
-                data-testid="clip-plane-checkbox"
-                checked={underground.clipEnabled}
-                onChange={(e) =>
-                  setUnderground((prev) => ({ ...prev, clipEnabled: e.target.checked }))
-                }
-              />
-              <Scissors size={12} />
-              <span>
-                {locale === 'ja' ? '水平断面スライス' : 'Depth Slice Plane'}{' '}
-                {underground.clipEnabled && <strong className="mono">y ≤ {underground.clipY}</strong>}
-              </span>
-            </label>
-
-            {underground.clipEnabled && (
-              <input
-                type="range"
-                min={-42}
-                max={35}
-                step={1}
-                data-testid="clip-plane-slider"
-                value={underground.clipY}
-                onChange={(e) =>
-                  setUnderground((prev) => ({ ...prev, clipY: Number(e.target.value) }))
-                }
-              />
-            )}
-
-            <div className="tier-grid" role="group" aria-label="Elevation Tier Filters">
-              {SCHEMATIC_TIERS.map((tier) => {
-                const active = underground.visibleTiers[tier.id];
-                return (
-                  <button
-                    key={tier.id}
-                    type="button"
-                    data-testid={`tier-toggle-${tier.id}`}
-                    className={`tier-pill ${active ? 'active' : ''}`}
-                    onClick={() => handleToggleTier(tier.id)}
-                  >
-                    {locale === 'ja' ? tier.labelJa : tier.labelEn}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Line Trace Fly-Through Control Bar (appears when any line is selected!) */}
-      {selectedLine && (
-        <div className="trace-hud" data-testid="line-trace-bar">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-            <span className="line-dot" style={{ background: selectedLine.color }} />
-            <strong style={{ fontSize: 12 }}>
-              {locale === 'ja' ? selectedLine.names.ja : selectedLine.names.en ?? selectedLine.names.ja}
-            </strong>
-            <button
-              type="button"
-              className="btn-primary"
-              style={{ padding: '3px 9px', fontSize: 11 }}
-              data-testid="line-trace-play-btn"
-              onClick={handleStartOrToggleTrace}
-            >
-              {traceStatus.active && traceStatus.playing && traceStatus.lineId === selectedLine.id ? (
-                <>
-                  <Pause size={12} />
-                  <span>{locale === 'ja' ? '一時停止' : 'Pause'}</span>
-                </>
-              ) : (
-                <>
-                  <Play size={12} />
-                  <span>{locale === 'ja' ? '沿線カメラ追跡' : 'Trace Line'}</span>
-                </>
-              )}
-            </button>
-            <button
-              type="button"
-              className="btn-secondary"
-              style={{ padding: '3px 8px', fontSize: 11 }}
-              onClick={() => sceneRef.current?.flyToLine(selectedLine.id)}
-            >
-              {locale === 'ja' ? '全景フォーカス' : 'Fit Line'}
-            </button>
-            {traceStatus.active && (
-              <button
-                type="button"
-                className="btn-secondary"
-                style={{ padding: '3px 7px', fontSize: 11 }}
-                onClick={() => sceneRef.current?.stopLineTrace()}
-              >
-                <Square size={11} />
-              </button>
-            )}
-          </div>
-          {traceStatus.active && traceStatus.lineId === selectedLine.id && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
-              <input
-                type="range"
-                min={0}
-                max={1}
-                step={0.005}
-                style={{ flex: 1 }}
-                data-testid="line-trace-scrubber"
-                value={traceStatus.progress}
-                onChange={(e) => sceneRef.current?.setLineTraceProgress(Number(e.target.value))}
-              />
-              <span className="mono" style={{ fontSize: 11, whiteSpace: 'nowrap' }}>
-                {traceStatus.currentStationName ?? ''} · {traceStatus.currentTier} (y=
-                {traceStatus.currentY})
-              </span>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Bottom-Right Live Streaming / LOD / GPU Telemetry & Active Control Hint */}
-      <div
-        style={{
-          position: 'absolute',
-          right: 12,
-          bottom: 12,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'flex-end',
-          gap: 4,
-          pointerEvents: 'none',
-          zIndex: 4,
+      {/* Non-obstructive Bottom-Center Virtual Train Simulation Control Dock */}
+      <SimulationControlBar
+        locale={locale}
+        snapshot={simSnapshot}
+        selectedTrainId={selectedTrainId}
+        isFollowing={modeState.mode === 'train_follow'}
+        onTogglePlaying={() => sceneRef.current?.setSimulationPlaying(!simSnapshot.playing)}
+        onChangeSpeed={(spd) => sceneRef.current?.setSimulationSpeed(spd)}
+        onChangeVisibleCount={(cnt) => sceneRef.current?.setSimulationVisibleCount(cnt)}
+        onToggleTrainsVisible={() =>
+          sceneRef.current?.setSimulationTrainsVisible(!simSnapshot.trainsVisible)
+        }
+        onSelectTrain={(tid) => onSelectTrain(tid)}
+        onFollowTrain={(tid) => {
+          onSelectTrain(tid);
+          sceneRef.current?.dispatchCameraAction({ type: 'FOLLOW_TRAIN', trainId: tid });
         }}
-      >
+        onResetSimulation={() => sceneRef.current?.resetSimulation()}
+        onExitFollow={() => sceneRef.current?.dispatchCameraAction({ type: 'EXIT_TRAIN_FOLLOW' })}
+      />
+
+      {/* Bottom-Right Compact Control Hint & Telemetry */}
+      <div className="ux-telemetry-stack">
         <div
           className="telemetry-chip"
-          style={{ position: 'static', fontSize: 10.5, opacity: 0.9 }}
+          style={{ position: 'static', fontSize: 10.5, opacity: 0.92 }}
           data-testid="camera-control-hint"
         >
-          {cameraMode === 'free'
+          {modeState.freeLookEnabled
             ? locale === 'ja'
-              ? '自由探索: WASD移動 · ドラッグ視点 · E/Space上昇 · Q/Shift下降'
-              : 'Free Explore: WASD Move · Drag Look · E/Space Up · Q/Shift Down'
+              ? '自由観察 ON: ドラッグ視点 · WASD/QE移動 · F解除'
+              : 'Free Look ON: Drag Look · WASD/QE Move · F Exit'
             : locale === 'ja'
-              ? '地図閲覧: 左ドラッグ回転 · 中/右ドラッグ自由移動 · ホイール拡大 · ダブルクリック焦点'
-              : 'Map Browse: Left Orbit · Mid/Right Free Pan · Wheel Zoom · Dbl-Click Focus'}
+              ? modeHint.descriptionJa
+              : modeHint.descriptionEn}
         </div>
         {telemetry && (
           <div
@@ -660,11 +335,8 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
             {telemetry.fps > 0 ? `${telemetry.fps} FPS · ` : ''}
             DC:{telemetry.drawCalls} · Tris:{Math.round(telemetry.triangles / 1000)}k
             {telemetry.railwayLod ? ` · Rail:${telemetry.railwayLod}` : ''} · Chunks{' '}
-            {telemetry.loadedChunks}/{telemetry.totalChunks} (L0:{telemetry.lod0Chunks}/L1:
-            {telemetry.lod1Chunks}) · Buildings {telemetry.renderedBuildings.toLocaleString()}
-            {typeof telemetry.infillBuildings === 'number' && telemetry.infillBuildings > 0
-              ? ` (OSM ${(telemetry.realOsmBuildings ?? 0).toLocaleString()} + Infill ${telemetry.infillBuildings.toLocaleString()})`
-              : ''}
+            {telemetry.loadedChunks}/{telemetry.totalChunks} · Buildings{' '}
+            {telemetry.renderedBuildings.toLocaleString()}
           </div>
         )}
       </div>

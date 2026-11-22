@@ -1,5 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const PORT = Number(process.env.PW_PORT || 18473);
+const BASE_URL = `http://127.0.0.1:${PORT}`;
+
 export default defineConfig({
   testDir: './tests/e2e',
   timeout: 45_000,
@@ -10,7 +13,7 @@ export default defineConfig({
   retries: 0,
   reporter: 'list',
   use: {
-    baseURL: 'http://127.0.0.1:18473',
+    baseURL: BASE_URL,
     trace: 'on-first-retry',
     viewport: { width: 1440, height: 900 },
   },
@@ -27,8 +30,8 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npm run preview -- --host 127.0.0.1 --port 18473 --strictPort',
-    url: 'http://127.0.0.1:18473',
+    command: `npm run preview -- --host 127.0.0.1 --port ${PORT} --strictPort`,
+    url: BASE_URL,
     reuseExistingServer: !process.env.CI,
     timeout: 30_000,
   },

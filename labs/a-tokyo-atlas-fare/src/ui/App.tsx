@@ -30,6 +30,8 @@ import { OdptRealtimeProvider } from '../providers/realtimeProvider.js';
 import { CoveragePanel } from './CoveragePanel.js';
 import { DetailPanel } from './DetailPanel.js';
 import { FarePanel } from './FarePanel.js';
+import type { TrainFollowAngle } from '../domain/cameraModeStateMachine.js';
+import type { TrainSimulationSnapshot } from '../three/uxContracts.js';
 import { UI_TEXT, type Locale } from './i18n.js';
 import { MapCanvas } from './MapCanvas.js';
 import { StripMapView } from './StripMapView.js';
@@ -59,6 +61,17 @@ export const App: React.FC = () => {
   );
   const [selectedStationId, setSelectedStationId] = useState<SkId<'station'> | null>(null);
   const [selectedLineId, setSelectedLineId] = useState<SkId<'line'> | null>(null);
+  const [selectedTrainId, setSelectedTrainId] = useState<string | null>(null);
+  const [simSnapshot, setSimSnapshot] = useState<TrainSimulationSnapshot | null>(null);
+  const [followTrainSignal, setFollowTrainSignal] = useState<{
+    trainId: string;
+    angle?: TrainFollowAngle;
+    nonce: number;
+  } | null>(null);
+  const [focusLineSignal, setFocusLineSignal] = useState<{
+    lineId: SkId<'line'>;
+    nonce: number;
+  } | null>(null);
   const [focusCoords, setFocusCoords] = useState<[number, number] | null>(null);
 
   // Shared 2D <-> 3D viewport state so switching preserves map region seamlessly!
@@ -120,16 +133,16 @@ export const App: React.FC = () => {
     setSharedViewport({ lon, lat, zoom });
   }, []);
 
-  // Keyboard Escape clears active line/station highlight
+  // Keyboard Escape clears active line/station highlight in 2D/Strip view
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === 'Escape' && viewMode !== '3d') {
         setSelectedLineId(null);
       }
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, []);
+  }, [viewMode]);
 
   const operatorById = useMemo(
     () => new Map(dataset.operators.map((o) => [o.id, o])),
@@ -174,6 +187,27 @@ export const App: React.FC = () => {
     setSelectedLineId(lineId);
     setActiveTab('detail');
   }, []);
+
+  const handleSelectTrain = useCallback((trainId: string) => {
+    setSelectedTrainId(trainId);
+    setActiveTab('detail');
+  }, []);
+
+  const handleFollowTrain = useCallback((trainId: string, angle?: TrainFollowAngle) => {
+    setSelectedTrainId(trainId);
+    setViewMode('3d');
+    setFollowTrainSignal({ trainId, angle, nonce: Date.now() + Math.random() });
+  }, []);
+
+  const selectedTrain = useMemo(() => {
+    if (!selectedTrainId || !simSnapshot) return null;
+    return simSnapshot.trains.find((tr) => tr.id === selectedTrainId) ?? null;
+  }, [selectedTrainId, simSnapshot]);
+
+  const selectedLineTrains = useMemo(() => {
+    if (!selectedLineId || !simSnapshot) return [];
+    return simSnapshot.trains.filter((tr) => tr.lineId === selectedLineId);
+  }, [selectedLineId, simSnapshot]);
 
   const handleCalculateFare = useCallback(
     (overrideReq?: FareQuoteRequest) => {
@@ -527,7 +561,10 @@ export const App: React.FC = () => {
                 locale={locale}
                 selectedStationId={selectedStationId}
                 selectedLineId={selectedLineId}
+                selectedTrain={selectedTrain}
+                lineTrains={selectedLineTrains}
                 verticalMap={verticalMap}
+                is3dActive={viewMode === '3d'}
                 onSelectStation={handleSelectStation}
                 onSelectLine={handleSelectLine}
                 onOpenStripMap={(lid) => {
@@ -537,6 +574,10 @@ export const App: React.FC = () => {
                 onSetOrigin={handleSetOrigin}
                 onSetDest={handleSetDest}
                 onSetVia={handleSetVia}
+                onFollowTrain={handleFollowTrain}
+                onFocusLine3D={(lid) =>
+                  setFocusLineSignal({ lineId: lid, nonce: Date.now() + Math.random() })
+                }
               />
             )}
 
@@ -583,12 +624,17 @@ export const App: React.FC = () => {
             visibleOperatorIds={visibleOperatorIds}
             selectedLineId={selectedLineId}
             selectedStationId={selectedStationId}
+            selectedTrainId={selectedTrainId}
             fareSliceOnly={fareSliceOnly}
             fareQuote={fareQuote}
             initialViewport={sharedViewport}
+            followTrainSignal={followTrainSignal}
+            focusLineSignal={focusLineSignal}
             onViewportChange={handleViewportChange}
             onSelectStation={handleSelectStation}
             onSelectLine={handleSelectLine}
+            onSelectTrain={handleSelectTrain}
+            onSimulationSnapshot={setSimSnapshot}
           />
         ) : (
           <MapCanvas
