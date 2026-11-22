@@ -1,27 +1,56 @@
 /**
- * Procedural City Ground, Urban Landuse Blocks, Rivers/Coastline, Parks, Sidewalks,
- * Station Plazas, Railway Gravel Yards, Major/Secondary Roads & Intersections Generator (P0 + P1).
+ * Procedural City Ground, Urban Landuse Blocks, Rivers/Coastline, Parks, Paved Sidewalks,
+ * Station Plazas, Railway Gravel Yards, UV-Marked Asphalt Roads & Intersections Generator (Atlas v2).
  *
- * Built from real OpenStreetMap Tokyo 23-ward polygons & polylines in base-environment.json
- * plus railway corridor corridors derived from atlas.json.
+ * Built strictly from real OpenStreetMap Tokyo 23-ward polygons & polylines in base-environment.json
+ * plus railway corridors derived from atlas.json.
  *
- * P0 Rendering Stability Guarantees:
+ * Rendering Stability Guarantees:
  *  - Every surface layer renders strictly opaque (transparent: false, depthWrite: true, FrontSide)
  *    during surface browsing.
- *  - Clean vertical elevation stratification (-1.25m .. +0.16m) + calibrated polygonOffset tiers
- *    eliminate Z-fighting & transparent sort flicker during orbit/pan/zoom.
+ *  - All road/river/sidewalk ribbons use verified upward (+Y) triangle winding.
+ *  - Strictly ordered vertical elevation stratification (-1.10m .. +0.135m) + polygonOffset tiers
+ *    eliminate Z-fighting & surface flicker during orbit/pan/zoom.
  */
 
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import {
+  SURFACE_ELEVATION_LAYERS,
+  type CityTerrainElevationSampler,
+} from '../../contracts/atlasV2.js';
+import {
+  detectSurfaceIntersections,
+  getEffectiveRiverWidth,
+  isSurfaceRiverVisible,
+  showcaseZoneBounds,
+  TERRAIN_ELEVATION_LEVELS,
+} from '../city/cityGeometryHelpers.js';
+import { ShibuyaStreetscapeLayer } from '../city/streetscapeGenerator.js';
+import { registerStreetscapeForCutaway } from '../city/streetscapeRegistry.js';
+import {
+  createAsphaltRoadTextureSet,
+  createIntersectionAsphaltTextureSet,
+  createSidewalkPaverTextureSet,
+  createUrbanParcelTextureSet,
+  createWaterTextureSet,
+  type SurfaceTextureSet,
+  type WaterTextureSet,
+} from '../city/surfaceTextures.js';
 import { injectRadialCutaway, type CutawayUniforms } from '../materials/cutawayShader.js';
-import { createParkCanopyTexture, createUrbanGroundTexture } from '../materials/facadeLibrary.js';
+import { createParkCanopyTexture } from '../materials/facadeLibrary.js';
 import type { UrbanBaseEnvironment } from '../types.js';
 
-function normalizeFlatGeometry(geom: THREE.BufferGeometry, keepWorldUv = false): THREE.BufferGeometry {
+type UvMode = 'none' | 'world' | 'preserve';
+
+const LEVEL_BY_ID = new Map(TERRAIN_ELEVATION_LEVELS.map((l) => [l.id, l]));
+const levelY = (id: string) => LEVEL_BY_ID.get(id)!.y;
+const levelPo = (id: string) => LEVEL_BY_ID.get(id)!.poFactor;
+
+function normalizeFlatGeometry(geom: THREE.BufferGeometry, uvMode: UvMode): THREE.BufferGeometry {
   const g = geom.index ? geom.toNonIndexed() : geom;
   if (!g.getAttribute('normal')) g.computeVertexNormals();
-  if (keepWorldUv) {
+  if (uvMode === 'world') {
     const pos = g.getAttribute('position');
     const uvs = new Float32Array(pos.count * 2);
     for (let i = 0; i < pos.count; i++) {
@@ -29,8 +58,8 @@ function normalizeFlatGeometry(geom: THREE.BufferGeometry, keepWorldUv = false):
       uvs[i * 2 + 1] = pos.getZ(i);
     }
     g.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
-  } else if (g.getAttribute('uv')) {
-    g.deleteAttribute('uv');
+  } else if (uvMode === 'none') {
+    if (g.getAttribute('uv')) g.deleteAttribute('uv');
   }
   return g;
 }
@@ -38,7 +67,7 @@ function normalizeFlatGeometry(geom: THREE.BufferGeometry, keepWorldUv = false):
 function buildPolygonGeometryXZ(
   pts: [number, number][],
   y: number,
-  keepWorldUv = false,
+  uvMode: UvMode = 'none',
 ): THREE.BufferGeometry | null {
   if (pts.length < 3) return null;
   const shape = new THREE.Shape();
@@ -50,48 +79,128 @@ function buildPolygonGeometryXZ(
   const geom = new THREE.ShapeGeometry(shape);
   geom.rotateX(-Math.PI / 2);
   geom.translate(0, y, 0);
-  return normalizeFlatGeometry(geom, keepWorldUv);
+  return normalizeFlatGeometry(geom, uvMode);
 }
 
+/**
+ * Builds an upward-facing (+Y normal) ribbon mesh along a polyline in XZ with optional road UVs.
+ * For `uvMode === 'road'`, `u = 0..1` across width and `v = meters / 16` along road length.
+ */
 function buildRibbonGeometryXZ(
   pts: [number, number][],
   width: number,
   y: number,
+  uvMode: 'none' | 'world' | 'road' = 'none',
 ): THREE.BufferGeometry | null {
   if (pts.length < 2) return null;
   const half = width * 0.5;
   const positions: number[] = [];
+  const uvs: number[] = [];
   const indices: number[] = [];
+  let accumLen = 0;
 
   for (let i = 0; i < pts.length; i++) {
-    const prev = pts[Math.max(0, i - 1)]!;
     const cur = pts[i]!;
-    const next = pts[Math.min(pts.length - 1, i + 1)]!;
-    const dx = next[0] - prev[0];
-    const dz = next[1] - prev[1];
-    const len = Math.hypot(dx, dz) || 1;
-    const nx = (-dz / len) * half;
-    const nz = (dx / len) * half;
+    if (i > 0) {
+      const prevPt = pts[i - 1]!;
+      accumLen += Math.hypot(cur[0] - prevPt[0], cur[1] - prevPt[1]);
+    }
 
-    positions.push(cur[0] + nx, y, cur[1] + nz);
-    positions.push(cur[0] - nx, y, cur[1] - nz);
+    let tPrevX = 0;
+    let tPrevZ = 0;
+    let tNextX = 0;
+    let tNextZ = 0;
+
+    if (i > 0) {
+      const p = pts[i - 1]!;
+      const dx = cur[0] - p[0];
+      const dz = cur[1] - p[1];
+      const l = Math.hypot(dx, dz) || 1;
+      tPrevX = dx / l;
+      tPrevZ = dz / l;
+    }
+    if (i < pts.length - 1) {
+      const n = pts[i + 1]!;
+      const dx = n[0] - cur[0];
+      const dz = n[1] - cur[1];
+      const l = Math.hypot(dx, dz) || 1;
+      tNextX = dx / l;
+      tNextZ = dz / l;
+    }
+    if (i === 0) {
+      tPrevX = tNextX;
+      tPrevZ = tNextZ;
+    } else if (i === pts.length - 1) {
+      tNextX = tPrevX;
+      tNextZ = tPrevZ;
+    }
+
+    const nPrevX = -tPrevZ;
+    const nPrevZ = tPrevX;
+    const nNextX = -tNextZ;
+    const nNextZ = tNextX;
+
+    let ux = nPrevX + nNextX;
+    let uz = nPrevZ + nNextZ;
+    const avgLen = Math.hypot(ux, uz);
+    let scale = half;
+    if (avgLen > 1e-4) {
+      ux /= avgLen;
+      uz /= avgLen;
+      const dot = ux * nNextX + uz * nNextZ;
+      scale = half / Math.max(0.72, dot);
+    } else {
+      ux = nNextX;
+      uz = nNextZ;
+    }
+
+    positions.push(cur[0] + ux * scale, y, cur[1] + uz * scale);
+    positions.push(cur[0] - ux * scale, y, cur[1] - uz * scale);
+
+    if (uvMode === 'road') {
+      const vCoord = accumLen / 16;
+      uvs.push(0, vCoord);
+      uvs.push(1, vCoord);
+    }
 
     if (i > 0) {
       const base = (i - 1) * 2;
-      indices.push(base, base + 1, base + 2);
-      indices.push(base + 1, base + 3, base + 2);
+      // Verified upward (+Y) front-face triangle winding
+      indices.push(base, base + 2, base + 1);
+      indices.push(base + 1, base + 2, base + 3);
     }
   }
 
   const geom = new THREE.BufferGeometry();
   geom.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  if (uvMode === 'road') {
+    geom.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+  }
   geom.setIndex(indices);
   geom.computeVertexNormals();
-  return normalizeFlatGeometry(geom, false);
+  return normalizeFlatGeometry(geom, uvMode === 'road' ? 'preserve' : uvMode);
+}
+
+interface TerrainTextureBundle {
+  parcel: SurfaceTextureSet;
+  sidewalk: SurfaceTextureSet;
+  intersection: SurfaceTextureSet;
+  roadTrunk: SurfaceTextureSet;
+  roadPrimary: SurfaceTextureSet;
+  roadSecondary: SurfaceTextureSet;
+  roadTertiary: SurfaceTextureSet;
+  water: WaterTextureSet;
+  parkMap: THREE.CanvasTexture;
 }
 
 export class CityTerrainLayer {
   readonly group = new THREE.Group();
+  readonly streetscapeLayer: ShibuyaStreetscapeLayer;
+  readonly elevationSampler: CityTerrainElevationSampler = {
+    datumKind: 'flat_datum',
+    sampleGroundY: () => 0,
+  };
+
   private readonly groundMaterial: THREE.MeshStandardMaterial;
   private readonly bayMaterial: THREE.MeshStandardMaterial;
   private readonly waterMaterial: THREE.MeshStandardMaterial;
@@ -102,22 +211,27 @@ export class CityTerrainLayer {
   private readonly landuseIndustrialMat: THREE.MeshStandardMaterial;
   private readonly railYardMaterial: THREE.MeshStandardMaterial;
   private readonly sidewalkPlazaMaterial: THREE.MeshStandardMaterial;
-  private readonly roadMaterial: THREE.MeshStandardMaterial;
+  private readonly trunkRoadMaterial: THREE.MeshStandardMaterial;
+  private readonly primaryRoadMaterial: THREE.MeshStandardMaterial;
   private readonly secondaryRoadMaterial: THREE.MeshStandardMaterial;
+  private readonly tertiaryRoadMaterial: THREE.MeshStandardMaterial;
+  private readonly intersectionRoadMaterial: THREE.MeshStandardMaterial;
   private readonly elevatedRoadMaterial: THREE.MeshStandardMaterial;
 
   private readonly surfaceMaterials: THREE.MeshStandardMaterial[];
   private readonly undergroundReferenceGrid: THREE.GridHelper;
-  private groundTexture: THREE.CanvasTexture;
-  private parkTexture: THREE.CanvasTexture;
+  private textures: TerrainTextureBundle;
   private isDark: boolean;
 
   constructor(isDark: boolean, clipPlanes: THREE.Plane[], cutawayUniforms?: CutawayUniforms) {
     this.isDark = isDark;
     this.group.name = 'city-terrain-layer';
 
-    this.groundTexture = createUrbanGroundTexture(isDark);
-    this.parkTexture = createParkCanopyTexture(isDark);
+    this.streetscapeLayer = new ShibuyaStreetscapeLayer(isDark, clipPlanes, cutawayUniforms);
+    this.group.add(this.streetscapeLayer.group);
+    registerStreetscapeForCutaway(cutawayUniforms, this.streetscapeLayer);
+
+    this.textures = this.createTextures(isDark);
 
     const mkSurfaceMat = (
       opts: THREE.MeshStandardMaterialParameters,
@@ -135,84 +249,175 @@ export class CityTerrainLayer {
         ...opts,
       });
 
-    // Strictly ordered opaque elevation & polygonOffset hierarchy (P0)
     this.groundMaterial = mkSurfaceMat(
-      { map: this.groundTexture, roughness: 0.96, metalness: 0.01 },
-      6,
+      {
+        map: this.textures.parcel.map,
+        roughnessMap: this.textures.parcel.roughnessMap,
+        bumpMap: this.textures.parcel.bumpMap,
+        bumpScale: 0.14,
+        roughness: 0.94,
+        metalness: 0.01,
+      },
+      levelPo('baseGround'),
     );
 
     this.bayMaterial = mkSurfaceMat(
       {
-        color: isDark ? 0x10283f : 0x6b9ec2,
-        roughness: 0.16,
-        metalness: 0.28,
-        envMapIntensity: 1.3,
+        color: isDark ? 0x10283f : 0x5c8fb6,
+        roughnessMap: this.textures.water.roughnessMap,
+        bumpMap: this.textures.water.bumpMap,
+        bumpScale: 0.24,
+        roughness: 0.22,
+        metalness: 0.24,
+        envMapIntensity: 1.35,
       },
-      5,
-    );
-
-    this.landuseCommercialMat = mkSurfaceMat(
-      { color: isDark ? 0x1c2430 : 0xd3cec6, roughness: 0.94, metalness: 0.02 },
-      4,
-    );
-
-    this.landuseResidentialMat = mkSurfaceMat(
-      { color: isDark ? 0x18202b : 0xdfdcd4, roughness: 0.96, metalness: 0.01 },
-      4,
-    );
-
-    this.landuseIndustrialMat = mkSurfaceMat(
-      { color: isDark ? 0x1b212a : 0xc9ccd0, roughness: 0.95, metalness: 0.03 },
-      4,
+      levelPo('tokyoBay'),
     );
 
     this.quayMaterial = mkSurfaceMat(
-      { color: isDark ? 0x2a3340 : 0xbab6ae, roughness: 0.9, metalness: 0.04 },
-      3.5,
+      { color: isDark ? 0x2b333f : 0xb3afa7, roughness: 0.9, metalness: 0.04 },
+      levelPo('riverQuay'),
     );
 
     this.waterMaterial = mkSurfaceMat(
       {
-        color: isDark ? 0x153552 : 0x77a9cf,
-        roughness: 0.18,
-        metalness: 0.26,
+        color: isDark ? 0x153654 : 0x679bc2,
+        roughnessMap: this.textures.water.roughnessMap,
+        bumpMap: this.textures.water.bumpMap,
+        bumpScale: 0.2,
+        roughness: 0.24,
+        metalness: 0.22,
         envMapIntensity: 1.25,
       },
-      3,
+      levelPo('inlandWater'),
+    );
+
+    this.landuseResidentialMat = mkSurfaceMat(
+      {
+        map: this.textures.parcel.map,
+        roughnessMap: this.textures.parcel.roughnessMap,
+        bumpMap: this.textures.parcel.bumpMap,
+        bumpScale: 0.12,
+        color: isDark ? 0xd9e2ec : 0xf6f3ec,
+        roughness: 0.95,
+        metalness: 0.01,
+      },
+      levelPo('landuseResidential'),
+    );
+
+    this.landuseIndustrialMat = mkSurfaceMat(
+      {
+        map: this.textures.parcel.map,
+        roughnessMap: this.textures.parcel.roughnessMap,
+        color: isDark ? 0xb8c2cc : 0xe0e2e5,
+        roughness: 0.94,
+        metalness: 0.03,
+      },
+      levelPo('landuseIndustrial'),
+    );
+
+    this.landuseCommercialMat = mkSurfaceMat(
+      {
+        map: this.textures.parcel.map,
+        roughnessMap: this.textures.parcel.roughnessMap,
+        bumpMap: this.textures.parcel.bumpMap,
+        bumpScale: 0.12,
+        color: isDark ? 0xcad4df : 0xeae5dc,
+        roughness: 0.92,
+        metalness: 0.02,
+      },
+      levelPo('landuseCommercial'),
     );
 
     this.parkMaterial = mkSurfaceMat(
       {
-        map: this.parkTexture,
+        map: this.textures.parkMap,
         color: 0xffffff,
-        roughness: 0.96,
+        roughness: 0.95,
         metalness: 0.0,
       },
-      2,
+      levelPo('parks'),
     );
 
     this.railYardMaterial = mkSurfaceMat(
-      { color: isDark ? 0x242a33 : 0x918c84, roughness: 0.96, metalness: 0.04 },
-      1,
+      { color: isDark ? 0x242a33 : 0x8c877e, roughness: 0.96, metalness: 0.04 },
+      levelPo('railCorridors'),
     );
 
     this.sidewalkPlazaMaterial = mkSurfaceMat(
-      { color: isDark ? 0x26303d : 0xd9d5cd, roughness: 0.88, metalness: 0.02 },
-      0,
+      {
+        map: this.textures.sidewalk.map,
+        roughnessMap: this.textures.sidewalk.roughnessMap,
+        bumpMap: this.textures.sidewalk.bumpMap,
+        bumpScale: 0.14,
+        roughness: 0.9,
+        metalness: 0.02,
+      },
+      levelPo('sidewalksPlazas'),
+    );
+
+    this.tertiaryRoadMaterial = mkSurfaceMat(
+      {
+        map: this.textures.roadTertiary.map,
+        roughnessMap: this.textures.roadTertiary.roughnessMap,
+        bumpMap: this.textures.roadTertiary.bumpMap,
+        bumpScale: 0.1,
+        roughness: 0.88,
+        metalness: 0.04,
+      },
+      levelPo('roadTertiary'),
     );
 
     this.secondaryRoadMaterial = mkSurfaceMat(
-      { color: isDark ? 0x222c39 : 0x7c848e, roughness: 0.88, metalness: 0.04 },
-      -1,
+      {
+        map: this.textures.roadSecondary.map,
+        roughnessMap: this.textures.roadSecondary.roughnessMap,
+        bumpMap: this.textures.roadSecondary.bumpMap,
+        bumpScale: 0.1,
+        roughness: 0.86,
+        metalness: 0.04,
+      },
+      levelPo('roadSecondary'),
     );
 
-    this.roadMaterial = mkSurfaceMat(
-      { color: isDark ? 0x1d2632 : 0x67707a, roughness: 0.85, metalness: 0.05 },
-      -1.5,
+    this.primaryRoadMaterial = mkSurfaceMat(
+      {
+        map: this.textures.roadPrimary.map,
+        roughnessMap: this.textures.roadPrimary.roughnessMap,
+        bumpMap: this.textures.roadPrimary.bumpMap,
+        bumpScale: 0.1,
+        roughness: 0.85,
+        metalness: 0.05,
+      },
+      levelPo('roadPrimary'),
+    );
+
+    this.trunkRoadMaterial = mkSurfaceMat(
+      {
+        map: this.textures.roadTrunk.map,
+        roughnessMap: this.textures.roadTrunk.roughnessMap,
+        bumpMap: this.textures.roadTrunk.bumpMap,
+        bumpScale: 0.1,
+        roughness: 0.84,
+        metalness: 0.05,
+      },
+      levelPo('roadTrunk'),
+    );
+
+    this.intersectionRoadMaterial = mkSurfaceMat(
+      {
+        map: this.textures.intersection.map,
+        roughnessMap: this.textures.intersection.roughnessMap,
+        bumpMap: this.textures.intersection.bumpMap,
+        bumpScale: 0.1,
+        roughness: 0.86,
+        metalness: 0.04,
+      },
+      levelPo('roadIntersectionApron'),
     );
 
     this.elevatedRoadMaterial = new THREE.MeshStandardMaterial({
-      color: isDark ? 0x394557 : 0xa5abb3,
+      color: isDark ? 0x394557 : 0x9ca2aa,
       roughness: 0.82,
       metalness: 0.07,
       transparent: false,
@@ -224,16 +429,19 @@ export class CityTerrainLayer {
     this.surfaceMaterials = [
       this.groundMaterial,
       this.bayMaterial,
-      this.landuseCommercialMat,
-      this.landuseResidentialMat,
-      this.landuseIndustrialMat,
       this.quayMaterial,
       this.waterMaterial,
+      this.landuseResidentialMat,
+      this.landuseIndustrialMat,
+      this.landuseCommercialMat,
       this.parkMaterial,
       this.railYardMaterial,
       this.sidewalkPlazaMaterial,
+      this.tertiaryRoadMaterial,
       this.secondaryRoadMaterial,
-      this.roadMaterial,
+      this.primaryRoadMaterial,
+      this.trunkRoadMaterial,
+      this.intersectionRoadMaterial,
     ];
 
     if (cutawayUniforms) {
@@ -243,19 +451,17 @@ export class CityTerrainLayer {
       injectRadialCutaway(this.elevatedRoadMaterial, cutawayUniforms, 'terrain');
     }
 
-    // Base metropolitan ground plane at y = -1.25
-    const basePlane = new THREE.Mesh(
-      new THREE.PlaneGeometry(110_000, 110_000),
-      this.groundMaterial,
-    );
-    basePlane.rotation.x = -Math.PI / 2;
-    basePlane.position.y = -1.25;
+    // Base metropolitan ground plane at y = -1.25 with world-meter UVs
+    const baseGeom = new THREE.PlaneGeometry(110_000, 110_000);
+    baseGeom.rotateX(-Math.PI / 2);
+    baseGeom.translate(0, levelY('baseGround'), 0);
+    const normalizedBase = normalizeFlatGeometry(baseGeom, 'world');
+    const basePlane = new THREE.Mesh(normalizedBase, this.groundMaterial);
     basePlane.receiveShadow = true;
     basePlane.renderOrder = 0;
     basePlane.name = 'metropolitan-ground';
     this.group.add(basePlane);
 
-    // Subtle deep reference datum grid at y = -44 (visible when exploring underground!)
     this.undergroundReferenceGrid = new THREE.GridHelper(32_000, 64, 0x38bdf8, 0x334155);
     this.undergroundReferenceGrid.position.y = -44;
     const gridMat = this.undergroundReferenceGrid.material as THREE.Material;
@@ -263,6 +469,40 @@ export class CityTerrainLayer {
     gridMat.opacity = 0.22;
     this.undergroundReferenceGrid.visible = false;
     this.group.add(this.undergroundReferenceGrid);
+  }
+
+  private createTextures(isDark: boolean): TerrainTextureBundle {
+    return {
+      parcel: createUrbanParcelTextureSet(isDark),
+      sidewalk: createSidewalkPaverTextureSet(isDark),
+      intersection: createIntersectionAsphaltTextureSet(isDark),
+      roadTrunk: createAsphaltRoadTextureSet('trunk', isDark),
+      roadPrimary: createAsphaltRoadTextureSet('primary', isDark),
+      roadSecondary: createAsphaltRoadTextureSet('secondary', isDark),
+      roadTertiary: createAsphaltRoadTextureSet('tertiary', isDark),
+      water: createWaterTextureSet(isDark),
+      parkMap: createParkCanopyTexture(isDark),
+    };
+  }
+
+  private disposeTextures(bundle: TerrainTextureBundle): void {
+    const sets = [
+      bundle.parcel,
+      bundle.sidewalk,
+      bundle.intersection,
+      bundle.roadTrunk,
+      bundle.roadPrimary,
+      bundle.roadSecondary,
+      bundle.roadTertiary,
+    ];
+    for (const s of sets) {
+      s.map.dispose();
+      s.roughnessMap.dispose();
+      s.bumpMap.dispose();
+    }
+    bundle.water.roughnessMap.dispose();
+    bundle.water.bumpMap.dispose();
+    bundle.parkMap.dispose();
   }
 
   private addMergedLayer(
@@ -285,7 +525,7 @@ export class CityTerrainLayer {
   }
 
   populateFromEnvironment(env: UrbanBaseEnvironment): void {
-    // 1. Tokyo Bay ocean backdrop at y = -0.95
+    // 1. Tokyo Bay ocean backdrop at y = -0.82
     const bayPts: [number, number][] = [
       [1500, 4200],
       [18000, 2200],
@@ -293,7 +533,7 @@ export class CityTerrainLayer {
       [-6000, 24000],
       [-2000, 11500],
     ];
-    const bayGeom = buildPolygonGeometryXZ(bayPts, -0.95);
+    const bayGeom = buildPolygonGeometryXZ(bayPts, levelY('tokyoBay'), 'world');
     if (bayGeom) {
       const bayMesh = new THREE.Mesh(bayGeom, this.bayMaterial);
       bayMesh.receiveShadow = true;
@@ -302,7 +542,7 @@ export class CityTerrainLayer {
       this.group.add(bayMesh);
     }
 
-    // 2. Real OSM Urban Landuse Districts & Railway Yards (y = -0.82 .. -0.74)
+    // 2. Real OSM Urban Landuse Districts & Railway Yards
     if (env.landuseBlocks && env.landuseBlocks.length > 0) {
       const commGeoms: THREE.BufferGeometry[] = [];
       const resGeoms: THREE.BufferGeometry[] = [];
@@ -312,16 +552,28 @@ export class CityTerrainLayer {
       for (let i = 0; i < env.landuseBlocks.length; i++) {
         const blk = env.landuseBlocks[i]!;
         if (blk.kind === 'railway') {
-          const g = buildPolygonGeometryXZ(blk.pts, -0.17 + (i % 3) * 0.006);
+          const g = buildPolygonGeometryXZ(blk.pts, levelY('railCorridors') - 0.02 + (i % 3) * 0.004);
           if (g) railYardGeoms.push(g);
         } else if (blk.kind === 'commercial') {
-          const g = buildPolygonGeometryXZ(blk.pts, -0.76 + (i % 4) * 0.005);
+          const g = buildPolygonGeometryXZ(
+            blk.pts,
+            levelY('landuseCommercial') + (i % 4) * 0.004,
+            'world',
+          );
           if (g) commGeoms.push(g);
         } else if (blk.kind === 'industrial') {
-          const g = buildPolygonGeometryXZ(blk.pts, -0.79 + (i % 4) * 0.005);
+          const g = buildPolygonGeometryXZ(
+            blk.pts,
+            levelY('landuseIndustrial') + (i % 4) * 0.004,
+            'world',
+          );
           if (g) indGeoms.push(g);
         } else {
-          const g = buildPolygonGeometryXZ(blk.pts, -0.83 + (i % 4) * 0.005);
+          const g = buildPolygonGeometryXZ(
+            blk.pts,
+            levelY('landuseResidential') + (i % 4) * 0.004,
+            'world',
+          );
           if (g) resGeoms.push(g);
         }
       }
@@ -332,113 +584,227 @@ export class CityTerrainLayer {
       this.addMergedLayer(railYardGeoms, this.railYardMaterial, 'osm-landuse-railway-yards', 5);
     }
 
-    // 3. Real OSM Inland Waterbodies, Rivers & Embankment Quay Borders
+    // 3. Real OSM Inland Waterbodies, Rivers & Concrete Embankments (excluding underground culverts)
     const quayGeoms: THREE.BufferGeometry[] = [];
     const waterGeoms: THREE.BufferGeometry[] = [];
     for (let i = 0; i < env.waterPolygons.length; i++) {
       const wp = env.waterPolygons[i]!;
-      const y = -0.58 + (i % 5) * 0.01;
-      const g = buildPolygonGeometryXZ(wp.pts, y);
+      const y = Math.min(
+        SURFACE_ELEVATION_LAYERS.riverWaterMaxY,
+        levelY('inlandWater') + (i % 4) * 0.012,
+      );
+      const g = buildPolygonGeometryXZ(wp.pts, y, 'world');
       if (g) waterGeoms.push(g);
     }
     for (let i = 0; i < env.riverLines.length; i++) {
       const rv = env.riverLines[i]!;
-      const q = buildRibbonGeometryXZ(rv.pts, rv.width * 0.62 + 8, -0.65 + (i % 3) * 0.006);
+      if (!isSurfaceRiverVisible(rv.name)) continue;
+      const effectiveW = getEffectiveRiverWidth(rv.name, rv.width);
+      const q = buildRibbonGeometryXZ(
+        rv.pts,
+        effectiveW + 5,
+        levelY('riverQuay') + (i % 3) * 0.005,
+        'none',
+      );
       if (q) quayGeoms.push(q);
-      const g = buildRibbonGeometryXZ(rv.pts, rv.width * 0.55, -0.49 + (i % 4) * 0.01);
+      const g = buildRibbonGeometryXZ(
+        rv.pts,
+        effectiveW,
+        Math.min(
+          SURFACE_ELEVATION_LAYERS.riverWaterMaxY,
+          levelY('inlandWater') + 0.03 + (i % 4) * 0.014,
+        ),
+        'world',
+      );
       if (g) waterGeoms.push(g);
     }
     this.addMergedLayer(quayGeoms, this.quayMaterial, 'osm-river-quays', 2);
     this.addMergedLayer(waterGeoms, this.waterMaterial, 'osm-water-layer', 3);
 
-    // 4. Real OSM Parks & Botanical Forests (keepWorldUv = true for organic canopy stipple!)
+    // 4. Real OSM Parks & Botanical Forests
     const parkGeoms: THREE.BufferGeometry[] = [];
     for (let i = 0; i < env.parkPolygons.length; i++) {
       const pk = env.parkPolygons[i]!;
-      const y = -0.34 + (i % 7) * 0.014;
-      const g = buildPolygonGeometryXZ(pk.pts, y, true);
+      const y = Math.min(SURFACE_ELEVATION_LAYERS.parkMaxY, levelY('parks') + (i % 6) * 0.014);
+      const g = buildPolygonGeometryXZ(pk.pts, y, 'world');
       if (g) parkGeoms.push(g);
     }
     this.addMergedLayer(parkGeoms, this.parkMaterial, 'osm-parks-layer', 4);
 
-    // 5. Railway Right-of-Way Ballast Corridors (derived from surface railway segments)
+    // 5. Railway Right-of-Way Ballast Corridors
     if (env.railCorridors && env.railCorridors.length > 0) {
       const corrGeoms: THREE.BufferGeometry[] = [];
       for (let i = 0; i < env.railCorridors.length; i++) {
         const c = env.railCorridors[i]!;
-        const g = buildRibbonGeometryXZ(c.pts, c.width, -0.14 + (i % 4) * 0.004);
+        const g = buildRibbonGeometryXZ(
+          c.pts,
+          c.width,
+          levelY('railCorridors') + (i % 4) * 0.004,
+          'none',
+        );
         if (g) corrGeoms.push(g);
       }
       this.addMergedLayer(corrGeoms, this.railYardMaterial, 'rail-corridor-yards', 5);
     }
 
-    // 6. Sidewalk Curbs, Pedestrian Squares & Station Forecourt Plazas (y = -0.06)
+    // 6. Sidewalk Pavers, Pedestrian Squares & Station Forecourt Plazas
     const plazaGeoms: THREE.BufferGeometry[] = [];
     if (env.plazaPolygons) {
       for (let i = 0; i < env.plazaPolygons.length; i++) {
-        const g = buildPolygonGeometryXZ(env.plazaPolygons[i]!.pts, -0.055 + (i % 3) * 0.004);
+        const g = buildPolygonGeometryXZ(
+          env.plazaPolygons[i]!.pts,
+          levelY('sidewalksPlazas') + (i % 3) * 0.003,
+          'world',
+        );
         if (g) plazaGeoms.push(g);
       }
     }
     if (env.stationPlazas) {
-      const plazaBox = normalizeFlatGeometry(new THREE.CircleGeometry(1, 16), false);
-      plazaBox.rotateX(-Math.PI / 2);
+      const plazaCircle = new THREE.CircleGeometry(1, 16);
+      plazaCircle.rotateX(-Math.PI / 2);
       for (let i = 0; i < env.stationPlazas.length; i++) {
         const sp = env.stationPlazas[i]!;
-        const g = plazaBox.clone();
+        const g = plazaCircle.clone();
         g.scale(sp.rx, 1, sp.rz);
         g.rotateY(-sp.a);
-        g.translate(sp.x, -0.045 + (i % 3) * 0.004, sp.z);
-        plazaGeoms.push(g);
+        g.translate(sp.x, levelY('sidewalksPlazas') + 0.005 + (i % 3) * 0.003, sp.z);
+        plazaGeoms.push(normalizeFlatGeometry(g, 'world'));
       }
-      plazaBox.dispose();
+      plazaCircle.dispose();
     }
 
-    // 7. Real OSM Road Network (Major Arterials + Secondary/Tertiary Streets + Flanking Sidewalks)
-    const majorRoadGeoms: THREE.BufferGeometry[] = [];
-    const minorRoadGeoms: THREE.BufferGeometry[] = [];
+    // 7. Real OSM Road Network (4 road tiers with baked lane-markings + flanking sidewalks)
+    const trunkGeoms: THREE.BufferGeometry[] = [];
+    const primaryGeoms: THREE.BufferGeometry[] = [];
+    const secondaryGeoms: THREE.BufferGeometry[] = [];
+    const tertiaryGeoms: THREE.BufferGeometry[] = [];
     const elevatedRoadGeoms: THREE.BufferGeometry[] = [];
 
     for (let i = 0; i < env.roads.length; i++) {
       const r = env.roads[i]!;
       if (r.el === 1) {
-        const g = buildRibbonGeometryXZ(r.pts, r.w * 0.85, 7.4 + (i % 3) * 0.04);
+        const g = buildRibbonGeometryXZ(
+          r.pts,
+          r.w * 0.85,
+          SURFACE_ELEVATION_LAYERS.elevatedExpresswayY + (i % 3) * 0.04,
+          'none',
+        );
         if (g) elevatedRoadGeoms.push(g);
-      } else if (r.hw === 'trunk' || r.hw === 'primary') {
-        // Flanking paved sidewalk ribbon slightly below road crown
-        const sw = buildRibbonGeometryXZ(r.pts, r.w + 6.5, -0.065 + (i % 4) * 0.003);
-        if (sw) plazaGeoms.push(sw);
+        continue;
+      }
 
-        const classY = r.hw === 'trunk' ? 0.115 : 0.085;
-        const g = buildRibbonGeometryXZ(r.pts, r.w, classY + (i % 5) * 0.004);
-        if (g) majorRoadGeoms.push(g);
+      const sidewalkPad =
+        r.hw === 'trunk'
+          ? 7.2
+          : r.hw === 'primary'
+            ? 6.4
+            : r.hw === 'secondary'
+              ? 4.6
+              : 2.6;
+      const sw = buildRibbonGeometryXZ(
+        r.pts,
+        r.w + sidewalkPad,
+        levelY('sidewalksPlazas') - 0.006 + (i % 4) * 0.002,
+        'world',
+      );
+      if (sw) plazaGeoms.push(sw);
+
+      if (r.hw === 'trunk') {
+        const g = buildRibbonGeometryXZ(
+          r.pts,
+          r.w,
+          levelY('roadTrunk') + (i % 4) * 0.003,
+          'road',
+        );
+        if (g) trunkGeoms.push(g);
+      } else if (r.hw === 'primary') {
+        const g = buildRibbonGeometryXZ(
+          r.pts,
+          r.w,
+          levelY('roadPrimary') + (i % 4) * 0.003,
+          'road',
+        );
+        if (g) primaryGeoms.push(g);
+      } else if (r.hw === 'secondary') {
+        const g = buildRibbonGeometryXZ(
+          r.pts,
+          r.w,
+          levelY('roadSecondary') + (i % 4) * 0.003,
+          'road',
+        );
+        if (g) secondaryGeoms.push(g);
       } else {
-        if (r.hw === 'secondary') {
-          const sw = buildRibbonGeometryXZ(r.pts, r.w + 4.2, -0.075 + (i % 3) * 0.003);
-          if (sw) plazaGeoms.push(sw);
-        }
-        const classY = r.hw === 'secondary' ? 0.05 : 0.025;
-        const g = buildRibbonGeometryXZ(r.pts, r.w, classY + (i % 5) * 0.003);
-        if (g) minorRoadGeoms.push(g);
+        const g = buildRibbonGeometryXZ(
+          r.pts,
+          r.w,
+          levelY('roadTertiary') + (i % 4) * 0.002,
+          'road',
+        );
+        if (g) tertiaryGeoms.push(g);
       }
     }
 
-    // Add road intersection discs cleanly
-    const discTemplate = normalizeFlatGeometry(new THREE.CircleGeometry(1, 10), false);
+    // 8. Unmarked Asphalt Intersection Aprons (23-ward intersections + Shibuya detected crossings)
+    const intersectionGeoms: THREE.BufferGeometry[] = [];
+    const discTemplate = new THREE.CircleGeometry(1, 14);
     discTemplate.rotateX(-Math.PI / 2);
-    for (let i = 0; i < env.intersections.length; i++) {
-      const [ix, iz, rad] = env.intersections[i]!;
+
+    const seenAp = new Set<string>();
+    const addApron = (ix: number, iz: number, rad: number, yOff: number) => {
+      const k = `${Math.round(ix / 5)},${Math.round(iz / 5)}`;
+      if (seenAp.has(k)) return;
+      seenAp.add(k);
       const g = discTemplate.clone();
       g.scale(rad, 1, rad);
-      g.translate(ix, 0.145 + (i % 3) * 0.004, iz);
-      majorRoadGeoms.push(g);
+      g.translate(ix, yOff, iz);
+      intersectionGeoms.push(normalizeFlatGeometry(g, 'world'));
+    };
+
+    const shibuyaIntersections = detectSurfaceIntersections(
+      env.roads,
+      env.intersections,
+      showcaseZoneBounds(),
+    );
+    for (let i = 0; i < shibuyaIntersections.length; i++) {
+      const j = shibuyaIntersections[i]!;
+      addApron(j.x, j.z, j.radius, levelY('roadIntersectionApron') + (i % 3) * 0.002);
+    }
+    for (let i = 0; i < env.intersections.length; i++) {
+      const [ix, iz, rad] = env.intersections[i]!;
+      addApron(ix, iz, rad * 0.88, levelY('roadIntersectionApron') + (i % 3) * 0.002);
+    }
+    // Watertight endpoint caps where separate OSM road ways connect end-to-end
+    for (let i = 0; i < env.roads.length; i++) {
+      const r = env.roads[i]!;
+      if (r.el === 1 || r.pts.length < 2) continue;
+      const capY =
+        r.hw === 'trunk'
+          ? levelY('roadTrunk') - 0.004
+          : r.hw === 'primary'
+            ? levelY('roadPrimary') - 0.004
+            : r.hw === 'secondary'
+              ? levelY('roadSecondary') - 0.004
+              : levelY('roadTertiary') - 0.004;
+      const p0 = r.pts[0]!;
+      const p1 = r.pts[r.pts.length - 1]!;
+      addApron(p0[0], p0[1], r.w * 0.49, capY);
+      addApron(p1[0], p1[1], r.w * 0.49, capY);
     }
     discTemplate.dispose();
 
     this.addMergedLayer(plazaGeoms, this.sidewalkPlazaMaterial, 'osm-sidewalks-plazas', 6);
-    this.addMergedLayer(minorRoadGeoms, this.secondaryRoadMaterial, 'osm-secondary-streets', 7);
-    this.addMergedLayer(majorRoadGeoms, this.roadMaterial, 'osm-surface-roads', 7);
-    this.addMergedLayer(elevatedRoadGeoms, this.elevatedRoadMaterial, 'osm-elevated-roads', 8, false);
+    this.addMergedLayer(tertiaryGeoms, this.tertiaryRoadMaterial, 'osm-tertiary-streets', 7);
+    this.addMergedLayer(secondaryGeoms, this.secondaryRoadMaterial, 'osm-secondary-streets', 7);
+    this.addMergedLayer(primaryGeoms, this.primaryRoadMaterial, 'osm-primary-roads', 8);
+    this.addMergedLayer(trunkGeoms, this.trunkRoadMaterial, 'osm-trunk-roads', 8);
+    this.addMergedLayer(
+      intersectionGeoms,
+      this.intersectionRoadMaterial,
+      'osm-intersection-aprons',
+      9,
+    );
+    this.addMergedLayer(elevatedRoadGeoms, this.elevatedRoadMaterial, 'osm-elevated-roads', 10, false);
+    this.streetscapeLayer.populate(env);
   }
 
   setSurfaceOpacity(opacity: number, undergroundActive: boolean): void {
@@ -459,43 +825,78 @@ export class CityTerrainLayer {
     this.elevatedRoadMaterial.depthWrite = !elevTranslucent;
     if (elevNeed) this.elevatedRoadMaterial.needsUpdate = true;
     this.undergroundReferenceGrid.visible = undergroundActive || clamped < 0.7;
+    this.streetscapeLayer.setVisibilityAndOpacity(true, clamped, undergroundActive);
   }
 
   setTheme(isDark: boolean): void {
     if (this.isDark === isDark) return;
     this.isDark = isDark;
 
-    this.groundTexture.dispose();
-    this.groundTexture = createUrbanGroundTexture(isDark);
-    this.groundMaterial.map = this.groundTexture;
-    this.groundMaterial.needsUpdate = true;
+    const oldTextures = this.textures;
+    this.textures = this.createTextures(isDark);
 
-    this.parkTexture.dispose();
-    this.parkTexture = createParkCanopyTexture(isDark);
-    this.parkMaterial.map = this.parkTexture;
+    const bindSurface = (mat: THREE.MeshStandardMaterial, set: SurfaceTextureSet) => {
+      mat.map = set.map;
+      mat.roughnessMap = set.roughnessMap;
+      mat.bumpMap = set.bumpMap;
+      mat.needsUpdate = true;
+    };
+
+    bindSurface(this.groundMaterial, this.textures.parcel);
+    bindSurface(this.sidewalkPlazaMaterial, this.textures.sidewalk);
+    bindSurface(this.intersectionRoadMaterial, this.textures.intersection);
+    bindSurface(this.trunkRoadMaterial, this.textures.roadTrunk);
+    bindSurface(this.primaryRoadMaterial, this.textures.roadPrimary);
+    bindSurface(this.secondaryRoadMaterial, this.textures.roadSecondary);
+    bindSurface(this.tertiaryRoadMaterial, this.textures.roadTertiary);
+
+    this.landuseResidentialMat.map = this.textures.parcel.map;
+    this.landuseResidentialMat.roughnessMap = this.textures.parcel.roughnessMap;
+    this.landuseResidentialMat.bumpMap = this.textures.parcel.bumpMap;
+    this.landuseResidentialMat.color.setHex(isDark ? 0xd9e2ec : 0xf6f3ec);
+    this.landuseResidentialMat.needsUpdate = true;
+
+    this.landuseIndustrialMat.map = this.textures.parcel.map;
+    this.landuseIndustrialMat.roughnessMap = this.textures.parcel.roughnessMap;
+    this.landuseIndustrialMat.color.setHex(isDark ? 0xb8c2cc : 0xe0e2e5);
+    this.landuseIndustrialMat.needsUpdate = true;
+
+    this.landuseCommercialMat.map = this.textures.parcel.map;
+    this.landuseCommercialMat.roughnessMap = this.textures.parcel.roughnessMap;
+    this.landuseCommercialMat.bumpMap = this.textures.parcel.bumpMap;
+    this.landuseCommercialMat.color.setHex(isDark ? 0xcad4df : 0xeae5dc);
+    this.landuseCommercialMat.needsUpdate = true;
+
+    this.bayMaterial.roughnessMap = this.textures.water.roughnessMap;
+    this.bayMaterial.bumpMap = this.textures.water.bumpMap;
+    this.bayMaterial.color.setHex(isDark ? 0x10283f : 0x5c8fb6);
+    this.bayMaterial.needsUpdate = true;
+
+    this.waterMaterial.roughnessMap = this.textures.water.roughnessMap;
+    this.waterMaterial.bumpMap = this.textures.water.bumpMap;
+    this.waterMaterial.color.setHex(isDark ? 0x153654 : 0x679bc2);
+    this.waterMaterial.needsUpdate = true;
+
+    this.parkMaterial.map = this.textures.parkMap;
     this.parkMaterial.needsUpdate = true;
 
-    this.bayMaterial.color.setHex(isDark ? 0x10283f : 0x6b9ec2);
-    this.waterMaterial.color.setHex(isDark ? 0x153552 : 0x77a9cf);
-    this.quayMaterial.color.setHex(isDark ? 0x2a3340 : 0xbab6ae);
-    this.landuseCommercialMat.color.setHex(isDark ? 0x1c2430 : 0xd3cec6);
-    this.landuseResidentialMat.color.setHex(isDark ? 0x18202b : 0xdfdcd4);
-    this.landuseIndustrialMat.color.setHex(isDark ? 0x1b212a : 0xc9ccd0);
-    this.railYardMaterial.color.setHex(isDark ? 0x242a33 : 0x918c84);
-    this.sidewalkPlazaMaterial.color.setHex(isDark ? 0x26303d : 0xd9d5cd);
-    this.secondaryRoadMaterial.color.setHex(isDark ? 0x222c39 : 0x7c848e);
-    this.roadMaterial.color.setHex(isDark ? 0x1d2632 : 0x67707a);
-    this.elevatedRoadMaterial.color.setHex(isDark ? 0x394557 : 0xa5abb3);
+    this.quayMaterial.color.setHex(isDark ? 0x2b333f : 0xb3afa7);
+    this.railYardMaterial.color.setHex(isDark ? 0x242a33 : 0x8c877e);
+    this.elevatedRoadMaterial.color.setHex(isDark ? 0x394557 : 0x9ca2aa);
+
+    this.streetscapeLayer.setTheme(isDark);
+    this.disposeTextures(oldTextures);
   }
 
   dispose(): void {
+    this.group.remove(this.streetscapeLayer.group);
+    this.streetscapeLayer.dispose();
     this.group.traverse((obj) => {
       if (obj instanceof THREE.Mesh) {
         obj.geometry.dispose();
       }
     });
-    this.groundTexture.dispose();
-    this.parkTexture.dispose();
+    this.disposeTextures(this.textures);
     for (const mat of this.surfaceMaterials) mat.dispose();
     this.elevatedRoadMaterial.dispose();
   }

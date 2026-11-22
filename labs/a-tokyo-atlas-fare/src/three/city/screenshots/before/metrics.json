@@ -1,0 +1,437 @@
+{
+  "stage": "before",
+  "timestamp": "2026-11-22T09:38:49.857Z",
+  "rendererMode": "Headless Chrome + SwiftShader CPU WebGL (1440x900)",
+  "initialLoadMs": 6976,
+  "consoleErrors": [],
+  "pageErrors": [],
+  "shots": [
+    {
+      "label": "overview-day",
+      "path": "reports\\atlas-v2-environment\\screenshots\\before\\overview-day.png",
+      "fps": 2,
+      "avgFrameMs": 501.6,
+      "maxFrameMs": 548.5,
+      "telemetryText": "2.3 FPS · DC:140 · Tris:442k · Rail:far · Chunks 74/145 (L0:4/L1:37) · Buildings 24,625 (OSM 19,123 + Infill 5,502)",
+      "debugMetrics": {
+        "loadedChunks": 77,
+        "totalChunks": 145,
+        "renderedBuildings": 24625,
+        "realOsmBuildings": 19123,
+        "infillBuildings": 5502,
+        "lod0Chunks": 4,
+        "lod1Chunks": 37,
+        "deconflictedCrossings": 27,
+        "tunnelPortals": 48,
+        "fps": 2.2,
+        "drawCalls": 141,
+        "triangles": 446889,
+        "loadTimeMs": 1009,
+        "railwayLod": "far"
+      },
+      "cameraState": {
+        "mode": "map",
+        "pos": [
+          -3747,
+          4186,
+          5166
+        ],
+        "target": [
+          -2450,
+          0,
+          -33
+        ]
+      }
+    },
+    {
+      "label": "shibuya-surface-day",
+      "path": "reports\\atlas-v2-environment\\screenshots\\before\\shibuya-surface-day.png",
+      "fps": 1.3,
+      "avgFrameMs": 754.6,
+      "maxFrameMs": 947.5,
+      "telemetryText": "1.4 FPS · DC:203 · Tris:1615k · Rail:near · Chunks 98/145 (L0:3/L1:6) · Buildings 6,536 (OSM 5,026 + Infill 1,510)",
+      "debugMetrics": {
+        "loadedChunks": 98,
+        "totalChunks": 145,
+        "renderedBuildings": 6536,
+        "realOsmBuildings": 5026,
+        "infillBuildings": 1510,
+        "lod0Chunks": 3,
+        "lod1Chunks": 6,
+        "deconflictedCrossings": 27,
+        "tunnelPortals": 48,
+        "fps": 1.3,
+        "drawCalls": 203,
+        "triangles": 1615062,
+        "loadTimeMs": 1009,
+        "railwayLod": "near"
+      },
+      "cameraState": {
+        "mode": "map",
+        "pos": [
+          -6260,
+          287,
+          3010
+        ],
+        "target": [
+          -5923,
+          -4,
+          2578
+        ]
+      }
+    },
+    {
+      "label": "shibuya-street-day",
+      "path": "reports\\atlas-v2-environment\\screenshots\\before\\shibuya-street-day.png",
+      "fps": 1.3,
+      "avgFrameMs": 777.6,
+      "maxFrameMs": 816.6,
+      "telemetryText": "1.3 FPS · DC:205 · Tris:1595k · Rail:near · Chunks 98/145 (L0:4/L1:3) · Buildings 5,461 (OSM 4,288 + Infill 1,173)",
+      "debugMetrics": {
+        "loadedChunks": 98,
+        "totalChunks": 145,
+        "renderedBuildings": 5461,
+        "realOsmBuildings": 4288,
+        "infillBuildings": 1173,
+        "lod0Chunks": 4,
+        "lod1Chunks": 3,
+        "deconflictedCrossings": 27,
+        "tunnelPortals": 48,
+        "fps": 1.3,
+        "drawCalls": 205,
+        "triangles": 1594801,
+        "loadTimeMs": 1009,
+        "railwayLod": "near"
+      },
+      "cameraState": {
+        "mode": "map",
+        "pos": [
+          -6134,
+          175,
+          2813
+        ],
+        "target": [
+          -5926,
+          -4,
+          2547
+        ]
+      }
+    },
+    {
+      "label": "shibuya-scramble-closeup",
+      "path": "reports\\atlas-v2-environment\\screenshots\\before\\shibuya-scramble-closeup.png",
+      "fps": 1.4,
+      "avgFrameMs": 699.3,
+      "maxFrameMs": 788.6,
+      "telemetryText": "1.4 FPS · DC:199 · Tris:1582k · Rail:near · Chunks 98/145 (L0:4/L1:2) · Buildings 4,521 (OSM 3,468 + Infill 1,053)",
+      "debugMetrics": {
+        "loadedChunks": 98,
+        "totalChunks": 145,
+        "renderedBuildings": 4521,
+        "realOsmBuildings": 3468,
+        "infillBuildings": 1053,
+        "lod0Chunks": 4,
+        "lod1Chunks": 2,
+        "deconflictedCrossings": 27,
+        "tunnelPortals": 48,
+        "fps": 1.4,
+        "drawCalls": 199,
+        "triangles": 1581991,
+        "loadTimeMs": 1009,
+        "railwayLod": "near"
+      },
+      "cameraState": {
+        "mode": "map",
+        "pos": [
+          -6098,
+          144,
+          2761
+        ],
+        "target": [
+          -5927,
+          -4,
+          2542
+        ]
+      }
+    },
+    {
+      "label": "shibuya-street-night",
+      "path": "reports\\atlas-v2-environment\\screenshots\\before\\shibuya-street-night.png",
+      "fps": 1.3,
+      "avgFrameMs": 796.9,
+      "maxFrameMs": 837.5,
+      "telemetryText": "1.4 FPS · DC:205 · Tris:1595k · Rail:near · Chunks 98/145 (L0:4/L1:3) · Buildings 5,461 (OSM 4,288 + Infill 1,173)",
+      "debugMetrics": {
+        "loadedChunks": 98,
+        "totalChunks": 145,
+        "renderedBuildings": 5461,
+        "realOsmBuildings": 4288,
+        "infillBuildings": 1173,
+        "lod0Chunks": 4,
+        "lod1Chunks": 3,
+        "deconflictedCrossings": 27,
+        "tunnelPortals": 48,
+        "fps": 1.3,
+        "drawCalls": 205,
+        "triangles": 1594801,
+        "loadTimeMs": 1009,
+        "railwayLod": "near"
+      },
+      "cameraState": {
+        "mode": "map",
+        "pos": [
+          -6134,
+          175,
+          2809
+        ],
+        "target": [
+          -5927,
+          -4,
+          2543
+        ]
+      }
+    },
+    {
+      "label": "shibuya-mid-lod",
+      "path": "reports\\atlas-v2-environment\\screenshots\\before\\shibuya-mid-lod.png",
+      "fps": 1.4,
+      "avgFrameMs": 738.6,
+      "maxFrameMs": 754.4,
+      "telemetryText": "1.5 FPS · DC:220 · Tris:1658k · Rail:near · Chunks 98/145 (L0:5/L1:9) · Buildings 9,987 (OSM 7,773 + Infill 2,214)",
+      "debugMetrics": {
+        "loadedChunks": 98,
+        "totalChunks": 145,
+        "renderedBuildings": 9987,
+        "realOsmBuildings": 7773,
+        "infillBuildings": 2214,
+        "lod0Chunks": 5,
+        "lod1Chunks": 9,
+        "deconflictedCrossings": 27,
+        "tunnelPortals": 48,
+        "fps": 1.5,
+        "drawCalls": 220,
+        "triangles": 1658077,
+        "loadTimeMs": 1009,
+        "railwayLod": "near"
+      },
+      "cameraState": {
+        "mode": "map",
+        "pos": [
+          -6420,
+          425,
+          3212
+        ],
+        "target": [
+          -5923,
+          -4,
+          2577
+        ]
+      }
+    },
+    {
+      "label": "shibuya-underground",
+      "path": "reports\\atlas-v2-environment\\screenshots\\before\\shibuya-underground.png",
+      "fps": 1,
+      "avgFrameMs": 965.9,
+      "maxFrameMs": 983.1,
+      "telemetryText": "1.1 FPS · DC:399 · Tris:2478k · Rail:near · Chunks 98/145 (L0:4/L1:5) · Buildings 6,536 (OSM 5,026 + Infill 1,510)",
+      "debugMetrics": {
+        "loadedChunks": 98,
+        "totalChunks": 145,
+        "renderedBuildings": 6536,
+        "realOsmBuildings": 5026,
+        "infillBuildings": 1510,
+        "lod0Chunks": 4,
+        "lod1Chunks": 5,
+        "deconflictedCrossings": 27,
+        "tunnelPortals": 48,
+        "fps": 1.1,
+        "drawCalls": 399,
+        "triangles": 2478237,
+        "loadTimeMs": 1009,
+        "railwayLod": "near"
+      },
+      "cameraState": {
+        "mode": "map",
+        "pos": [
+          -6260,
+          287,
+          3010
+        ],
+        "target": [
+          -5923,
+          -4,
+          2578
+        ]
+      }
+    },
+    {
+      "label": "shinjuku-surface-day",
+      "path": "reports\\atlas-v2-environment\\screenshots\\before\\shinjuku-surface-day.png",
+      "fps": 1.4,
+      "avgFrameMs": 702.6,
+      "maxFrameMs": 884.4,
+      "telemetryText": "1.3 FPS · DC:172 · Tris:1512k · Rail:near · Chunks 98/145 (L0:4/L1:5) · Buildings 7,086 (OSM 5,659 + Infill 1,427)",
+      "debugMetrics": {
+        "loadedChunks": 98,
+        "totalChunks": 145,
+        "renderedBuildings": 7086,
+        "realOsmBuildings": 5659,
+        "infillBuildings": 1427,
+        "lod0Chunks": 4,
+        "lod1Chunks": 5,
+        "deconflictedCrossings": 27,
+        "tunnelPortals": 48,
+        "fps": 1.3,
+        "drawCalls": 172,
+        "triangles": 1512128,
+        "loadTimeMs": 1009,
+        "railwayLod": "near"
+      },
+      "cameraState": {
+        "mode": "map",
+        "pos": [
+          -6311,
+          407,
+          -334
+        ],
+        "target": [
+          -6031,
+          -5,
+          -934
+        ]
+      }
+    },
+    {
+      "label": "tokyo-surface-day",
+      "path": "reports\\atlas-v2-environment\\screenshots\\before\\tokyo-surface-day.png",
+      "fps": 1.8,
+      "avgFrameMs": 569.2,
+      "maxFrameMs": 594.3,
+      "telemetryText": "1.5 FPS · DC:165 · Tris:1245k · Rail:near · Chunks 98/145 (L0:4/L1:5) · Buildings 6,570 (OSM 5,344 + Infill 1,226)",
+      "debugMetrics": {
+        "loadedChunks": 98,
+        "totalChunks": 145,
+        "renderedBuildings": 6570,
+        "realOsmBuildings": 5344,
+        "infillBuildings": 1226,
+        "lod0Chunks": 4,
+        "lod1Chunks": 5,
+        "deconflictedCrossings": 27,
+        "tunnelPortals": 48,
+        "fps": 1.6,
+        "drawCalls": 165,
+        "triangles": 1245250,
+        "loadTimeMs": 1009,
+        "railwayLod": "near"
+      },
+      "cameraState": {
+        "mode": "map",
+        "pos": [
+          288,
+          464,
+          435
+        ],
+        "target": [
+          -81,
+          -5,
+          -156
+        ]
+      }
+    }
+  ],
+  "dragStability": {
+    "steps": 8,
+    "allNonBlank": true,
+    "samples": [
+      {
+        "drawCalls": 198,
+        "triangles": 1590446,
+        "fps": 1.3,
+        "target": [
+          -5924,
+          -4,
+          2576
+        ],
+        "nonZeroPixel": true
+      },
+      {
+        "drawCalls": 198,
+        "triangles": 1590446,
+        "fps": 1.4,
+        "target": [
+          -5926,
+          -4,
+          2572
+        ],
+        "nonZeroPixel": true
+      },
+      {
+        "drawCalls": 205,
+        "triangles": 1594801,
+        "fps": 1.5,
+        "target": [
+          -5929,
+          -4,
+          2567
+        ],
+        "nonZeroPixel": true
+      },
+      {
+        "drawCalls": 205,
+        "triangles": 1594801,
+        "fps": 1.7,
+        "target": [
+          -5932,
+          -4,
+          2561
+        ],
+        "nonZeroPixel": true
+      },
+      {
+        "drawCalls": 205,
+        "triangles": 1594801,
+        "fps": 1.9,
+        "target": [
+          -5935,
+          -4,
+          2554
+        ],
+        "nonZeroPixel": true
+      },
+      {
+        "drawCalls": 205,
+        "triangles": 1594801,
+        "fps": 2.2,
+        "target": [
+          -5939,
+          -4,
+          2548
+        ],
+        "nonZeroPixel": true
+      },
+      {
+        "drawCalls": 205,
+        "triangles": 1594801,
+        "fps": 2.5,
+        "target": [
+          -5942,
+          -4,
+          2541
+        ],
+        "nonZeroPixel": true
+      },
+      {
+        "drawCalls": 205,
+        "triangles": 1594801,
+        "fps": 3,
+        "target": [
+          -5946,
+          -4,
+          2534
+        ],
+        "nonZeroPixel": true
+      }
+    ]
+  }
+}
