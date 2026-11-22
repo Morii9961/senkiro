@@ -1,0 +1,476 @@
+import { useEffect, useMemo, useReducer, useState } from 'react'
+import { Scene } from './Scene'
+import { FloorPlan } from './FloorPlan'
+import { route, cost } from './domain/graph'
+import type { Language } from './domain/types'
+import { floorLabels, floors, nodes, station, sites, inSite } from './model'
+import { Guide } from './Guide'
+import { exampleService } from './providers/service'
+import { ownersOf } from './domain/index'
+import { initialSelection, selectionReducer, targetFromOwner, type SelectionTarget } from './state/selection'
+import { parseUrl, serializeUrl } from './state/url'
+import { AppHeader } from './ui/controls/AppHeader'
+import { FloorControls } from './ui/controls/FloorControls'
+import { FeatureCard } from './ui/panels/FeatureCard'
+import { InfoDialog } from './ui/panels/InfoDialog'
+import { RoutePanel, instruction, tours } from './ui/panels/RoutePanel'
+
+function targetPlaces(target: SelectionTarget) {
+  if (target.kind === 'station' || target.kind === 'line') {
+    const owners = ownersOf(station, target)
+    return station.places.filter((place) => owners.has(place.id))
+  }
+  const place = nodes.get(target.id)
+  if (place) return [place]
+  const link = station.links.find((candidate) => candidate.id === target.id)
+  return link ? [nodes.get(link.from)!, nodes.get(link.to)!] : []
+}
+
+export function App() {
+  const [initial] = useState(() => parseUrl(new URLSearchParams(window.location.search)))
+  const [{ selection, hovered }, dispatchSelection] = useReducer(selectionReducer, {
+    ...initialSelection,
+    selection: initial.selection,
+  })
+  const clear = () => dispatchSelection({ type: 'clear' })
+  const [lang, language] = useState<Language>(initial.lang),
+    [dark, theme] = useState(initial.theme === 'dark'),
+    [plan, setPlan] = useState(initial.mode === '2d')
+  const [floor, selectFloor] = useState<number | null>(() => {
+      if (initial.floor !== null || initial.mode === '3d') return initial.floor
+      const site = sites.find((entry) => entry.id === initial.site)
+      return site ? floors.get(nodes.get(site.anchorId)!.levelId)!.ordinal : 0
+    }),
+    [spread, setSpread] = useState(false),
+    [reset, setReset] = useState(0)
+  const [zoom, setZoom] = useState({ tick: 0, factor: 1 }),
+    [planZoom, setPlanZoom] = useState(1)
+  const [siteId, setSiteId] = useState(initial.site)
+  const [eye, setEye] = useState<string | null>(null)
+  function interior() {
+    if (eye) {
+      setEye(null)
+      return
+    }
+    const target =
+      (selection?.kind === 'platform'
+        ? nodes.get(selection.id)
+        : undefined) ??
+      (siteId === 'sk:context:whity'
+        ? nodes.get('sk:concourse:whity-east')
+        : station.places.find(
+            (p) => p.kind === 'Platform' && inSite(p, siteId),
+          ))
+    if (!target) return
+    selectStep(-1)
+    clear()
+    selectFloor(null)
+    setPlan(false)
+    setEye(target.id)
+  }
+  const [shell, setShell] = useState(true)
+  const site = sites.find((s) => s.id === siteId)
+  const siteFloors = floorLabels.filter(
+    ([n]) =>
+      !siteId ||
+      station.places.some(
+        (p) => inSite(p, siteId) && floors.get(p.levelId)!.ordinal === n,
+      ),
+  )
+  function visit(id: string | null) {
+    setEye(null)
+    setSiteId(id)
+    clear()
+    selectStep(-1)
+    setPlanZoom(1)
+    const at = sites.find((s) => s.id === id)
+    selectFloor(
+      plan && at
+        ? floors.get(nodes.get(at.anchorId)!.levelId)!.ordinal
+        : plan
+          ? 0
+          : null,
+    )
+    setReset((r) => r + 1)
+  }
+  const [trip, setTrip] = useState({
+    start: initial.from ?? tours[0].start,
+    end: initial.to ?? tours[0].end,
+  })
+  const [drawer, setDrawer] = useState(
+    initial.step >= 0 || initial.stepFreeOnly || initial.from !== null || initial.to !== null,
+  )
+  const tour = tours.findIndex(
+    (x) => x.start === trip.start && x.end === trip.end,
+  )
+  const [routeStep, selectStep] = useState(initial.step),
+    [lift, setLift] = useState(initial.stepFreeOnly)
+  const [feed, setFeed] = useState(initial.feed)
+  const example = feed === 'demo'
+  const [panel, setPanel] = useState<'route' | 'layers'>('route'),
+    [dialog, setDialog] = useState<'help' | 'sources' | null>(null)
+  const t = (ja: string, en: string) => (lang === 'ja' ? ja : en)
+  const steps = useMemo(
+      () => route(station, trip.start, trip.end, lift),
+      [trip.start, trip.end, lift],
+    ),
+    path = steps ?? [],
+    stats = cost(path)
+  const step = path[routeStep] ? routeStep : -1
+
+  useEffect(() => {
+    document.documentElement.lang = lang
+    const url = new URL(window.location.href)
+    url.search = serializeUrl({
+      site: siteId,
+      floor,
+      mode: plan ? '2d' : '3d',
+      detail: initial.detail,
+      selection,
+      from: trip.start === tours[0].start ? null : trip.start,
+      to: trip.end === tours[0].end ? null : trip.end,
+      stepFreeOnly: lift,
+      step,
+      lang,
+      theme: dark ? 'dark' : 'light',
+      feed,
+    }, url.searchParams).toString()
+    if (url.href !== window.location.href) window.history.replaceState(window.history.state, '', url)
+  }, [dark, feed, floor, initial.detail, lang, lift, plan, selection, siteId, step, trip.start, trip.end])
+  const floorNow = floor ?? 0,
+    shownFloor = floorLabels.find((f) => f[0] === floorNow)?.[1]
+  function togglePlan(next: boolean) {
+    setEye(null)
+    setPlan(next)
+    clear()
+    if (!next && path[step]) selectFloor(null)
+    if (next && floor === null)
+      selectFloor(
+        path[step]
+          ? floors.get(path[step].to.levelId)!.ordinal
+          : site
+            ? floors.get(nodes.get(site.anchorId)!.levelId)!.ordinal
+            : 0,
+      )
+    setPlanZoom(1)
+  }
+  function changeZoom(factor: number) {
+    if (plan) setPlanZoom((v) => Math.max(0.5, Math.min(3, v * factor)))
+    else setZoom((v) => ({ tick: v.tick + 1, factor }))
+  }
+  function highlight(i: number) {
+    setEye(null)
+    setSiteId(null)
+    selectStep(i)
+    clear()
+    if (path[i])
+      selectFloor(plan ? floors.get(path[i].to.levelId)!.ordinal : null)
+  }
+  function pickTour(i: number) {
+    setEye(null)
+    setSiteId(null)
+    setTrip({ start: tours[i].start, end: tours[i].end })
+    clear()
+    selectStep(-1)
+    selectFloor(plan ? 0 : null)
+  }
+  function endpoint(which: 'start' | 'end', id: string) {
+    setEye(null)
+    setSiteId(null)
+    setTrip({ ...trip, [which]: id })
+    selectStep(-1)
+    clear()
+    selectFloor(plan ? floors.get(nodes.get(id)!.levelId)!.ordinal : null)
+  }
+  function inspect(id: string) {
+    const target = targetFromOwner(id)
+    if (!target) return
+    const places = targetPlaces(target)
+    const sitePlaces = places.filter((place) => inSite(place, siteId))
+    if (siteId && sitePlaces.length === 0) setSiteId(null)
+    const visiblePlaces = sitePlaces.length > 0 ? sitePlaces : places
+    if (floor !== null && !visiblePlaces.some((place) => floors.get(place.levelId)?.ordinal === floor)) {
+      selectFloor(visiblePlaces[0] ? floors.get(visiblePlaces[0].levelId)!.ordinal : null)
+    }
+    const current = path[step]
+    if (current && !visiblePlaces.some((place) =>
+      place.levelId === current.from.levelId || place.levelId === current.to.levelId
+    )) selectStep(-1)
+    setEye(null)
+    dispatchSelection({ type: 'select', target })
+  }
+  function resetView() {
+    setEye(null)
+    selectStep(-1)
+    clear()
+    setReset((v) => v + 1)
+    setPlanZoom(1)
+  }
+  useEffect(() => {
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !dialog) dispatchSelection({ type: 'clear' })
+    }
+    document.addEventListener('keydown', onEscape)
+    return () => document.removeEventListener('keydown', onEscape)
+  }, [dialog])
+  const place = selection ? nodes.get(selection.id) : null
+  const selectionPlaces = useMemo(() => selection ? targetPlaces(selection) : [], [selection])
+  const differentFloor = floor !== null && selectionPlaces.length > 0 &&
+    !selectionPlaces.some((entry) => floors.get(entry.levelId)?.ordinal === floor)
+  return (
+    <main className={dark ? 'app dark' : 'app'}>
+      <AppHeader
+        {...{ lang, dark, drawer }}
+        onDrawer={() => setDrawer(!drawer)}
+        onHelp={() => setDialog('help')}
+        onTheme={() => theme(!dark)}
+        onLanguage={() => language(lang === 'ja' ? 'en' : 'ja')}
+      />
+      <div className={'workspace' + (drawer ? ' with-drawer' : '')}>
+        <section className="viewer">
+          <div className="viewer-bar">
+            <strong>
+              <i className="status-dot" />
+              {site?.names[lang] ?? t('大阪・梅田', 'Osaka / Umeda')}
+            </strong>
+            <div className="seg">
+              <button aria-pressed={!plan} onClick={() => togglePlan(false)}>
+                3D
+              </button>
+              <button aria-pressed={plan} onClick={() => togglePlan(true)}>
+                2D
+              </button>
+            </div>
+          </div>
+          <div className="stage">
+            {plan ? (
+              <FloorPlan
+                siteId={siteId}
+                floor={floorNow}
+                lang={lang}
+                steps={step >= 0 || drawer ? path : []}
+                active={step}
+                zoom={planZoom}
+                example={example}
+              />
+            ) : (
+              <Scene
+                {...{
+                  lang,
+                  dark,
+                  floor,
+                  spread,
+                  step,
+                  reset,
+                  zoom,
+                  example,
+                  siteId,
+                  shell,
+                  eye,
+                  selection,
+                  hovered,
+                }}
+                route={path}
+                showRoute={step >= 0 || drawer}
+                onInspect={inspect}
+                onClear={clear}
+                onHover={(target) => dispatchSelection({ type: 'hover', target })}
+                onReset={resetView}
+                onFallback={() => togglePlan(true)}
+              />
+            )}
+            {example && (
+              <div className="sample-tag">
+                {t('サンプルモード', 'EXAMPLE MODE')} ·{' '}
+                {t('梅田 1番線', 'Umeda platform 1')} +
+                {exampleService.updates[0].delayMinutes} min · SENKIRO Lab ·{' '}
+                {exampleService.updates[0].observedAt}
+              </div>
+            )}
+            <FeatureCard
+              {...{ lang, selection, clear }}
+              onRoute={(which, id) => {
+                endpoint(which, id)
+                setDrawer(true)
+                setPanel('route')
+              }}
+            />
+            {!plan && differentFloor && (
+              <div className="eye-hint">
+                {t('対象は別の階にあります。', 'This feature is on another floor.')}{' '}
+                <button onClick={() => inspect(selection!.id)}>{t('移動', 'Go to floor')}</button>
+              </div>
+            )}
+            {eye && (
+              <div className="eye-hint">
+                {nodes.get(eye)!.names[lang]} ·{' '}
+                {t('ドラッグで見回す', 'Drag to look around')}
+                <br />
+                {t('内装はイメージです。', 'Illustrative interior finishes.')}
+              </div>
+            )}
+            {step >= 0 && path[step] && (
+              <div className="walk-hud">
+                <button
+                  aria-label={t('前の区間', 'Previous segment')}
+                  onClick={() => highlight(step - 1)}
+                >
+                  ‹
+                </button>
+                <span>
+                  <b>
+                    {step + 1} / {path.length}
+                  </b>{' '}
+                  {instruction(path[step], lang)}
+                </span>
+                <button
+                  aria-label={t('案内を進める', 'Advance walkthrough')}
+                  disabled={step === path.length - 1}
+                  onClick={() => highlight(step + 1)}
+                >
+                  ›
+                </button>
+                <button
+                  onClick={() => {
+                    selectStep(-1)
+                    selectFloor(plan ? 0 : null)
+                    setReset((r) => r + 1)
+                  }}
+                >
+                  {t('全経路', 'Overview')}
+                </button>
+              </div>
+            )}
+            <div className="view-tag">
+              {plan ? 'PLAN' : eye ? 'INTERIOR' : 'AXON'} <b>/</b>{' '}
+              {step >= 0 && path[step] && !plan
+                ? [
+                    ...new Set(
+                      [path[step].from, path[step].to].map(
+                        (n) => floors.get(n.levelId)!.label,
+                      ),
+                    ),
+                  ].join(' → ')
+                : floor === null
+                  ? t('全階', 'ALL LEVELS')
+                  : shownFloor}
+            </div>
+            <details className="surround">
+              <summary>
+                {site
+                  ? site.names[lang]
+                  : t('駅・地下街を選択', 'Stations & arcades')}
+              </summary>
+              <div className="site-list">
+                {[null, ...sites].map((s) => (
+                  <button
+                    key={s?.id ?? 'all'}
+                    aria-pressed={siteId === (s?.id ?? null)}
+                    onClick={(e) => {
+                      visit(s?.id ?? null)
+                      e.currentTarget.closest('details')!.open = false
+                    }}
+                  >
+                    {s?.names[lang] ?? t('大阪・梅田 全域', 'Entire district')}
+                    <span>{s ? (s.stationId ? '▤' : '◇') : '⌖'}</span>
+                  </button>
+                ))}
+              </div>
+            </details>
+            <div className="zoom">
+              <button
+                onClick={() => changeZoom(1.2)}
+                aria-label={t('拡大', 'Zoom in')}
+              >
+                ＋
+              </button>
+              <button
+                onClick={() => changeZoom(1 / 1.2)}
+                aria-label={t('縮小', 'Zoom out')}
+              >
+                −
+              </button>
+              <button
+                aria-label={t('視点をリセット', 'Reset view')}
+                title={t('視点をリセット', 'Reset view')}
+                onClick={resetView}
+              >
+                ⟲
+              </button>
+            </div>
+          </div>
+          <FloorControls
+            {...{ lang, plan, floor, siteFloors, eye, shell, spread, interior }}
+            onFloor={(next) => {
+              setEye(null)
+              selectFloor(next)
+              selectStep(-1)
+              if (next !== null) setPlanZoom(1)
+            }}
+            onShell={() => setShell(!shell)}
+            onSpread={() => setSpread(!spread)}
+          />
+          <div className="legend">
+            <span>
+              <i className="key platform-key" />
+              {t('ホーム', 'Platform')}
+            </span>
+            <span>
+              <i className="key hall-key" />
+              {t('改札外', 'Outside gates')}
+            </span>
+            <span>
+              <i className="key path-key" />
+              {t('経路', 'Route')}
+            </span>
+            <small>
+              {t('内装・寸法は模式表現', 'Schematic layout and finishes')}
+            </small>
+          </div>
+        </section>
+        <aside hidden={!drawer}>
+          <nav>
+            <button
+              aria-pressed={panel === 'route'}
+              onClick={() => setPanel('route')}
+            >
+              {t('経路案内', 'Itinerary')}
+            </button>
+            <button
+              aria-pressed={panel === 'layers'}
+              onClick={() => setPanel('layers')}
+            >
+              {t('モデル情報', 'Model guide')}
+            </button>
+          </nav>
+          {panel === 'route' ? (
+            <RoutePanel
+              {...{ lang, tour, trip, step, lift, steps, stats, pickTour, endpoint, highlight }}
+              onSwap={() => {
+                setTrip({ start: trip.end, end: trip.start })
+                selectStep(-1)
+                clear()
+              }}
+              onLiftChange={(on) => {
+                setLift(on)
+                selectStep(-1)
+              }}
+            />
+          ) : (
+            <Guide
+              lang={lang}
+              selection={place ?? null}
+              onSelect={inspect}
+              onClear={clear}
+              example={example}
+              onExample={() => setFeed(example ? 'off' : 'demo')}
+              showSources={() => setDialog('sources')}
+            />
+          )}
+        </aside>
+      </div>
+
+      {dialog && <InfoDialog lang={lang} dialog={dialog} close={() => setDialog(null)} />}
+    </main>
+  )
+}
