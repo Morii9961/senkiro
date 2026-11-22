@@ -660,7 +660,7 @@ a:focus-visible {
 
 .underground-hud {
   position: absolute;
-  bottom: 12px;
+  bottom: 66px;
   left: 12px;
   width: 248px;
   max-width: calc(100% - 24px);
@@ -752,11 +752,12 @@ a:focus-visible {
 
 .trace-hud {
   position: absolute;
-  bottom: 44px;
-  right: 12px;
-  width: 340px;
-  max-width: calc(100% - 330px);
-  background: var(--surface);
+  top: 102px;
+  left: 12px;
+  width: 332px;
+  max-width: calc(100% - 310px);
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: blur(8px);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 8px 10px;
@@ -778,6 +779,433 @@ a:focus-visible {
   z-index: 14;
 }
 
+/* === SENKIRO Atlas v2 Precision Camera Mode HUD & Labels === */
+.ux-top-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.ux-mode-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.ux-active-mode-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--accent);
+  color: #ffffff;
+  box-shadow: var(--shadow);
+  letter-spacing: 0.02em;
+}
+
+.ux-active-mode-badge.mode-underground_cutaway,
+.ux-active-mode-badge.mode-underground_explorer {
+  background: #0369a1;
+}
+
+.ux-active-mode-badge.mode-train_follow {
+  background: #b45309;
+}
+
+.ux-mode-pills {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 2px;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  box-shadow: var(--shadow);
+}
+
+.ux-mode-pill {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: 5px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ux-mode-pill:hover:not(:disabled) {
+  background: var(--surface-subtle);
+  color: var(--text);
+}
+
+.ux-mode-pill.active {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.ux-mode-pill:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.ux-global-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+}
+
+.hub-chip.active-sky {
+  background: #0284c7;
+  border-color: #0284c7;
+  color: #ffffff;
+}
+
+.hub-chip.active-accent {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+}
+
+.ux-sub-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.ux-compact-banner {
+  padding: 4px 9px;
+  font-size: 11px;
+  font-weight: 500;
+  max-width: 620px;
+}
+
+.hub-chip-mini {
+  padding: 3px 7px;
+  font-size: 10.5px;
+}
+
+.ux-help-popover {
+  align-self: flex-end;
+  max-width: 480px;
+  background: color-mix(in srgb, var(--surface) 95%, transparent);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  box-shadow: var(--shadow);
+  font-size: 11px;
+}
+
+.ux-help-title {
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: var(--text);
+}
+
+.ux-help-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 12px;
+  color: var(--text-muted);
+}
+
+.ux-help-grid > span:nth-child(odd) {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--text);
+}
+
+.ux-context-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.ux-telemetry-stack,
+.ux-bottom-right-stack {
+  position: absolute;
+  right: 12px;
+  bottom: 66px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.train-inspector-drawer {
+  position: absolute;
+  top: 102px;
+  right: 12px;
+  width: 282px;
+  max-width: calc(100% - 24px);
+  max-height: calc(100% - 220px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 15;
+}
+
+.ux-inspector-card {
+  background: color-mix(in srgb, var(--surface) 93%, transparent);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 10px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-size: 11.5px;
+}
+
+.ux-inspector-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.ux-kv-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 8px;
+  align-items: baseline;
+  font-size: 11px;
+}
+
+.ux-line-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: var(--surface-subtle);
+  border: 1px solid var(--border);
+  font-size: 10.5px;
+}
+
+/* Hierarchical Screen-Space Map Labels */
+.map-labels-layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 6;
+}
+
+.map-label-pill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 2px 7px;
+  border-radius: 5px;
+  border: 1px solid color-mix(in srgb, var(--border) 90%, transparent);
+  border-left: 3px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: blur(5px);
+  color: var(--text);
+  box-shadow: 0 1px 6px rgba(15, 23, 42, 0.14);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.map-label-pill:disabled {
+  cursor: default;
+}
+
+.map-label-pill:hover:not(:disabled),
+.map-label-pill.highlighted {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent), var(--shadow);
+  z-index: 8;
+}
+
+.map-label-pill.kind-district {
+  background: color-mix(in srgb, var(--surface) 78%, transparent);
+  border-left-width: 1px;
+  letter-spacing: 0.03em;
+}
+
+.map-label-pill.kind-train {
+  border-style: dashed;
+}
+
+.map-label-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  min-width: 0;
+}
+
+.map-label-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.map-label-primary {
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.map-label-badge {
+  margin-left: auto;
+  padding: 0 4px;
+  border-radius: 3px;
+  background: var(--surface-subtle);
+  border: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.map-label-secondary {
+  font-size: 9.5px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* Bottom-Center Non-Obstructive Virtual Train Simulation Dock */
+.sim-dock {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: calc(100% - 24px);
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 5px;
+  padding: 5px 8px;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  z-index: 16;
+  font-size: 11px;
+  overflow-x: auto;
+}
+
+.sim-dock-collapsed {
+  padding: 4px 8px;
+}
+
+.sim-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--warning-bg);
+  border: 1px solid var(--warning-border);
+  color: var(--warning-text);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.sim-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 7px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  background: var(--surface-subtle);
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.sim-btn.active {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.sim-btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+}
+
+.sim-btn.danger-btn {
+  background: var(--danger-bg);
+  border-color: var(--danger-border);
+  color: var(--danger-text);
+}
+
+.sim-btn.muted-btn {
+  opacity: 0.65;
+}
+
+.sim-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sim-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.sim-select {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 5px;
+  padding: 2px 6px;
+  font-size: 11px;
+  max-width: 145px;
+}
+
+.detail-kv-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 5px 10px;
+  align-items: center;
+  font-size: 11.5px;
+}
+
 @media (max-width: 900px) {
   .workspace {
     flex-direction: column-reverse;
@@ -794,5 +1222,11 @@ a:focus-visible {
   }
   .brand-sub {
     display: none;
+  }
+  .ux-telemetry-stack {
+    display: none;
+  }
+  .underground-hud {
+    bottom: 66px;
   }
 }
