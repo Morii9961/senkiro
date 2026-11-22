@@ -547,7 +547,6 @@ export class CityChunkManager {
   readonly group = new THREE.Group();
   readonly landmarksGroup = new THREE.Group();
   private manifest: UrbanManifest | null = null;
-  private landmarks: UrbanLandmarkRecord[] = [];
   private readonly loaded = new Map<string, LoadedChunk>();
   private readonly loadingKeys = new Set<string>();
   private readonly unitBoxGeom = new THREE.BoxGeometry(1, 1, 1);
@@ -582,15 +581,10 @@ export class CityChunkManager {
 
   setManifest(manifest: UrbanManifest, landmarks: UrbanLandmarkRecord[]): void {
     this.manifest = manifest;
-    this.landmarks = landmarks;
     for (const lm of landmarks) {
       const lmGroup = buildProceduralLandmark(lm, this.facadeLib);
       this.landmarksGroup.add(lmGroup);
     }
-  }
-
-  getLandmarks(): readonly UrbanLandmarkRecord[] {
-    return this.landmarks;
   }
 
   /**
@@ -861,109 +855,6 @@ export class CityChunkManager {
       }
       if (chunk.lod1Mesh.instanceColor) chunk.lod1Mesh.instanceColor.needsUpdate = true;
     }
-  }
-
-  /**
-   * Read-only spatial collision resolver for Street-Level & Free Look camera anti-clipping.
-   * Pushes camera out of loaded OSM buildings & landmarks in local OBB coordinates or raises cleanly over roofs.
-   */
-  resolveCameraCollision(
-    pos: { x: number; y: number; z: number },
-    clearanceM = 4.5,
-    minY = 4.5,
-  ): { x: number; y: number; z: number } {
-    let x = pos.x;
-    let y = Math.max(minY, pos.y);
-    let z = pos.z;
-    if (!this.buildingsVisible) return { x, y, z };
-
-    // 1. Check landmarks (always loaded)
-    for (const lm of this.landmarks) {
-      if (y > lm.height + clearanceM) continue;
-      const hw = (lm.width ?? lm.radius ?? 26) * 0.5 + clearanceM;
-      const hd = (lm.depth ?? lm.radius ?? 26) * 0.5 + clearanceM;
-      const dx = x - lm.x;
-      const dz = z - lm.z;
-      if (Math.abs(dx) < hw && Math.abs(dz) < hd) {
-        const pushX = hw - Math.abs(dx);
-        const pushZ = hd - Math.abs(dz);
-        if (pushX < pushZ) {
-          x += dx >= 0 ? pushX : -pushX;
-        } else {
-          z += dz >= 0 ? pushZ : -pushZ;
-        }
-      }
-    }
-
-    // 2. Check nearby loaded chunk buildings (only chunk containing or adjacent to camera)
-    const chunkSize = this.manifest?.chunkSizeMeters ?? 2000;
-    const camCx = Math.floor(x / chunkSize);
-    const camCz = Math.floor(z / chunkSize);
-    for (let dcx = -1; dcx <= 1; dcx++) {
-      for (let dcz = -1; dcz <= 1; dcz++) {
-        const chunk = this.loaded.get(`${camCx + dcx}_${camCz + dcz}`);
-        if (!chunk) continue;
-        for (const b of chunk.buildings) {
-          if (y > b.h + clearanceM) continue;
-          const dx = x - b.cx;
-          const dz = z - b.cz;
-          // Fast radial reject before oriented box check
-          const maxSpan = (b.w + b.d) * 0.5 + clearanceM + 2;
-          if (dx * dx + dz * dz > maxSpan * maxSpan) continue;
-
-          const cosA = Math.cos(b.a);
-          const sinA = Math.sin(b.a);
-          // Transform offset into building local OBB space
-          const lx = dx * cosA - dz * sinA;
-          const lz = dx * sinA + dz * cosA;
-          const hw = b.w * 0.5 + clearanceM;
-          const hd = b.d * 0.5 + clearanceM;
-
-          if (Math.abs(lx) < hw && Math.abs(lz) < hd) {
-            const penX = hw - Math.abs(lx);
-            const penZ = hd - Math.abs(lz);
-            let pushLx = 0;
-            let pushLz = 0;
-            if (penX < penZ) {
-              pushLx = lx >= 0 ? penX : -penX;
-            } else {
-              pushLz = lz >= 0 ? penZ : -penZ;
-            }
-            // Rotate push back to world XZ
-            x += pushLx * cosA + pushLz * sinA;
-            z += -pushLx * sinA + pushLz * cosA;
-          }
-        }
-      }
-    }
-
-    return { x, y, z };
-  }
-
-  describeNearestLandmark(pos: {
-    x: number;
-    z: number;
-  }): { nameJa: string; nameEn: string; distanceM: number; bearingDeg: number } | null {
-    if (this.landmarks.length === 0) return null;
-    let best: UrbanLandmarkRecord | null = null;
-    let bestD = Infinity;
-    for (const lm of this.landmarks) {
-      const d = Math.hypot(lm.x - pos.x, lm.z - pos.z);
-      if (d < bestD) {
-        bestD = d;
-        best = lm;
-      }
-    }
-    if (!best) return null;
-    // Bearing from camera to landmark (0 = North = -Z, 90 = East = +X)
-    const rad = Math.atan2(best.x - pos.x, -(best.z - pos.z));
-    const bearingDeg = ((rad * 180) / Math.PI + 360) % 360;
-    return {
-      nameJa: best.nameJa,
-      nameEn: best.nameEn,
-      distanceM: Math.round(bestD),
-      bearingDeg: Math.round(bearingDeg),
-    };
   }
 
   getStats(): {

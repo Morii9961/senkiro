@@ -74,23 +74,4 @@
 - **备选**：保留整城 16% 透明灰楼，或仅保留默认 `OrbitControls`。
 - **理由**：径向开削彻底解决了地下多层地铁与地表灰色建筑重影混淆的问题；中键连续平移与自由探索模式打破了固定目标点旋转的束缚，显著提升城市尺度浏览体验。
 
-## D-15：Atlas v2 统一五态摄像机状态机与桌面端键位一致性
-- **决定**：引入纯 TS 状态机 `cameraModeStateMachine.ts` 统一管理 `city_overview`、`street_level`、`underground_cutaway`、`underground_explorer` 与 `train_follow`，以及 `freeLookEnabled`、固定跟随机位（`front`/`side`/`rear`/`cab`）和一键复位/返回地表（`RETURN_TO_SURFACE`、`RESET_OVERVIEW`、`EXIT_TRAIN_FOLLOW`）。并将 3D 鼠标键位与 2D MapLibre 及桌面 GIS 对齐：**左键点击选择实体、左键拖拽地面平移、中键/右键拖拽旋转或自由观察、滚轮缩放、双击聚焦**，同时提供显式「自由观察」按钮（`F` 键）照顾触控板用户。
-- **备选**：延续旧版「左拖旋转、中拖平移」与零散布尔开关。
-- **理由**：左拖平移与 2D 地图完全一致，符合人类直觉且避免误触旋转；统一状态机杜绝了地下剖切、隧道漫游、自由飞行和列车追随之间的状态打架与不可退出卡死问题。
-
-## D-16：跨会话共享契约与零几何重建原则（`src/three/uxContracts.ts`）
-- **决定**：因 Session 0 共享接口尚未发布，先在 `src/three/uxContracts.ts` 定义 `TrainSimulationProvider`、`EnvironmentCollisionProvider`、`StationAtlasNavigator` 与 `CameraModeControllerAPI`，默认挂载基于 `SolvedRailwayNetwork3D` 的轻量 `SyntheticTrainSimulationProvider` 与 2 个 Draw Call 的 `TrainMarkerLayer` 示意指示标，并在 UI 详情、控制栏与标签三处醒目标注 `模擬運行 · SYNTHETIC`。不重建城市、隧道或高精度列车几何。
-- **备选**：自行建模高精度多节车厢或修改隧道/城市生成器几何。
-- **理由**：严守多工作树文件所有权边界与诚实性规则，同时保证列车跟随、固定机位、弯道平滑、详情面板与模拟控制栏可真实交互与验收。
-
-## D-17：真地下漫游防穿墙、实体遮挡与街景碰撞保护
-- **决定**：`underground_explorer` 启用轨道样条净空包络约束、`nearPlaneMin = 0.45m`（依托已启用的 `logarithmicDepthBuffer` 防近裁剪穿墙）、`CityTerrainLayer.setUndergroundCeilingOcclusion(true)` 防止地下仰视漏出天空，并将隧道衬砌切换为写深度不透明混凝土壳（`depthWrite: true`）配合相机随行冷白点光源；`street_level` 通过 `CityChunkManager.resolveCameraCollision` 对已加载 OSM 建筑 OBB 与地标执行只读碰撞推离，并配方位罗盘与最近地标提示。
-- **备选**：在地下继续使用半透明 `depthWrite: false` 隧道或无约束穿墙飞行。
-- **理由**：半透明无深度写入在隧道内部会导致远处隧道和地表建筑错误透视；近裁剪 `0.45m` 与只读 OBB 推离彻底消除穿模问题。
-
-## D-18：四级屏幕空间标签避让与地下克制材质
-- **决定**：以纯 TS `resolveLabelLayout()`（`src/domain/labelLayout.ts`）按城市全览 / 中距离 / 近距离 / 地下四级过滤候选锚点，通过优先级排序、路线去重、220×120 网格限密、HUD 安全边距及 4 向微调避让确保零重叠；同时调整地下隧道与轨道材质为写实预制混凝土灰与低饱和道床，线路色仅作细识别带与选中高亮。
-- **备选**：在 Three.js 中直接堆放 3D `Sprite` 标签或保留高亮彩色地下管线。
-- **理由**：屏幕空间精确包围盒避让保证文字清晰、无遮挡、无密集堆叠，且完全符合 SENKIRO 克制精密的品牌视觉规范。
 

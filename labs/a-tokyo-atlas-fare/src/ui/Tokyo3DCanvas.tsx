@@ -1,32 +1,51 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import {
-  CAMERA_MODE_METADATA,
-  createInitialCameraModeState,
-  type CameraModeState,
-  type TrainFollowAngle,
-} from '../domain/cameraModeStateMachine.js';
-import type { PlacedMapLabel } from '../domain/labelLayout.js';
+import React, { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import type {
+  SimulatedTrainState,
+  SimulationControlState,
+  SimTimeScale,
+  SimTrainDensity,
+  TrainSimulationEngineAdapter,
+} from '../contracts/atlasV2.js';
 import type {
   AtlasDataset,
   FareQuote,
   OsmVerticalDataset,
   SkId,
 } from '../domain/types.js';
+import { createTrainSimulationEngine } from '../simulation/index.js';
+import {
+  CAMERA_MODE_METADATA,
+  createInitialCameraModeState,
+  toSession0FollowView,
+  transitionCameraMode,
+  type CameraModeAction,
+  type CameraModeState,
+  type TrainFollowRig,
+} from '../three/camera/cameraModeStateMachine.js';
+import {
+  StreetCollisionGuard,
+  type CameraOrientationInfo,
+} from '../three/camera/collisionGuard.js';
+import {
+  findCameraControllerInsideContainer,
+  type SpatialCameraBridge,
+  type UndergroundExplorerLocation,
+} from '../three/camera/controllerBridge.js';
+import type { PlacedMapLabel } from '../three/camera/labelLayout.js';
+import { SpatialLabelRegistry } from '../three/camera/labelSystem.js';
+import type { RollingStockRendererAdapter } from '../three/contracts/adapters.js';
 import { TOKYO_HUB_PRESETS } from '../three/geoProjection.js';
 import { Metropolitan3DScene } from '../three/Metropolitan3DScene.js';
+import { createRollingStockRenderer } from '../three/rollingstock/index.js';
 import type {
-  CameraOrientationInfo,
+  LineTraceStatus,
   SceneTelemetry,
-  UndergroundExplorerLocation,
+  UndergroundViewSettings,
 } from '../three/types.js';
-import type {
-  TrainSimulationSnapshot,
-  TrainSimulationState,
-} from '../three/uxContracts.js';
-import { CameraModeHud } from './CameraModeHud.js';
+import { CameraHud, MapLabelsOverlay } from './CameraHud.js';
 import type { Locale } from './i18n.js';
-import { MapLabelsOverlay } from './MapLabelsOverlay.js';
-import { SimulationControlBar } from './SimulationControlBar.js';
+import { SimulationPanel } from './SimulationPanel.js';
+import { TrainInspector } from './TrainInspector.js';
 
 interface Tokyo3DCanvasProps {
   dataset: AtlasDataset;
@@ -36,17 +55,28 @@ interface Tokyo3DCanvasProps {
   visibleOperatorIds: Set<SkId<'operator'>>;
   selectedLineId: SkId<'line'> | null;
   selectedStationId: SkId<'station'> | null;
-  selectedTrainId: string | null;
   fareSliceOnly: boolean;
   fareQuote: FareQuote | null;
   initialViewport: { lon: number; lat: number; zoom: number } | null;
-  followTrainSignal?: { trainId: string; angle?: TrainFollowAngle; nonce: number } | null;
-  focusLineSignal?: { lineId: SkId<'line'>; nonce: number } | null;
   onViewportChange: (lon: number, lat: number, zoom: number) => void;
   onSelectStation: (stationId: SkId<'station'>) => void;
   onSelectLine: (lineId: SkId<'line'>) => void;
-  onSelectTrain: (trainId: string) => void;
-  onSimulationSnapshot?: (snapshot: TrainSimulationSnapshot) => void;
+}
+
+const DEFAULT_CONTROL_STATE: SimulationControlState = {
+  running: true,
+  timeScale: 1,
+  simClockSec: 0,
+  density: 'normal',
+  activeLineFilter: null,
+  totalActiveTrains: 0,
+  undergroundTrainCount: 0,
+  isVirtualSimulation: true,
+  dataNature: 'synthetic',
+};
+
+function modeReducer(state: CameraModeState, action: CameraModeAction): CameraModeState {
+  return transitionCameraMode(state, action);
 }
 
 export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
@@ -57,57 +87,101 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
   visibleOperatorIds,
   selectedLineId,
   selectedStationId,
-  selectedTrainId,
   fareSliceOnly,
   fareQuote,
   initialViewport,
-  followTrainSignal,
-  focusLineSignal,
   onViewportChange,
   onSelectStation,
   onSelectLine,
-  onSelectTrain,
-  onSimulationSnapshot,
 }) => {
   const mountRef = useRef<HTMLDivElement | null>(null);
   const sceneRef = useRef<Metropolitan3DScene | null>(null);
+  const simEngineRef = useRef<TrainSimulationEngineAdapter | null>(null);
+  const rollingStockRef = useRef<RollingStockRendererAdapter | null>(null);
+  const camBridgeRef = useRef<SpatialCameraBridge | null>(null);
+  const labelRegistryRef = useRef<SpatialLabelRegistry | null>(null);
+  const collisionGuardRef = useRef<StreetCollisionGuard>(new StreetCollisionGuard());
 
-  const cbRef = useRef({
-    onSelectStation,
-    onSelectLine,
-    onSelectTrain,
-    onViewportChange,
-    onSimulationSnapshot,
-  });
-  cbRef.current = {
-    onSelectStation,
-    onSelectLine,
-    onSelectTrain,
-    onViewportChange,
-    onSimulationSnapshot,
-  };
-
-  const [modeState, setModeState] = useState<CameraModeState>(createInitialCameraModeState);
+  const [modeState, dispatchRaw] = useReducer(
+    modeReducer,
+    undefined,
+    createInitialCameraModeState,
+  );
   const [sceneNight, setSceneNight] = useState(theme === 'dark');
   const [telemetry, setTelemetry] = useState<SceneTelemetry | null>(null);
+  const [traceStatus, setTraceStatus] = useState<LineTraceStatus>({
+    active: false,
+    playing: false,
+    lineId: null,
+    progress: 0,
+    currentStationName: null,
+    currentTier: null,
+    currentY: null,
+  });
+
+  const [simControl, setSimControl] = useState<SimulationControlState>(DEFAULT_CONTROL_STATE);
+  const [trains, setTrains] = useState<readonly SimulatedTrainState[]>([]);
+  const [trainsVisible, setTrainsVisible] = useState(true);
+  const [visibleLimit, setVisibleLimit] = useState<number | 'all'>('all');
+  const [selectedTrainId, setSelectedTrainId] = useState<string | null>(null);
+
   const [labels, setLabels] = useState<PlacedMapLabel[]>([]);
   const [orientation, setOrientation] = useState<CameraOrientationInfo | null>(null);
   const [explorerLoc, setExplorerLoc] = useState<UndergroundExplorerLocation | null>(null);
-  const [simSnapshot, setSimSnapshot] = useState<TrainSimulationSnapshot>({
-    playing: true,
-    speedMultiplier: 1,
-    visibleCount: 12,
-    trainsVisible: true,
-    totalAvailable: 0,
-    trains: [],
-  });
+
+  const cbRef = useRef({ onSelectStation, onSelectLine, onViewportChange });
+  cbRef.current = { onSelectStation, onSelectLine, onViewportChange };
+
+  const selectedLine = useMemo(
+    () => dataset.railLines.find((l) => l.id === selectedLineId) ?? null,
+    [dataset.railLines, selectedLineId],
+  );
+
+  const selectedTrain = useMemo(
+    () => (selectedTrainId ? trains.find((tr) => tr.trainId === selectedTrainId) ?? null : null),
+    [trains, selectedTrainId],
+  );
+
+  const followedTrain = useMemo(
+    () =>
+      modeState.mode === 'train_follow' && modeState.followedTrainId
+        ? trains.find((tr) => tr.trainId === modeState.followedTrainId) ?? null
+        : null,
+    [modeState.mode, modeState.followedTrainId, trains],
+  );
+
+  const fallbackTrainId = useMemo(() => {
+    if (selectedTrainId) return selectedTrainId;
+    const isUgMode =
+      modeState.mode === 'underground_cutaway' || modeState.mode === 'underground_explorer';
+    const match = trains.find((tr) => (isUgMode ? tr.isUnderground : !tr.isUnderground));
+    return match?.trainId ?? trains[0]?.trainId ?? null;
+  }, [selectedTrainId, modeState.mode, trains]);
+
+  const dispatchMode = useCallback(
+    (action: CameraModeAction) => {
+      if (action.type === 'RESET_OVERVIEW') {
+        const overview = TOKYO_HUB_PRESETS.find((h) => h.id === 'tokyo23') ?? TOKYO_HUB_PRESETS[0]!;
+        sceneRef.current?.flyToHubPreset(overview);
+      }
+      dispatchRaw(action);
+    },
+    [],
+  );
 
   useEffect(() => {
     setSceneNight(theme === 'dark');
   }, [theme]);
 
+  // Mount Three.js scene WITH real v2 Train Simulation Engine & Rolling Stock Renderer plugins
   useEffect(() => {
     if (!mountRef.current) return;
+
+    const simEngine = createTrainSimulationEngine();
+    const rollingStock = createRollingStockRenderer();
+    simEngineRef.current = simEngine;
+    rollingStockRef.current = rollingStock;
+
     const ctrl = new Metropolitan3DScene(
       mountRef.current,
       dataset,
@@ -116,52 +190,143 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
       {
         onSelectStation: (sid) => cbRef.current.onSelectStation(sid),
         onSelectLine: (lid) => cbRef.current.onSelectLine(lid),
-        onSelectTrain: (tid) => cbRef.current.onSelectTrain(tid),
-        onCameraModeChange: (st) => setModeState(st),
-        onOrientationChange: (ori, exp) => {
-          setOrientation(ori);
-          setExplorerLoc(exp);
-        },
-        onLabelsUpdated: (lbls) => setLabels(lbls),
-        onSimulationUpdated: (snap) => {
-          setSimSnapshot(snap);
-          cbRef.current.onSimulationSnapshot?.(snap);
-        },
+        onSelectTrain: (tid) => setSelectedTrainId(tid),
         onTelemetry: (stats) => setTelemetry(stats),
+        onTraceUpdate: (st) => setTraceStatus(st),
+        onSimulationUpdate: (controlState, trainList) => {
+          setSimControl(controlState);
+          setTrains(trainList);
+        },
         onCameraMoved: (lon, lat, zoom) => cbRef.current.onViewportChange(lon, lat, zoom),
       },
       initialViewport ?? undefined,
+      {
+        simulationEngine: simEngine,
+        rollingStockRenderer: rollingStock,
+      },
     );
     sceneRef.current = ctrl;
+
+    // Initialize simulation snapshots immediately so SimulationPanel renders frame 1
+    setSimControl(ctrl.getSimulationControlState());
+    const initTrains = ctrl.getSimulatedTrains();
+    setTrains(initTrains);
+
+    // Connect weakmap bridge to upgraded SpatialCameraController & spatial labels
+    const bridge = findCameraControllerInsideContainer(mountRef.current);
+    camBridgeRef.current = bridge;
+    bridge?.attachUxContext(
+      dataset,
+      ctrl.solved,
+      collisionGuardRef.current,
+      (tid) => simEngineRef.current?.getTrainById(tid) ?? null,
+    );
+
+    const registry = new SpatialLabelRegistry(dataset, ctrl.solved);
+    labelRegistryRef.current = registry;
+    void collisionGuardRef.current.ensureLoadedFromCache().then((landmarks) => {
+      if (landmarks.length > 0) {
+        registry.setLandmarks(landmarks);
+      }
+    });
 
     return () => {
       ctrl.dispose();
       sceneRef.current = null;
+      simEngineRef.current = null;
+      rollingStockRef.current = null;
+      camBridgeRef.current = null;
+      labelRegistryRef.current = null;
     };
   }, [dataset, osmVertical]);
 
+  // Day/Night theme sync
   useEffect(() => {
     sceneRef.current?.setTheme(sceneNight);
   }, [sceneNight]);
 
+  // Show/hide 3D train meshes and enforce visible train limit via plugin group
   useEffect(() => {
-    sceneRef.current?.setLocale(locale);
-  }, [locale]);
+    const grp = rollingStockRef.current?.group;
+    if (!grp) return;
+    grp.visible = trainsVisible;
+    const allowedIds =
+      visibleLimit === 'all'
+        ? null
+        : new Set(trains.slice(0, visibleLimit).map((tr) => tr.trainId));
+    for (const child of grp.children) {
+      const tid = (child.userData as { trainId?: string } | undefined)?.trainId;
+      child.visible =
+        !allowedIds || !tid || allowedIds.has(tid) || tid === selectedTrainId || tid === modeState.followedTrainId;
+    }
+  }, [trainsVisible, visibleLimit, trains, selectedTrainId, modeState.followedTrainId]);
 
+  // Sync 5-mode FSM -> SpatialCameraController & Metropolitan3DScene
   useEffect(() => {
-    sceneRef.current?.applySelectionAndFilters({
+    const scene = sceneRef.current;
+    const bridge = camBridgeRef.current;
+    if (!scene || !bridge) return;
+
+    bridge.applyModeState(modeState, followedTrain, selectedLineId, selectedStationId);
+    scene.setUndergroundCutawayStyle(modeState.cutaway.tunnelCutawayStyle);
+
+    if (modeState.mode === 'train_follow' && modeState.followedTrainId) {
+      if (modeState.followAngle === 'front') {
+        // Custom external front nose-3/4 curve rig driven at 60fps by SpatialCameraController
+        scene.followTrain(null);
+        scene.selectTrain(modeState.followedTrainId);
+      } else {
+        scene.followTrain(
+          modeState.followedTrainId,
+          toSession0FollowView(modeState.followAngle),
+        );
+      }
+    } else {
+      scene.followTrain(null);
+    }
+
+    const followCutawayNeeded =
+      modeState.mode === 'train_follow' &&
+      Boolean(followedTrain?.isUnderground) &&
+      modeState.followAngle !== 'cab';
+
+    const undergroundSettings: UndergroundViewSettings = {
+      enabled: modeState.mode === 'underground_cutaway' || followCutawayNeeded,
+      groundOpacity: modeState.cutaway.groundOpacity,
+      cutawayRadius: modeState.cutaway.cutawayRadius,
+      verticalExaggeration:
+        modeState.mode === 'underground_cutaway' ? modeState.cutaway.verticalExaggeration : 1.0,
+      pinCutaway: modeState.cutaway.pinCutaway,
+      hideBuildings: modeState.cutaway.hideBuildings,
+      clipEnabled: modeState.cutaway.clipEnabled,
+      clipY: modeState.cutaway.clipY,
+      tunnelCutawayStyle: modeState.cutaway.tunnelCutawayStyle,
+      visibleTiers: modeState.cutaway.visibleTiers,
+    };
+
+    scene.applyFilters({
       visibleOperatorIds,
       selectedLineId,
       selectedStationId,
-      selectedTrainId,
       fareSliceOnly,
+      underground: undergroundSettings,
     });
-  }, [visibleOperatorIds, selectedLineId, selectedStationId, selectedTrainId, fareSliceOnly]);
+  }, [
+    modeState,
+    followedTrain?.trainId,
+    followedTrain?.isUnderground,
+    visibleOperatorIds,
+    selectedLineId,
+    selectedStationId,
+    fareSliceOnly,
+  ]);
 
+  // JR Fare highlight sync
   useEffect(() => {
     sceneRef.current?.setFareQuote(fareQuote);
   }, [fareQuote]);
 
+  // Auto-focus station when selected from search/sidebar
   const prevStationRef = useRef<SkId<'station'> | null>(null);
   useEffect(() => {
     if (selectedStationId && selectedStationId !== prevStationRef.current) {
@@ -170,23 +335,91 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
     prevStationRef.current = selectedStationId;
   }, [selectedStationId]);
 
+  // Live 15Hz 3D-to-screen hierarchical label solver & orientation / tunnel locator updates
   useEffect(() => {
-    if (!followTrainSignal || !sceneRef.current) return;
-    sceneRef.current.dispatchCameraAction({
-      type: 'FOLLOW_TRAIN',
-      trainId: followTrainSignal.trainId,
-      angle: followTrainSignal.angle,
-    });
-  }, [followTrainSignal]);
+    const timer = window.setInterval(() => {
+      const container = mountRef.current;
+      const bridge = camBridgeRef.current;
+      const reg = labelRegistryRef.current;
+      if (!container || !bridge || !reg) return;
 
-  useEffect(() => {
-    if (!focusLineSignal || !sceneRef.current) return;
-    sceneRef.current.flyToLine(focusLineSignal.lineId);
-  }, [focusLineSignal]);
+      const rect = container.getBoundingClientRect();
+      if (rect.width <= 0 || rect.height <= 0) return;
 
-  // Global keyboard ergonomics: F (Free Look), R (Reset Overview), 1-4 (Train Follow rigs), Esc (Safe exit)
+      const focus = bridge.getFocusTarget();
+      const visibleTrains =
+        visibleLimit === 'all' ? trains : trains.slice(0, visibleLimit);
+
+      const nextLabels = reg.computeVisibleLabels({
+        camera: bridge.getCamera(),
+        mode: modeState.mode,
+        locale,
+        viewportWidth: rect.width,
+        viewportHeight: rect.height,
+        cameraDistanceM: bridge.getDistanceToFocus(),
+        verticalExaggeration:
+          modeState.mode === 'underground_cutaway'
+            ? modeState.cutaway.verticalExaggeration
+            : 1.0,
+        cutawayCenterX: focus.x,
+        cutawayCenterZ: focus.z,
+        cutawayRadiusM: modeState.cutaway.cutawayRadius,
+        visibleOperatorIds,
+        selectedStationId,
+        selectedLineId,
+        selectedTrainId,
+        trains: visibleTrains,
+        trainsVisible,
+        hasRightInspector: Boolean(selectedTrain || selectedStationId || selectedLineId),
+      });
+      setLabels(nextLabels);
+
+      if (modeState.mode === 'street_level' || modeState.freeLookEnabled) {
+        setOrientation(bridge.getOrientationInfo());
+      } else {
+        setOrientation(null);
+      }
+
+      if (modeState.mode === 'underground_explorer') {
+        setExplorerLoc(bridge.getExplorerLocation());
+      } else {
+        setExplorerLoc(null);
+      }
+
+      (
+        window as unknown as {
+          __SENKIRO_UX_V2__?: Record<string, unknown>;
+        }
+      ).__SENKIRO_UX_V2__ = {
+        mode: modeState.mode,
+        modeLabel: CAMERA_MODE_METADATA[modeState.mode].labelEn,
+        freeLookEnabled: modeState.freeLookEnabled,
+        labelCount: nextLabels.length,
+        followedTrainId: modeState.followedTrainId,
+        followAngle: modeState.followAngle,
+        activeTrains: simControl.totalActiveTrains,
+        undergroundTrains: simControl.undergroundTrainCount,
+      };
+    }, 66);
+
+    return () => window.clearInterval(timer);
+  }, [
+    modeState,
+    locale,
+    visibleOperatorIds,
+    selectedStationId,
+    selectedLineId,
+    selectedTrainId,
+    trains,
+    trainsVisible,
+    visibleLimit,
+    simControl.totalActiveTrains,
+    simControl.undergroundTrainCount,
+  ]);
+
+  // Global desktop shortcuts (F: Free Look, R: Reset Overview, Esc: Exit Follow / Return to Surface)
   useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
+    const handleKey = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
       if (
         target &&
@@ -197,66 +430,74 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
       ) {
         return;
       }
-      const ctrl = sceneRef.current;
-      if (!ctrl) return;
-
-      if (e.code === 'KeyF') {
-        ctrl.dispatchCameraAction({ type: 'TOGGLE_FREE_LOOK' });
-      } else if (e.code === 'KeyR') {
-        ctrl.dispatchCameraAction({ type: 'RESET_OVERVIEW' });
-      } else if (e.code === 'Escape') {
-        const cur = ctrl.getCameraModeState().mode;
-        if (cur === 'train_follow') {
-          ctrl.dispatchCameraAction({ type: 'EXIT_TRAIN_FOLLOW' });
-        } else if (cur === 'underground_explorer' || cur === 'underground_cutaway') {
-          ctrl.dispatchCameraAction({ type: 'RETURN_TO_SURFACE' });
-        } else if (cur === 'street_level') {
-          ctrl.dispatchCameraAction({ type: 'SELECT_MODE', mode: 'city_overview' });
-        }
-      } else if (ctrl.getCameraModeState().mode === 'train_follow') {
-        const map: Record<string, TrainFollowAngle> = {
-          Digit1: 'front',
-          Digit2: 'side',
-          Digit3: 'rear',
-          Digit4: 'cab',
-        };
-        const rig = map[e.code];
-        if (rig) {
-          ctrl.dispatchCameraAction({ type: 'SET_FOLLOW_ANGLE', angle: rig });
+      if (e.key === 'f' || e.key === 'F') {
+        dispatchMode({ type: 'TOGGLE_FREE_LOOK' });
+      } else if (e.key === 'r' || e.key === 'R') {
+        dispatchMode({ type: 'RESET_OVERVIEW' });
+      } else if (e.key === 'Escape') {
+        if (modeState.mode === 'train_follow') {
+          dispatchMode({ type: 'EXIT_TRAIN_FOLLOW' });
+        } else if (
+          modeState.mode === 'underground_cutaway' ||
+          modeState.mode === 'underground_explorer'
+        ) {
+          dispatchMode({ type: 'RETURN_TO_SURFACE' });
         }
       }
     };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, []);
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [modeState.mode, dispatchMode]);
 
-  const followedTrain: TrainSimulationState | null = useMemo(() => {
-    if (!modeState.followedTrainId) return null;
-    return simSnapshot.trains.find((t) => t.id === modeState.followedTrainId) ?? null;
-  }, [modeState.followedTrainId, simSnapshot.trains]);
-
-  const fallbackTrainId =
-    selectedTrainId && simSnapshot.trains.some((t) => t.id === selectedTrainId)
-      ? selectedTrainId
-      : simSnapshot.trains[0]?.id ?? null;
-
-  const handleLabelClick = (lbl: PlacedMapLabel) => {
-    if (lbl.entityKind === 'station' && lbl.entityId) {
-      onSelectStation(lbl.entityId as SkId<'station'>);
-    } else if (lbl.entityKind === 'line' && lbl.entityId) {
-      onSelectLine(lbl.entityId as SkId<'line'>);
-    } else if (lbl.entityKind === 'train' && lbl.entityId) {
-      onSelectTrain(lbl.entityId);
-    }
-  };
-
-  const handleHubClick = (hubId: string) => {
+  const handleHubClick = useCallback((hubId: string) => {
     const preset = TOKYO_HUB_PRESETS.find((p) => p.id === hubId);
     if (!preset) return;
     sceneRef.current?.flyToHubPreset(preset);
-  };
+    if (preset.recommendUnderground) {
+      dispatchMode({ type: 'SELECT_MODE', mode: 'underground_cutaway' });
+    }
+  }, [dispatchMode]);
 
-  const modeHint = CAMERA_MODE_METADATA[modeState.mode];
+  const handleStartOrToggleTrace = useCallback(() => {
+    if (!selectedLineId || !sceneRef.current) return;
+    if (traceStatus.active && traceStatus.lineId === selectedLineId) {
+      sceneRef.current.setLineTracePlaying(!traceStatus.playing);
+    } else {
+      if (
+        selectedLine?.lineClass === 'metro' &&
+        modeState.mode !== 'underground_cutaway' &&
+        modeState.mode !== 'underground_explorer'
+      ) {
+        dispatchMode({ type: 'SELECT_MODE', mode: 'underground_cutaway' });
+      }
+      sceneRef.current.startLineTrace(selectedLineId, true);
+    }
+  }, [selectedLineId, traceStatus, selectedLine, modeState.mode, dispatchMode]);
+
+  const handleFollowTrain = useCallback(
+    (trainId: string, angle?: TrainFollowRig) => {
+      sceneRef.current?.selectTrain(trainId);
+      setSelectedTrainId(trainId);
+      dispatchMode({ type: 'FOLLOW_TRAIN', trainId, angle });
+    },
+    [dispatchMode],
+  );
+
+  const handleLabelClick = useCallback(
+    (lbl: PlacedMapLabel) => {
+      if (!lbl.entityId) return;
+      if (lbl.entityKind === 'station') {
+        onSelectStation(lbl.entityId as SkId<'station'>);
+      } else if (lbl.entityKind === 'line') {
+        onSelectLine(lbl.entityId as SkId<'line'>);
+        sceneRef.current?.flyToLine(lbl.entityId as SkId<'line'>);
+      } else if (lbl.entityKind === 'train') {
+        sceneRef.current?.selectTrain(lbl.entityId);
+        setSelectedTrainId(lbl.entityId);
+      }
+    },
+    [onSelectStation, onSelectLine],
+  );
 
   return (
     <div className="canvas-pane" data-testid="tokyo-3d-pane">
@@ -270,76 +511,83 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
         }
       />
 
-      {/* Hierarchical Deconflicted Screen-Space Labels */}
+      {/* Hierarchical Screen-Space Deconflicted Map Labels */}
       <MapLabelsOverlay labels={labels} onLabelClick={handleLabelClick} />
 
-      {/* Unified 5-Mode Switcher + Contextual Mode Panel */}
-      <CameraModeHud
+      {/* Top Mode Bar, Mode Context Drawer, Line Trace, Telemetry */}
+      <CameraHud
         dataset={dataset}
         locale={locale}
         modeState={modeState}
         sceneNight={sceneNight}
         fareQuote={fareQuote}
+        selectedLineId={selectedLineId}
         orientation={orientation}
         explorerLoc={explorerLoc}
         followedTrain={followedTrain}
         fallbackTrainId={fallbackTrainId}
-        onDispatch={(action) => sceneRef.current?.dispatchCameraAction(action)}
+        telemetry={telemetry}
+        traceStatus={traceStatus}
+        onDispatch={dispatchMode}
         onSelectHub={handleHubClick}
-        onJumpExplorerLine={(lid) => sceneRef.current?.jumpToExplorerLine(lid)}
+        onJumpExplorerLine={(lid) => camBridgeRef.current?.jumpToTunnelLine(lid)}
         onToggleNight={() => setSceneNight((n) => !n)}
+        onStartOrToggleTrace={handleStartOrToggleTrace}
+        onStopTrace={() => sceneRef.current?.stopLineTrace()}
+        onTraceProgress={(p) => sceneRef.current?.setLineTraceProgress(p)}
+        onFitLine={(lid) => sceneRef.current?.flyToLine(lid)}
       />
 
-      {/* Non-obstructive Bottom-Center Virtual Train Simulation Control Dock */}
-      <SimulationControlBar
+      {/* Contextual 3D Train / Station / Line Inspector */}
+      <TrainInspector
+        dataset={dataset}
         locale={locale}
-        snapshot={simSnapshot}
+        selectedTrain={selectedTrain}
+        selectedStationId={selectedStationId}
+        selectedLineId={selectedLineId}
+        trains={trains}
+        followedTrainId={modeState.mode === 'train_follow' ? modeState.followedTrainId : null}
+        followAngle={modeState.followAngle}
+        onFollowTrain={handleFollowTrain}
+        onExitFollow={() => dispatchMode({ type: 'EXIT_TRAIN_FOLLOW' })}
+        onCloseTrain={() => {
+          sceneRef.current?.selectTrain(null);
+          setSelectedTrainId(null);
+        }}
+        onFocusLine={(lid) => sceneRef.current?.flyToLine(lid)}
+        onEnterUndergroundExplorer={() =>
+          dispatchMode({ type: 'SELECT_MODE', mode: 'underground_explorer' })
+        }
+      />
+
+      {/* Non-Obstructive Virtual Train Simulation Control Bar */}
+      <SimulationPanel
+        dataset={dataset}
+        locale={locale}
+        control={simControl}
+        trains={trains}
+        trainsVisible={trainsVisible}
         selectedTrainId={selectedTrainId}
         isFollowing={modeState.mode === 'train_follow'}
-        onTogglePlaying={() => sceneRef.current?.setSimulationPlaying(!simSnapshot.playing)}
-        onChangeSpeed={(spd) => sceneRef.current?.setSimulationSpeed(spd)}
-        onChangeVisibleCount={(cnt) => sceneRef.current?.setSimulationVisibleCount(cnt)}
-        onToggleTrainsVisible={() =>
-          sceneRef.current?.setSimulationTrainsVisible(!simSnapshot.trainsVisible)
-        }
-        onSelectTrain={(tid) => onSelectTrain(tid)}
-        onFollowTrain={(tid) => {
-          onSelectTrain(tid);
-          sceneRef.current?.dispatchCameraAction({ type: 'FOLLOW_TRAIN', trainId: tid });
+        visibleLimit={visibleLimit}
+        onTogglePlaying={() => sceneRef.current?.setSimulationRunning(!simControl.running)}
+        onChangeTimeScale={(s: SimTimeScale) => sceneRef.current?.setSimulationTimeScale(s)}
+        onChangeDensity={(d: SimTrainDensity) => sceneRef.current?.setSimulationDensity(d)}
+        onChangeVisibleLimit={(lim) => setVisibleLimit(lim)}
+        onToggleTrainsVisible={() => setTrainsVisible((v) => !v)}
+        onSelectTrain={(tid) => {
+          sceneRef.current?.selectTrain(tid);
+          setSelectedTrainId(tid);
         }}
-        onResetSimulation={() => sceneRef.current?.resetSimulation()}
-        onExitFollow={() => sceneRef.current?.dispatchCameraAction({ type: 'EXIT_TRAIN_FOLLOW' })}
+        onFollowTrain={(tid) => handleFollowTrain(tid)}
+        onResetSimulation={() => {
+          sceneRef.current?.resetSimulation();
+          if (modeState.mode === 'train_follow') {
+            dispatchMode({ type: 'EXIT_TRAIN_FOLLOW' });
+          }
+        }}
+        onExitFollow={() => dispatchMode({ type: 'EXIT_TRAIN_FOLLOW' })}
       />
-
-      {/* Bottom-Right Compact Control Hint & Telemetry */}
-      <div className="ux-telemetry-stack">
-        <div
-          className="telemetry-chip"
-          style={{ position: 'static', fontSize: 10.5, opacity: 0.92 }}
-          data-testid="camera-control-hint"
-        >
-          {modeState.freeLookEnabled
-            ? locale === 'ja'
-              ? '自由観察 ON: ドラッグ視点 · WASD/QE移動 · F解除'
-              : 'Free Look ON: Drag Look · WASD/QE Move · F Exit'
-            : locale === 'ja'
-              ? modeHint.descriptionJa
-              : modeHint.descriptionEn}
-        </div>
-        {telemetry && (
-          <div
-            className="telemetry-chip mono"
-            style={{ position: 'static' }}
-            data-testid="three-telemetry"
-          >
-            {telemetry.fps > 0 ? `${telemetry.fps} FPS · ` : ''}
-            DC:{telemetry.drawCalls} · Tris:{Math.round(telemetry.triangles / 1000)}k
-            {telemetry.railwayLod ? ` · Rail:${telemetry.railwayLod}` : ''} · Chunks{' '}
-            {telemetry.loadedChunks}/{telemetry.totalChunks} · Buildings{' '}
-            {telemetry.renderedBuildings.toLocaleString()}
-          </div>
-        )}
-      </div>
     </div>
   );
 };

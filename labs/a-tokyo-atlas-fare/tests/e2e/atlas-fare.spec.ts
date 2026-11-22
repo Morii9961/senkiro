@@ -207,22 +207,12 @@ test.describe('SENKIRO Lab · Tokyo Atlas & Fare Interactive E2E', () => {
     await expect(telemetry).toBeVisible({ timeout: 12_000 });
     await expect(telemetry).toContainText(/Buildings [1-9]/);
 
-    // Select a line in 3D view and inspect detail (coverage & provenance + follow line train)
+    // Select a line in 3D view and inspect detail + line trace bar
     await page.getByTestId('line-chip-sk:line:jr-east-yamanote').click();
+    await expect(page.getByTestId('line-trace-bar')).toBeVisible();
     await page.getByTestId('tab-detail').click();
     await expect(page.getByTestId('line-detail-card')).toContainText('山手線');
     await expect(page.getByTestId('line-detail-card')).toContainText('OSM 縦断(模式)');
-    await expect(page.getByTestId('line-coverage-provenance')).toBeVisible();
-    await expect(page.getByTestId('detail-follow-line-train')).toBeVisible();
-
-    // Inspect Station Detail + Station Atlas Entry
-    await page.getByTestId('tab-explore').click();
-    await page.getByTestId('station-search-input').fill('新宿');
-    await page.getByTestId('search-result-sk:station:jr-east-shinjuku').click();
-    await expect(page.getByTestId('station-atlas-entry-card')).toBeVisible();
-    await page.getByTestId('station-atlas-entry-btn').click();
-    await expect(page.getByTestId('station-atlas-preview')).toContainText('labs/c-shinjuku-3d');
-
     expect(pageErrors).toEqual([]);
     expect(mergeErrors).toEqual([]);
   });
@@ -242,7 +232,7 @@ test.describe('SENKIRO Lab · Tokyo Atlas & Fare Interactive E2E', () => {
     await expect(page.getByTestId('strip-map-view')).toContainText('Yamanote');
   });
 
-  test('8. Underground Cutaway Mode: Local Aperture, Tier Filter, Single-Line Highlight & Hub Focus', async ({
+  test('8. 3D Underground View, Focus Hubs (Shibuya / Shinjuku / Tokyo), Depth Slice & Tier Filters', async ({
     page,
   }) => {
     const pageErrors: string[] = [];
@@ -250,82 +240,35 @@ test.describe('SENKIRO Lab · Tokyo Atlas & Fare Interactive E2E', () => {
 
     await page.goto('/');
     await page.getByTestId('view-mode-3d').click();
-    await page.waitForSelector('canvas[data-testid="three-3d-canvas"]');
+    await expect(page.getByTestId('underground-control-panel')).toBeVisible();
 
-    // Explicit mode switch to Underground Cutaway
-    await page.getByTestId('mode-btn-underground_cutaway').click();
-    await expect(page.getByTestId('active-mode-badge')).toContainText(/地下剖切|Underground Cutaway/);
-    await expect(page.getByTestId('mode-context-panel')).toBeVisible();
-    await expect(page.getByTestId('cutaway-radius-slider')).toBeVisible();
-    await expect(page.getByTestId('vertical-exaggeration-slider')).toBeVisible();
+    // Focus Shibuya hub (automatically activates Underground View)
+    await page.getByTestId('hub-btn-shibuya').click();
+    await expect(page.getByTestId('toggle-underground-view')).toContainText('ON');
     await expect(page.getByTestId('ground-opacity-slider')).toBeVisible();
-    await expect(page.getByTestId('return-to-surface-btn')).toBeVisible();
 
-    // Adjust cutaway parameters & toggle Hide Buildings, Clip Plane & L-3 tier
-    await page.getByTestId('cutaway-radius-slider').fill('1100');
-    await page.getByTestId('vertical-exaggeration-slider').fill('1.8');
-    await page.getByTestId('pin-cutaway-checkbox').check();
+    // Toggle Hide Buildings, Clip Plane & L-3 tier
     await page.getByTestId('hide-buildings-checkbox').check();
     await page.getByTestId('clip-plane-checkbox').check();
     await expect(page.getByTestId('clip-plane-slider')).toBeVisible();
     await page.getByTestId('tier-toggle-L-3').click();
 
-    // Focus Shibuya / Shinjuku / Tokyo hubs cleanly while remaining in Cutaway
-    await page.getByTestId('hub-btn-shibuya').click();
+    // Focus Shinjuku and Tokyo hubs smoothly
     await page.getByTestId('hub-btn-shinjuku').click();
     await page.getByTestId('hub-btn-tokyo').click();
-
-    // Return to Surface cleanly
-    await page.getByTestId('return-to-surface-btn').click();
-    await expect(page.getByTestId('active-mode-badge')).toContainText(/都市俯瞰|City Overview/);
     expect(pageErrors).toEqual([]);
   });
 
-  test('9. Virtual Train Simulation Bar, Train Detail Card & Train Follow Fixed Camera Rigs', async ({
-    page,
-  }) => {
-    const pageErrors: string[] = [];
-    page.on('pageerror', (err) => pageErrors.push(String(err)));
-
+  test('9. 3D Line Trace Camera Fly-Through along Ginza Line', async ({ page }) => {
     await page.goto('/');
     await page.getByTestId('view-mode-3d').click();
-    await page.waitForSelector('canvas[data-testid="three-3d-canvas"]');
+    await page.getByTestId('line-chip-sk:line:metro-ginza').click();
 
-    // Simulation Control Bar is visible with prominent synthetic badge
-    const simBar = page.getByTestId('simulation-control-bar');
-    await expect(simBar).toBeVisible();
-    await expect(page.getByTestId('sim-synthetic-badge')).toContainText(/模擬運行|SIMULATED/);
-
-    // Control speed, count, pause/play, visibility toggle
-    await page.getByTestId('sim-speed-select').selectOption('2');
-    await page.getByTestId('sim-count-select').selectOption('8');
-    await page.getByTestId('sim-play-pause').click();
-    await page.getByTestId('sim-play-pause').click();
-
-    // Select a simulated train -> opens Virtual Train Detail Card with honesty badge
-    await page.getByTestId('sim-train-select').selectOption('sim:train:metro-ginza-1');
-    await expect(page.getByTestId('train-detail-card')).toBeVisible();
-    await expect(page.getByTestId('train-synthetic-banner')).toContainText(/模擬運行|SIMULATED/);
-
-    // Follow Train -> switches to Train Follow mode and cycles fixed camera angles!
-    await page.getByTestId('detail-follow-train-btn').click();
-    await expect(page.getByTestId('active-mode-badge')).toContainText(/列車追従|Train Follow/);
-    await expect(page.getByTestId('train-follow-hud-card')).toBeVisible();
-
-    await page.getByTestId('follow-angle-front').click();
-    await page.getByTestId('follow-angle-rear').click();
-    await page.getByTestId('follow-angle-cab').click();
-    await page.getByTestId('follow-angle-side').click();
-
-    // Toggle hide/show simulated trains cleanly exits follow & restores
-    await page.getByTestId('sim-exit-follow-btn').click();
-    await expect(page.getByTestId('active-mode-badge')).not.toContainText(/列車追従|Train Follow/);
-    await page.getByTestId('sim-toggle-visible').click();
-    await expect(page.getByTestId('sim-toggle-visible')).toContainText(/非表示|Hidden/);
-    await page.getByTestId('sim-toggle-visible').click();
-    await page.getByTestId('sim-reset-btn').click();
-
-    expect(pageErrors).toEqual([]);
+    const traceBar = page.getByTestId('line-trace-bar');
+    await expect(traceBar).toBeVisible();
+    await page.getByTestId('line-trace-play-btn').click();
+    await expect(page.getByTestId('line-trace-scrubber')).toBeVisible();
+    await expect(traceBar).toContainText(/L[\+\-0]/);
   });
 
   test('10. Seamless 2D <-> 3D Switch Preserves Selected Line, Operator Filters & Active JR Fare Route', async ({
@@ -349,7 +292,7 @@ test.describe('SENKIRO Lab · Tokyo Atlas & Fare Interactive E2E', () => {
     await expect(page.getByTestId('path-diff-banner')).toBeVisible();
   });
 
-  test('11. True Subterranean Underground Explorer: Tunnel Entry, Location Readout, Hop & One-Click Return to Surface', async ({
+  test('11. Phase 2 GPU Radial Cutaway Explorer, Vertical Exaggeration, Return to Surface & Day/Night Lighting', async ({
     page,
   }) => {
     const errors: string[] = [];
@@ -362,78 +305,22 @@ test.describe('SENKIRO Lab · Tokyo Atlas & Fare Interactive E2E', () => {
     await page.getByTestId('view-mode-3d').click();
     await page.waitForSelector('canvas[data-testid="three-3d-canvas"]');
 
-    // Focus Shibuya then enter Underground Explorer (camera physically enters tunnel space!)
+    // Focus Shibuya hub -> activates GPU Radial Cutaway Explorer
     await page.getByTestId('hub-btn-shibuya').click();
-    await page.waitForTimeout(900);
-    await page.getByTestId('mode-btn-underground_explorer').click();
-    await expect(page.getByTestId('active-mode-badge')).toContainText(/地下トンネル漫遊|Underground Explorer/);
-    await expect(page.getByTestId('explorer-location-card')).toBeVisible({ timeout: 8000 });
+    await expect(page.getByTestId('toggle-underground-view')).toContainText('ON');
+    await expect(page.getByTestId('cutaway-radius-slider')).toBeVisible();
+    await expect(page.getByTestId('vertical-exaggeration-slider')).toBeVisible();
+    await expect(page.getByTestId('return-to-surface-btn')).toBeVisible();
 
-    await expect
-      .poll(
-        () =>
-          page.evaluate(
-            () =>
-              (window as unknown as { __SENKIRO_3D_CAMERA__?: { mode: string; pos: number[] } })
-                .__SENKIRO_3D_CAMERA__?.pos[1] ?? 99,
-          ),
-        { timeout: 6000 },
-      )
-      .toBeLessThan(-5);
-    await page.waitForTimeout(800);
+    // Adjust cutaway radius, vertical exaggeration & pin cutaway location
+    await page.getByTestId('cutaway-radius-slider').fill('1100');
+    await page.getByTestId('vertical-exaggeration-slider').fill('1.8');
+    await page.getByTestId('pin-cutaway-checkbox').check();
 
-    const camInside = await page.evaluate(
-      () =>
-        (window as unknown as { __SENKIRO_3D_CAMERA__?: { mode: string; pos: number[] } })
-          .__SENKIRO_3D_CAMERA__,
-    );
-    expect(camInside?.mode).toBe('underground_explorer');
-
-    // Move along tunnel interior via W key (hold across SwiftShader frames)
-    await page.keyboard.down('KeyW');
-    try {
-      await expect
-        .poll(
-          async () => {
-            const camMoved = await page.evaluate(
-              () =>
-                (window as unknown as { __SENKIRO_3D_CAMERA__?: { pos: number[] } })
-                  .__SENKIRO_3D_CAMERA__,
-            );
-            return Math.hypot(
-              camMoved!.pos[0]! - camInside!.pos[0]!,
-              camMoved!.pos[2]! - camInside!.pos[2]!,
-            );
-          },
-          { timeout: 6000 },
-        )
-        .toBeGreaterThan(6);
-    } finally {
-      await page.keyboard.up('KeyW');
-    }
-
-    // Hop to a nearby crossing underground tunnel if present
-    const hopBtns = page.locator('[data-testid^="explorer-hop-"]');
-    if ((await hopBtns.count()) > 0) {
-      await hopBtns.first().click();
-      await expect(page.getByTestId('explorer-location-card')).toBeVisible();
-    }
-
-    // One-click Return to Surface lifts camera safely above ground
-    await page.getByTestId('explorer-return-surface-btn').click();
-    await expect(page.getByTestId('active-mode-badge')).toContainText(/都市俯瞰|City Overview/);
-
-    await expect
-      .poll(
-        () =>
-          page.evaluate(
-            () =>
-              (window as unknown as { __SENKIRO_3D_CAMERA__?: { pos: number[] } })
-                .__SENKIRO_3D_CAMERA__?.pos[1] ?? -99,
-          ),
-        { timeout: 6000 },
-      )
-      .toBeGreaterThan(10);
+    // One-click Return to Surface View restores surface state cleanly
+    await page.getByTestId('return-to-surface-btn').click();
+    await expect(page.getByTestId('toggle-underground-view')).not.toContainText('ON');
+    await expect(page.getByTestId('return-to-surface-btn')).toHaveCount(0);
 
     // Toggle Day/Night architectural lighting smoothly
     const dnBtn = page.getByTestId('toggle-3d-day-night');
@@ -445,7 +332,7 @@ test.describe('SENKIRO Lab · Tokyo Atlas & Fare Interactive E2E', () => {
     expect(errors).toEqual([]);
   });
 
-  test('12. Desktop Human-Centered Controls: Left-Drag Pan, Middle-Drag Orbit, Street-Level Compass, Free Look & Reset', async ({
+  test('12. Phase 2 Spatial Navigation: Middle-Mouse Ground Pan, Double-Click Focus & Free Explore WASD Flight', async ({
     page,
   }) => {
     const pageErrors: string[] = [];
@@ -461,7 +348,7 @@ test.describe('SENKIRO Lab · Tokyo Atlas & Fare Interactive E2E', () => {
     const cx = box.x + box.width * 0.5;
     const cy = box.y + box.height * 0.5;
 
-    // 1. Left-drag pans map along ground plane (consistent with 2D MapLibre!)
+    // 1. Verify Middle-Mouse hold + drag pans camera freely along ground plane!
     const beforePan = await page.evaluate(
       () =>
         (window as unknown as { __SENKIRO_3D_CAMERA__?: { target: number[]; pos: number[] } })
@@ -470,9 +357,9 @@ test.describe('SENKIRO Lab · Tokyo Atlas & Fare Interactive E2E', () => {
     expect(beforePan).toBeTruthy();
 
     await page.mouse.move(cx, cy);
-    await page.mouse.down({ button: 'left' });
-    await page.mouse.move(cx + 150, cy + 95, { steps: 6 });
-    await page.mouse.up({ button: 'left' });
+    await page.mouse.down({ button: 'middle' });
+    await page.mouse.move(cx + 140, cy + 90, { steps: 6 });
+    await page.mouse.up({ button: 'middle' });
     await page.waitForTimeout(450);
 
     const afterPan = await page.evaluate(
@@ -480,135 +367,48 @@ test.describe('SENKIRO Lab · Tokyo Atlas & Fare Interactive E2E', () => {
         (window as unknown as { __SENKIRO_3D_CAMERA__?: { target: number[]; pos: number[] } })
           .__SENKIRO_3D_CAMERA__,
     );
+    expect(afterPan).toBeTruthy();
     const panMoved = Math.hypot(
       afterPan!.target[0]! - beforePan!.target[0]!,
       afterPan!.target[2]! - beforePan!.target[2]!,
     );
     expect(panMoved).toBeGreaterThan(20);
 
-    // 2. Middle-drag orbits / rotates view freely around focus
-    await page.mouse.move(cx, cy);
-    await page.mouse.down({ button: 'middle' });
-    await page.mouse.move(cx + 120, cy - 35, { steps: 6 });
-    await page.mouse.up({ button: 'middle' });
-    await page.waitForTimeout(350);
+    // 2. Switch seamlessly to Free Explore Mode & test WASD + E flight!
+    await page.getByTestId('toggle-camera-mode').click();
+    await expect(page.getByTestId('toggle-camera-mode')).toContainText('ON');
+    await expect(page.getByTestId('free-speed-select')).toBeVisible();
+    await page.getByTestId('free-speed-select').selectOption('fast');
 
-    const afterOrbit = await page.evaluate(
+    const beforeFly = await page.evaluate(
       () =>
-        (window as unknown as { __SENKIRO_3D_CAMERA__?: { pos: number[] } })
+        (window as unknown as { __SENKIRO_3D_CAMERA__?: { mode: string; pos: number[] } })
           .__SENKIRO_3D_CAMERA__,
     );
-    const orbitMoved = Math.hypot(
-      afterOrbit!.pos[0]! - afterPan!.pos[0]!,
-      afterOrbit!.pos[2]! - afterPan!.pos[2]!,
-    );
-    expect(orbitMoved).toBeGreaterThan(10);
-
-    // 3. Switch to Street-Level mode -> lowers altitude & shows compass + landmark orientation
-    await page.getByTestId('mode-btn-street_level').click();
-    await expect(page.getByTestId('active-mode-badge')).toContainText(/街路レベル|Street-Level/);
-    await expect(page.getByTestId('street-compass-card')).toBeVisible();
-
-    await expect
-      .poll(
-        () =>
-          page.evaluate(
-            () =>
-              (window as unknown as { __SENKIRO_3D_CAMERA__?: { pos: number[] } })
-                .__SENKIRO_3D_CAMERA__?.pos[1] ?? 999,
-          ),
-        { timeout: 6000 },
-      )
-      .toBeLessThan(120);
-
-    const camStreet = await page.evaluate(
-      () =>
-        (window as unknown as { __SENKIRO_3D_CAMERA__?: { pos: number[] } })
-          .__SENKIRO_3D_CAMERA__,
-    );
-    expect(camStreet!.pos[1]!).toBeGreaterThanOrEqual(4);
-
-    // 4. Toggle explicit Free Look & fly with WASD + E
-    await page.getByTestId('toggle-free-look').click();
-    await expect(page.getByTestId('toggle-free-look')).toContainText('ON');
+    expect(beforeFly?.mode).toBe('free');
 
     await page.keyboard.down('KeyW');
     await page.keyboard.down('KeyE');
-    await page.waitForTimeout(450);
+    await page.waitForTimeout(550);
     await page.keyboard.up('KeyW');
     await page.keyboard.up('KeyE');
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(350);
 
     const afterFly = await page.evaluate(
       () =>
-        (window as unknown as { __SENKIRO_3D_CAMERA__?: { freeLook: boolean; pos: number[] } })
+        (window as unknown as { __SENKIRO_3D_CAMERA__?: { mode: string; pos: number[] } })
           .__SENKIRO_3D_CAMERA__,
     );
-    expect(afterFly?.freeLook).toBe(true);
-    expect(
-      Math.hypot(
-        afterFly!.pos[0]! - camStreet!.pos[0]!,
-        afterFly!.pos[1]! - camStreet!.pos[1]!,
-        afterFly!.pos[2]! - camStreet!.pos[2]!,
-      ),
-    ).toBeGreaterThan(10);
+    const flyMoved = Math.hypot(
+      afterFly!.pos[0]! - beforeFly!.pos[0]!,
+      afterFly!.pos[1]! - beforeFly!.pos[1]!,
+      afterFly!.pos[2]! - beforeFly!.pos[2]!,
+    );
+    expect(flyMoved).toBeGreaterThan(30);
 
-    // 5. Reset Overview returns cleanly to city_overview
-    await page.getByTestId('reset-3d-camera').click();
-    await expect(page.getByTestId('active-mode-badge')).toContainText(/都市俯瞰|City Overview/);
+    // 3. Return seamlessly to Map Browse Mode
+    await page.getByTestId('toggle-camera-mode').click();
+    await expect(page.getByTestId('free-speed-select')).toHaveCount(0);
     expect(pageErrors).toEqual([]);
-  });
-
-  test('13. Hierarchical Spatial Label System: Tiered Visibility & Zero DOM Bounding-Box Overlap', async ({
-    page,
-  }) => {
-    await page.goto('/');
-    await page.getByTestId('view-mode-3d').click();
-    await page.waitForSelector('canvas[data-testid="three-3d-canvas"]');
-    await expect(page.getByTestId('map-labels-overlay')).toBeVisible({ timeout: 10_000 });
-    await page.waitForTimeout(900);
-
-    const verifyNoOverlap = async () => {
-      const boxes = await page.evaluate(() => {
-        const els = Array.from(document.querySelectorAll('[data-testid^="map-label-"]'));
-        return els.map((el) => {
-          const r = el.getBoundingClientRect();
-          return {
-            id: el.getAttribute('data-testid'),
-            kind: el.getAttribute('data-label-kind'),
-            left: r.left,
-            top: r.top,
-            right: r.right,
-            bottom: r.bottom,
-          };
-        });
-      });
-      expect(boxes.length).toBeGreaterThanOrEqual(2);
-      for (let i = 0; i < boxes.length; i++) {
-        for (let j = i + 1; j < boxes.length; j++) {
-          const a = boxes[i]!;
-          const b = boxes[j]!;
-          const separated =
-            a.right + 4 <= b.left ||
-            b.right + 4 <= a.left ||
-            a.bottom + 4 <= b.top ||
-            b.bottom + 4 <= a.top;
-          expect(separated).toBe(true);
-        }
-      }
-      return boxes;
-    };
-
-    // Overview labels
-    await page.getByTestId('reset-3d-camera').click();
-    await page.waitForTimeout(900);
-    await verifyNoOverlap();
-
-    // Underground Cutaway labels (includes underground stations / tunnels / crossings)
-    await page.getByTestId('hub-btn-shibuya').click();
-    await page.waitForTimeout(800);
-    await page.getByTestId('mode-btn-underground_cutaway').click();
-    await page.waitForTimeout(700);
-    await verifyNoOverlap();
   });
 });

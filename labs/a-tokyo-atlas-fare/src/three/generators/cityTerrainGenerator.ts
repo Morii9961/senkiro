@@ -461,22 +461,6 @@ export class CityTerrainLayer {
     this.undergroundReferenceGrid.visible = undergroundActive || clamped < 0.7;
   }
 
-  /**
-   * When camera dives below ground (Underground Explorer), keep surface ground DoubleSide
-   * so looking upward from tunnels is cleanly occluded instead of leaking the bright sky dome!
-   */
-  setUndergroundCeilingOcclusion(active: boolean): void {
-    const nextSide = active ? THREE.DoubleSide : THREE.FrontSide;
-    if (this.groundMaterial.side !== nextSide) {
-      this.groundMaterial.side = nextSide;
-      this.groundMaterial.needsUpdate = true;
-    }
-    if (this.bayMaterial.side !== nextSide) {
-      this.bayMaterial.side = nextSide;
-      this.bayMaterial.needsUpdate = true;
-    }
-  }
-
   setTheme(isDark: boolean): void {
     if (this.isDark === isDark) return;
     this.isDark = isDark;

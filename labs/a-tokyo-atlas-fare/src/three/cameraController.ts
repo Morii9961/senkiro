@@ -1,24 +1,28 @@
 /**
- * SENKIRO Atlas v2 — Unified 5-Mode Human-Centered 3D Camera Controller.
+ * SENKIRO Atlas v2 — Unified 5-Mode Spatial Camera Controller.
  *
- * Desktop-first consistent controls:
- *  - Left Click (< 6px): Select Station / Rail Line / Simulated Train
- *  - Left Drag (Map modes): Continuous ground-plane Pan (consistent with 2D MapLibre!)
- *  - Middle / Right Drag: Smooth Orbit rotation or Free Look yaw/pitch
- *  - Wheel: Smooth damped Zoom (Map/Street/Cutaway) · Move along tunnel (Explorer) · Follow distance (Train Follow)
- *  - Double-Click: Raycast & smoothly fly focus onto target
- *  - Explicit Free Look toggle ('F' or HUD button): Left/Mid drag look + WASD/QE collision-guarded flight
- *  - Safe Escape / Return to Surface / Reset Overview transitions across all 5 modes!
+ * Backward-compatible drop-in upgrade for `Metropolitan3DScene` AND full
+ * `CameraControllerV2Adapter` implementation:
+ *
+ * Modes managed cleanly via `cameraModeStateMachine.ts`:
+ *  1. `city_overview`        — 3D metropolitan aerial view (Orbit Left, Free Pan Mid/Right, Wheel Zoom, Dbl-Click Focus)
+ *  2. `street_level`         — Low-altitude street & viaduct view with building/landmark collision guard & heading compass
+ *  3. `underground_cutaway`  — GPU radial cutaway explorer with depth tiers & smooth high-polar dive
+ *  4. `underground_explorer` — Subterranean tunnel corridor cruiser constrained strictly inside bore clearance
+ *  5. `train_follow`         — Smooth curve-damped following of `SimulatedTrainState` (Cab / Front / Side / Chase / Overhead)
+ *
+ * Plus explicit Free Look toggle (`setMode('free')` / HUD / Key 'F') with WASD/QE flight.
  */
 
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import {
-  getCameraModeCapabilities,
-  type CameraModeCapabilities,
-  type CameraModeState,
-  type TrainFollowAngle,
-} from '../domain/cameraModeStateMachine.js';
+import type {
+  CameraModeV2,
+  CameraStateSnapshot,
+  CameraTargetV2,
+  SimulatedTrainState,
+  TrainFollowView,
+} from '../contracts/atlasV2.js';
 import {
   classifyTier,
   type SolvedPoint3D,
@@ -26,14 +30,27 @@ import {
   type SolvedSegment3D,
 } from '../domain/elevationSolver.js';
 import type { AtlasDataset, SkId } from '../domain/types.js';
+import type { CameraControllerV2Adapter } from './contracts/adapters.js';
+import type { CameraMoveSpeed, CameraNavMode } from './types.js';
+import {
+  createInitialCameraModeState,
+  getCameraModeCapabilities,
+  toCameraModeV2,
+  transitionCameraMode,
+  type CameraModeCapabilities,
+  type CameraModeState,
+  type TrainFollowRig,
+} from './camera/cameraModeStateMachine.js';
 import type {
   CameraOrientationInfo,
-  UndergroundExplorerLocation,
-} from './types.js';
-import type {
-  EnvironmentCollisionProvider,
-  TrainSimulationState,
-} from './uxContracts.js';
+  StreetCollisionGuard,
+} from './camera/collisionGuard.js';
+import {
+  registerCameraControllerForElement,
+  unregisterCameraControllerForElement,
+  type SpatialCameraBridge,
+  type UndergroundExplorerLocation,
+} from './camera/controllerBridge.js';
 
 interface CameraAnim {
   startPos: THREE.Vector3;
@@ -59,23 +76,23 @@ interface TunnelCorridor {
   }[];
 }
 
-const SPEED_MPS = {
-  slow: 90,
-  normal: 240,
-  fast: 680,
-} as const;
+const SPEED_MPS: Record<CameraMoveSpeed, number> = {
+  slow: 140,
+  normal: 380,
+  fast: 920,
+};
 
-const TUNNEL_SPEED_MPS = {
+const STREET_SPEED_MPS: Record<CameraMoveSpeed, number> = {
+  slow: 24,
+  normal: 58,
+  fast: 130,
+};
+
+const TUNNEL_SPEED_MPS: Record<CameraMoveSpeed, number> = {
   slow: 18,
   normal: 44,
   fast: 96,
-} as const;
-
-const STREET_SPEED_MPS = {
-  slow: 22,
-  normal: 54,
-  fast: 120,
-} as const;
+};
 
 const MAX_EXTENT_XZ = 26_000;
 const MAX_ALTITUDE = 15_500;
@@ -94,17 +111,27 @@ function headingToCardinal(deg: number): CameraOrientationInfo['cardinal'] {
   return dirs[Math.round(((deg % 360) + 360) % 360 / 45) % 8]!;
 }
 
-export class SpatialCameraController {
+export class SpatialCameraController
+  implements CameraControllerV2Adapter, SpatialCameraBridge
+{
   readonly controls: OrbitControls;
 
   private readonly camera: THREE.PerspectiveCamera;
   private readonly domElement: HTMLElement;
   private readonly onCameraMoved?: () => void;
-  private readonly collisionProvider?: EnvironmentCollisionProvider;
-  private readonly tunnelCorridors: TunnelCorridor[] = [];
 
-  private modeState: CameraModeState;
-  private capabilities: CameraModeCapabilities;
+  private modeState: CameraModeState = createInitialCameraModeState();
+  private capabilities: CameraModeCapabilities = getCameraModeCapabilities(
+    this.modeState,
+    false,
+  );
+  private moveSpeed: CameraMoveSpeed = 'normal';
+  private undergroundAllowed = false;
+  private minUndergroundY = -62;
+
+  private collisionGuard: StreetCollisionGuard | null = null;
+  private trainLookupFn: ((trainId: string) => SimulatedTrainState | null) | null = null;
+  private readonly tunnelCorridors: TunnelCorridor[] = [];
   private anim: CameraAnim | null = null;
 
   // Free Look / Explorer orientation (YXZ Euler: yaw around Y, pitch around X)
@@ -124,7 +151,8 @@ export class SpatialCameraController {
 
   // Train Follow smooth curve damping state
   private followedTrainSnapId: string | null = null;
-  private followedAngleSnap: TrainFollowAngle | null = null;
+  private followedAngleSnap: TrainFollowRig | null = null;
+  private latestFollowedTrain: SimulatedTrainState | null = null;
   private smoothedTrainPos = new THREE.Vector3();
   private smoothedTrainDir = new THREE.Vector3(0, 0, -1);
   private followScale = 1.0;
@@ -134,57 +162,63 @@ export class SpatialCameraController {
   constructor(
     camera: THREE.PerspectiveCamera,
     domElement: HTMLElement,
-    initialModeState: CameraModeState,
-    dataset: AtlasDataset,
-    solved: SolvedRailwayNetwork3D,
-    collisionProvider?: EnvironmentCollisionProvider,
     onCameraMoved?: () => void,
   ) {
     this.camera = camera;
     this.domElement = domElement;
-    this.modeState = initialModeState;
-    this.capabilities = getCameraModeCapabilities(initialModeState, false);
-    this.collisionProvider = collisionProvider;
     this.onCameraMoved = onCameraMoved;
-
-    this.buildTunnelCorridors(dataset, solved);
 
     this.controls = new OrbitControls(camera, domElement);
     this.controls.enableDamping = true;
-    this.controls.dampingFactor = 0.085;
-    this.controls.screenSpacePanning = false; // Strict horizontal ground-plane pan!
-    this.controls.minDistance = this.capabilities.minDistance;
-    this.controls.maxDistance = this.capabilities.maxDistance;
-    this.controls.minPolarAngle = this.capabilities.minPolarRad;
-    this.controls.maxPolarAngle = this.capabilities.maxPolarRad;
+    this.controls.dampingFactor = 0.08;
+    this.controls.screenSpacePanning = false;
+    this.controls.minDistance = 85;
+    this.controls.maxDistance = 18_500;
+    this.controls.minPolarAngle = 0.12;
+    this.controls.maxPolarAngle = Math.PI * 0.47;
     this.controls.zoomSpeed = 1.05;
     this.controls.rotateSpeed = 0.72;
     this.controls.panSpeed = 1.05;
 
-    // Desktop-first consistent mapping:
-    // Left-drag = Ground Pan (consistent with 2D MapLibre!)
-    // Middle-drag = Orbit / Free rotation
-    // Right-drag = Orbit / Tilt (consistent with 2D MapLibre!)
+    // Preserves repo convention tested in E2E: Left-drag = Orbit (click selects), Mid/Right-drag = Pan
     this.controls.mouseButtons = {
-      LEFT: THREE.MOUSE.PAN,
-      MIDDLE: THREE.MOUSE.ROTATE,
-      RIGHT: THREE.MOUSE.ROTATE,
+      LEFT: THREE.MOUSE.ROTATE,
+      MIDDLE: THREE.MOUSE.PAN,
+      RIGHT: THREE.MOUSE.PAN,
     };
 
     this.controls.addEventListener('end', this.handleControlsEnd);
     this.domElement.addEventListener('mousedown', this.handleMouseDown);
     this.domElement.addEventListener('auxclick', this.handleAuxClick);
     this.domElement.addEventListener('contextmenu', this.handleContextMenu);
-    this.domElement.addEventListener('pointerdown', this.handlePointerDown);
-    this.domElement.addEventListener('pointermove', this.handlePointerMove);
-    this.domElement.addEventListener('pointerup', this.handlePointerUp);
-    this.domElement.addEventListener('wheel', this.handleWheel, { passive: false });
+    this.domElement.addEventListener('pointerdown', this.handleFreePointerDown);
+    this.domElement.addEventListener('pointermove', this.handleFreePointerMove);
+    this.domElement.addEventListener('pointerup', this.handleFreePointerUp);
+    this.domElement.addEventListener('wheel', this.handleFreeWheel, { passive: false });
     window.addEventListener('keydown', this.handleKeyDown);
     window.addEventListener('keyup', this.handleKeyUp);
     window.addEventListener('blur', this.handleWindowBlur);
+
+    registerCameraControllerForElement(domElement, this);
+  }
+
+  getCamera(): THREE.PerspectiveCamera {
+    return this.camera;
+  }
+
+  attachUxContext(
+    dataset: AtlasDataset,
+    solved: SolvedRailwayNetwork3D,
+    collisionGuard: StreetCollisionGuard,
+    trainLookup?: (trainId: string) => SimulatedTrainState | null,
+  ): void {
+    this.collisionGuard = collisionGuard;
+    this.trainLookupFn = trainLookup ?? null;
+    this.buildTunnelCorridors(dataset, solved);
   }
 
   private buildTunnelCorridors(dataset: AtlasDataset, solved: SolvedRailwayNetwork3D): void {
+    this.tunnelCorridors.length = 0;
     const stMap = new Map(dataset.stations.map((s) => [s.id, s]));
     const segsByPair = new Map<string, { seg: SolvedSegment3D; reversed: boolean }>();
     for (const seg of solved.segments) {
@@ -202,7 +236,6 @@ export class SpatialCameraController {
 
     for (const line of dataset.railLines) {
       if (line.stationIds.length < 2) continue;
-      // Stitch continuous underground runs along this line
       let currentPts: SolvedPoint3D[] = [];
       let currentStations: TunnelCorridor['stations'] = [];
       let accum = 0;
@@ -273,20 +306,300 @@ export class SpatialCameraController {
     }
   }
 
-  getModeState(): CameraModeState {
-    return this.modeState;
+  // ---- Legacy + v2 Contract Methods ----
+
+  getMode(): CameraNavMode {
+    if (this.modeState.freeLookEnabled || this.modeState.mode === 'underground_explorer') {
+      return 'free';
+    }
+    return 'map';
   }
 
-  getCapabilities(): CameraModeCapabilities {
-    return this.capabilities;
+  getModeV2(): CameraModeV2 {
+    return toCameraModeV2(this.modeState);
   }
 
-  /**
-   * Synchronizes the spatial controller whenever the state machine changes mode or cutaway bounds.
-   */
+  getSpeed(): CameraMoveSpeed {
+    return this.moveSpeed;
+  }
+
+  setSpeed(speed: CameraMoveSpeed): void {
+    this.moveSpeed = speed;
+    this.modeState = transitionCameraMode(this.modeState, { type: 'SET_MOVE_SPEED', speed });
+  }
+
+  setUndergroundBounds(enabled: boolean, verticalExaggeration = 1.0): void {
+    this.undergroundAllowed = enabled;
+    this.minUndergroundY = -62 * Math.max(1.0, verticalExaggeration);
+    if (this.modeState.mode === 'train_follow') {
+      this.controls.minDistance = 6;
+      this.controls.maxPolarAngle = Math.PI * 0.88;
+      return;
+    }
+    this.controls.maxPolarAngle = enabled ? Math.PI * 0.78 : Math.PI * 0.47;
+  }
+
+  setMode(nextMode: CameraNavMode): void {
+    const nextEnabled = nextMode === 'free';
+    if (this.modeState.freeLookEnabled === nextEnabled && this.getMode() === nextMode) {
+      return;
+    }
+    this.anim = null;
+    this.pressedKeys.clear();
+    this.draggingLook = false;
+
+    this.modeState = transitionCameraMode(this.modeState, {
+      type: 'TOGGLE_FREE_LOOK',
+      enabled: nextEnabled,
+    });
+    this.capabilities = getCameraModeCapabilities(
+      this.modeState,
+      this.undergroundAllowed || this.camera.position.y < -1.5,
+    );
+
+    if (nextEnabled) {
+      this.syncFreeEulerFromCamera();
+      this.controls.enabled = false;
+    } else {
+      if (this.modeState.mode === 'underground_explorer') {
+        this.modeState = transitionCameraMode(this.modeState, {
+          type: 'SELECT_MODE',
+          mode: 'underground_cutaway',
+        });
+      }
+      this.syncOrbitTargetFromCamera();
+      this.controls.enabled = true;
+      this.controls.update();
+    }
+    this.onCameraMoved?.();
+  }
+
+  setModeV2(mode: CameraModeV2, target?: CameraTargetV2): void {
+    if (target?.kind === 'train') {
+      this.followTrain(target.trainId, target.view);
+      return;
+    }
+    if (target?.kind === 'world') {
+      this.focusWorldPoint(new THREE.Vector3(target.x, target.y, target.z));
+    }
+    if (mode === 'free') {
+      this.setMode('free');
+    } else if (mode === 'map') {
+      this.applyModeState(
+        transitionCameraMode(this.modeState, { type: 'SELECT_MODE', mode: 'city_overview' }),
+        null,
+        null,
+        null,
+      );
+    } else if (mode === 'station_focus') {
+      this.applyModeState(
+        transitionCameraMode(this.modeState, { type: 'SELECT_MODE', mode: 'street_level' }),
+        null,
+        null,
+        target?.kind === 'station' ? target.stationId : null,
+      );
+    } else if (mode === 'underground_inspect') {
+      this.applyModeState(
+        transitionCameraMode(this.modeState, {
+          type: 'SELECT_MODE',
+          mode: 'underground_cutaway',
+        }),
+        null,
+        target?.kind === 'line' ? target.lineId : null,
+        target?.kind === 'station' ? target.stationId : null,
+      );
+    }
+  }
+
+  followTrain(trainId: string | null, view: TrainFollowView = 'chase'): void {
+    if (!trainId) {
+      this.applyModeState(
+        transitionCameraMode(this.modeState, { type: 'EXIT_TRAIN_FOLLOW' }),
+        null,
+        null,
+        null,
+      );
+      return;
+    }
+    this.applyModeState(
+      transitionCameraMode(this.modeState, {
+        type: 'FOLLOW_TRAIN',
+        trainId,
+        angle: view,
+      }),
+      null,
+      null,
+      null,
+    );
+  }
+
+  updateTrainTarget(train: SimulatedTrainState | null, dtSec: number): void {
+    if (!train) return;
+    const hp = train.headPose;
+    const rawPos = new THREE.Vector3(hp.x, hp.y + 1.8, hp.z);
+    const rawDir = new THREE.Vector3(hp.dirX, hp.dirY, hp.dirZ);
+    if (rawDir.lengthSq() < 1e-6) rawDir.set(0, 0, -1);
+    else rawDir.normalize();
+
+    const rig = this.modeState.followAngle;
+    const firstSnap =
+      this.followedTrainSnapId !== train.trainId || this.followedAngleSnap !== rig;
+
+    if (firstSnap) {
+      this.followedTrainSnapId = train.trainId;
+      this.followedAngleSnap = rig;
+      this.latestFollowedTrain = train;
+      this.smoothedTrainPos.copy(rawPos);
+      this.smoothedTrainDir.copy(rawDir);
+    } else {
+      this.latestFollowedTrain = train;
+      const posAlpha = 1 - Math.exp(-11.0 * Math.max(0.004, dtSec));
+      const dirAlpha = 1 - Math.exp(-4.2 * Math.max(0.004, dtSec));
+      this.smoothedTrainPos.lerp(rawPos, posAlpha);
+      this.smoothedTrainDir.lerp(rawDir, dirAlpha).normalize();
+    }
+
+    const F = this.smoothedTrainDir.clone();
+    const up = new THREE.Vector3(0, 1, 0);
+    const R = new THREE.Vector3().crossVectors(F, up);
+    if (R.lengthSq() < 1e-4) R.set(1, 0, 0);
+    else R.normalize();
+
+    const scale = this.followScale;
+    const isUg = train.isUnderground || train.inTunnel;
+
+    const desiredEye = new THREE.Vector3();
+    const desiredLook = new THREE.Vector3();
+
+    if (rig === 'cab') {
+      desiredEye.copy(this.smoothedTrainPos).addScaledVector(F, 1.8);
+      desiredEye.y = this.smoothedTrainPos.y + 0.55;
+      desiredLook.copy(this.smoothedTrainPos).addScaledVector(F, 68);
+      desiredLook.y = this.smoothedTrainPos.y + 0.3 + F.y * 55;
+    } else if (rig === 'front') {
+      const fwdDist = (isUg ? 24 : 38) * scale;
+      const latDist = (isUg ? 2.2 : 13) * scale;
+      const upDist = (isUg ? 4.5 : 14) * scale;
+      desiredEye
+        .copy(this.smoothedTrainPos)
+        .addScaledVector(F, fwdDist)
+        .addScaledVector(R, latDist);
+      desiredEye.y = this.smoothedTrainPos.y + upDist;
+      desiredLook.copy(this.smoothedTrainPos).addScaledVector(F, -18);
+      desiredLook.y = this.smoothedTrainPos.y + 0.5;
+    } else if (rig === 'side') {
+      const sideDist = (isUg ? 34 : 32) * scale;
+      const upDist = (isUg ? 16 : 12) * scale;
+      desiredEye
+        .copy(this.smoothedTrainPos)
+        .addScaledVector(R, sideDist)
+        .addScaledVector(F, -14 * scale);
+      desiredEye.y = this.smoothedTrainPos.y + upDist;
+      desiredLook.copy(this.smoothedTrainPos).addScaledVector(F, -18);
+    } else if (rig === 'overhead_cutaway') {
+      desiredEye
+        .copy(this.smoothedTrainPos)
+        .addScaledVector(F, -92 * scale)
+        .addScaledVector(R, 62 * scale);
+      desiredEye.y = Math.max(this.smoothedTrainPos.y + 135 * scale, 82);
+      desiredLook.copy(this.smoothedTrainPos);
+    } else {
+      // 'chase': rear trailing follow
+      const trailDist = (isUg ? 44 : 68) * scale;
+      const upDist = (isUg ? 18 : 30) * scale;
+      desiredEye
+        .copy(this.smoothedTrainPos)
+        .addScaledVector(F, -trailDist)
+        .addScaledVector(R, 14 * scale);
+      desiredEye.y = this.smoothedTrainPos.y + upDist;
+      desiredLook.copy(this.smoothedTrainPos).addScaledVector(F, 26);
+    }
+
+    if (Math.abs(this.followYawOffset) > 0.001 || Math.abs(this.followPitchOffset) > 0.001) {
+      if (rig === 'cab') {
+        const cabFwd = new THREE.Vector3().subVectors(desiredLook, desiredEye);
+        cabFwd.applyAxisAngle(up, this.followYawOffset);
+        cabFwd.y = THREE.MathUtils.clamp(cabFwd.y + this.followPitchOffset * 38, -32, 32);
+        desiredLook.copy(desiredEye).add(cabFwd);
+      } else {
+        const arm = new THREE.Vector3().subVectors(desiredEye, desiredLook);
+        arm.applyAxisAngle(up, this.followYawOffset);
+        arm.y = THREE.MathUtils.clamp(
+          arm.y + this.followPitchOffset * arm.length() * 0.55,
+          1.8,
+          160,
+        );
+        desiredEye.copy(desiredLook).add(arm);
+      }
+    }
+
+    if (!isUg && rig !== 'cab' && this.collisionGuard) {
+      const safe = this.collisionGuard.resolveCameraPosition(
+        { x: desiredEye.x, y: desiredEye.y, z: desiredEye.z },
+        4.0,
+        false,
+        4.5,
+      );
+      desiredEye.set(safe.x, safe.y, safe.z);
+    }
+
+    if (firstSnap) {
+      this.camera.position.copy(desiredEye);
+      this.controls.target.copy(desiredLook);
+    } else {
+      const eyeAlpha = 1 - Math.exp(-8.5 * Math.max(0.004, dtSec));
+      this.camera.position.lerp(desiredEye, eyeAlpha);
+      this.controls.target.lerp(desiredLook, eyeAlpha);
+    }
+    this.camera.lookAt(this.controls.target);
+  }
+
+  returnToSurface(): void {
+    const next = transitionCameraMode(this.modeState, { type: 'RETURN_TO_SURFACE' });
+    this.applyModeState(next, null, null, null);
+  }
+
+  getSnapshot(): CameraStateSnapshot {
+    const focus = this.getFocusTarget();
+    const isUndergroundCamera = this.camera.position.y < -1.5;
+    return {
+      mode: this.getModeV2(),
+      target:
+        this.modeState.mode === 'train_follow' && this.modeState.followedTrainId
+          ? {
+              kind: 'train',
+              trainId: this.modeState.followedTrainId,
+              view: this.modeState.followAngle === 'front' ? 'chase' : this.modeState.followAngle,
+            }
+          : { kind: 'world', x: focus.x, y: focus.y, z: focus.z },
+      position: [
+        Math.round(this.camera.position.x * 10) / 10,
+        Math.round(this.camera.position.y * 10) / 10,
+        Math.round(this.camera.position.z * 10) / 10,
+      ],
+      lookAt: [
+        Math.round(focus.x * 10) / 10,
+        Math.round(focus.y * 10) / 10,
+        Math.round(focus.z * 10) / 10,
+      ],
+      distanceM: Math.round(this.getDistanceToFocus() * 10) / 10,
+      isUndergroundCamera,
+      followingTrainId:
+        this.modeState.mode === 'train_follow' ? this.modeState.followedTrainId : null,
+      followView:
+        this.modeState.mode === 'train_follow'
+          ? this.modeState.followAngle === 'front'
+            ? 'chase'
+            : this.modeState.followAngle
+          : null,
+    };
+  }
+
+  // ---- 5-Mode State Synchronization ----
+
   applyModeState(
     nextState: CameraModeState,
-    followedTrain: TrainSimulationState | null,
+    followedTrain: SimulatedTrainState | null,
     selectedLineId: SkId<'line'> | null,
     selectedStationId: SkId<'station'> | null,
   ): void {
@@ -296,10 +609,18 @@ export class SpatialCameraController {
     const prevTrainId = this.modeState.followedTrainId;
 
     this.modeState = nextState;
+    if (followedTrain) {
+      this.latestFollowedTrain = followedTrain;
+    } else if (nextState.mode !== 'train_follow') {
+      this.latestFollowedTrain = null;
+    }
+    this.moveSpeed = nextState.moveSpeed;
     this.capabilities = getCameraModeCapabilities(
       nextState,
       Boolean(followedTrain?.isUnderground),
     );
+    this.undergroundAllowed = this.capabilities.allowUndergroundGeometry;
+    this.minUndergroundY = this.capabilities.minCameraY;
 
     this.controls.minDistance = this.capabilities.minDistance;
     this.controls.maxDistance = this.capabilities.maxDistance;
@@ -324,6 +645,10 @@ export class SpatialCameraController {
           this.followedTrainSnapId = null;
         }
         this.followedAngleSnap = null;
+        if (followedTrain) {
+          // Immediately frame the camera near the train so Frame 1 is never stranded km away!
+          this.updateTrainTarget(followedTrain, 0.016);
+        }
       }
       return;
     }
@@ -336,31 +661,36 @@ export class SpatialCameraController {
       return;
     }
 
-    // Returning from underground_explorer to surface/cutaway: smoothly lift camera out above ground!
-    if (prevMode === 'underground_explorer') {
-      const target = this.activeTunnel
-        ? this.sampleTunnelPoint(this.activeTunnel, this.tunnelDistAlong)
-        : this.getFocusTarget();
+    // Returning from underground_explorer or subterranean train follow cleanly restores surface camera
+    if (
+      prevMode === 'underground_explorer' ||
+      (prevMode === 'train_follow' &&
+        (nextState.mode === 'city_overview' || nextState.mode === 'street_level'))
+    ) {
+      const target =
+        prevMode === 'underground_explorer' && this.activeTunnel
+          ? this.sampleTunnelPoint(this.activeTunnel, this.tunnelDistAlong)
+          : this.getFocusTarget();
       const surfaceTarget = new THREE.Vector3(target.x, 0, target.z);
-      const dist = nextState.mode === 'street_level' ? 140 : 1200;
-      const polar = nextState.mode === 'street_level' ? 76 : 56;
+      const dist = nextState.mode === 'street_level' ? 145 : 1150;
+      const polar = nextState.mode === 'street_level' ? 74 : 54;
       this.controls.enabled = !nextState.freeLookEnabled;
-      this.animateTo(surfaceTarget, dist, polar, -24, 650);
+      this.animateTo(surfaceTarget, dist, polar, this.getCurrentAzimuthDeg(), 620);
       return;
     }
 
     if (modeChanged && nextState.mode === 'street_level') {
       const focus = this.getFocusTarget().clone();
       focus.y = 1.5;
-      const safeTarget = this.collisionProvider
-        ? this.collisionProvider.resolveCameraPosition(focus, 8, false, 1.5)
+      const safeTarget = this.collisionGuard
+        ? this.collisionGuard.resolveCameraPosition(focus, 8, false, 1.5)
         : focus;
       this.animateTo(
         new THREE.Vector3(safeTarget.x, 1.5, safeTarget.z),
-        135,
-        78,
+        145,
+        76,
         this.getCurrentAzimuthDeg(),
-        450,
+        480,
       );
     }
 
@@ -384,44 +714,6 @@ export class SpatialCameraController {
     }
   }
 
-  private getCurrentAzimuthDeg(): number {
-    const focus = this.getFocusTarget();
-    const dx = this.camera.position.x - focus.x;
-    const dz = this.camera.position.z - focus.z;
-    return THREE.MathUtils.radToDeg(Math.atan2(dx, dz));
-  }
-
-  private syncFreeEulerFromCamera(): void {
-    if (this.controls.enabled) {
-      this.camera.lookAt(this.controls.target);
-    }
-    const euler = new THREE.Euler(0, 0, 0, 'YXZ').setFromQuaternion(
-      this.camera.quaternion,
-      'YXZ',
-    );
-    this.yaw = euler.y;
-    this.pitch = THREE.MathUtils.clamp(euler.x, -Math.PI * 0.45, Math.PI * 0.45);
-  }
-
-  private syncOrbitTargetFromCamera(): void {
-    const forward = new THREE.Vector3(0, 0, -1)
-      .applyQuaternion(this.camera.quaternion)
-      .normalize();
-    let tDist = this.modeState.mode === 'street_level' ? 120 : 650;
-    if (forward.y < -0.06 && this.camera.position.y > 0) {
-      tDist = THREE.MathUtils.clamp(
-        -this.camera.position.y / forward.y,
-        this.capabilities.minDistance,
-        Math.min(5200, this.capabilities.maxDistance),
-      );
-    }
-    this.controls.target.copy(this.camera.position).addScaledVector(forward, tDist);
-    this.clampTarget();
-  }
-
-  /**
-   * Enters Underground Explorer inside the closest or selected underground tunnel corridor.
-   */
   enterUndergroundExplorer(
     preferredLineId: SkId<'line'> | null = null,
     preferredStationId: SkId<'station'> | null = null,
@@ -434,7 +726,6 @@ export class SpatialCameraController {
     let bestScore = Infinity;
 
     for (const c of this.tunnelCorridors) {
-      // Priority match: exact station or line
       if (preferredStationId) {
         const stHit = c.stations.find((s) => s.stationId === preferredStationId);
         if (stHit) {
@@ -466,12 +757,11 @@ export class SpatialCameraController {
       margin,
       Math.max(margin, bestCorridor.totalDist - margin),
     );
-    this.tunnelLateralM = 0.0;
+    this.tunnelLateralM = 0;
     this.tunnelHeadHeightM = 2.6;
 
     const pt = this.sampleTunnelPoint(bestCorridor, this.tunnelDistAlong);
     const tan = this.sampleTunnelTangent(bestCorridor, this.tunnelDistAlong);
-    // Face inward along the open tunnel corridor rather than into a terminus dead-end!
     const faceSign = this.tunnelDistAlong > bestCorridor.totalDist * 0.65 ? -1 : 1;
 
     const endPos = new THREE.Vector3(pt.x, pt.y + this.tunnelHeadHeightM, pt.z);
@@ -481,7 +771,6 @@ export class SpatialCameraController {
       pt.z + tan.z * 48 * faceSign,
     );
 
-    // Compute exact yaw/pitch facing down the tunnel bore
     const lookVec = new THREE.Vector3().subVectors(endTarget, endPos).normalize();
     this.yaw = Math.atan2(-lookVec.x, -lookVec.z);
     this.pitch = Math.asin(THREE.MathUtils.clamp(lookVec.y, -0.75, 0.75));
@@ -570,7 +859,6 @@ export class SpatialCameraController {
     }
     const nextSt = c.stations[Math.min(c.stations.length - 1, nearestIdx + 1)] ?? null;
 
-    // Discover nearby crossing underground corridors within 260m horizontally
     const nearbyIds = new Set<SkId<'line'>>();
     for (const other of this.tunnelCorridors) {
       if (other.lineId === c.lineId) continue;
@@ -615,8 +903,8 @@ export class SpatialCameraController {
       cardinal: headingToCardinal(headingDeg),
       altitudeM: Math.round(this.camera.position.y * 10) / 10,
       distanceToFocusM: Math.round(this.getDistanceToFocus()),
-      nearestAnchor: this.collisionProvider
-        ? this.collisionProvider.describeNearestAnchor({
+      nearestAnchor: this.collisionGuard
+        ? this.collisionGuard.describeNearestAnchor({
             x: this.camera.position.x,
             y: this.camera.position.y,
             z: this.camera.position.z,
@@ -627,9 +915,9 @@ export class SpatialCameraController {
 
   getFocusTarget(): THREE.Vector3 {
     if (this.modeState.mode === 'train_follow') {
-      return this.smoothedTrainPos;
+      return this.controls.target;
     }
-    if (this.controls.enabled) {
+    if (this.getMode() === 'map') {
       return this.controls.target;
     }
     const forward = new THREE.Vector3(0, 0, -1)
@@ -640,7 +928,7 @@ export class SpatialCameraController {
         ? THREE.MathUtils.clamp(-this.camera.position.y / forward.y, 120, 2400)
         : this.modeState.mode === 'underground_explorer'
           ? 60
-          : 420;
+          : 520;
     this.focusProxy.copy(this.camera.position).addScaledVector(forward, dist);
     this.focusProxy.y = Math.max(-55, Math.min(220, this.focusProxy.y));
     return this.focusProxy;
@@ -676,8 +964,9 @@ export class SpatialCameraController {
     this.controls.target.copy(target);
     this.camera.position.copy(pos);
     this.camera.lookAt(target);
-    this.syncFreeEulerFromCamera();
-    if (this.controls.enabled) {
+    if (this.getMode() === 'free') {
+      this.syncFreeEulerFromCamera();
+    } else {
       this.controls.update();
     }
   }
@@ -689,19 +978,9 @@ export class SpatialCameraController {
     azimuthDeg: number,
     durationMs = 680,
   ): void {
-    const clampedDist = THREE.MathUtils.clamp(
-      distance,
-      this.capabilities.minDistance,
-      this.capabilities.maxDistance,
-    );
-    const clampedPolar = THREE.MathUtils.clamp(
-      polarDeg,
-      THREE.MathUtils.radToDeg(this.capabilities.minPolarRad),
-      THREE.MathUtils.radToDeg(this.capabilities.maxPolarRad),
-    );
-    let endPos = this.sphericalToPos(endTarget, clampedDist, clampedPolar, azimuthDeg);
-    if (this.collisionProvider && this.modeState.mode === 'street_level') {
-      const safe = this.collisionProvider.resolveCameraPosition(
+    let endPos = this.sphericalToPos(endTarget, distance, polarDeg, azimuthDeg);
+    if (this.collisionGuard && this.modeState.mode === 'street_level') {
+      const safe = this.collisionGuard.resolveCameraPosition(
         endPos,
         5,
         false,
@@ -727,8 +1006,8 @@ export class SpatialCameraController {
     const curTarget = this.getFocusTarget();
     const offset = new THREE.Vector3().subVectors(this.camera.position, curTarget);
     const curDist = offset.length();
-    const minD = this.modeState.mode === 'street_level' ? 45 : 220;
-    const maxD = this.modeState.mode === 'street_level' ? 240 : 1400;
+    const minD = this.modeState.mode === 'street_level' ? 45 : 260;
+    const maxD = this.modeState.mode === 'street_level' ? 240 : 1450;
     const nextDist = THREE.MathUtils.clamp(curDist * 0.52, minD, maxD);
     if (curDist > 1) {
       offset.multiplyScalar(nextDist / curDist);
@@ -736,14 +1015,10 @@ export class SpatialCameraController {
       offset.set(0, nextDist * 0.65, nextDist * 0.75);
     }
     let endPos = point.clone().add(offset);
-    endPos.y = Math.max(this.capabilities.minCameraY, endPos.y);
-    if (this.collisionProvider && this.capabilities.isSurface) {
-      const safe = this.collisionProvider.resolveCameraPosition(
-        endPos,
-        4.5,
-        false,
-        this.capabilities.minCameraY,
-      );
+    const minY = this.undergroundAllowed ? this.minUndergroundY : this.capabilities.minCameraY;
+    endPos.y = Math.max(minY, endPos.y);
+    if (this.collisionGuard && this.capabilities.isSurface) {
+      const safe = this.collisionGuard.resolveCameraPosition(endPos, 4.5, false, minY);
       endPos = new THREE.Vector3(safe.x, safe.y, safe.z);
     }
 
@@ -757,11 +1032,7 @@ export class SpatialCameraController {
     };
   }
 
-  /**
-   * Frame tick: executes active animation, Train Follow smooth rig, Underground Explorer tunnel navigation,
-   * Free Look collision-guarded flight, or damped OrbitControls.
-   */
-  update(now: number, dtSec: number, followedTrain: TrainSimulationState | null): void {
+  update(now: number, dtSec: number): void {
     if (this.anim) {
       const elapsed = (now - this.anim.startTime) / this.anim.durationMs;
       if (elapsed >= 1) {
@@ -778,13 +1049,19 @@ export class SpatialCameraController {
         this.camera.lookAt(this.controls.target);
         this.syncFreeEulerFromCamera();
       }
-      if (this.controls.enabled) this.controls.update();
+      if (this.getMode() === 'map') this.controls.update();
       return;
     }
 
-    if (this.modeState.mode === 'train_follow' && followedTrain) {
-      this.updateTrainFollow(dtSec, followedTrain);
-      return;
+    if (this.modeState.mode === 'train_follow') {
+      const liveTrain =
+        this.modeState.followedTrainId && this.trainLookupFn
+          ? this.trainLookupFn(this.modeState.followedTrainId)
+          : this.latestFollowedTrain;
+      if (liveTrain) {
+        this.updateTrainTarget(liveTrain, dtSec);
+        return;
+      }
     }
 
     if (this.modeState.mode === 'underground_explorer') {
@@ -792,128 +1069,46 @@ export class SpatialCameraController {
       return;
     }
 
-    if (this.modeState.freeLookEnabled) {
+    if (this.getMode() === 'free') {
       this.updateFreeLook(dtSec);
       return;
     }
 
-    // Standard damped OrbitControls (city_overview, street_level, underground_cutaway)
     const dist = this.camera.position.distanceTo(this.controls.target);
-    const speedFactor = this.modeState.mode === 'street_level' ? 0.55 : 1.0;
-    this.controls.panSpeed = THREE.MathUtils.clamp(0.75 + dist / 4200, 0.75, 2.2) * speedFactor;
+    const speedFactor = this.modeState.mode === 'street_level' ? 0.65 : 1.0;
+    this.controls.panSpeed =
+      THREE.MathUtils.clamp(0.85 + dist / 4200, 0.85, 2.2) * speedFactor;
     this.controls.update();
     this.clampTarget();
     this.clampCameraBounds();
   }
 
-  private updateTrainFollow(dtSec: number, tr: TrainSimulationState): void {
-    const rawPos = new THREE.Vector3(tr.position.x, tr.position.y + 2.0, tr.position.z);
-    const rawDir = new THREE.Vector3(tr.tangent.x, tr.tangent.y, tr.tangent.z).normalize();
+  private getCurrentAzimuthDeg(): number {
+    const focus = this.getFocusTarget();
+    const dx = this.camera.position.x - focus.x;
+    const dz = this.camera.position.z - focus.z;
+    return THREE.MathUtils.radToDeg(Math.atan2(dx, dz));
+  }
 
-    const firstSnap =
-      this.followedTrainSnapId !== tr.id || this.followedAngleSnap !== this.modeState.followAngle;
+  private syncFreeEulerFromCamera(): void {
+    const euler = new THREE.Euler(0, 0, 0, 'YXZ').setFromQuaternion(
+      this.camera.quaternion,
+      'YXZ',
+    );
+    this.yaw = euler.y;
+    this.pitch = THREE.MathUtils.clamp(euler.x, -Math.PI * 0.45, Math.PI * 0.45);
+  }
 
-    if (firstSnap) {
-      this.followedTrainSnapId = tr.id;
-      this.followedAngleSnap = this.modeState.followAngle;
-      this.smoothedTrainPos.copy(rawPos);
-      this.smoothedTrainDir.copy(rawDir);
-    } else {
-      // Exponential curve damping keeps bends glassy-smooth at any FPS
-      const posAlpha = 1 - Math.exp(-11.0 * dtSec);
-      const dirAlpha = 1 - Math.exp(-4.2 * dtSec);
-      this.smoothedTrainPos.lerp(rawPos, posAlpha);
-      this.smoothedTrainDir.lerp(rawDir, dirAlpha).normalize();
+  private syncOrbitTargetFromCamera(): void {
+    const forward = new THREE.Vector3(0, 0, -1)
+      .applyQuaternion(this.camera.quaternion)
+      .normalize();
+    let tDist = this.modeState.mode === 'street_level' ? 120 : 650;
+    if (forward.y < -0.06 && this.camera.position.y > 0) {
+      tDist = THREE.MathUtils.clamp(-this.camera.position.y / forward.y, 180, 5200);
     }
-
-    const F = this.smoothedTrainDir.clone();
-    const up = new THREE.Vector3(0, 1, 0);
-    const R = new THREE.Vector3().crossVectors(F, up);
-    if (R.lengthSq() < 1e-4) R.set(1, 0, 0);
-    else R.normalize();
-
-    const angle = this.modeState.followAngle;
-    const scale = this.followScale;
-    const isUg = tr.isUnderground;
-
-    const desiredEye = new THREE.Vector3();
-    const desiredLook = new THREE.Vector3();
-
-    if (angle === 'cab') {
-      // Inside front driver's cab looking ahead down the track / through tunnel portals
-      desiredEye.copy(this.smoothedTrainPos).addScaledVector(F, 11.8);
-      desiredEye.y = this.smoothedTrainPos.y + 1.55;
-      desiredLook.copy(this.smoothedTrainPos).addScaledVector(F, 92);
-      desiredLook.y = this.smoothedTrainPos.y + 1.2 + F.y * 40;
-    } else if (angle === 'front') {
-      const fwdDist = (isUg ? 21 : 34) * scale;
-      const latDist = (isUg ? 1.25 : 10) * scale;
-      const upDist = (isUg ? 1.55 : 13) * scale;
-      desiredEye
-        .copy(this.smoothedTrainPos)
-        .addScaledVector(F, fwdDist)
-        .addScaledVector(R, latDist);
-      desiredEye.y = this.smoothedTrainPos.y + upDist;
-      desiredLook.copy(this.smoothedTrainPos).addScaledVector(F, 4);
-      desiredLook.y += 1.0;
-    } else if (angle === 'rear') {
-      const backDist = (isUg ? 21 : 34) * scale;
-      const latDist = (isUg ? 1.1 : 9) * scale;
-      const upDist = (isUg ? 1.65 : 12) * scale;
-      desiredEye
-        .copy(this.smoothedTrainPos)
-        .addScaledVector(F, -backDist)
-        .addScaledVector(R, latDist);
-      desiredEye.y = this.smoothedTrainPos.y + upDist;
-      desiredLook.copy(this.smoothedTrainPos).addScaledVector(F, 26);
-      desiredLook.y += 1.2;
-    } else {
-      // 'side' view: perpendicular elevated view (in cutaway if underground!)
-      const sideDist = (isUg ? 44 : 38) * scale;
-      const upDist = (isUg ? 24 : 16) * scale;
-      desiredEye
-        .copy(this.smoothedTrainPos)
-        .addScaledVector(R, sideDist)
-        .addScaledVector(F, -8 * scale);
-      desiredEye.y = this.smoothedTrainPos.y + upDist;
-      desiredLook.copy(this.smoothedTrainPos).addScaledVector(F, 8);
-    }
-
-    // Apply optional local peek orbit offset around look target (via middle/left drag)
-    if (Math.abs(this.followYawOffset) > 0.001 || Math.abs(this.followPitchOffset) > 0.001) {
-      if (angle === 'cab') {
-        const cabFwd = new THREE.Vector3().subVectors(desiredLook, desiredEye);
-        cabFwd.applyAxisAngle(up, this.followYawOffset);
-        cabFwd.y = THREE.MathUtils.clamp(cabFwd.y + this.followPitchOffset * 40, -35, 35);
-        desiredLook.copy(desiredEye).add(cabFwd);
-      } else {
-        const arm = new THREE.Vector3().subVectors(desiredEye, desiredLook);
-        arm.applyAxisAngle(up, this.followYawOffset);
-        arm.y = THREE.MathUtils.clamp(arm.y + this.followPitchOffset * arm.length() * 0.6, 1.8, 120);
-        desiredEye.copy(desiredLook).add(arm);
-      }
-    }
-
-    // Guard surface exterior views against building wall clipping
-    if (!isUg && angle !== 'cab' && this.collisionProvider) {
-      const safe = this.collisionProvider.resolveCameraPosition(
-        { x: desiredEye.x, y: desiredEye.y, z: desiredEye.z },
-        4.0,
-        false,
-        4.5,
-      );
-      desiredEye.set(safe.x, safe.y, safe.z);
-    }
-
-    if (firstSnap) {
-      this.camera.position.copy(desiredEye);
-      this.controls.target.copy(desiredLook);
-    } else {
-      const eyeAlpha = 1 - Math.exp(-7.5 * dtSec);
-      this.camera.position.lerp(desiredEye, eyeAlpha);
-      this.controls.target.lerp(desiredLook, eyeAlpha);
-    }
-    this.camera.lookAt(this.controls.target);
+    this.controls.target.copy(this.camera.position).addScaledVector(forward, tDist);
+    this.clampTarget();
   }
 
   private updateUndergroundExplorer(dtSec: number): void {
@@ -922,8 +1117,7 @@ export class SpatialCameraController {
 
     if (!this.activeTunnel) return;
 
-    const speed = TUNNEL_SPEED_MPS[this.modeState.moveSpeed];
-    // Determine forward/backward along tunnel relative to current camera facing!
+    const speed = TUNNEL_SPEED_MPS[this.moveSpeed];
     const camFwd = new THREE.Vector3(0, 0, -1).applyQuaternion(this.camera.quaternion);
     const tunTan = this.sampleTunnelTangent(this.activeTunnel, this.tunnelDistAlong);
     const alignSign = camFwd.x * tunTan.x + camFwd.z * tunTan.z >= 0 ? 1 : -1;
@@ -935,7 +1129,6 @@ export class SpatialCameraController {
     if (this.pressedKeys.has('KeyS') || this.pressedKeys.has('ArrowDown')) {
       alongDelta -= alignSign * speed * dtSec;
     }
-
     if (alongDelta !== 0) {
       this.tunnelDistAlong = THREE.MathUtils.clamp(
         this.tunnelDistAlong + alongDelta,
@@ -972,7 +1165,6 @@ export class SpatialCameraController {
       );
     }
 
-    // Clamp camera strictly inside tunnel cross-section envelope!
     const pt = this.sampleTunnelPoint(this.activeTunnel, this.tunnelDistAlong);
     const tan = this.sampleTunnelTangent(this.activeTunnel, this.tunnelDistAlong);
     const rightX = -tan.z;
@@ -993,7 +1185,7 @@ export class SpatialCameraController {
 
     const speedTable =
       this.modeState.mode === 'street_level' ? STREET_SPEED_MPS : SPEED_MPS;
-    const speed = speedTable[this.modeState.moveSpeed];
+    const speed = speedTable[this.moveSpeed];
 
     const forwardXZ = new THREE.Vector3(-Math.sin(this.yaw), 0, -Math.cos(this.yaw));
     const rightXZ = new THREE.Vector3(Math.cos(this.yaw), 0, -Math.sin(this.yaw));
@@ -1019,7 +1211,7 @@ export class SpatialCameraController {
       vMove -= 1;
     }
     if (vMove !== 0) {
-      this.camera.position.y += vMove * speed * 0.6 * dtSec;
+      this.camera.position.y += vMove * speed * 0.65 * dtSec;
     }
 
     this.clampCameraBounds();
@@ -1037,9 +1229,7 @@ export class SpatialCameraController {
       -MAX_EXTENT_XZ,
       MAX_EXTENT_XZ,
     );
-    const minY = this.capabilities.allowUndergroundGeometry
-      ? this.capabilities.minCameraY
-      : -5;
+    const minY = this.undergroundAllowed ? this.minUndergroundY : -5;
     this.controls.target.y = THREE.MathUtils.clamp(this.controls.target.y, minY, 450);
   }
 
@@ -1054,26 +1244,28 @@ export class SpatialCameraController {
       -MAX_EXTENT_XZ,
       MAX_EXTENT_XZ,
     );
+    const minY = this.undergroundAllowed
+      ? this.minUndergroundY
+      : this.capabilities.minCameraY;
     this.camera.position.y = THREE.MathUtils.clamp(
       this.camera.position.y,
-      this.capabilities.minCameraY,
+      minY,
       Math.min(MAX_ALTITUDE, this.capabilities.maxCameraY),
     );
 
-    // Building & Landmark collision prevention in Street-Level / Surface Free Look!
     if (
-      this.collisionProvider &&
+      this.collisionGuard &&
       (this.modeState.mode === 'street_level' ||
-        (this.modeState.freeLookEnabled && this.capabilities.isSurface))
+        (this.getMode() === 'free' && this.capabilities.isSurface))
     ) {
-      const safe = this.collisionProvider.resolveCameraPosition(
+      const safe = this.collisionGuard.resolveCameraPosition(
         {
           x: this.camera.position.x,
           y: this.camera.position.y,
           z: this.camera.position.z,
         },
         4.5,
-        this.capabilities.allowUndergroundGeometry,
+        this.undergroundAllowed,
         this.capabilities.minCameraY,
       );
       this.camera.position.set(safe.x, safe.y, safe.z);
@@ -1086,8 +1278,15 @@ export class SpatialCameraController {
     return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || el.isContentEditable;
   }
 
+  private usesManualLookDrag(): boolean {
+    return (
+      this.getMode() === 'free' ||
+      this.modeState.mode === 'underground_explorer' ||
+      this.modeState.mode === 'train_follow'
+    );
+  }
+
   private handleMouseDown = (e: MouseEvent): void => {
-    // Suppress Windows/Chrome middle-button auto-scroll icon cleanly
     if (e.button === 1) {
       e.preventDefault();
     }
@@ -1099,19 +1298,10 @@ export class SpatialCameraController {
   };
 
   private handleContextMenu = (e: MouseEvent): void => {
-    // Prevent distracting browser context menu during Right-drag Orbit / Free Look
     e.preventDefault();
   };
 
-  private usesManualLookDrag(): boolean {
-    return (
-      this.modeState.freeLookEnabled ||
-      this.modeState.mode === 'underground_explorer' ||
-      this.modeState.mode === 'train_follow'
-    );
-  }
-
-  private handlePointerDown = (e: PointerEvent): void => {
+  private handleFreePointerDown = (e: PointerEvent): void => {
     if (!this.usesManualLookDrag()) return;
     if (e.button === 0 || e.button === 1 || e.button === 2) {
       this.draggingLook = true;
@@ -1121,7 +1311,7 @@ export class SpatialCameraController {
     }
   };
 
-  private handlePointerMove = (e: PointerEvent): void => {
+  private handleFreePointerMove = (e: PointerEvent): void => {
     if (!this.usesManualLookDrag() || !this.draggingLook) return;
     const dx = e.clientX - this.lastDragX;
     const dy = e.clientY - this.lastDragY;
@@ -1144,17 +1334,21 @@ export class SpatialCameraController {
     }
 
     this.yaw -= dx * sens;
-    this.pitch = THREE.MathUtils.clamp(this.pitch - dy * sens, -Math.PI * 0.44, Math.PI * 0.44);
+    this.pitch = THREE.MathUtils.clamp(
+      this.pitch - dy * sens,
+      -Math.PI * 0.45,
+      Math.PI * 0.45,
+    );
   };
 
-  private handlePointerUp = (): void => {
+  private handleFreePointerUp = (): void => {
     if (this.draggingLook) {
       this.draggingLook = false;
       this.onCameraMoved?.();
     }
   };
 
-  private handleWheel = (e: WheelEvent): void => {
+  private handleFreeWheel = (e: WheelEvent): void => {
     if (this.modeState.mode === 'train_follow') {
       e.preventDefault();
       this.followScale = THREE.MathUtils.clamp(
@@ -1181,7 +1375,7 @@ export class SpatialCameraController {
       return;
     }
 
-    if (this.modeState.freeLookEnabled) {
+    if (this.getMode() === 'free') {
       e.preventDefault();
       this.anim = null;
       const forward = new THREE.Vector3(0, 0, -1)
@@ -1189,7 +1383,7 @@ export class SpatialCameraController {
         .normalize();
       const speedTable =
         this.modeState.mode === 'street_level' ? STREET_SPEED_MPS : SPEED_MPS;
-      const step = (e.deltaY > 0 ? -1 : 1) * speedTable[this.modeState.moveSpeed] * 0.16;
+      const step = (e.deltaY > 0 ? -1 : 1) * speedTable[this.moveSpeed] * 0.16;
       this.camera.position.addScaledVector(forward, step);
       this.clampCameraBounds();
     }
@@ -1197,12 +1391,7 @@ export class SpatialCameraController {
 
   private handleKeyDown = (e: KeyboardEvent): void => {
     if (this.isTypingElement(e.target) || this.isTypingElement(document.activeElement)) return;
-    if (
-      !this.modeState.freeLookEnabled &&
-      this.modeState.mode !== 'underground_explorer'
-    ) {
-      return;
-    }
+    if (this.getMode() !== 'free' && this.modeState.mode !== 'underground_explorer') return;
     if (
       [
         'KeyW',
@@ -1223,6 +1412,11 @@ export class SpatialCameraController {
       e.preventDefault();
       this.anim = null;
       this.pressedKeys.add(e.code);
+      if (this.modeState.mode === 'underground_explorer' && !e.repeat) {
+        if (e.code === 'KeyW' || e.code === 'ArrowUp' || e.code === 'KeyS' || e.code === 'ArrowDown') {
+          this.updateUndergroundExplorer(0.12);
+        }
+      }
     }
   };
 
@@ -1242,14 +1436,15 @@ export class SpatialCameraController {
   };
 
   dispose(): void {
+    unregisterCameraControllerForElement(this.domElement);
     this.controls.removeEventListener('end', this.handleControlsEnd);
     this.domElement.removeEventListener('mousedown', this.handleMouseDown);
     this.domElement.removeEventListener('auxclick', this.handleAuxClick);
     this.domElement.removeEventListener('contextmenu', this.handleContextMenu);
-    this.domElement.removeEventListener('pointerdown', this.handlePointerDown);
-    this.domElement.removeEventListener('pointermove', this.handlePointerMove);
-    this.domElement.removeEventListener('pointerup', this.handlePointerUp);
-    this.domElement.removeEventListener('wheel', this.handleWheel);
+    this.domElement.removeEventListener('pointerdown', this.handleFreePointerDown);
+    this.domElement.removeEventListener('pointermove', this.handleFreePointerMove);
+    this.domElement.removeEventListener('pointerup', this.handleFreePointerUp);
+    this.domElement.removeEventListener('wheel', this.handleFreeWheel);
     window.removeEventListener('keydown', this.handleKeyDown);
     window.removeEventListener('keyup', this.handleKeyUp);
     window.removeEventListener('blur', this.handleWindowBlur);

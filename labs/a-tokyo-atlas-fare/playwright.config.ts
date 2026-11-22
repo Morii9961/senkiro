@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
-const PORT = Number(process.env.PW_PORT || 18473);
-const BASE_URL = `http://127.0.0.1:${PORT}`;
+const e2ePort = Number(process.env.E2E_PORT || 18473);
+const baseUrl = `http://127.0.0.1:${e2ePort}`;
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -13,7 +13,7 @@ export default defineConfig({
   retries: 0,
   reporter: 'list',
   use: {
-    baseURL: BASE_URL,
+    baseURL: baseUrl,
     trace: 'on-first-retry',
     viewport: { width: 1440, height: 900 },
   },
@@ -30,9 +30,9 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: `npm run preview -- --host 127.0.0.1 --port ${PORT} --strictPort`,
-    url: BASE_URL,
-    reuseExistingServer: !process.env.CI,
+    command: `npm run preview -- --host 127.0.0.1 --port ${e2ePort} --strictPort`,
+    url: baseUrl,
+    reuseExistingServer: !process.env.CI && !process.env.E2E_PORT,
     timeout: 30_000,
   },
 });

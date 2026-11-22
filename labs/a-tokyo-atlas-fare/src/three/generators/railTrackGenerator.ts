@@ -309,10 +309,10 @@ export class RailTrackLayer {
         }
       }
 
-      // Crushed-stone ballast on surface; realistic dark precast slab in tunnels & viaducts
+      // Crushed-stone ballast on surface; smooth precast track slab on viaducts/tunnels
       const roadbedMaterial = new THREE.MeshStandardMaterial({
-        color: isSurface ? 0x69645b : isUnderground ? 0x646b75 : 0x7c838d,
-        roughness: 0.92,
+        color: isSurface ? 0x69645b : 0x7c838d,
+        roughness: 0.94,
         metalness: 0.04,
         transparent: false,
         opacity: 1.0,
@@ -331,16 +331,16 @@ export class RailTrackLayer {
         clippingPlanes: clipPlanes,
       });
 
-      // Restrained architectural line color: slim identification band only (never neon pipes underground!)
+      // Restrained architectural line color (slightly desaturated on surface, vivid when selected or underground)
       const baseColor = new THREE.Color(first.color);
-      const restrainedColor = baseColor
-        .clone()
-        .lerp(new THREE.Color(0x525862), isUnderground ? 0.24 : 0.16);
+      const restrainedColor = isUnderground
+        ? baseColor.clone()
+        : baseColor.clone().lerp(new THREE.Color(0x525862), 0.16);
 
       const accentMaterial = new THREE.MeshStandardMaterial({
         color: restrainedColor,
         emissive: baseColor,
-        emissiveIntensity: isUnderground ? 0.08 : 0.05,
+        emissiveIntensity: isUnderground ? 0.34 : 0.06,
         roughness: 0.52,
         metalness: 0.1,
         transparent: false,
@@ -350,9 +350,9 @@ export class RailTrackLayer {
       });
 
       const skeletonMaterial = new THREE.MeshStandardMaterial({
-        color: baseColor.clone().lerp(new THREE.Color(0x475569), isUnderground ? 0.42 : 0.14),
+        color: baseColor.clone().lerp(new THREE.Color(0x475569), 0.12),
         emissive: baseColor,
-        emissiveIntensity: isUnderground ? 0.10 : 0.14,
+        emissiveIntensity: isUnderground ? 0.42 : 0.16,
         roughness: 0.6,
         metalness: 0.08,
         side: THREE.DoubleSide,
@@ -606,15 +606,15 @@ export class RailTrackLayer {
       setMatFade(batch.skeletonMaterial, isDimmed, isDimmed ? 0.16 : 1.0);
 
       batch.accentMaterial.emissiveIntensity = isSelected
-        ? 0.72
+        ? 0.78
         : batch.isUnderground
-          ? 0.08
-          : 0.05;
+          ? 0.36
+          : 0.06;
       batch.skeletonMaterial.emissiveIntensity = isSelected
-        ? 0.72
+        ? 0.78
         : batch.isUnderground
-          ? 0.10
-          : 0.14;
+          ? 0.42
+          : 0.16;
     }
 
     this.refreshBatchVisibility();
