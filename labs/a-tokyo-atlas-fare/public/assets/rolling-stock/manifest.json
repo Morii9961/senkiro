@@ -1,0 +1,189 @@
+{
+  "generatedAt": "2026-11-22T10:07:23.608Z",
+  "generator": "SENKIRO Lab Rolling Stock GLB Builder v2.0",
+  "license": "MIT / CC BY 4.0",
+  "spatialScale": "1_unit_equals_1_meter",
+  "totalAssets": 9,
+  "assets": [
+    {
+      "seriesId": "jr-east-e235-0",
+      "entityId": "sk:rolling-stock:jr-east-e235-0",
+      "nameJa": "JR東日本 E235系0番台（山手線）",
+      "nameEn": "JR East E235-0 Series (Yamanote Line)",
+      "kind": "lead_car",
+      "fileName": "jr-east-e235-0-lead.glb",
+      "publicPath": "/assets/rolling-stock/jr-east-e235-0-lead.glb",
+      "byteLength": 148036,
+      "sizeKb": 144.57,
+      "gltfVersion": "2.0",
+      "nodeCount": 130,
+      "meshCount": 76,
+      "materialCount": 14,
+      "trianglesByLod": {
+        "high": 2556,
+        "medium": 1180,
+        "low": 296
+      }
+    },
+    {
+      "seriesId": "jr-east-e235-0",
+      "entityId": "sk:rolling-stock:jr-east-e235-0",
+      "nameJa": "JR東日本 E235系0番台（山手線）",
+      "nameEn": "JR East E235-0 Series (Yamanote Line)",
+      "kind": "intermediate_car",
+      "fileName": "jr-east-e235-0-mid.glb",
+      "publicPath": "/assets/rolling-stock/jr-east-e235-0-mid.glb",
+      "byteLength": 137060,
+      "sizeKb": 133.85,
+      "gltfVersion": "2.0",
+      "nodeCount": 123,
+      "meshCount": 68,
+      "materialCount": 12,
+      "trianglesByLod": {
+        "high": 2540,
+        "medium": 1048,
+        "low": 176
+      }
+    },
+    {
+      "seriesId": "jr-east-e235-0",
+      "entityId": "sk:rolling-stock:jr-east-e235-0",
+      "nameJa": "JR東日本 E235系0番台（山手線）",
+      "nameEn": "JR East E235-0 Series (Yamanote Line)",
+      "kind": "preview_consist_3car",
+      "fileName": "jr-east-e235-0-consist.glb",
+      "publicPath": "/assets/rolling-stock/jr-east-e235-0-consist.glb",
+      "byteLength": 427720,
+      "sizeKb": 417.7,
+      "gltfVersion": "2.0",
+      "nodeCount": 381,
+      "meshCount": 218,
+      "materialCount": 18,
+      "trianglesByLod": {
+        "high": 7628,
+        "medium": 3396,
+        "low": 768
+      }
+    },
+    {
+      "seriesId": "tokyo-metro-1000",
+      "entityId": "sk:rolling-stock:tokyo-metro-1000",
+      "nameJa": "東京メトロ 1000系（銀座線）",
+      "nameEn": "Tokyo Metro 1000 Series (Ginza Line)",
+      "kind": "lead_car",
+      "fileName": "tokyo-metro-1000-lead.glb",
+      "publicPath": "/assets/rolling-stock/tokyo-metro-1000-lead.glb",
+      "byteLength": 142480,
+      "sizeKb": 139.14,
+      "gltfVersion": "2.0",
+      "nodeCount": 127,
+      "meshCount": 70,
+      "materialCount": 16,
+      "trianglesByLod": {
+        "high": 2656,
+        "medium": 1264,
+        "low": 344
+      }
+    },
+    {
+      "seriesId": "tokyo-metro-1000",
+      "entityId": "sk:rolling-stock:tokyo-metro-1000",
+      "nameJa": "東京メトロ 1000系（銀座線）",
+      "nameEn": "Tokyo Metro 1000 Series (Ginza Line)",
+      "kind": "intermediate_car",
+      "fileName": "tokyo-metro-1000-mid.glb",
+      "publicPath": "/assets/rolling-stock/tokyo-metro-1000-mid.glb",
+      "byteLength": 118736,
+      "sizeKb": 115.95,
+      "gltfVersion": "2.0",
+      "nodeCount": 107,
+      "meshCount": 56,
+      "materialCount": 12,
+      "trianglesByLod": {
+        "high": 2284,
+        "medium": 968,
+        "low": 120
+      }
+    },
+    {
+      "seriesId": "tokyo-metro-1000",
+      "entityId": "sk:rolling-stock:tokyo-metro-1000",
+      "nameJa": "東京メトロ 1000系（銀座線）",
+      "nameEn": "Tokyo Metro 1000 Series (Ginza Line)",
+      "kind": "preview_consist_3car",
+      "fileName": "tokyo-metro-1000-consist.glb",
+      "publicPath": "/assets/rolling-stock/tokyo-metro-1000-consist.glb",
+      "byteLength": 397504,
+      "sizeKb": 388.19,
+      "gltfVersion": "2.0",
+      "nodeCount": 359,
+      "meshCount": 194,
+      "materialCount": 18,
+      "trianglesByLod": {
+        "high": 7572,
+        "medium": 3484,
+        "low": 808
+      }
+    },
+    {
+      "seriesId": "tokyo-metro-17000",
+      "entityId": "sk:rolling-stock:tokyo-metro-17000",
+      "nameJa": "東京メトロ 17000系（有楽町線・副都心線）",
+      "nameEn": "Tokyo Metro 17000 Series (Yurakucho & Fukutoshin Lines)",
+      "kind": "lead_car",
+      "fileName": "tokyo-metro-17000-lead.glb",
+      "publicPath": "/assets/rolling-stock/tokyo-metro-17000-lead.glb",
+      "byteLength": 157036,
+      "sizeKb": 153.36,
+      "gltfVersion": "2.0",
+      "nodeCount": 136,
+      "meshCount": 72,
+      "materialCount": 15,
+      "trianglesByLod": {
+        "high": 3200,
+        "medium": 1632,
+        "low": 488
+      }
+    },
+    {
+      "seriesId": "tokyo-metro-17000",
+      "entityId": "sk:rolling-stock:tokyo-metro-17000",
+      "nameJa": "東京メトロ 17000系（有楽町線・副都心線）",
+      "nameEn": "Tokyo Metro 17000 Series (Yurakucho & Fukutoshin Lines)",
+      "kind": "intermediate_car",
+      "fileName": "tokyo-metro-17000-mid.glb",
+      "publicPath": "/assets/rolling-stock/tokyo-metro-17000-mid.glb",
+      "byteLength": 131812,
+      "sizeKb": 128.72,
+      "gltfVersion": "2.0",
+      "nodeCount": 121,
+      "meshCount": 61,
+      "materialCount": 12,
+      "trianglesByLod": {
+        "high": 2724,
+        "medium": 1232,
+        "low": 152
+      }
+    },
+    {
+      "seriesId": "tokyo-metro-17000",
+      "entityId": "sk:rolling-stock:tokyo-metro-17000",
+      "nameJa": "東京メトロ 17000系（有楽町線・副都心線）",
+      "nameEn": "Tokyo Metro 17000 Series (Yurakucho & Fukutoshin Lines)",
+      "kind": "preview_consist_3car",
+      "fileName": "tokyo-metro-17000-consist.glb",
+      "publicPath": "/assets/rolling-stock/tokyo-metro-17000-consist.glb",
+      "byteLength": 440064,
+      "sizeKb": 429.75,
+      "gltfVersion": "2.0",
+      "nodeCount": 391,
+      "meshCount": 203,
+      "materialCount": 18,
+      "trianglesByLod": {
+        "high": 9100,
+        "medium": 4484,
+        "low": 1128
+      }
+    }
+  ]
+}
