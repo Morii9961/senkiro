@@ -9,6 +9,7 @@ import { floors, nodes, station, sites, inSite, lineStyleById, linesById } from 
 import { buildLabels, objectLabel, type SceneLabelSpec } from './scene/labels/build'
 import { labelAttachment, layoutLabels, type LabelCandidate, type PlacedLabel } from './scene/labels/layout'
 import { effectiveBand, nextBand, permitsLabel, type LabelDepth, type ZoomBand } from './scene/labels/config'
+import { isLabelOccluded, proxyBounds, type OcclusionProxy } from './scene/labels/occlusion'
 import { scenePlaceFilter } from './scene/view'
 import { targetFromOwner, type SelectionTarget } from './state/selection'
 
@@ -126,6 +127,13 @@ export function Scene(props: Props) {
     let previousLabels = new Map<string, PlacedLabel>()
     let zoomBand: ZoomBand = 'far'
     let supplementalLabel: Label | null = null
+    const occlusionProxies: OcclusionProxy[] = []
+    const debugOcclusion = new URLSearchParams(location.search).get('debug') === 'labels'
+    const proxyOverlay = new T.Group()
+    if (debugOcclusion) world.add(proxyOverlay)
+    let occludedLabels = new Set<string>()
+    let occlusionPose = ''
+    let settleTimer = 0
     let owners: string[] = []
     let group: T.InstancedMesh | null = null,
       propsNow: Props,
@@ -223,6 +231,7 @@ export function Scene(props: Props) {
         return { x: rect.x - stage.x, y: rect.y - stage.y, width: rect.width, height: rect.height }
       })
       const currentLabels = supplementalLabel ? [...labels, supplementalLabel] : labels
+      settleOcclusion(currentLabels)
       const candidates: LabelCandidate[] = []
       for (const label of currentLabels) {
         const priority = propsNow.showRoute
@@ -253,6 +262,7 @@ export function Scene(props: Props) {
           width: Math.min(label.el.offsetWidth || 80, Math.max(1, w - 16)),
           height: label.el.offsetHeight || 18,
           previous: previousLabels.has(label.key),
+          occluded: occludedLabels.has(label.key),
           preferred: label.el.classList.contains('hovered') ? previousLabels.get(label.key)?.rect : undefined,
           meaning: label.targetKind + ':' + label.text,
           clusterKey: singleNumber && band !== 'near' ? platform.stationId ?? undefined : undefined,
@@ -308,9 +318,44 @@ export function Scene(props: Props) {
       gl.domElement.dataset.triangles = String(gl.info.render.triangles)
     }
 
+    function settleOcclusion(currentLabels: Label[]) {
+      const pose = [
+        ...camera.position.toArray(), ...camera.quaternion.toArray(),
+      ].map((value) => value.toFixed(5)).join(',') + '|' + (supplementalLabel?.key ?? '')
+      if (pose === occlusionPose) return
+      occlusionPose = pose
+      window.clearTimeout(settleTimer)
+      occludedLabels = new Set()
+      gl.domElement.dataset.occluded = '[]'
+      if (propsNow.eye || occlusionProxies.length === 0) return
+      settleTimer = window.setTimeout(() => {
+        const towardCamera = camera.getWorldDirection(new T.Vector3()).negate()
+        const distance = new T.Vector3()
+        occludedLabels = new Set(currentLabels.filter((label) =>
+          // District captions and line summaries describe a site, not a point on a deck.
+          label.variant !== 'station' && label.variant !== 'lines' && isLabelOccluded(
+            label.position, towardCamera,
+            distance.subVectors(camera.position, label.position).dot(towardCamera) - camera.near,
+            occlusionProxies, label.targetId, label.floorOrdinal,
+          ),
+        ).map((label) => label.key))
+        gl.domElement.dataset.occluded = JSON.stringify([...occludedLabels].sort())
+        draw()
+      }, 120)
+    }
+
+    function clearProxyOverlay() {
+      for (const child of [...proxyOverlay.children]) {
+        proxyOverlay.remove(child)
+        if (child instanceof T.Box3Helper) child.dispose()
+      }
+    }
+
     function positionPin(el: HTMLSpanElement, entry: PlacedLabel) {
       el.classList.toggle('positioned', previousLabels.has(entry.key))
       el.classList.toggle('occluded-pin', entry.occluded)
+      if (entry.occluded) el.dataset.occlusion = propsNow.lang === 'ja' ? '遮蔽' : 'Occluded'
+      else delete el.dataset.occlusion
       if (entry.edge) {
         const { x, y, width, height } = entry.rect
         const dx = entry.anchor.x - x - width / 2
@@ -589,6 +634,11 @@ export function Scene(props: Props) {
       supplementalLabel?.el.remove()
       supplementalLabel = null
       previousLabels.clear()
+      window.clearTimeout(settleTimer)
+      occlusionPose = ''
+      occludedLabels.clear()
+      occlusionProxies.length = 0
+      clearProxyOverlay()
       if (group) {
         world.remove(group)
         group.dispose()
@@ -681,7 +731,13 @@ export function Scene(props: Props) {
           deckLevel,
           flights,
           n.kind === 'Platform' ? plate : n.zone === 'unpaid' ? hall : rim,
-          block,
+          (center, width, height, depth, color) => {
+            block(center, width, height, depth, color)
+            const half = new T.Vector3(width, height, depth).multiplyScalar(0.5)
+            // Use the deck generator's individual blocks so stair openings stay open.
+            const bounds = new T.Box3(center.clone().sub(half), center.clone().add(half))
+            occlusionProxies.push({ owner, floorOrdinal: floors.get(n.levelId)!.ordinal, bounds })
+          },
         )
         finish = Finish.metal
         if (
@@ -815,7 +871,16 @@ export function Scene(props: Props) {
         (!p.siteId || p.siteId === 'sk:station:jr-osaka')
       ) {
         owner = 'sk:station:jr-osaka'
-        osakaShed(gap, block, beam)
+        osakaShed(gap, (at, w, h, d, color, rotation, surface) => {
+          block(at, w, h, d, color, rotation, surface)
+          if (surface === Finish.roof) {
+            occlusionProxies.push({
+              owner, floorOrdinal: null,
+              bounds: new T.Box3(new T.Vector3(-0.5, -0.5, -0.5), new T.Vector3(0.5, 0.5, 0.5)),
+              worldToLocal: dummy.matrix.clone().invert(),
+            })
+          }
+        }, beam)
       }
       const activeIds = new Set(p.route.map((s) => s.link.id))
       const liftStops = new Set<string>()
@@ -1005,6 +1070,12 @@ export function Scene(props: Props) {
       group.castShadow = true
       group.receiveShadow = true
       gl.shadowMap.needsUpdate = true
+      gl.domElement.dataset.occluders = String(occlusionProxies.length)
+      if (debugOcclusion) {
+        for (const proxy of occlusionProxies) {
+          proxyOverlay.add(new T.Box3Helper(proxyBounds(proxy), proxy.floorOrdinal === null ? 0xef8d32 : 0x34a59a))
+        }
+      }
       world.add(group)
       for (const spec of buildLabels(station, p, p.selection, { steps: p.route, step: p.step })) {
         labels.push(createLabel(spec))
@@ -1254,6 +1325,8 @@ export function Scene(props: Props) {
       supplementalLabel?.el.remove()
       for (const { el } of clusterPins.values()) el.remove()
       labelLeaders.remove()
+      window.clearTimeout(settleTimer)
+      clearProxyOverlay()
       group?.dispose()
       outline?.dispose()
       shopDisplay.dispose()

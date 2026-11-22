@@ -405,6 +405,9 @@ nav,
 .pin.occluded-pin {
   opacity: 0.55;
 }
+.pin[data-occlusion]::before {
+  content: attr(data-occlusion) ' · ' attr(data-edge);
+}
 .label-leaders {
   position: absolute;
   inset: 0;
