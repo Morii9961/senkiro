@@ -411,4 +411,119 @@ test.describe('SENKIRO Lab · Tokyo Atlas & Fare Interactive E2E', () => {
     await expect(page.getByTestId('free-speed-select')).toHaveCount(0);
     expect(pageErrors).toEqual([]);
   });
+
+  test('13. Atlas v2 Underground Railway Geometry: Tunnel Interiors, Station Caverns, Shield Bores, Roof Cutaway & Spatial API', async ({
+    page,
+  }) => {
+    const pageErrors: string[] = [];
+    page.on('pageerror', (err) => pageErrors.push(String(err)));
+
+    await page.goto('/');
+    await page.getByTestId('view-mode-3d').click();
+    await page.waitForSelector('canvas[data-testid="three-3d-canvas"]');
+    await page.waitForTimeout(1200);
+
+    // 1. Verify surface mode completely culls invisible underground chunks & exposes Underground Query API
+    const apiCheck = await page.evaluate(() => {
+      const bridge = (
+        window as unknown as {
+          __SENKIRO_UNDERGROUND__?: {
+            api: {
+              getEnterableSegments: () => Array<{ segmentId: string; isPilotCorridor: boolean }>;
+              getCuratedViewpoints: () => Array<{ id: string; depthReliability: string }>;
+              sampleTrackFrame: (segId: string, d: number, lane?: 0 | 1) => { position: { x: number; y: number; z: number } } | null;
+              getClearanceConstraint: (segId: string) => { safeCorridorLocal: { maxUpM: number; minUpM: number } } | null;
+              getPortalCutoutHints: () => unknown[];
+              getTelemetry: () => {
+                totalTunnelChunks: number;
+                visibleTunnelChunks: number;
+                detailedInteriorChunks: number;
+                activePointLights: number;
+                roofCutawayActive: boolean;
+                lineOverlayVisible: boolean;
+                interiorModeActive: boolean;
+              };
+            };
+          };
+        }
+      ).__SENKIRO_UNDERGROUND__;
+      if (!bridge) return null;
+      const segs = bridge.api.getEnterableSegments();
+      const vps = bridge.api.getCuratedViewpoints();
+      const pilot = segs.find((s) => s.isPilotCorridor);
+      const frame = pilot ? bridge.api.sampleTrackFrame(pilot.segmentId, 120, 0) : null;
+      const clearance = pilot ? bridge.api.getClearanceConstraint(pilot.segmentId) : null;
+      return {
+        segCount: segs.length,
+        vpCount: vps.length,
+        allSchematic: vps.every((v) => v.depthReliability === 'schematic'),
+        hasFrame: Boolean(frame && Number.isFinite(frame.position.y)),
+        hasClearance: Boolean(clearance && clearance.safeCorridorLocal.maxUpM > clearance.safeCorridorLocal.minUpM),
+        portalHints: bridge.api.getPortalCutoutHints().length,
+        surfaceTelemetry: bridge.api.getTelemetry(),
+      };
+    });
+
+    expect(apiCheck).not.toBeNull();
+    expect(apiCheck!.segCount).toBeGreaterThan(150);
+    expect(apiCheck!.vpCount).toBeGreaterThanOrEqual(4);
+    expect(apiCheck!.allSchematic).toBe(true);
+    expect(apiCheck!.hasFrame).toBe(true);
+    expect(apiCheck!.hasClearance).toBe(true);
+    expect(apiCheck!.portalHints).toBeGreaterThan(5);
+    expect(apiCheck!.surfaceTelemetry.visibleTunnelChunks).toBe(0);
+    expect(apiCheck!.surfaceTelemetry.lineOverlayVisible).toBe(false);
+
+    // 2. Enter Ginza Box Tunnel Interior via curated viewpoint selector
+    await page.getByTestId('tunnel-viewpoint-select').selectOption('ginza-box-interior');
+    await page.waitForTimeout(700);
+    const boxTelemetry = await page.evaluate(
+      () =>
+        (
+          window as unknown as {
+            __SENKIRO_UNDERGROUND__?: { api: { getTelemetry: () => Record<string, unknown> } };
+          }
+        ).__SENKIRO_UNDERGROUND__?.api.getTelemetry(),
+    );
+    expect(boxTelemetry?.interiorModeActive).toBe(true);
+    expect(Number(boxTelemetry?.visibleTunnelChunks)).toBeGreaterThan(0);
+    expect(Number(boxTelemetry?.detailedInteriorChunks)).toBeGreaterThan(0);
+    expect(Number(boxTelemetry?.activePointLights)).toBeGreaterThan(0);
+
+    // 3. Enter Omotesando Station Cavern & Fukutoshin Circular Shield Tunnel
+    await page.getByTestId('tunnel-viewpoint-select').selectOption('ginza-omotesando-station');
+    await page.waitForTimeout(500);
+    await page.getByTestId('tunnel-viewpoint-select').selectOption('fukutoshin-shield-interior');
+    await page.waitForTimeout(500);
+
+    // 4. Toggle Tunnel Roof Cutaway & Independent Line Color Info Overlay
+    await page.getByTestId('tunnel-roof-cutaway-checkbox').check();
+    await page.getByTestId('line-color-overlay-checkbox').check();
+    await page.waitForTimeout(350);
+    const cutTelemetry = await page.evaluate(
+      () =>
+        (
+          window as unknown as {
+            __SENKIRO_UNDERGROUND__?: { api: { getTelemetry: () => Record<string, unknown> } };
+          }
+        ).__SENKIRO_UNDERGROUND__?.api.getTelemetry(),
+    );
+    expect(cutTelemetry?.roofCutawayActive).toBe(true);
+    expect(cutTelemetry?.lineOverlayVisible).toBe(true);
+
+    // 5. Return to Surface View restores clean surface culling
+    await page.getByTestId('return-to-surface-btn').click();
+    await page.waitForTimeout(500);
+    const afterSurface = await page.evaluate(
+      () =>
+        (
+          window as unknown as {
+            __SENKIRO_UNDERGROUND__?: { api: { getTelemetry: () => Record<string, unknown> } };
+          }
+        ).__SENKIRO_UNDERGROUND__?.api.getTelemetry(),
+    );
+    expect(afterSurface?.interiorModeActive).toBe(false);
+    expect(afterSurface?.visibleTunnelChunks).toBe(0);
+    expect(pageErrors).toEqual([]);
+  });
 });

@@ -17,12 +17,10 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import type {
   SchematicTierId,
-  SolvedPoint3D,
   SolvedRailwayNetwork3D,
   SolvedStationNode3D,
 } from '../../domain/elevationSolver.js';
 import type { SkId } from '../../domain/types.js';
-import { sweepProfileAlong3D } from './railTrackGenerator.js';
 
 interface TunnelBatch {
   lineId: SkId<'line'>;
@@ -143,6 +141,7 @@ export class TunnelAndStationLayer {
 
   private undergroundActive = false;
   private clipEnabled = false;
+  private interiorMode = false;
   private anyUndergroundTierVisible = true;
   private selectedStationId: SkId<'station'> | null = null;
   private camDist = 1200;
@@ -256,113 +255,13 @@ export class TunnelAndStationLayer {
       }),
     };
 
-    // ---- 1. Continuous 3D Segmented Concrete Underground Tunnel Shells ----
-    const shieldProfile = makeCircularTunnelProfile(5.4, 2.2, 8);
-    const boxProfile = makeBoxTunnelProfile(5.8, -1.2, 5.4);
-
-    const tunnelsByKey = new Map<
-      string,
-      {
-        lineId: SkId<'line'>;
-        operatorId: SkId<'operator'>;
-        tier: SchematicTierId;
-        color: string;
-        geoms: THREE.BufferGeometry[];
-      }
-    >();
-
-    for (const seg of solved.segments) {
-      const runs: SolvedPoint3D[][] = [];
-      let curRun: SolvedPoint3D[] = [];
-      for (const pt of seg.points) {
-        if (pt.y < -2.2) {
-          curRun.push(pt);
-        } else if (curRun.length > 0) {
-          if (curRun.length >= 2) runs.push(curRun);
-          curRun = [];
-        }
-      }
-      if (curRun.length >= 2) runs.push(curRun);
-      if (runs.length === 0) continue;
-
-      const key = `${seg.primaryLineId}::${seg.dominantTier}`;
-      if (!tunnelsByKey.has(key)) {
-        tunnelsByKey.set(key, {
-          lineId: seg.primaryLineId,
-          operatorId: seg.operatorId,
-          tier: seg.dominantTier,
-          color: seg.color,
-          geoms: [],
-        });
-      }
-      const entry = tunnelsByKey.get(key)!;
-      const isShield = seg.dominantStructure === 'tunnel_shield' || seg.minY <= -24;
-      const profile = isShield ? shieldProfile : boxProfile;
-
-      for (const run of runs) {
-        const g = sweepProfileAlong3D(run, profile, true, true);
-        if (g) entry.geoms.push(g);
-      }
-    }
-
-    for (const entry of tunnelsByKey.values()) {
-      if (entry.geoms.length === 0) continue;
-      const merged = mergeGeometries(entry.geoms, false);
-      entry.geoms.forEach((g) => g.dispose());
-      if (!merged) continue;
-
-      const lineColor = new THREE.Color(entry.color);
-      // Concrete-lined architectural cutaway tunnel shell subtly tinted with line identity
-      const shellMaterial = new THREE.MeshStandardMaterial({
-        map: this.tunnelTexture,
-        color: lineColor.clone().lerp(new THREE.Color(0xbac2cc), 0.7),
-        emissive: lineColor,
-        emissiveIntensity: 0.12,
-        roughness: 0.76,
-        metalness: 0.08,
-        transparent: true,
-        opacity: 0.44,
-        side: THREE.DoubleSide,
-        depthWrite: false,
-        clippingPlanes: clipPlanes,
-      });
-
-      const grp = new THREE.Group();
-      grp.name = `tunnel-${entry.lineId}-${entry.tier}`;
-      grp.visible = false; // Culled while ground is opaque in surface mode!
-      grp.add(new THREE.Mesh(merged, shellMaterial));
-      this.group.add(grp);
-
-      this.tunnelBatches.push({
-        lineId: entry.lineId,
-        operatorId: entry.operatorId,
-        tier: entry.tier,
-        group: grp,
-        shellMaterial,
-        filterVisible: true,
-      });
-    }
-
-    // ---- 2. Physical Concrete Tunnel Portal Headwalls ----
-    const portalGeoms: THREE.BufferGeometry[] = [];
-    for (const seg of solved.segments) {
-      for (const p of seg.portals) {
-        const angle = Math.atan2(p.dirZ, p.dirX);
-        const headwall = new THREE.BoxGeometry(4.2, 8.2, 15.5);
-        headwall.rotateY(-angle);
-        headwall.translate(p.x, p.y + 1.4, p.z);
-        portalGeoms.push(headwall.toNonIndexed());
-      }
-    }
-    if (portalGeoms.length > 0) {
-      const m = mergeGeometries(portalGeoms, false);
-      portalGeoms.forEach((g) => g.dispose());
-      if (m) {
-        const mesh = new THREE.Mesh(m, this.portalMaterial);
-        mesh.receiveShadow = true;
-        this.portalGroup.add(mesh);
-      }
-    }
+    // ---- 1 & 2. Underground Tunnels & Open Portals ----
+    // Atlas v2: Replaced legacy single-shell translucent tubes & solid blocking portal boxes
+    // with true dual-surface solid tunnels & open portals in `UndergroundRailwaySystem`.
+    // Keep empty `tunnelBatches` & `portalGroup` here so surface/elevated stations, entrance kiosks
+    // and vertical complex transfer connectors remain 100% compatible.
+    void makeCircularTunnelProfile;
+    void makeBoxTunnelProfile;
 
     // ---- 3. Batched Architectural Station Platforms (300+ draw calls -> 4 InstancedMeshes!) ----
     const count = solved.stationNodes.length;
@@ -515,14 +414,15 @@ export class TunnelAndStationLayer {
 
   private updateStationInstanceMatrices(): void {
     if (!this.stationSlabInst || !this.stationCanopyInst || !this.stationAccentInst) return;
-    const allowUnderground = this.undergroundActive || this.clipEnabled;
     const showCanopies = this.camDist < 4800;
 
     const dummy = new THREE.Object3D();
     let beaconPlaced = false;
 
     for (const m of this.stationMeta) {
-      const show = m.visible && (!m.isUnderground || allowUnderground);
+      // Atlas v2: Underground stations are now modeled as genuine widened enterable station caverns
+      // in `UndergroundRailwaySystem` — only render surface & elevated batched slabs here!
+      const show = m.visible && !m.isUnderground;
       if (!show) {
         dummy.position.set(0, -9999, 0);
         dummy.scale.set(0, 0, 0);
@@ -584,6 +484,14 @@ export class TunnelAndStationLayer {
     this.stationAccentInst.computeBoundingSphere();
   }
 
+  setInteriorMode(active: boolean): void {
+    if (this.interiorMode === active) return;
+    this.interiorMode = active;
+    const allowUnderground = this.undergroundActive || this.clipEnabled;
+    this.concourseGroup.visible = !active && this.anyUndergroundTierVisible && allowUnderground;
+    this.transferGroup.visible = !active && (allowUnderground || this.selectedStationId !== null);
+  }
+
   updateLod(camDist: number): void {
     const prevCanopies = this.camDist < 4800;
     const nextCanopies = camDist < 4800;
@@ -627,8 +535,10 @@ export class TunnelAndStationLayer {
     );
     const allowUnderground = undergroundActive || clipEnabled;
 
-    this.concourseGroup.visible = this.anyUndergroundTierVisible && allowUnderground;
-    this.transferGroup.visible = allowUnderground || selectedStationId !== null;
+    this.concourseGroup.visible =
+      !this.interiorMode && this.anyUndergroundTierVisible && allowUnderground;
+    this.transferGroup.visible =
+      !this.interiorMode && (allowUnderground || selectedStationId !== null);
     if (this.entranceKioskInst) {
       this.entranceKioskInst.visible = this.camDist < 2400 && !undergroundActive;
     }

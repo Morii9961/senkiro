@@ -223,7 +223,37 @@ export class RailTrackLayer {
       for (const seg of segs) {
         const halfRoadbed = seg.isShinkansen ? 5.2 : seg.isDoubleTrack ? 4.4 : 2.6;
 
-        // Open-bottom trapezoidal ballast berm (surface) or precast slab (viaduct/tunnel)
+        // Atlas v2: Underground runs (y < -2.4) are rendered with true dual-surface solid tunnels
+        // and neutral realistic tracks by `UndergroundRailwaySystem` — extract strictly above-ground
+        // runs (with exact linear interpolation at y = -2.4) so zero Z-fighting occurs at portals!
+        const aboveRuns: { x: number; y: number; z: number }[][] = [];
+        let curAbove: { x: number; y: number; z: number }[] = [];
+        const portalY = -2.4;
+        const interpPortal = (a: SolvedPoint3D, b: SolvedPoint3D) => {
+          const dy = b.y - a.y;
+          const f = Math.abs(dy) > 1e-5 ? Math.max(0, Math.min(1, (portalY - a.y) / dy)) : 0.5;
+          return {
+            x: a.x + (b.x - a.x) * f,
+            y: portalY,
+            z: a.z + (b.z - a.z) * f,
+          };
+        };
+        for (let pi = 0; pi < seg.points.length; pi++) {
+          const pt = seg.points[pi]!;
+          if (pt.y >= portalY) {
+            if (curAbove.length === 0 && pi > 0) {
+              curAbove.push(interpPortal(seg.points[pi - 1]!, pt));
+            }
+            curAbove.push(pt);
+          } else if (curAbove.length > 0) {
+            curAbove.push(interpPortal(seg.points[pi - 1]!, pt));
+            if (curAbove.length >= 2) aboveRuns.push(curAbove);
+            curAbove = [];
+          }
+        }
+        if (curAbove.length >= 2) aboveRuns.push(curAbove);
+
+        // Open-bottom trapezoidal ballast berm (surface) or precast slab (viaduct)
         // Ordered right-to-left (+R -> -R) so cross(forward, -R) points strictly +Y UPWARD!
         const roadbedProfile: [number, number][] = isSurface
           ? [
@@ -238,44 +268,52 @@ export class RailTrackLayer {
               [-halfRoadbed, 0.12],
               [-halfRoadbed - 0.35, -0.25],
             ];
-        const rb = sweepProfileAlong3D(seg.points, roadbedProfile, false);
-        if (rb) roadbedGeoms.push(rb);
+        for (const run of aboveRuns) {
+          const rb = sweepProfileAlong3D(run, roadbedProfile, false);
+          if (rb) roadbedGeoms.push(rb);
+        }
 
         // P7: Only sweep fine 4-rail steel tubes inside Tokyo 23 wards (< 16km); distant regional corridors
         // beyond 16km keep crisp ballast roadbed + slim fascia stripe + Far network skeleton!
         const midPt = seg.points[Math.floor(seg.points.length / 2)]!;
         const inCoreMetro = Math.hypot(midPt.x, midPt.z) < 16_000;
-        if (inCoreMetro) {
+        if (inCoreMetro && aboveRuns.length > 0) {
           const railYBase = isSurface ? 0.32 : 0.12;
           const railOffsets = seg.isDoubleTrack ? [-2.55, -1.15, 1.15, 2.55] : [-0.72, 0.72];
-          for (const off of railOffsets) {
-            const railProf: [number, number][] = [
-              [off + 0.15, railYBase],
-              [off, railYBase + 0.36],
-              [off - 0.15, railYBase],
-            ];
-            const rg = sweepProfileAlong3D(seg.points, railProf, false);
-            if (rg) steelRailGeoms.push(rg);
+          for (const run of aboveRuns) {
+            for (const off of railOffsets) {
+              const railProf: [number, number][] = [
+                [off + 0.15, railYBase],
+                [off, railYBase + 0.36],
+                [off - 0.15, railYBase],
+              ];
+              const rg = sweepProfileAlong3D(run, railProf, false);
+              if (rg) steelRailGeoms.push(rg);
+            }
           }
         }
 
-        // Restrained slim line-color architectural fascia stripe along roadbed shoulders (+R -> -R upward!)
-        const stripeY0 = isSurface ? 0.12 : 0.02;
-        const stripeY1 = isSurface ? 0.52 : 0.44;
-        const stripProfL: [number, number][] = [
-          [-halfRoadbed - 0.06, stripeY1],
-          [-halfRoadbed - 0.52, stripeY1],
-          [-halfRoadbed - 0.52, stripeY0],
-        ];
-        const stripProfR: [number, number][] = [
-          [halfRoadbed + 0.52, stripeY0],
-          [halfRoadbed + 0.52, stripeY1],
-          [halfRoadbed + 0.06, stripeY1],
-        ];
-        const sL = sweepProfileAlong3D(seg.points, stripProfL, false);
-        const sR = sweepProfileAlong3D(seg.points, stripProfR, false);
-        if (sL) accentGeoms.push(sL);
-        if (sR) accentGeoms.push(sR);
+        // Restrained slim line-color architectural fascia stripe along above-ground roadbed shoulders (+R -> -R upward!)
+        if (aboveRuns.length > 0) {
+          const stripeY0 = isSurface ? 0.12 : 0.02;
+          const stripeY1 = isSurface ? 0.52 : 0.44;
+          const stripProfL: [number, number][] = [
+            [-halfRoadbed - 0.06, stripeY1],
+            [-halfRoadbed - 0.52, stripeY1],
+            [-halfRoadbed - 0.52, stripeY0],
+          ];
+          const stripProfR: [number, number][] = [
+            [halfRoadbed + 0.52, stripeY0],
+            [halfRoadbed + 0.52, stripeY1],
+            [halfRoadbed + 0.06, stripeY1],
+          ];
+          for (const run of aboveRuns) {
+            const sL = sweepProfileAlong3D(run, stripProfL, false);
+            const sR = sweepProfileAlong3D(run, stripProfR, false);
+            if (sL) accentGeoms.push(sL);
+            if (sR) accentGeoms.push(sR);
+          }
+        }
 
         // Far-LOD ultra-lightweight metropolitan network skeleton ribbon (+R -> -R upward!)
         const skelW = seg.isShinkansen ? 9.5 : seg.isDoubleTrack ? 7.5 : 5.5;

@@ -32,6 +32,12 @@ import { CityTerrainLayer } from './generators/cityTerrainGenerator.js';
 import { RailTrackLayer, type RailwayLodTier } from './generators/railTrackGenerator.js';
 import { TunnelAndStationLayer } from './generators/tunnelGenerator.js';
 import { ViaductLayer } from './generators/viaductGenerator.js';
+import type {
+  TunnelViewpoint,
+  UndergroundRailwayQueryAPI,
+  UndergroundSectionCutState,
+} from '../domain/underground/tunnelTypes.js';
+import { UndergroundRailwaySystem } from './underground/UndergroundRailwaySystem.js';
 import {
   lonLatToWorld,
   TOKYO_HUB_PRESETS,
@@ -76,6 +82,7 @@ export class Metropolitan3DScene {
   private readonly railLayer: RailTrackLayer;
   private readonly viaductLayer: ViaductLayer;
   private readonly tunnelLayer: TunnelAndStationLayer;
+  private readonly undergroundSystem: UndergroundRailwaySystem;
   private readonly traceProbe: THREE.Mesh;
 
   private readonly sunLight: THREE.DirectionalLight;
@@ -85,6 +92,8 @@ export class Metropolitan3DScene {
   private cutawayActive = false;
   private cutawayPinned = false;
   private verticalExaggeration = 1.0;
+  private interiorTunnelActive = false;
+  private lastInteriorLightingApplied = false;
 
   private readonly dataset: AtlasDataset;
   private readonly fareSliceLineIds: Set<SkId<'line'>>;
@@ -210,6 +219,7 @@ export class Metropolitan3DScene {
     this.railLayer = new RailTrackLayer(this.solved, this.clipPlanes);
     this.viaductLayer = new ViaductLayer(this.solved, null, this.clipPlanes);
     this.tunnelLayer = new TunnelAndStationLayer(this.solved, this.clipPlanes);
+    this.undergroundSystem = new UndergroundRailwaySystem(this.solved, this.clipPlanes);
 
     this.scene.add(
       this.terrainLayer.group,
@@ -217,8 +227,33 @@ export class Metropolitan3DScene {
       this.buildingManager.group,
       this.viaductLayer.group,
       this.tunnelLayer.group,
+      this.undergroundSystem.group,
+      this.undergroundSystem.lightingSystem.group,
       this.railLayer.group,
     );
+
+    // Expose read-only Underground Spatial Query & Section-Cut bridge for Camera Session & E2E
+    (
+      window as unknown as {
+        __SENKIRO_UNDERGROUND__?: {
+          api: UndergroundRailwayQueryAPI;
+          enterViewpoint: (id: string) => boolean;
+          exitInterior: () => void;
+          setSectionCut: (state: UndergroundSectionCutState) => void;
+          setCameraPose: (
+            pos: [number, number, number],
+            lookAt: [number, number, number],
+            nearM?: number,
+          ) => void;
+        };
+      }
+    ).__SENKIRO_UNDERGROUND__ = {
+      api: this.undergroundSystem,
+      enterViewpoint: (id: string) => this.enterTunnelViewpoint(id),
+      exitInterior: () => this.exitTunnelInterior(),
+      setSectionCut: (state: UndergroundSectionCutState) => this.setUndergroundSectionCut(state),
+      setCameraPose: (pos, lookAt, nearM = 0.25) => this.setCustomTunnelPose(pos, lookAt, nearM),
+    };
 
     // Glowing trace probe for Line Trace fly-through
     this.traceProbe = new THREE.Mesh(
@@ -290,6 +325,90 @@ export class Metropolitan3DScene {
     this.camCtrl.setSpeed(speed);
   }
 
+  getUndergroundAPI(): UndergroundRailwayQueryAPI {
+    return this.undergroundSystem;
+  }
+
+  getTunnelViewpoints(): TunnelViewpoint[] {
+    return this.undergroundSystem.getCuratedViewpoints();
+  }
+
+  setUndergroundSectionCut(state: UndergroundSectionCutState): void {
+    this.undergroundSystem.setSectionCutState(state);
+    this.emitTelemetry();
+  }
+
+  /**
+   * Positions camera inside an enterable tunnel/station viewpoint using the existing
+   * SpatialCameraController (without rewriting global camera controls).
+   */
+  enterTunnelViewpoint(viewpointId: string): boolean {
+    const vp = this.undergroundSystem.getCuratedViewpoints().find((v) => v.id === viewpointId);
+    if (!vp) return false;
+    this.setCustomTunnelPose(
+      [vp.position.x, vp.position.y, vp.position.z],
+      [vp.lookAt.x, vp.lookAt.y, vp.lookAt.z],
+      vp.recommendedNearM,
+      vp.recommendedFovDeg,
+    );
+    return true;
+  }
+
+  private setCustomTunnelPose(
+    pos: [number, number, number],
+    lookAt: [number, number, number],
+    nearM = 0.25,
+    fovDeg = 54,
+  ): void {
+    this.tracePlaying = false;
+    this.interiorTunnelActive = true;
+    // Lock 1:1 vertical scale while inspecting tunnel interior so circular bores & clearance stay exact!
+    this.verticalExaggeration = 1.0;
+    this.railLayer.group.scale.y = 1.0;
+    this.viaductLayer.group.scale.y = 1.0;
+    this.tunnelLayer.group.scale.y = 1.0;
+    this.undergroundSystem.group.scale.y = 1.0;
+    this.undergroundSystem.setInteriorMode(true);
+    this.tunnelLayer.setInteriorMode(true);
+
+    this.camCtrl.setUndergroundBounds(true, 1.0);
+    if (this.camCtrl.getMode() === 'free') {
+      this.camCtrl.setMode('map');
+    }
+    this.camera.fov = fovDeg;
+    this.camera.near = nearM;
+    this.camera.far = 16_000;
+    this.camera.updateProjectionMatrix();
+
+    this.camera.position.set(pos[0], pos[1], pos[2]);
+    this.camCtrl.controls.target.set(lookAt[0], lookAt[1], lookAt[2]);
+    this.camCtrl.setMode('free');
+    this.camCtrl.setSpeed('slow');
+    this.emitTelemetry();
+  }
+
+  exitTunnelInterior(): void {
+    this.interiorTunnelActive = false;
+    this.undergroundSystem.setInteriorMode(false);
+    this.tunnelLayer.setInteriorMode(false);
+    this.camCtrl.setUndergroundBounds(false, 1.0);
+    this.camera.fov = 46;
+    this.camera.updateProjectionMatrix();
+
+    // Lift camera cleanly back above ground surface around the current focus XZ so Return to Surface
+    // never leaves the camera stranded underground inside a tunnel bore!
+    const focus = this.camCtrl.getFocusTarget();
+    const liftTarget = new THREE.Vector3(focus.x, 0, focus.z);
+    this.camCtrl.setMode('map');
+    this.camCtrl.setSpeed('normal');
+    if (this.camera.position.y < 30) {
+      this.camCtrl.jumpTo(liftTarget, 620, 58, -32);
+    }
+    this.buildingManager.group.visible = true;
+    this.terrainLayer.group.visible = true;
+    this.emitTelemetry();
+  }
+
   setTheme(isDark: boolean): void {
     if (this.isDark === isDark) return;
     this.isDark = isDark;
@@ -320,9 +439,11 @@ export class Metropolitan3DScene {
     const wasActive = this.cutawayActive;
     this.cutawayActive = underground.enabled;
     this.cutawayPinned = underground.pinCutaway;
-    this.verticalExaggeration = underground.enabled
-      ? Math.max(1.0, Math.min(2.5, underground.verticalExaggeration))
-      : 1.0;
+    // Keep 1:1 vertical scale whenever inside a tunnel interior so circular bores & clearance never distort!
+    this.verticalExaggeration =
+      underground.enabled && !this.interiorTunnelActive
+        ? Math.max(1.0, Math.min(2.5, underground.verticalExaggeration))
+        : 1.0;
 
     this.cutawayUniforms.uCutawayActive.value = underground.enabled ? 1.0 : 0.0;
     this.cutawayUniforms.uCutawayRadius.value = Math.max(
@@ -339,6 +460,7 @@ export class Metropolitan3DScene {
     this.railLayer.group.scale.y = this.verticalExaggeration;
     this.viaductLayer.group.scale.y = this.verticalExaggeration;
     this.tunnelLayer.group.scale.y = this.verticalExaggeration;
+    this.undergroundSystem.group.scale.y = this.verticalExaggeration;
 
     // Boost subterranean illumination gently inside cutaway pit so concrete tunnels pop crisply!
     this.subFillLight.intensity = underground.enabled
@@ -395,6 +517,16 @@ export class Metropolitan3DScene {
       visibleTiers: underground.visibleTiers,
       selectedLineId,
       selectedStationId,
+      fareSliceOnly,
+      fareSliceLineIds: this.fareSliceLineIds,
+      undergroundActive: underground.enabled,
+      clipEnabled: underground.clipEnabled,
+    });
+
+    this.undergroundSystem.applyFilters({
+      visibleOperatorIds,
+      visibleTiers: underground.visibleTiers,
+      selectedLineId,
       fareSliceOnly,
       fareSliceLineIds: this.fareSliceLineIds,
       undergroundActive: underground.enabled,
@@ -709,12 +841,16 @@ export class Metropolitan3DScene {
     this.pointerNdc.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
     this.raycaster.setFromCamera(this.pointerNdc, this.camera);
 
-    // Prioritize clickable 3D station volumes (batched InstancedMesh with instanceId resolution!)
+    // Prioritize clickable 3D station volumes (batched InstancedMesh + underground station caverns!)
     const stationHits = this.raycaster
-      .intersectObjects(this.tunnelLayer.interactiveStationMeshes, false)
+      .intersectObjects(
+        [...this.tunnelLayer.interactiveStationMeshes, ...this.undergroundSystem.interactiveStationMeshes],
+        false,
+      )
       .filter((h) => h.object.visible);
     for (const hit of stationHits) {
-      const sid = this.tunnelLayer.resolveStationHit(hit);
+      const sid =
+        this.tunnelLayer.resolveStationHit(hit) ?? this.undergroundSystem.resolveStationHit(hit);
       if (sid) {
         this.callbacks.onSelectStation(sid);
         return;
@@ -722,7 +858,10 @@ export class Metropolitan3DScene {
     }
 
     const lineHits = this.raycaster
-      .intersectObjects(this.railLayer.interactiveMeshes, false)
+      .intersectObjects(
+        [...this.railLayer.interactiveMeshes, ...this.undergroundSystem.interactiveTrackMeshes],
+        false,
+      )
       .filter((h) => h.object.visible);
     if (lineHits.length > 0) {
       const lid = lineHits[0]!.object.userData?.lineId as SkId<'line'> | undefined;
@@ -761,6 +900,7 @@ export class Metropolitan3DScene {
       triangles: this.renderer.info.render.triangles,
       loadTimeMs: this.urbanLoadedMs,
       railwayLod: this.currentRailwayLod,
+      underground: this.undergroundSystem.getTelemetry(),
     };
     (window as unknown as { __SENKIRO_3D_METRICS__?: SceneTelemetry }).__SENKIRO_3D_METRICS__ =
       telemetry;
@@ -817,12 +957,45 @@ export class Metropolitan3DScene {
     const focusTarget = this.camCtrl.getFocusTarget();
     const camDist = this.camCtrl.getDistanceToFocus();
 
-    // Adaptive near/far planes for optimal depth buffer precision across all zoom levels (P0)
-    const targetNear = Math.max(4, Math.min(75, camDist * 0.012));
-    const targetFar = Math.max(28_000, camDist * 8.5);
+    // Update chunked underground railway geometry, frustum culling, depth attenuation & PointLight pool
+    const { isCameraInsideTunnel, isEnclosedInterior } = this.undergroundSystem.updateForCamera(
+      this.camera,
+      camDist,
+      this.verticalExaggeration,
+    );
+    const insideTunnel = this.interiorTunnelActive || isCameraInsideTunnel;
+    this.tunnelLayer.setInteriorMode(insideTunnel);
+
+    // Cull invisible surface city/terrain draw calls while deeply enclosed inside an opaque concrete bore!
+    this.buildingManager.group.visible = !isEnclosedInterior;
+    this.terrainLayer.group.visible = !isEnclosedInterior;
+
+    // Balance subterranean illumination cleanly when inside a tunnel (neither blown out nor pitch black!)
+    if (isEnclosedInterior !== this.lastInteriorLightingApplied) {
+      this.lastInteriorLightingApplied = isEnclosedInterior;
+      if (isEnclosedInterior) {
+        this.sunLight.intensity = 0.08;
+        this.hemiLight.intensity = 0.28;
+        this.subFillLight.intensity = 0.28;
+      } else {
+        this.sunLight.intensity = this.isDark ? 0.92 : 1.78;
+        this.hemiLight.intensity = this.isDark ? 0.58 : 0.78;
+        this.subFillLight.intensity = this.cutawayActive
+          ? this.isDark
+            ? 0.85
+            : 0.72
+          : this.isDark
+            ? 0.48
+            : 0.34;
+      }
+    }
+
+    // Adaptive near/far planes: drop near to 0.25m inside tunnels so walls & rails never clip!
+    const targetNear = insideTunnel ? 0.25 : Math.max(4, Math.min(75, camDist * 0.012));
+    const targetFar = insideTunnel ? 16_000 : Math.max(28_000, camDist * 8.5);
     if (
-      Math.abs(targetNear - this.camera.near) / this.camera.near > 0.1 ||
-      Math.abs(targetFar - this.camera.far) / this.camera.far > 0.15
+      Math.abs(targetNear - this.camera.near) / Math.max(0.05, this.camera.near) > 0.1 ||
+      Math.abs(targetFar - this.camera.far) / Math.max(1, this.camera.far) > 0.15
     ) {
       this.camera.near = targetNear;
       this.camera.far = targetFar;
@@ -893,6 +1066,7 @@ export class Metropolitan3DScene {
     this.railLayer.dispose();
     this.viaductLayer.dispose();
     this.tunnelLayer.dispose();
+    this.undergroundSystem.dispose();
     this.traceProbe.geometry.dispose();
     (this.traceProbe.material as THREE.Material).dispose();
     this.renderer.dispose();

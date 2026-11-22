@@ -1,5 +1,6 @@
 import type { SchematicTierId } from '../domain/elevationSolver.js';
 import type { SkId } from '../domain/types.js';
+import type { UndergroundSystemTelemetry } from '../domain/underground/tunnelTypes.js';
 
 export interface UrbanBuildingRecord {
   id: number;
@@ -158,4 +159,5 @@ export interface SceneTelemetry {
   realOsmBuildings?: number;
   infillBuildings?: number;
   railwayLod?: 'near' | 'mid' | 'far';
+  underground?: UndergroundSystemTelemetry;
 }
