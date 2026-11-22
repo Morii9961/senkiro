@@ -25,8 +25,8 @@ import {
   type TunnelCutawayStyle,
 } from '../contracts/index.js';
 import {
-  classifyTier,
   solveRailwayNetwork3D,
+  classifyTier,
   type SolvedPoint3D,
   type SolvedRailwayNetwork3D,
   type SolvedSegment3D,
@@ -37,12 +37,14 @@ import type {
   OsmVerticalDataset,
   SkId,
 } from '../domain/types.js';
+import { createTrainSimulationEngine } from '../simulation/index.js';
 import { SpatialCameraController } from './cameraController.js';
 import type {
   AtlasV2SceneApi,
   AtlasV2ScenePlugins,
   RollingStockRendererAdapter,
 } from './contracts/adapters.js';
+import { createRollingStockRenderer } from './rollingstock/index.js';
 import { CutawayPitVisuals } from './environment/cutawayVisuals.js';
 import { SkyEnvironmentSystem } from './environment/skyEnvironment.js';
 import { CityChunkManager } from './generators/buildingGenerator.js';
@@ -257,13 +259,11 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
       this.railLayer.group,
     );
 
-    // 7b. Optional v2.0 Simulation Engine & Rolling Stock Renderer plugins
-    if (plugins?.simulationEngine) {
-      this.attachSimulationEngine(plugins.simulationEngine);
-    }
-    if (plugins?.rollingStockRenderer) {
-      this.attachRollingStockRenderer(plugins.rollingStockRenderer);
-    }
+    // 7b. v2.0 Simulation Engine & Rolling Stock Renderer plugins (Wave 1 + Wave 2 defaults)
+    this.attachSimulationEngine(plugins?.simulationEngine ?? createTrainSimulationEngine());
+    this.attachRollingStockRenderer(
+      plugins?.rollingStockRenderer ?? createRollingStockRenderer(),
+    );
 
     // Glowing trace probe for Line Trace fly-through
     this.traceProbe = new THREE.Mesh(
