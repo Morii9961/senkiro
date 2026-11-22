@@ -12,6 +12,19 @@
 
 import * as THREE from 'three';
 import {
+  buildPhysicalTrackGraph,
+  type CameraModeV2,
+  type CameraStateSnapshot,
+  type PhysicalTrackGraph,
+  type SimulatedTrainState,
+  type SimulationControlState,
+  type SimTimeScale,
+  type SimTrainDensity,
+  type TrainFollowView,
+  type TrainSimulationEngineAdapter,
+  type TunnelCutawayStyle,
+} from '../contracts/index.js';
+import {
   classifyTier,
   solveRailwayNetwork3D,
   type SolvedPoint3D,
@@ -25,6 +38,11 @@ import type {
   SkId,
 } from '../domain/types.js';
 import { SpatialCameraController } from './cameraController.js';
+import type {
+  AtlasV2SceneApi,
+  AtlasV2ScenePlugins,
+  RollingStockRendererAdapter,
+} from './contracts/adapters.js';
 import { CutawayPitVisuals } from './environment/cutawayVisuals.js';
 import { SkyEnvironmentSystem } from './environment/skyEnvironment.js';
 import { CityChunkManager } from './generators/buildingGenerator.js';
@@ -52,13 +70,20 @@ import type {
 export interface SceneCallbacks {
   onSelectStation: (stationId: SkId<'station'>) => void;
   onSelectLine: (lineId: SkId<'line'>) => void;
+  onSelectTrain?: (trainId: string | null) => void;
   onTelemetry?: (telemetry: SceneTelemetry) => void;
   onTraceUpdate?: (status: LineTraceStatus) => void;
+  onSimulationUpdate?: (
+    control: SimulationControlState,
+    trains: readonly SimulatedTrainState[],
+  ) => void;
+  onCameraStateChange?: (snapshot: CameraStateSnapshot) => void;
   onCameraMoved?: (lon: number, lat: number, zoomEquiv: number) => void;
 }
 
-export class Metropolitan3DScene {
+export class Metropolitan3DScene implements AtlasV2SceneApi {
   readonly solved: SolvedRailwayNetwork3D;
+  readonly physicalTracks: PhysicalTrackGraph;
 
   private readonly container: HTMLElement;
   private readonly renderer: THREE.WebGLRenderer;
@@ -85,6 +110,16 @@ export class Metropolitan3DScene {
   private cutawayActive = false;
   private cutawayPinned = false;
   private verticalExaggeration = 1.0;
+  private tunnelCutawayStyle: TunnelCutawayStyle = 'translucent_shell';
+
+  // v2.0 Subsystem Plugin Slots (injected by Integration Coordinator as branches merge)
+  private simulationEngine: TrainSimulationEngineAdapter | null = null;
+  private rollingStockRenderer: RollingStockRendererAdapter | null = null;
+  private latestTrains: readonly SimulatedTrainState[] = [];
+  private selectedTrainId: string | null = null;
+  private followTrainId: string | null = null;
+  private followTrainView: TrainFollowView = 'chase';
+  private lastSimEmitTime = 0;
 
   private readonly dataset: AtlasDataset;
   private readonly fareSliceLineIds: Set<SkId<'line'>>;
@@ -121,6 +156,7 @@ export class Metropolitan3DScene {
     isDark: boolean,
     callbacks: SceneCallbacks,
     initialCenter?: { lon: number; lat: number; zoom?: number },
+    plugins?: AtlasV2ScenePlugins,
   ) {
     this.container = container;
     this.dataset = dataset;
@@ -130,8 +166,9 @@ export class Metropolitan3DScene {
       dataset.railLines.filter((l) => l.inFareSlice).map((l) => l.id),
     );
 
-    // 1. Solve continuous 3D vertical railway network from shared AtlasDataset + OSM vertical tags
+    // 1. Solve continuous 3D vertical railway network & build unified v2.0 PhysicalTrackGraph
     this.solved = solveRailwayNetwork3D(dataset, osmVertical);
+    this.physicalTracks = buildPhysicalTrackGraph(dataset, this.solved);
 
     // 2. Renderer (logarithmicDepthBuffer: true eliminates distant coplanar ground/water Z-fighting!)
     this.renderer = new THREE.WebGLRenderer({
@@ -220,6 +257,14 @@ export class Metropolitan3DScene {
       this.railLayer.group,
     );
 
+    // 7b. Optional v2.0 Simulation Engine & Rolling Stock Renderer plugins
+    if (plugins?.simulationEngine) {
+      this.attachSimulationEngine(plugins.simulationEngine);
+    }
+    if (plugins?.rollingStockRenderer) {
+      this.attachRollingStockRenderer(plugins.rollingStockRenderer);
+    }
+
     // Glowing trace probe for Line Trace fly-through
     this.traceProbe = new THREE.Mesh(
       new THREE.SphereGeometry(7.5, 16, 16),
@@ -288,6 +333,197 @@ export class Metropolitan3DScene {
 
   setCameraSpeed(speed: CameraMoveSpeed): void {
     this.camCtrl.setSpeed(speed);
+  }
+
+  // ---- v2.0 Subsystem Plugin Attachment & Public AtlasV2SceneApi ----
+
+  attachSimulationEngine(engine: TrainSimulationEngineAdapter): void {
+    this.simulationEngine = engine;
+    engine.initialize(this.physicalTracks, this.dataset, { autoStart: true });
+    this.latestTrains = engine.getTrains();
+  }
+
+  attachRollingStockRenderer(renderer: RollingStockRendererAdapter): void {
+    if (this.rollingStockRenderer) {
+      this.scene.remove(this.rollingStockRenderer.group);
+    }
+    this.rollingStockRenderer = renderer;
+    // INVARIANT: rolling stock group NEVER inherits verticalExaggeration scale.y!
+    renderer.group.scale.set(1, 1, 1);
+    this.scene.add(renderer.group);
+    if (this.latestTrains.length > 0) {
+      renderer.syncTrains(
+        this.latestTrains,
+        this.camera.position,
+        this.verticalExaggeration,
+        this.isDark,
+      );
+    }
+  }
+
+  getSimulatedTrains(): readonly SimulatedTrainState[] {
+    return this.latestTrains;
+  }
+
+  getSimulationControlState(): SimulationControlState {
+    if (this.simulationEngine) {
+      return this.simulationEngine.getControlState();
+    }
+    return {
+      running: false,
+      timeScale: 1,
+      simClockSec: 0,
+      density: 'normal',
+      activeLineFilter: null,
+      totalActiveTrains: 0,
+      undergroundTrainCount: 0,
+      isVirtualSimulation: true,
+      dataNature: 'synthetic',
+    };
+  }
+
+  setSimulationRunning(running: boolean): void {
+    this.simulationEngine?.setRunning(running);
+    this.emitSimulationState();
+  }
+
+  setSimulationTimeScale(scale: SimTimeScale): void {
+    this.simulationEngine?.setTimeScale(scale);
+    this.emitSimulationState();
+  }
+
+  setSimulationDensity(density: SimTrainDensity): void {
+    this.simulationEngine?.setDensity(density);
+    if (this.simulationEngine) {
+      this.latestTrains = this.simulationEngine.getTrains();
+    }
+    this.emitSimulationState();
+  }
+
+  setSimulationLineFilter(lineIds: SkId<'line'>[] | null): void {
+    this.simulationEngine?.setLineFilter(lineIds);
+    if (this.simulationEngine) {
+      this.latestTrains = this.simulationEngine.getTrains();
+    }
+    this.emitSimulationState();
+  }
+
+  resetSimulation(seed?: number): void {
+    this.simulationEngine?.reset(seed);
+    if (this.simulationEngine) {
+      this.latestTrains = this.simulationEngine.getTrains();
+    }
+    this.emitSimulationState();
+  }
+
+  selectTrain(trainId: string | null): void {
+    this.selectedTrainId = trainId;
+    this.rollingStockRenderer?.setSelectedTrain(trainId);
+    this.callbacks.onSelectTrain?.(trainId);
+  }
+
+  getSelectedTrainId(): string | null {
+    return this.selectedTrainId;
+  }
+
+  followTrain(trainId: string | null, view: TrainFollowView = 'chase'): void {
+    this.followTrainId = trainId;
+    this.followTrainView = view;
+    if (trainId) {
+      this.tracePlaying = false;
+      this.camCtrl.cancelAnimation();
+      this.selectTrain(trainId);
+    }
+    this.callbacks.onCameraStateChange?.(this.getCameraStateSnapshot());
+  }
+
+  startUndergroundTrainDemo(view: TrainFollowView = 'chase'): string | null {
+    const demoId = this.simulationEngine?.getDemoUndergroundTrainId() ?? null;
+    if (!demoId) return null;
+    this.simulationEngine?.setRunning(true);
+    this.followTrain(demoId, view);
+    return demoId;
+  }
+
+  setUndergroundCutawayStyle(style: TunnelCutawayStyle): void {
+    this.tunnelCutawayStyle = style;
+    this.emitTelemetry();
+  }
+
+  getCameraStateSnapshot(): CameraStateSnapshot {
+    const focus = this.camCtrl.getFocusTarget();
+    const isUndergroundCamera = this.camera.position.y < -1.5;
+    let mode: CameraModeV2 = this.camCtrl.getMode() === 'free' ? 'free' : 'map';
+    if (this.followTrainId) {
+      mode = this.followTrainView === 'cab' ? 'cab_ride' : 'follow_train';
+    } else if (isUndergroundCamera || this.cutawayActive) {
+      mode = 'underground_inspect';
+    }
+    return {
+      mode,
+      target: this.followTrainId
+        ? { kind: 'train', trainId: this.followTrainId, view: this.followTrainView }
+        : { kind: 'world', x: focus.x, y: focus.y, z: focus.z },
+      position: [
+        Math.round(this.camera.position.x * 10) / 10,
+        Math.round(this.camera.position.y * 10) / 10,
+        Math.round(this.camera.position.z * 10) / 10,
+      ],
+      lookAt: [
+        Math.round(focus.x * 10) / 10,
+        Math.round(focus.y * 10) / 10,
+        Math.round(focus.z * 10) / 10,
+      ],
+      distanceM: Math.round(this.camCtrl.getDistanceToFocus() * 10) / 10,
+      isUndergroundCamera,
+      followingTrainId: this.followTrainId,
+      followView: this.followTrainId ? this.followTrainView : null,
+    };
+  }
+
+  private emitSimulationState(): void {
+    if (!this.callbacks.onSimulationUpdate) return;
+    this.callbacks.onSimulationUpdate(this.getSimulationControlState(), this.latestTrains);
+  }
+
+  private updateTrainFollowCamera(train: SimulatedTrainState): void {
+    const hp = train.headPose;
+    const hLen = Math.hypot(hp.dirX, hp.dirZ) || 1;
+    const fx = hp.dirX / hLen;
+    const fz = hp.dirZ / hLen;
+    const rx = -fz;
+    const rz = fx;
+
+    let desiredPos: THREE.Vector3;
+    let desiredLook: THREE.Vector3;
+
+    if (this.followTrainView === 'cab') {
+      // Driver cab interior/windshield POV strictly inside tunnel clearance envelope!
+      desiredPos = new THREE.Vector3(hp.x + fx * 1.8, hp.y + 2.35, hp.z + fz * 1.8);
+      desiredLook = new THREE.Vector3(hp.x + fx * 65, hp.y + 2.1 + hp.dirY * 65, hp.z + fz * 65);
+    } else if (this.followTrainView === 'side') {
+      desiredPos = new THREE.Vector3(hp.x + rx * 28 - fx * 14, hp.y + 12, hp.z + rz * 28 - fz * 14);
+      desiredLook = new THREE.Vector3(hp.x - fx * 20, hp.y + 2.2, hp.z - fz * 20);
+    } else if (this.followTrainView === 'overhead_cutaway') {
+      desiredPos = new THREE.Vector3(hp.x - fx * 95 + rx * 65, Math.max(hp.y + 140, 85), hp.z - fz * 95 + rz * 65);
+      desiredLook = new THREE.Vector3(hp.x, hp.y + 2, hp.z);
+    } else {
+      // 'chase': close trailing view (works cleanly both on surface and inside cutaway pit!)
+      const trailDist = train.inTunnel ? 42 : 72;
+      const trailHeight = train.inTunnel ? 18 : 34;
+      desiredPos = new THREE.Vector3(
+        hp.x - fx * trailDist + rx * 16,
+        hp.y + trailHeight,
+        hp.z - fz * trailDist + rz * 16,
+      );
+      desiredLook = new THREE.Vector3(hp.x + fx * 28, hp.y + 2.2, hp.z + fz * 28);
+    }
+
+    const alpha = this.followTrainView === 'cab' ? 0.42 : 0.16;
+    this.camera.position.lerp(desiredPos, alpha);
+    this.camCtrl.controls.target.lerp(desiredLook, alpha);
+    this.camera.lookAt(this.camCtrl.controls.target);
+    this.camCtrl.controls.update();
   }
 
   setTheme(isDark: boolean): void {
@@ -709,7 +945,21 @@ export class Metropolitan3DScene {
     this.pointerNdc.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
     this.raycaster.setFromCamera(this.pointerNdc, this.camera);
 
-    // Prioritize clickable 3D station volumes (batched InstancedMesh with instanceId resolution!)
+    // Prioritize clickable 3D virtual trains first (when rolling stock renderer is active)
+    if (this.rollingStockRenderer && this.rollingStockRenderer.interactiveTrainMeshes.length > 0) {
+      const trainHits = this.raycaster
+        .intersectObjects(this.rollingStockRenderer.interactiveTrainMeshes, true)
+        .filter((h) => h.object.visible);
+      for (const hit of trainHits) {
+        const tid = this.rollingStockRenderer.resolveTrainHit(hit);
+        if (tid) {
+          this.selectTrain(tid);
+          return;
+        }
+      }
+    }
+
+    // Next prioritize clickable 3D station volumes (batched InstancedMesh with instanceId resolution!)
     const stationHits = this.raycaster
       .intersectObjects(this.tunnelLayer.interactiveStationMeshes, false)
       .filter((h) => h.object.visible);
@@ -752,6 +1002,9 @@ export class Metropolitan3DScene {
     const bStats = this.buildingManager.getStats();
     const portalCount = this.solved.segments.reduce((s, seg) => s + seg.portals.length, 0);
     const adjustedCount = this.solved.crossings.filter((c) => c.wasAdjusted).length;
+    const simCtrl = this.getSimulationControlState();
+    const rsStats = this.rollingStockRenderer?.getStats();
+    const camSnap = this.getCameraStateSnapshot();
     const telemetry: SceneTelemetry = {
       ...bStats,
       deconflictedCrossings: adjustedCount,
@@ -761,6 +1014,15 @@ export class Metropolitan3DScene {
       triangles: this.renderer.info.render.triangles,
       loadTimeMs: this.urbanLoadedMs,
       railwayLod: this.currentRailwayLod,
+      activeTrains: simCtrl.totalActiveTrains,
+      undergroundTrains: simCtrl.undergroundTrainCount,
+      simRunning: simCtrl.running,
+      simTimeScale: simCtrl.timeScale,
+      simClockSec: simCtrl.simClockSec,
+      cameraModeV2: camSnap.mode,
+      cameraUnderground: camSnap.isUndergroundCamera,
+      tunnelCutawayStyle: this.tunnelCutawayStyle,
+      rollingStockCars: rsStats?.renderedCarCount ?? 0,
     };
     (window as unknown as { __SENKIRO_3D_METRICS__?: SceneTelemetry }).__SENKIRO_3D_METRICS__ =
       telemetry;
@@ -802,8 +1064,32 @@ export class Metropolitan3DScene {
       this.smoothedFps = Math.round((1000 / Math.max(1, avg)) * 10) / 10;
     }
 
-    // Active Line Trace fly-through progression
-    if (this.tracePlaying && this.tracePath.length >= 2) {
+    // Step v2.0 virtual train simulation & sync rolling stock meshes (unscaled 1:1 carbody!)
+    if (this.simulationEngine) {
+      this.latestTrains = this.simulationEngine.step(dtSec, this.verticalExaggeration);
+      if (this.rollingStockRenderer) {
+        this.rollingStockRenderer.syncTrains(
+          this.latestTrains,
+          this.camera.position,
+          this.verticalExaggeration,
+          this.isDark,
+        );
+      }
+      if (now - this.lastSimEmitTime > 250) {
+        this.lastSimEmitTime = now;
+        this.emitSimulationState();
+      }
+    }
+
+    // Active Train Follow, Line Trace fly-through, or Interactive Spatial Camera
+    if (this.followTrainId && this.simulationEngine) {
+      const targetTrain = this.simulationEngine.getTrainById(this.followTrainId);
+      if (targetTrain) {
+        this.updateTrainFollowCamera(targetTrain);
+      } else {
+        this.camCtrl.update(now, dtSec);
+      }
+    } else if (this.tracePlaying && this.tracePath.length >= 2) {
       this.traceProgress += dtSec * 0.045;
       if (this.traceProgress >= 1) {
         this.traceProgress = 1;
@@ -817,8 +1103,14 @@ export class Metropolitan3DScene {
     const focusTarget = this.camCtrl.getFocusTarget();
     const camDist = this.camCtrl.getDistanceToFocus();
 
-    // Adaptive near/far planes for optimal depth buffer precision across all zoom levels (P0)
-    const targetNear = Math.max(4, Math.min(75, camDist * 0.012));
+    // Adaptive near/far planes: tight 0.25m near-plane inside underground tunnels / cab view,
+    // wider 4..75m near-plane at metropolitan overview distances for depth precision!
+    const isCloseOrInterior =
+      this.camera.position.y < -1.5 ||
+      (this.followTrainId !== null && this.followTrainView === 'cab');
+    const targetNear = isCloseOrInterior
+      ? 0.25
+      : Math.max(4, Math.min(75, camDist * 0.012));
     const targetFar = Math.max(28_000, camDist * 8.5);
     if (
       Math.abs(targetNear - this.camera.near) / this.camera.near > 0.1 ||
@@ -893,6 +1185,7 @@ export class Metropolitan3DScene {
     this.railLayer.dispose();
     this.viaductLayer.dispose();
     this.tunnelLayer.dispose();
+    this.rollingStockRenderer?.dispose();
     this.traceProbe.geometry.dispose();
     (this.traceProbe.material as THREE.Material).dispose();
     this.renderer.dispose();
