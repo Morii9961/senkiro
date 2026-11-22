@@ -1,0 +1,92 @@
+{
+  "simulationLabel": "Simulation / 模拟运行",
+  "dataNature": "synthetic",
+  "isRealtimeData": false,
+  "disclaimer": "Simulation / 模拟运行 — Virtual deterministic train simulation only; not official timetable or real-time train position data.",
+  "generatedAt": "2026-11-22",
+  "engineConfig": {
+    "fixedStepSec": 0.05,
+    "timeScale": 1.0,
+    "headwaySec": 120,
+    "dwellTimeSec": 20,
+    "doorOpenDurationSec": 1.5,
+    "doorCloseDurationSec": 1.5,
+    "stoppingSettleSec": 0.5,
+    "departureClearDurationSec": 1.2,
+    "turnaroundDurationSec": 8.0,
+    "minSafeSeparationM": 80,
+    "maxActiveTrains": 32
+  },
+  "presets": [
+    {
+      "presetId": "sim:preset:yamanote-trunk",
+      "nameJa": "JR山手線 模擬運行（E235系0番台・複線折返／環状）",
+      "nameEn": "JR Yamanote Line Simulation (E235-0 Series)",
+      "lineId": "sk:line:jr-east-yamanote",
+      "operatorId": "sk:operator:jr-east",
+      "rollingStockId": "sk:rolling-stock:jre-e235-yamanote",
+      "carCount": 6,
+      "mode": "shuttle",
+      "trainsPerDirection": 3,
+      "headwaySec": 120,
+      "dwellTimeSec": 20,
+      "simulationLabel": "Simulation / 模拟运行"
+    },
+    {
+      "presetId": "sim:preset:ginza-metro",
+      "nameJa": "東京メトロ銀座線 模擬運行（1000系・渋谷3F高架〜浅草地下）",
+      "nameEn": "Tokyo Metro Ginza Line Simulation (1000 Series, Shibuya 3F Viaduct to Asakusa Underground)",
+      "lineId": "sk:line:metro-ginza",
+      "operatorId": "sk:operator:tokyo-metro",
+      "rollingStockId": "sk:rolling-stock:metro-1000-ginza",
+      "carCount": 6,
+      "mode": "shuttle",
+      "trainsPerDirection": 3,
+      "headwaySec": 120,
+      "dwellTimeSec": 18,
+      "simulationLabel": "Simulation / 模拟运行"
+    },
+    {
+      "presetId": "sim:preset:marunouchi-metro",
+      "nameJa": "東京メトロ丸ノ内線 模擬運行（2000系・御茶ノ水地上橋梁遷移含む）",
+      "nameEn": "Tokyo Metro Marunouchi Line Simulation (2000 Series, incl. Ochanomizu River Portal)",
+      "lineId": "sk:line:metro-marunouchi",
+      "operatorId": "sk:operator:tokyo-metro",
+      "rollingStockId": "sk:rolling-stock:metro-2000-marunouchi",
+      "carCount": 6,
+      "mode": "shuttle",
+      "trainsPerDirection": 3,
+      "headwaySec": 150,
+      "dwellTimeSec": 20,
+      "simulationLabel": "Simulation / 模拟运行"
+    },
+    {
+      "presetId": "sim:preset:chuo-rapid",
+      "nameJa": "JR中央線快速 模擬運行（E233系0番台・東京高架〜新宿〜八王子）",
+      "nameEn": "JR Chuo Rapid Line Simulation (E233-0 Series)",
+      "lineId": "sk:line:jr-east-chuo",
+      "operatorId": "sk:operator:jr-east",
+      "rollingStockId": "sk:rolling-stock:jre-e233-chuo",
+      "carCount": 6,
+      "mode": "shuttle",
+      "trainsPerDirection": 2,
+      "headwaySec": 150,
+      "dwellTimeSec": 22,
+      "simulationLabel": "Simulation / 模拟运行"
+    },
+    {
+      "presetId": "sim:preset:toei-oedo-deep",
+      "nameJa": "都営大江戸線 模擬運行（12-600形・L-4深層シールドトンネル）",
+      "nameEn": "Toei Oedo Line Simulation (12-600 Series, L-4 Deep Shield Tunnel)",
+      "lineId": "sk:line:toei-oedo",
+      "operatorId": "sk:operator:toei",
+      "rollingStockId": "sk:rolling-stock:toei-12-600-oedo",
+      "carCount": 6,
+      "mode": "shuttle",
+      "trainsPerDirection": 3,
+      "headwaySec": 150,
+      "dwellTimeSec": 18,
+      "simulationLabel": "Simulation / 模拟运行"
+    }
+  ]
+}
