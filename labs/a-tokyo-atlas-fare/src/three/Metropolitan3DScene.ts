@@ -21,8 +21,9 @@ import {
   type SimTimeScale,
   type SimTrainDensity,
   type TrainFollowView,
-  type TrainSimulationEngineAdapter,
   type TunnelCutawayStyle,
+  type TrainSimulationEngineAdapter,
+  type UndergroundCutawayState,
 } from '../contracts/index.js';
 import {
   solveRailwayNetwork3D,
@@ -52,6 +53,7 @@ import { CityTerrainLayer } from './generators/cityTerrainGenerator.js';
 import { RailTrackLayer, type RailwayLodTier } from './generators/railTrackGenerator.js';
 import { TunnelAndStationLayer } from './generators/tunnelGenerator.js';
 import { ViaductLayer } from './generators/viaductGenerator.js';
+import type { UndergroundRailwayQueryAPI } from './underground/domain/tunnelTypes.js';
 import {
   lonLatToWorld,
   TOKYO_HUB_PRESETS,
@@ -113,6 +115,7 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
   private cutawayPinned = false;
   private verticalExaggeration = 1.0;
   private tunnelCutawayStyle: TunnelCutawayStyle = 'translucent_shell';
+  private lastUndergroundSettings: UndergroundViewSettings | null = null;
 
   // v2.0 Subsystem Plugin Slots (injected by Integration Coordinator as branches merge)
   private simulationEngine: TrainSimulationEngineAdapter | null = null;
@@ -433,6 +436,9 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
       this.tracePlaying = false;
       this.camCtrl.cancelAnimation();
       this.selectTrain(trainId);
+      if (view === 'cab') {
+        this.setUndergroundCutawayStyle('interior_view');
+      }
     }
     this.callbacks.onCameraStateChange?.(this.getCameraStateSnapshot());
   }
@@ -447,7 +453,38 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
 
   setUndergroundCutawayStyle(style: TunnelCutawayStyle): void {
     this.tunnelCutawayStyle = style;
+    this.tunnelLayer.setCutawayState(this.buildUndergroundCutawayState());
     this.emitTelemetry();
+  }
+
+  getUndergroundAPI(): UndergroundRailwayQueryAPI {
+    return this.tunnelLayer.getUndergroundAPI();
+  }
+
+  private buildUndergroundCutawayState(override?: UndergroundViewSettings): UndergroundCutawayState {
+    const ug = override ?? this.lastUndergroundSettings;
+    return {
+      enabled: ug?.enabled ?? this.cutawayActive,
+      centerX: this.cutawayUniforms.uCutawayCenter.value.x,
+      centerZ: this.cutawayUniforms.uCutawayCenter.value.z,
+      radiusM: this.cutawayUniforms.uCutawayRadius.value,
+      verticalExaggeration: this.verticalExaggeration,
+      groundOpacity: ug?.groundOpacity ?? (this.cutawayActive ? 0.94 : 1.0),
+      pinCutaway: ug?.pinCutaway ?? this.cutawayPinned,
+      hideBuildings: ug?.hideBuildings ?? false,
+      clipEnabled: ug?.clipEnabled ?? false,
+      clipY: ug?.clipY ?? 20,
+      tunnelCutawayStyle: ug?.tunnelCutawayStyle ?? this.tunnelCutawayStyle,
+      visibleTiers: ug?.visibleTiers ?? {
+        'L+2': true,
+        'L+1': true,
+        L0: true,
+        'L-1': true,
+        'L-2': true,
+        'L-3': true,
+        'L-4': true,
+      },
+    };
   }
 
   getCameraStateSnapshot(): CameraStateSnapshot {
@@ -540,6 +577,7 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
     this.terrainLayer.setTheme(isDark);
     this.buildingManager.setTheme(isDark);
     this.cutawayVisuals.setTheme(isDark);
+    this.tunnelLayer.setTheme(isDark);
   }
 
   applyFilters(params: {
@@ -554,6 +592,10 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
 
     // P5 True 3D Cutaway / Underground Explorer state!
     const wasActive = this.cutawayActive;
+    this.lastUndergroundSettings = underground;
+    if (underground.tunnelCutawayStyle) {
+      this.tunnelCutawayStyle = underground.tunnelCutawayStyle;
+    }
     this.cutawayActive = underground.enabled;
     this.cutawayPinned = underground.pinCutaway;
     this.verticalExaggeration = underground.enabled
@@ -636,6 +678,7 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
       undergroundActive: underground.enabled,
       clipEnabled: underground.clipEnabled,
     });
+    this.tunnelLayer.setCutawayState(this.buildUndergroundCutawayState(underground));
   }
 
   setFareQuote(quote: FareQuote | null): void {
@@ -1124,7 +1167,7 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
     // 3-Tier Railway Distance LOD (P4: near steel/sleepers/catenary -> mid deck -> far skeleton!)
     this.currentRailwayLod = this.railLayer.updateLod(camDist);
     this.viaductLayer.updateLod(camDist);
-    this.tunnelLayer.updateLod(camDist);
+    this.tunnelLayer.updateLod(camDist, this.camera.position);
 
     this.skyEnv.updateForCamera(this.camera.position);
 
