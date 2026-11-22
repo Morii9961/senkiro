@@ -15,6 +15,7 @@ import {
   buildPhysicalTrackGraph,
   type CameraModeV2,
   type CameraStateSnapshot,
+  type CameraTargetV2,
   type PhysicalTrackGraph,
   type SimulatedTrainState,
   type SimulationControlState,
@@ -338,6 +339,13 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
     this.camCtrl.setSpeed(speed);
   }
 
+  setCameraModeV2(mode: CameraModeV2, target?: CameraTargetV2): void {
+    this.tracePlaying = false;
+    this.camCtrl.setModeV2(mode, target);
+    this.callbacks.onCameraStateChange?.(this.getCameraStateSnapshot());
+    this.emitTelemetry();
+  }
+
   // ---- v2.0 Subsystem Plugin Attachment & Public AtlasV2SceneApi ----
 
   attachSimulationEngine(engine: TrainSimulationEngineAdapter): void {
@@ -447,6 +455,7 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
     const demoId = this.simulationEngine?.getDemoUndergroundTrainId() ?? null;
     if (!demoId) return null;
     this.simulationEngine?.setRunning(true);
+    this.camCtrl.followTrain(demoId, view);
     this.followTrain(demoId, view);
     return demoId;
   }
@@ -488,79 +497,12 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
   }
 
   getCameraStateSnapshot(): CameraStateSnapshot {
-    const focus = this.camCtrl.getFocusTarget();
-    const isUndergroundCamera = this.camera.position.y < -1.5;
-    let mode: CameraModeV2 = this.camCtrl.getMode() === 'free' ? 'free' : 'map';
-    if (this.followTrainId) {
-      mode = this.followTrainView === 'cab' ? 'cab_ride' : 'follow_train';
-    } else if (isUndergroundCamera || this.cutawayActive) {
-      mode = 'underground_inspect';
-    }
-    return {
-      mode,
-      target: this.followTrainId
-        ? { kind: 'train', trainId: this.followTrainId, view: this.followTrainView }
-        : { kind: 'world', x: focus.x, y: focus.y, z: focus.z },
-      position: [
-        Math.round(this.camera.position.x * 10) / 10,
-        Math.round(this.camera.position.y * 10) / 10,
-        Math.round(this.camera.position.z * 10) / 10,
-      ],
-      lookAt: [
-        Math.round(focus.x * 10) / 10,
-        Math.round(focus.y * 10) / 10,
-        Math.round(focus.z * 10) / 10,
-      ],
-      distanceM: Math.round(this.camCtrl.getDistanceToFocus() * 10) / 10,
-      isUndergroundCamera,
-      followingTrainId: this.followTrainId,
-      followView: this.followTrainId ? this.followTrainView : null,
-    };
+    return this.camCtrl.getSnapshot();
   }
 
   private emitSimulationState(): void {
     if (!this.callbacks.onSimulationUpdate) return;
     this.callbacks.onSimulationUpdate(this.getSimulationControlState(), this.latestTrains);
-  }
-
-  private updateTrainFollowCamera(train: SimulatedTrainState): void {
-    const hp = train.headPose;
-    const hLen = Math.hypot(hp.dirX, hp.dirZ) || 1;
-    const fx = hp.dirX / hLen;
-    const fz = hp.dirZ / hLen;
-    const rx = -fz;
-    const rz = fx;
-
-    let desiredPos: THREE.Vector3;
-    let desiredLook: THREE.Vector3;
-
-    if (this.followTrainView === 'cab') {
-      // Driver cab interior/windshield POV strictly inside tunnel clearance envelope!
-      desiredPos = new THREE.Vector3(hp.x + fx * 1.8, hp.y + 2.35, hp.z + fz * 1.8);
-      desiredLook = new THREE.Vector3(hp.x + fx * 65, hp.y + 2.1 + hp.dirY * 65, hp.z + fz * 65);
-    } else if (this.followTrainView === 'side') {
-      desiredPos = new THREE.Vector3(hp.x + rx * 28 - fx * 14, hp.y + 12, hp.z + rz * 28 - fz * 14);
-      desiredLook = new THREE.Vector3(hp.x - fx * 20, hp.y + 2.2, hp.z - fz * 20);
-    } else if (this.followTrainView === 'overhead_cutaway') {
-      desiredPos = new THREE.Vector3(hp.x - fx * 95 + rx * 65, Math.max(hp.y + 140, 85), hp.z - fz * 95 + rz * 65);
-      desiredLook = new THREE.Vector3(hp.x, hp.y + 2, hp.z);
-    } else {
-      // 'chase': close trailing view (works cleanly both on surface and inside cutaway pit!)
-      const trailDist = train.inTunnel ? 42 : 72;
-      const trailHeight = train.inTunnel ? 18 : 34;
-      desiredPos = new THREE.Vector3(
-        hp.x - fx * trailDist + rx * 16,
-        hp.y + trailHeight,
-        hp.z - fz * trailDist + rz * 16,
-      );
-      desiredLook = new THREE.Vector3(hp.x + fx * 28, hp.y + 2.2, hp.z + fz * 28);
-    }
-
-    const alpha = this.followTrainView === 'cab' ? 0.42 : 0.16;
-    this.camera.position.lerp(desiredPos, alpha);
-    this.camCtrl.controls.target.lerp(desiredLook, alpha);
-    this.camera.lookAt(this.camCtrl.controls.target);
-    this.camCtrl.controls.update();
   }
 
   setTheme(isDark: boolean): void {
@@ -1128,7 +1070,7 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
     if (this.followTrainId && this.simulationEngine) {
       const targetTrain = this.simulationEngine.getTrainById(this.followTrainId);
       if (targetTrain) {
-        this.updateTrainFollowCamera(targetTrain);
+        this.camCtrl.updateTrainTarget(targetTrain, dtSec);
       } else {
         this.camCtrl.update(now, dtSec);
       }
@@ -1146,10 +1088,11 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
     const focusTarget = this.camCtrl.getFocusTarget();
     const camDist = this.camCtrl.getDistanceToFocus();
 
-    // Adaptive near/far planes: tight 0.25m near-plane inside underground tunnels / cab view,
+    // Adaptive near/far planes: tight 0.25m near-plane inside underground tunnels / cab / close train rigs,
     // wider 4..75m near-plane at metropolitan overview distances for depth precision!
     const isCloseOrInterior =
       this.camera.position.y < -1.5 ||
+      camDist < 120 ||
       (this.followTrainId !== null && this.followTrainView === 'cab');
     const targetNear = isCloseOrInterior
       ? 0.25
