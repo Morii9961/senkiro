@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import type { Language, Place } from './domain/types'
 import { exampleService } from './providers/service'
 import records from '../data/sources.json'
@@ -18,17 +17,21 @@ export function areaText(n: Place, lang: Language) {
 }
 export function Guide({
   lang,
+  selection: place,
+  onSelect,
+  onClear,
   example,
   onExample,
   showSources,
 }: {
   lang: Language
+  selection: Place | null
+  onSelect: (id: string) => void
+  onClear: () => void
   example: boolean
   onExample: () => void
   showSources: () => void
 }) {
-  const [placeId, select] = useState('sk:platform:metro-1')
-  const place = station.places.find((p) => p.id === placeId)!
   const t = (ja: string, en: string) => (lang === 'ja' ? ja : en)
   const data = exampleService.updates[0],
     source = records.find((s) => s.id === data.sourceId)!
@@ -48,9 +51,10 @@ export function Guide({
         </label>
         <select
           id="facility"
-          value={placeId}
-          onChange={(e) => select(e.target.value)}
+          value={place?.id ?? ''}
+          onChange={(e) => e.target.value ? onSelect(e.target.value) : onClear()}
         >
+          <option value="">{t('施設を選択', 'Select a facility')}</option>
           {station.places
             .filter((n) => n.kind !== 'Landing')
             .map((n) => (
@@ -59,14 +63,16 @@ export function Guide({
               </option>
             ))}
         </select>
-        <p>
-          {floors.get(place.levelId)?.label} · {areaText(place, lang)}
-          <br />
-          {place.serviceLineIds
-            ?.map((id) => station.lines.find((l) => l.id === id)?.names[lang])
-            .join(' / ')}
-        </p>
-        {place.provenance.sourceIds.map((id) => {
+        {place && (
+          <p>
+            {floors.get(place.levelId)?.label} · {areaText(place, lang)}
+            <br />
+            {place.serviceLineIds
+              ?.map((id) => station.lines.find((l) => l.id === id)?.names[lang])
+              .join(' / ')}
+          </p>
+        )}
+        {place?.provenance.sourceIds.map((id) => {
           const ref = records.find((s) => s.id === id)!
           return (
             <small key={id}>

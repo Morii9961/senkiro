@@ -3,8 +3,10 @@ import * as T from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import type { Language, Place } from './domain/types'
 import type { Step } from './domain/graph'
+import { ownersOf } from './domain/ownersOf'
 import { floors, nodes, station, sites, inSite } from './model'
 import { sample } from './providers/service'
+import { targetFromOwner, type SelectionTarget } from './state/selection'
 
 import { shopWindows, type ShopWindow } from './shopWindows'
 import { signage, type Board } from './signage'
@@ -26,6 +28,7 @@ interface Props {
   floor: number | null
   spread: boolean
   route: Step[]
+  showRoute: boolean
   step: number
   reset: number
   zoom: { tick: number; factor: number }
@@ -33,16 +36,25 @@ interface Props {
   eye: string | null
   shell: boolean
   siteId: string | null
+  selection: SelectionTarget | null
+  hovered: SelectionTarget | null
   onReset: () => void
   onInspect: (id: string) => void
+  onClear: () => void
+  onHover: (target: SelectionTarget | null) => void
   onFallback: () => void
 }
 type Label = {
   position: T.Vector3
   text: string
   priority: number
+  order: number
+  routePriority?: number
+  routeOnly?: boolean
   el: HTMLSpanElement
 }
+const selected = 0xe14815
+
 export function Scene(props: Props) {
   const host = useRef<HTMLDivElement>(null)
   const update = useRef<((p: Props) => void) | null>(null)
@@ -100,6 +112,8 @@ export function Scene(props: Props) {
     world.add(sun)
     const unit = new T.BoxGeometry(),
       material = architecturalMaterial()
+    const outlineMaterial = new T.MeshBasicMaterial({ color: selected, side: T.BackSide })
+    const motion = matchMedia('(prefers-reduced-motion: reduce)')
     const signs = signage()
     const dummy = new T.Object3D(),
       labels: Label[] = []
@@ -108,8 +122,23 @@ export function Scene(props: Props) {
       propsNow: Props,
       lastReset = -1,
       lastZoom = -1,
-      lastFloor: number | null = null,
       frame = 0
+    let geometryKey = ''
+    let baseColors = new Float32Array(0)
+    let previewStart = 0
+    const previewTreads = new Map<number, T.Color>()
+    let selectedIndices: number[] = []
+    let outline: T.InstancedMesh | null = null
+    let raf = 0
+    let focus: {
+      start: number
+      from: T.Vector3
+      to: T.Vector3
+      offset: T.Vector3
+      zoom: number
+      endZoom: number
+    } | null = null
+    let fade: { start: number; from: Float32Array; to: Float32Array } | null = null
     const shopDisplay = shopWindows(world, draw)
     const view = new T.Vector3(53, 67, 116),
       right = new T.Vector3(view.z, 0, -view.x).normalize()
@@ -170,18 +199,25 @@ export function Scene(props: Props) {
       lens.updateMatrixWorld()
       gl.domElement.dataset.view = propsNow.eye ? 'interior' : 'overview'
       gl.domElement.dataset.zoom = String(lens.zoom)
+      gl.domElement.dataset.camera = [...controls.target.toArray(), lens.zoom]
+        .map((value) => value.toFixed(2)).join(',')
       const placed: { x: number; y: number; w: number }[] = []
       for (const label of labels) {
+        const priority = propsNow.showRoute
+          ? label.routePriority ?? label.priority
+          : label.priority
+        const emphasized = label.el.classList.contains('selected') || label.el.classList.contains('hovered')
         const v = label.position.clone().project(lens),
           x = ((v.x + 1) * w) / 2,
           y = ((1 - v.y) * h) / 2
         const width = label.el.offsetWidth || 80
         const visible =
           !propsNow.eye &&
+          (!label.routeOnly || propsNow.showRoute) &&
           v.z >= -1 &&
           v.z <= 1 &&
-          (label.priority <= 1 ||
-            camera.zoom > (label.priority === 2 ? 1.35 : 2.3) ||
+          (emphasized || priority <= 1 ||
+            camera.zoom > (priority === 2 ? 1.35 : 2.3) ||
             propsNow.floor !== null) &&
           x > width / 2 + 4 &&
           x < w - width / 2 - 4 &&
@@ -204,6 +240,155 @@ export function Scene(props: Props) {
       gl.domElement.dataset.calls = String(gl.info.render.calls)
       gl.domElement.dataset.triangles = String(gl.info.render.triangles)
     }
+
+    function scheduleFrame() {
+      if (!raf) raf = requestAnimationFrame(animate)
+    }
+
+    function animate(now: number) {
+      raf = 0
+      if (fade && group?.instanceColor) {
+        const t = motion.matches ? 1 : T.MathUtils.clamp((now - fade.start) / 160, 0, 1)
+        const colors = group.instanceColor.array
+        for (let i = 0; i < colors.length; i++) {
+          colors[i] = T.MathUtils.lerp(fade.from[i], fade.to[i], t)
+        }
+        group.instanceColor.needsUpdate = true
+        if (t === 1) fade = null
+      }
+      if (focus) {
+        const t = motion.matches ? 1 : T.MathUtils.clamp((now - focus.start) / 600, 0, 1)
+        const eased = t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2
+        controls.target.lerpVectors(focus.from, focus.to, eased)
+        camera.position.copy(controls.target).add(focus.offset)
+        camera.zoom = T.MathUtils.lerp(focus.zoom, focus.endZoom, eased)
+        camera.updateProjectionMatrix()
+        if (t === 1) focus = null
+      }
+      if (!controls.update()) draw()
+      if (fade || focus) scheduleFrame()
+    }
+
+    function applyAppearance(rebuilt: boolean, previous?: Props) {
+      if (!group?.instanceColor) return
+      const { selection, hovered, showRoute } = propsNow
+      const highlighted = selection ? ownersOf(station, selection) : new Set<string>()
+      if (selection) highlighted.add(selection.id)
+      const lines = selection?.kind === 'platform' ? nodes.get(selection.id)?.serviceLineIds : null
+      const related = new Set(lines?.flatMap((id) => [...ownersOf(station, { kind: 'line', id })]))
+      const hoverOwners = hovered ? ownersOf(station, hovered) : new Set<string>()
+      if (hovered) hoverOwners.add(hovered.id)
+      const background = new T.Color(getComputedStyle(box.parentElement!).backgroundColor)
+      const color = new T.Color()
+      const hoverColor = new T.Color(0xffefd0)
+      const colors = group.instanceColor.array as Float32Array
+      const next = baseColors.slice()
+      const count = showRoute ? group.instanceMatrix.count : previewStart
+      const dimOthers = !!selection && owners.slice(0, count).some((owner) => highlighted.has(owner))
+      const updateOutline = rebuilt || group.count !== count || previous?.selection !== selection
+      if (group.count !== count) {
+        group.count = count
+        gl.shadowMap.needsUpdate = true
+      }
+      selectedIndices = []
+      let dimmed = 0
+      for (let i = 0; i < count; i++) {
+        const owner = owners[i]
+        const routeTint = showRoute ? previewTreads.get(i) : undefined
+        if (routeTint) color.copy(routeTint)
+        else color.fromArray(baseColors, i * 3)
+        if (highlighted.has(owner)) {
+          color.setHex(selected)
+          selectedIndices.push(i)
+        } else if (dimOthers) {
+          const isRelated = related.has(owner)
+          color.lerp(background, isRelated ? 0.23 : 0.55)
+          if (!isRelated) dimmed++
+        }
+        if (hoverOwners.has(owner) && !highlighted.has(owner)) {
+          color.lerp(hoverColor, 0.19)
+        }
+        color.toArray(next, i * 3)
+      }
+      const data = gl.domElement.dataset
+      data.selected = selection ? selection.kind + ':' + selection.id : ''
+      data.highlighted = String(selectedIndices.length)
+      data.dimmed = String(dimmed)
+      box.style.cursor = hovered ? 'pointer' : ''
+      for (const { el, routePriority } of labels) {
+        const owner = el.dataset.owner
+        el.classList.toggle('selected', !!selection && owner === selection.id)
+        el.classList.toggle('hovered', !!hovered && owner === hovered.id)
+        if (routePriority !== undefined) el.classList.toggle('active', showRoute)
+      }
+      const priority = (label: Label) => label.el.classList.contains('selected') ? -5
+        : label.el.classList.contains('hovered') ? -4
+        : (showRoute ? label.routePriority : undefined) ?? label.priority
+      labels.sort((a, b) => priority(a) - priority(b) || a.order - b.order)
+
+      if (updateOutline) {
+        if (outline) {
+          world.remove(outline)
+          outline.dispose()
+          outline = null
+        }
+        if (selectedIndices.length) {
+          outline = new T.InstancedMesh(unit, outlineMaterial, selectedIndices.length)
+          const matrix = new T.Matrix4()
+          const scale = new T.Vector3(1.025, 1.025, 1.025)
+          selectedIndices.forEach((index, position) => {
+            group!.getMatrixAt(index, matrix)
+            outline!.setMatrixAt(position, matrix.scale(scale))
+          })
+          world.add(outline)
+        }
+      }
+      if (motion.matches || (!selection && !previous?.selection && !hovered && !previous?.hovered)) {
+        fade = null
+        colors.set(next)
+        group.instanceColor.needsUpdate = true
+      } else {
+        fade = { start: performance.now(), from: colors.slice(), to: next }
+        scheduleFrame()
+      }
+      draw()
+    }
+
+    function focusSelection() {
+      focus = null
+      if (!group || !selectedIndices.length || propsNow.eye) return
+      unit.computeBoundingBox()
+      const selectedBounds = new T.Box3()
+      const matrix = new T.Matrix4()
+      const bounds = new T.Box3()
+      for (const index of selectedIndices) {
+        group.getMatrixAt(index, matrix)
+        selectedBounds.union(bounds.copy(unit.boundingBox!).applyMatrix4(matrix))
+      }
+      const center = selectedBounds.getCenter(new T.Vector3())
+      const halfSize = selectedBounds.getSize(new T.Vector3()).multiplyScalar(0.5)
+      const xAxis = new T.Vector3().setFromMatrixColumn(camera.matrixWorld, 0)
+      const yAxis = new T.Vector3().setFromMatrixColumn(camera.matrixWorld, 1)
+      const extent = (axis: T.Vector3) =>
+        2 * (Math.abs(axis.x) * halfSize.x + Math.abs(axis.y) * halfSize.y + Math.abs(axis.z) * halfSize.z)
+      const desiredHeight = Math.max(
+        10,
+        extent(yAxis) + 5,
+        (extent(xAxis) + 7) * box.clientHeight / Math.max(1, box.clientWidth),
+      )
+      focus = {
+        start: performance.now(),
+        from: controls.target.clone(),
+        to: center,
+        offset: camera.position.clone().sub(controls.target),
+        zoom: camera.zoom,
+        endZoom: T.MathUtils.clamp((camera.top - camera.bottom) / desiredHeight, 0.65, 5),
+      }
+      if (motion.matches) {
+        cancelAnimationFrame(raf)
+        animate(performance.now())
+      } else scheduleFrame()
+    }
     function size() {
       if (!propsNow) return
       const w = Math.max(1, box.clientWidth),
@@ -224,6 +409,9 @@ export function Scene(props: Props) {
       draw()
     }
     function rebuild(p: Props) {
+      gl.domElement.dataset.rebuilds = String(
+        Number(gl.domElement.dataset.rebuilds ?? 0) + 1,
+      )
       const refit =
         !propsNow ||
         propsNow.floor !== p.floor ||
@@ -257,6 +445,8 @@ export function Scene(props: Props) {
         eyeCamera.updateProjectionMatrix()
       }
       owners = []
+      previewTreads.clear()
+      fade = null
       let owner = ''
       if (refit) bounds = fit(p)
       gl.domElement.setAttribute(
@@ -273,13 +463,16 @@ export function Scene(props: Props) {
       const panes: ShopWindow[] = []
       const boards: Board[] = []
       const finishes: number[] = []
+      // In overview, prebuild the route marks at the end of the same instance buffer.
+      const routeMarks: { owner: string; matrix: T.Matrix4; color: T.Color; finish: number }[] = []
+      let routeMark = false
       let finish: number = Finish.metal
       const plate = 0xb8b9b4,
         rim = 0xd4d2c5,
         hall = 0xddccb1,
         steel = 0x686963
-      const routeColor = 0xff870c,
-        selected = 0xe14815
+      const routeColor = 0xff870c
+      const overviewTread = new T.Color(routeColor)
       const gap = p.spread ? 9 : 5
       const visible = (n: Place) =>
         inSite(n, p.siteId) &&
@@ -303,12 +496,16 @@ export function Scene(props: Props) {
         rotation?: T.Quaternion,
         surface = finish,
       ) {
-        finishes.push(surface)
-        owners.push(owner)
         dummy.position.copy(at)
         dummy.scale.set(w, h, d)
         dummy.quaternion.copy(rotation ?? new T.Quaternion())
         dummy.updateMatrix()
+        if (routeMark) {
+          routeMarks.push({ owner, matrix: dummy.matrix.clone(), color: new T.Color(color), finish: surface })
+          return
+        }
+        finishes.push(surface)
+        owners.push(owner)
         matrices.push(dummy.matrix.clone())
         colors.push(new T.Color(color))
       }
@@ -339,14 +536,15 @@ export function Scene(props: Props) {
         priority: number,
         active = false,
         stationName = false,
+        labelOwner = owner,
       ) {
         const el = document.createElement('span')
         el.className = 'pin' + (active ? ' active' : '')
         if (stationName) el.classList.add('station-pin')
-        el.dataset.owner = owner
+        el.dataset.owner = labelOwner
         el.textContent = text
         box.appendChild(el)
-        labels.push({ position, text, priority, el })
+        labels.push({ position, text, priority, order: labels.length, el })
       }
       for (const n of station.places.filter(visible)) {
         if (n.kind === 'Landing') continue
@@ -413,6 +611,7 @@ export function Scene(props: Props) {
               -1,
               false,
               true,
+              n.stationId!,
             )
           }
           if (
@@ -433,6 +632,7 @@ export function Scene(props: Props) {
               -1,
               false,
               true,
+              n.stationId!,
             )
           }
           if (p.example && n.id === sample.platformId)
@@ -635,15 +835,29 @@ export function Scene(props: Props) {
           liftStops.add(b.id)
         }
         if (va && vb) {
-          if (e.kind === 'Stairs' || e.kind === 'Escalator')
+          if (e.kind === 'Stairs' || e.kind === 'Escalator') {
+            const parts: number[] = []
+            const preview = active && !current
             architecture.stairs(
               e,
               start,
               end,
-              block,
+              preview ? (...args) => {
+                parts.push(matrices.length)
+                block(...args)
+              } : block,
               beam,
-              active ? (focus ? selected : routeColor) : undefined,
+              active && current ? (focus ? selected : routeColor) : undefined,
             )
+            if (preview) {
+              // Match the tread positions supplied by the original generator's tint option.
+              let part = 0
+              architecture.stairs(e, start, end, (_at, _w, _h, _d, color) => {
+                if (color === routeColor) previewTreads.set(parts[part], overviewTread)
+                part++
+              }, () => {}, routeColor)
+            }
+          }
           if (e.kind === 'Passage' || e.kind === 'Gate') {
             const deckOffset = new T.Vector3(0, -0.23, 0)
             const covered = station.places.some(
@@ -697,12 +911,14 @@ export function Scene(props: Props) {
                 label(
                   mid.clone().add(new T.Vector3(0, 2.7, 0)),
                   e.names[p.lang],
-                  active ? 1 : 2,
-                  active,
+                  active && current ? 1 : 2,
+                  active && !!current,
                 )
+              if (active && !current) labels.at(-1)!.routePriority = 1
             }
           }
           if (active && e.kind !== 'Stairs' && e.kind !== 'Escalator') {
+            routeMark = !current
             const offset = new T.Vector3(0, start.y === end.y ? 0.1 : 0.5, 0)
             const c = focus ? selected : routeColor
             if (start.y === end.y)
@@ -745,6 +961,7 @@ export function Scene(props: Props) {
                   block,
                 )
             }
+            routeMark = false
           }
         }
         if (
@@ -761,7 +978,7 @@ export function Scene(props: Props) {
             beam,
           )
         }
-        if (active && (e.kind === 'Elevator' || focus))
+        if (active && (e.kind === 'Elevator' || focus)) {
           label(
             (va && vb ? mid : va ? start : end)
               .clone()
@@ -772,6 +989,15 @@ export function Scene(props: Props) {
             focus ? -2 : 0,
             true,
           )
+          if (!current) labels.at(-1)!.routeOnly = true
+        }
+      }
+      previewStart = matrices.length
+      for (const mark of routeMarks) {
+        matrices.push(mark.matrix)
+        colors.push(mark.color)
+        finishes.push(mark.finish)
+        owners.push(mark.owner)
       }
       shopDisplay.rebuild(panes)
       signs.rebuild(boards, world)
@@ -785,27 +1011,15 @@ export function Scene(props: Props) {
         group!.setMatrixAt(i, m)
         group!.setColorAt(i, colors[i])
       })
+      baseColors = (group.instanceColor!.array as Float32Array).slice()
+      group.computeBoundingSphere()
+      group.count = p.showRoute ? matrices.length : previewStart
       group.castShadow = true
       group.receiveShadow = true
       gl.shadowMap.needsUpdate = true
       world.add(group)
       labels.sort((a, b) => a.priority - b.priority)
-      if (
-        (previous && !current) ||
-        refit ||
-        lastReset !== p.reset ||
-        lastFloor !== p.floor
-      ) {
-        reset()
-        lastReset = p.reset
-        lastFloor = p.floor
-      }
-      if (lastZoom !== p.zoom.tick) {
-        const lens = activeCamera()
-        lens.zoom = T.MathUtils.clamp(lens.zoom * p.zoom.factor, 0.55, 5)
-        lens.updateProjectionMatrix()
-        lastZoom = p.zoom.tick
-      }
+      updateView(!!(previous && !current) || refit)
       size()
       if (current && (previous !== current.link.id || refit)) {
         const a = pos(current.from, 0.6),
@@ -842,11 +1056,86 @@ export function Scene(props: Props) {
       }
       gl.domElement.dataset.focus = current?.link.id ?? ''
     }
+
+    function updateView(refit = false) {
+      const { reset: resetTick, zoom } = propsNow
+      if (refit || lastReset !== resetTick) {
+        focus = null
+        reset()
+        lastReset = resetTick
+      }
+      if (lastZoom !== zoom.tick) {
+        focus = null
+        const lens = activeCamera()
+        lens.zoom = T.MathUtils.clamp(lens.zoom * zoom.factor, 0.55, 5)
+        lens.updateProjectionMatrix()
+        lastZoom = zoom.tick
+      }
+    }
+
+    function sync(p: Props) {
+      const key = JSON.stringify([
+        p.lang, p.floor, p.spread, p.siteId, p.shell, p.eye, p.example,
+        p.route.map(({ link, from }) => [link.id, from.id]), p.step,
+      ])
+      const previous = propsNow
+      const rebuildGeometry = key !== geometryKey
+      const needsView = lastReset !== p.reset || lastZoom !== p.zoom.tick
+      const changedSelection = p.selection !== previous?.selection
+      const wasVisible = selectedIndices.length > 0
+      if (rebuildGeometry) {
+        geometryKey = key
+        focus = null
+        rebuild(p)
+      } else {
+        propsNow = p
+        if (needsView) updateView()
+      }
+      if (rebuildGeometry || changedSelection || p.hovered !== previous?.hovered ||
+          p.dark !== previous?.dark || p.showRoute !== previous?.showRoute) {
+        applyAppearance(rebuildGeometry, previous)
+      } else if (needsView) draw()
+      if (changedSelection || (rebuildGeometry && !wasVisible && selectedIndices.length > 0)) {
+        focusSelection()
+      }
+    }
     let pressed: { x: number; y: number } | null = null
     let drag: { x: number; y: number } | null = null
     let moved = false
+    const ray = new T.Raycaster()
+    const pointer = new T.Vector2()
+    let hoverFrame = 0
+    function ownerAt(x: number, y: number) {
+      for (const { el } of labels) {
+        if (el.style.visibility !== 'visible') continue
+        const bounds = el.getBoundingClientRect()
+        if (x >= bounds.left && x <= bounds.right && y >= bounds.top && y <= bounds.bottom) {
+          return el.dataset.owner ?? ''
+        }
+      }
+      if (!group) return ''
+      const r = gl.domElement.getBoundingClientRect()
+      pointer.set((2 * (x - r.left)) / r.width - 1, 1 - (2 * (y - r.top)) / r.height)
+      ray.setFromCamera(pointer, activeCamera())
+      const hit = ray.intersectObject(group, false)[0]
+      return hit?.instanceId === undefined ? '' : owners[hit.instanceId]
+    }
+    const clearHover = () => {
+      cancelAnimationFrame(hoverFrame)
+      hoverFrame = 0
+      propsNow?.onHover(null)
+    }
     const pointerMove = (e: PointerEvent) => {
-      if (!drag || !propsNow.eye) return
+      if (!drag || !propsNow.eye) {
+        if (e.pointerType === 'mouse' && e.buttons === 0) {
+          cancelAnimationFrame(hoverFrame)
+          hoverFrame = requestAnimationFrame(() => {
+            hoverFrame = 0
+            propsNow.onHover(targetFromOwner(ownerAt(e.clientX, e.clientY)))
+          })
+        }
+        return
+      }
       yaw -= (e.clientX - drag.x) * 0.005
       pitch = T.MathUtils.clamp(
         pitch - (e.clientY - drag.y) * 0.005,
@@ -861,6 +1150,7 @@ export function Scene(props: Props) {
       draw()
     }
     const wheel = (e: WheelEvent) => {
+      focus = null
       if (!propsNow.eye) return
       e.preventDefault()
       eyeCamera.zoom = T.MathUtils.clamp(
@@ -872,6 +1162,8 @@ export function Scene(props: Props) {
       draw()
     }
     const pointerDown = (e: PointerEvent) => {
+      focus = null
+      clearHover()
       pressed = e.button === 0 ? { x: e.clientX, y: e.clientY } : null
       moved = false
       if (propsNow.eye && pressed) {
@@ -889,39 +1181,18 @@ export function Scene(props: Props) {
       )
         return
       pressed = null
-      for (const { el } of labels) {
-        if (el.style.visibility !== 'visible') continue
-        const r = el.getBoundingClientRect()
-        if (
-          e.clientX >= r.left &&
-          e.clientX <= r.right &&
-          e.clientY >= r.top &&
-          e.clientY <= r.bottom &&
-          el.dataset.owner
-        ) {
-          propsNow.onInspect(el.dataset.owner)
-          return
-        }
-      }
-      const r = gl.domElement.getBoundingClientRect()
-      const ray = new T.Raycaster()
-      ray.setFromCamera(
-        new T.Vector2(
-          (2 * (e.clientX - r.left)) / r.width - 1,
-          1 - (2 * (e.clientY - r.top)) / r.height,
-        ),
-        activeCamera(),
-      )
-      const hit = ray.intersectObject(group, false)[0]
-      if (hit?.instanceId !== undefined)
-        propsNow.onInspect(owners[hit.instanceId])
+      const owner = ownerAt(e.clientX, e.clientY)
+      if (owner) propsNow.onInspect(owner)
+      else propsNow.onClear()
     }
     const cancel = () => {
       drag = null
       pressed = null
+      clearHover()
     }
     gl.domElement.addEventListener('pointercancel', cancel)
     gl.domElement.addEventListener('pointermove', pointerMove)
+    gl.domElement.addEventListener('pointerleave', clearHover)
     gl.domElement.addEventListener('wheel', wheel, { passive: false })
     gl.domElement.addEventListener('pointerdown', pointerDown)
     gl.domElement.addEventListener('pointerup', pointerUp)
@@ -933,6 +1204,7 @@ export function Scene(props: Props) {
         ArrowDown: [0, 2],
       }
       if (delta[ev.key]) {
+        focus = null
         ev.preventDefault()
         const [x, z] = delta[ev.key]
         if (propsNow.eye) {
@@ -947,6 +1219,7 @@ export function Scene(props: Props) {
         camera.position.z += z
         controls.target.z += z
       } else if (ev.key === '+' || ev.key === '-') {
+        focus = null
         ev.preventDefault()
         const lens = activeCamera()
         lens.zoom = T.MathUtils.clamp(
@@ -963,12 +1236,15 @@ export function Scene(props: Props) {
     gl.domElement.addEventListener('keydown', keyboard)
     const observer = new ResizeObserver(size)
     observer.observe(box)
-    update.current = rebuild
+    update.current = sync
     return () => {
       update.current = null
+      cancelAnimationFrame(raf)
+      cancelAnimationFrame(hoverFrame)
       observer.disconnect()
       gl.domElement.removeEventListener('wheel', wheel)
       gl.domElement.removeEventListener('pointermove', pointerMove)
+      gl.domElement.removeEventListener('pointerleave', clearHover)
       gl.domElement.removeEventListener('pointercancel', cancel)
       gl.domElement.removeEventListener('pointerdown', pointerDown)
       gl.domElement.removeEventListener('pointerup', pointerUp)
@@ -976,9 +1252,11 @@ export function Scene(props: Props) {
       controls.dispose()
       labels.forEach((l) => l.el.remove())
       group?.dispose()
+      outline?.dispose()
       shopDisplay.dispose()
       signs.dispose()
       material.dispose()
+      outlineMaterial.dispose()
       unit.dispose()
       gl.dispose()
       gl.domElement.remove()

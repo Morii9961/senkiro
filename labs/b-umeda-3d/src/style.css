@@ -370,6 +370,14 @@ nav,
   color: #553411;
   border-color: #df9d40;
 }
+.pin.hovered {
+  box-shadow: 0 0 0 2px #e1481599;
+}
+.pin.selected {
+  outline: 2px solid #e14815;
+  font-weight: 800;
+  font-size: 1.05em;
+}
 .view-tag {
   position: absolute;
   left: 14px;

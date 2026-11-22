@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useMemo, useReducer, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Scene } from './Scene'
 import { FloorPlan } from './FloorPlan'
@@ -8,6 +8,8 @@ import { floorLabels, floors, nodes, station, sites, inSite } from './model'
 import records from '../data/sources.json'
 import { Guide, areaText } from './Guide'
 import { exampleService } from './providers/service'
+import { ownersOf } from './domain/ownersOf'
+import { initialSelection, selectionReducer, targetFromOwner, type SelectionTarget } from './state/selection'
 import './style.css'
 
 const tours = [
@@ -60,7 +62,21 @@ function instruction(s: Step, lang: Language) {
   return action + ' → ' + s.to.names[lang]
 }
 const endpoints = station.places.filter((n) => n.kind !== 'Landing')
+
+function targetPlaces(target: SelectionTarget) {
+  if (target.kind === 'station' || target.kind === 'line') {
+    const owners = ownersOf(station, target)
+    return station.places.filter((place) => owners.has(place.id))
+  }
+  const place = nodes.get(target.id)
+  if (place) return [place]
+  const link = station.links.find((candidate) => candidate.id === target.id)
+  return link ? [nodes.get(link.from)!, nodes.get(link.to)!] : []
+}
+
 function App() {
+  const [{ selection, hovered }, dispatchSelection] = useReducer(selectionReducer, initialSelection)
+  const clear = () => dispatchSelection({ type: 'clear' })
   const [lang, language] = useState<Language>('ja'),
     [dark, theme] = useState(false),
     [plan, setPlan] = useState(false)
@@ -77,8 +93,8 @@ function App() {
       return
     }
     const target =
-      (picked && nodes.get(picked)?.kind === 'Platform'
-        ? nodes.get(picked)
+      (selection?.kind === 'platform'
+        ? nodes.get(selection.id)
         : undefined) ??
       (siteId === 'sk:context:whity'
         ? nodes.get('sk:concourse:whity-east')
@@ -87,7 +103,7 @@ function App() {
           ))
     if (!target) return
     selectStep(-1)
-    setPicked(null)
+    clear()
     selectFloor(null)
     setPlan(false)
     setEye(target.id)
@@ -104,7 +120,7 @@ function App() {
   function visit(id: string | null) {
     setEye(null)
     setSiteId(id)
-    setPicked(null)
+    clear()
     selectStep(-1)
     setPlanZoom(1)
     const at = sites.find((s) => s.id === id)
@@ -119,7 +135,6 @@ function App() {
   }
   const [trip, setTrip] = useState({ start: tours[0].start, end: tours[0].end })
   const [drawer, setDrawer] = useState(false)
-  const [picked, setPicked] = useState<string | null>(null)
   const tour = tours.findIndex(
     (x) => x.start === trip.start && x.end === trip.end,
   )
@@ -129,7 +144,10 @@ function App() {
   const [panel, setPanel] = useState<'route' | 'layers'>('route'),
     [dialog, setDialog] = useState<'help' | 'sources' | null>(null)
   const t = (ja: string, en: string) => (lang === 'ja' ? ja : en)
-  const steps = route(station, trip.start, trip.end, lift),
+  const steps = useMemo(
+      () => route(station, trip.start, trip.end, lift),
+      [trip.start, trip.end, lift],
+    ),
     path = steps ?? [],
     stats = cost(path)
   const floorNow = floor ?? 0,
@@ -137,7 +155,7 @@ function App() {
   function togglePlan(next: boolean) {
     setEye(null)
     setPlan(next)
-    setPicked(null)
+    clear()
     if (!next && path[step]) selectFloor(null)
     if (next && floor === null)
       selectFloor(
@@ -157,7 +175,7 @@ function App() {
     setEye(null)
     setSiteId(null)
     selectStep(i)
-    setPicked(null)
+    clear()
     if (path[i])
       selectFloor(plan ? floors.get(path[i].to.levelId)!.ordinal : null)
   }
@@ -165,7 +183,7 @@ function App() {
     setEye(null)
     setSiteId(null)
     setTrip({ start: tours[i].start, end: tours[i].end })
-    setPicked(null)
+    clear()
     selectStep(-1)
     selectFloor(plan ? 0 : null)
   }
@@ -174,26 +192,50 @@ function App() {
     setSiteId(null)
     setTrip({ ...trip, [which]: id })
     selectStep(-1)
-    setPicked(null)
+    clear()
     selectFloor(plan ? floors.get(nodes.get(id)!.levelId)!.ordinal : null)
   }
   function inspect(id: string) {
-    if (sites.some((s) => s.id === id)) {
-      visit(id)
-      return
+    const target = targetFromOwner(id)
+    if (!target) return
+    const places = targetPlaces(target)
+    const sitePlaces = places.filter((place) => inSite(place, siteId))
+    if (siteId && sitePlaces.length === 0) setSiteId(null)
+    const visiblePlaces = sitePlaces.length > 0 ? sitePlaces : places
+    if (floor !== null && !visiblePlaces.some((place) => floors.get(place.levelId)?.ordinal === floor)) {
+      selectFloor(visiblePlaces[0] ? floors.get(visiblePlaces[0].levelId)!.ordinal : null)
     }
-    setPicked(id)
+    const current = path[step]
+    if (current && !visiblePlaces.some((place) =>
+      place.levelId === current.from.levelId || place.levelId === current.to.levelId
+    )) selectStep(-1)
+    setEye(null)
+    dispatchSelection({ type: 'select', target })
   }
   function resetView() {
     setEye(null)
     selectStep(-1)
-    setPicked(null)
+    clear()
     setReset((v) => v + 1)
     setPlanZoom(1)
   }
-  const facility = station.links.find((e) => e.id === picked)
-  const place = picked ? nodes.get(picked) : null
-  const selected = facility ?? place
+  useEffect(() => {
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !dialog) dispatchSelection({ type: 'clear' })
+    }
+    document.addEventListener('keydown', onEscape)
+    return () => document.removeEventListener('keydown', onEscape)
+  }, [dialog])
+  const facility = station.links.find((e) => e.id === selection?.id)
+  const place = selection ? nodes.get(selection.id) : null
+  const selectedStation = selection?.kind === 'station'
+    ? station.context.find((entry) => entry.id === selection.id) ??
+      station.stations.find((entry) => entry.id === selection.id)
+    : null
+  const selected = facility ?? place ?? selectedStation
+  const selectionPlaces = useMemo(() => selection ? targetPlaces(selection) : [], [selection])
+  const differentFloor = floor !== null && selectionPlaces.length > 0 &&
+    !selectionPlaces.some((entry) => floors.get(entry.levelId)?.ordinal === floor)
   const evidence = selected && (
     <details>
       <summary>{t('資料・精度', 'Source & precision')}</summary>
@@ -291,9 +333,14 @@ function App() {
                   siteId,
                   shell,
                   eye,
+                  selection,
+                  hovered,
                 }}
-                route={step >= 0 || drawer ? path : []}
+                route={path}
+                showRoute={step >= 0 || drawer}
                 onInspect={inspect}
+                onClear={clear}
+                onHover={(target) => dispatchSelection({ type: 'hover', target })}
                 onReset={resetView}
                 onFallback={() => togglePlan(true)}
               />
@@ -310,7 +357,7 @@ function App() {
               <section className="place-card">
                 <button
                   className="dismiss"
-                  onClick={() => setPicked(null)}
+                  onClick={clear}
                   aria-label={t('閉じる', 'Close')}
                 >
                   ×
@@ -319,7 +366,7 @@ function App() {
                   {floors.get(nodes.get(facility.from)!.levelId)?.label} →{' '}
                   {floors.get(nodes.get(facility.to)!.levelId)?.label}
                 </small>
-                <strong>{facility.names[lang]}</strong>
+                <strong data-testid="detail-title">{facility.names[lang]}</strong>
                 <span>
                   {facility.direction === 'unknown'
                     ? t('運転方向未確認', 'Operating direction unverified')
@@ -335,7 +382,7 @@ function App() {
               <section className="place-card">
                 <button
                   className="dismiss"
-                  onClick={() => setPicked(null)}
+                  onClick={clear}
                   aria-label={t('閉じる', 'Close')}
                 >
                   ×
@@ -343,7 +390,7 @@ function App() {
                 <small>
                   {floors.get(place.levelId)?.label} · {areaText(place, lang)}
                 </small>
-                <strong>{place.names[lang]}</strong>
+                <strong data-testid="detail-title">{place.names[lang]}</strong>
                 <span>
                   {place.serviceLineIds
                     ?.map(
@@ -370,6 +417,21 @@ function App() {
                 </div>
                 {evidence}
               </section>
+            )}
+            {selectedStation && (
+              <section className="place-card">
+                <button className="dismiss" onClick={clear} aria-label={t('閉じる', 'Close')}>
+                  ×
+                </button>
+                <strong data-testid="detail-title">{selectedStation.names[lang]}</strong>
+                {evidence}
+              </section>
+            )}
+            {!plan && differentFloor && (
+              <div className="eye-hint">
+                {t('対象は別の階にあります。', 'This feature is on another floor.')}{' '}
+                <button onClick={() => inspect(selection!.id)}>{t('移動', 'Go to floor')}</button>
+              </div>
             )}
             {eye && (
               <div className="eye-hint">
@@ -478,7 +540,6 @@ function App() {
                   setEye(null)
                   selectFloor(null)
                   selectStep(-1)
-                  setPicked(null)
                 }}
               >
                 {t('全階', 'All')}
@@ -492,7 +553,6 @@ function App() {
                   setEye(null)
                   selectFloor(n)
                   selectStep(-1)
-                  setPicked(null)
                   setPlanZoom(1)
                 }}
               >
@@ -596,7 +656,7 @@ function App() {
                     onClick={() => {
                       setTrip({ start: trip.end, end: trip.start })
                       selectStep(-1)
-                      setPicked(null)
+                      clear()
                     }}
                   >
                     {t('出発地と到着地を交換', 'Swap endpoints')} ⇅
@@ -697,6 +757,9 @@ function App() {
           ) : (
             <Guide
               lang={lang}
+              selection={place ?? null}
+              onSelect={inspect}
+              onClear={clear}
               example={example}
               onExample={() => setExample(!example)}
               showSources={() => setDialog('sources')}

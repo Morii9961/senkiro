@@ -62,7 +62,7 @@ test('lets a mobile visitor inspect fare zones, sources and the synthetic overla
     .getByLabel('Facility', { exact: true })
     .selectOption('sk:concourse:metro-gate-out')
   await expect(
-    page.getByText('B1F · Outside gates · manager unknown'),
+    page.locator('.guide').getByText('B1F · Outside gates · manager unknown'),
   ).toBeVisible()
   await expect(page.getByText('Hankyu Osaka-umeda · Station')).toBeVisible()
   await page.getByRole('button', { name: 'Toggle theme' }).click()
