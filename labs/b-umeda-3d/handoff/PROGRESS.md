@@ -1,0 +1,39 @@
+# 梅田 3D 实施进度
+
+## T1 · 统一选择、场景高亮和重建隔离
+
+实现提交 `2c08b13`。2026-11-22 验收通过。分支 `codex/umeda-implementation` 位于 `E:/SENKIRO/labs/_worktrees/umeda-sol`。原仓库的 Git 元数据在本次会话只读，因此从交接提交 `8c15d0c` 的本地 bundle 建立独立检出。
+
+**改动与设计**
+
+- `src/state/selection.ts`、`src/domain/ownersOf.ts`、`src/main.tsx`、`src/Guide.tsx` · 3D 拾取、浮卡、设施下拉共享选择。车站名牌选中车站。路线起终点继续独立。对应 UX_SPEC D-02、D-09。
+- `src/Scene.tsx`、`src/style.css` · 用几何键隔离重建。抽屉开合只切换已生成的路线标记。实例色 160 ms 过渡，选中实例用背面描边，保留轴测方向聚焦 600 ms，手动操控可中断。减少动态效果模式立即到位。对应 D-04、D-12。原材质实例色实测与描边决定见 `DECISIONS.md`。
+- `tests/selection.test.ts`、`tests/browser/selection.spec.ts`、`scripts/shots.mjs` · 增加选择映射、实例归属、浏览器验收和拍摄。原移动端用例将设施文本定位限定在 `.guide`，因为选择后浮卡也显示该文本。
+
+**实测**
+
+| 用例 | 结果 | 证据 |
+|---|---|---|
+| AT-BASE-01 | 通过 | 基线原 14 项 Vitest、4 项 Playwright 通过。最终完整构建、17 项 Vitest、9 项 Playwright 通过。 |
+| AT-BASE-02 | 通过 | 1440×900、DPR 1 的 8 对无选择截图逐像素一致。 |
+| AT-PERF-01 | 通过 | 改动前打开说明令重建计数从 2 到 3。改动后开关说明、切主题和开关抽屉计数不变。 |
+| AT-PERF-02 | 通过 | 改动前选站台令计数从 2 到 3。改动后 3D 点选四类对象、设施下拉选择出入口，五次均未重建。 |
+| AT-SEL-01 | 通过 | JR 3／4 站台、浮卡标题和实例高亮一致，其他实例淡化。 |
+| AT-SEL-02 | 通过 | 正常模式移动目标且放大超过 1.2 倍，最终与减少动态效果模式到达同一机位。 |
+| AT-SEL-03 | 通过 | 3／4 与 5／6 站台连续点选时，高亮与浮卡同步切换。 |
+| AT-SEL-05 | 通过 | Esc、画布空白、浮卡关闭均清除选择和淡化，保留镜头。重置键恢复缩放。 |
+| AT-SEL-04 | 未运行 | 多界面一致性验收留到 T10。 |
+| AT-SEL-07 | 未运行 | 本阶段未运行独立的手动换层验收。 |
+
+最终命令 `npm run build && npm test` 退出码 0。校验 171 个节点与 194 条边，TypeScript 和 Vite 构建通过。主 JS 840.04 kB，gzip 235.77 kB，仍有 Vite 500 kB 提示。Vitest 17/17，Playwright 9/9，浏览器约 1.7 分钟。改动前的五项新 Playwright 用例均失败，新 Vitest 套件因待实现模块缺失而失败。回归期间修正了两个取点和一个缓动断言，最终全部复跑。
+
+**截图**
+
+前后各 11 张，位于 Lab 的 `shots/baseline/` 与 `shots/t1/`。八个回归机位按 `01`–`06` 编号，另有 `07-selection-{platform,gate,entrance}.png` 三对同机位对比。截图已加入忽略规则。基线三个选择机位使用与基线构建资产同名的 Astra 本地生产包。截图脚本用零滚动事件中断镜头，以固定机位比外观。
+
+**已知问题与前提**
+
+- Windows Chromium 使用 ANGLE SwiftShader。一次 800 ms 取样仍是中间帧，最终到达正确机位。未测硬件 GPU 和移动真机。灯带有独立自发光，淡化时仍可见。
+- 文档源工作树和原仓库分支均未修改。安装沿用相同锁文件的本机包，再运行 `npm install --offline --no-audit --no-fund` 成功。Playwright 通过本机预览授权运行，端口 27225。
+
+**下一阶段** · T2 依赖现有选择目标与 owner 关系，补充设施索引及 AT-DET-09、AT-SEL-06 黄金用例。
