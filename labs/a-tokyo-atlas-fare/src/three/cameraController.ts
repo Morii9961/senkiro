@@ -472,10 +472,12 @@ export class SpatialCameraController
     const desiredLook = new THREE.Vector3();
 
     if (rig === 'cab') {
-      desiredEye.copy(this.smoothedTrainPos).addScaledVector(F, 1.8);
-      desiredEye.y = this.smoothedTrainPos.y + 0.55;
-      desiredLook.copy(this.smoothedTrainPos).addScaledVector(F, 68);
-      desiredLook.y = this.smoothedTrainPos.y + 0.3 + F.y * 55;
+      // Mount driver POV strictly ahead of the un-lagged front nose tip (+0.75m) so speed-dependent
+      // exponential damping NEVER pulls the camera backwards into Car 0's opaque carbody!
+      desiredEye.copy(rawPos).addScaledVector(F, 0.75);
+      desiredEye.y = hp.y + 2.35;
+      desiredLook.copy(desiredEye).addScaledVector(F, 68);
+      desiredLook.y = desiredEye.y - 0.18 + F.y * 55;
     } else if (rig === 'front') {
       const fwdDist = (isUg ? 24 : 38) * scale;
       const latDist = (isUg ? 2.2 : 13) * scale;
@@ -543,9 +545,14 @@ export class SpatialCameraController
       desiredEye.set(safe.x, safe.y, safe.z);
     }
 
-    if (firstSnap) {
+    if (firstSnap || rig === 'cab') {
       this.camera.position.copy(desiredEye);
-      this.controls.target.copy(desiredLook);
+      if (firstSnap) {
+        this.controls.target.copy(desiredLook);
+      } else {
+        const lookAlpha = 1 - Math.exp(-10.0 * Math.max(0.004, dtSec));
+        this.controls.target.lerp(desiredLook, lookAlpha);
+      }
     } else {
       const eyeAlpha = 1 - Math.exp(-8.5 * Math.max(0.004, dtSec));
       this.camera.position.lerp(desiredEye, eyeAlpha);

@@ -411,4 +411,160 @@ test.describe('SENKIRO Lab · Tokyo Atlas & Fare Interactive E2E', () => {
     await expect(page.getByTestId('free-speed-select')).toHaveCount(0);
     expect(pageErrors).toEqual([]);
   });
+
+  test('13. Atlas v2.0 Virtual Train Simulation, Rolling Stock Rendering, Honesty Badge & Underground Train Follow', async ({
+    page,
+  }) => {
+    const errors: string[] = [];
+    page.on('pageerror', (err) => errors.push(String(err)));
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') errors.push(msg.text());
+    });
+
+    await page.goto('/');
+    await page.getByTestId('view-mode-3d').click();
+    await page.waitForSelector('canvas[data-testid="three-3d-canvas"]');
+
+    // Simulation dock & synthetic honesty badge must be immediately visible
+    await expect(page.getByTestId('simulation-control-bar')).toBeVisible();
+    await expect(page.getByTestId('sim-synthetic-badge')).toContainText(/模擬運行|SIMULATED/i);
+
+    // Wait for live simulation & rolling stock telemetry to report active trains + cars
+    await expect
+      .poll(
+        async () =>
+          page.evaluate(() => {
+            const m = (
+              window as unknown as {
+                __SENKIRO_3D_METRICS__?: { activeTrains?: number; rollingStockCars?: number };
+              }
+            ).__SENKIRO_3D_METRICS__;
+            return {
+              trains: m?.activeTrains ?? 0,
+              cars: m?.rollingStockCars ?? 0,
+            };
+          }),
+        { timeout: 12_000 },
+      )
+      .toEqual(expect.objectContaining({ trains: expect.any(Number), cars: expect.any(Number) }));
+
+    const counts = await page.evaluate(() => {
+      const m = (
+        window as unknown as {
+          __SENKIRO_3D_METRICS__?: {
+            activeTrains?: number;
+            undergroundTrains?: number;
+            rollingStockCars?: number;
+          };
+        }
+      ).__SENKIRO_3D_METRICS__;
+      return m ?? {};
+    });
+    expect(counts.activeTrains ?? 0).toBeGreaterThan(10);
+    expect(counts.undergroundTrains ?? 0).toBeGreaterThan(0);
+    expect(counts.rollingStockCars ?? 0).toBeGreaterThan(40);
+
+    // Set 2x speed, pick a subway train, follow it, verify TrainInspector & synthetic disclosure
+    await page.getByTestId('sim-speed-select').selectOption('2');
+    const trainSelect = page.getByTestId('sim-train-select');
+    const chosenVal = await trainSelect.evaluate((el) => {
+      const sel = el as HTMLSelectElement;
+      const opts = Array.from(sel.options);
+      const ug =
+        opts.find((o) => /丸ノ内|Marunouchi|副都心|Fukutoshin|大江戸|Oedo|銀座|Ginza/i.test(o.text)) ??
+        opts[0];
+      return ug?.value ?? '';
+    });
+    expect(chosenVal.length).toBeGreaterThan(0);
+    await trainSelect.selectOption(chosenVal);
+    await page.getByTestId('sim-follow-btn').click();
+
+    await expect(page.getByTestId('train-detail-card')).toBeVisible();
+    await expect(page.getByTestId('train-synthetic-banner')).toBeVisible();
+
+    // Switch follow angle to Side -> Cab and verify continuous motion
+    await page.getByTestId('follow-angle-side').click();
+    await page.waitForTimeout(800);
+    await page.getByTestId('follow-angle-cab').click();
+    await page.waitForTimeout(900);
+
+    const posBefore = await page.evaluate(
+      () =>
+        (window as unknown as { __SENKIRO_3D_CAMERA__?: { pos: number[] } }).__SENKIRO_3D_CAMERA__
+          ?.pos ?? [0, 0, 0],
+    );
+    await page.waitForTimeout(1400);
+    const posAfter = await page.evaluate(
+      () =>
+        (window as unknown as { __SENKIRO_3D_CAMERA__?: { pos: number[] } }).__SENKIRO_3D_CAMERA__
+          ?.pos ?? [0, 0, 0],
+    );
+    const moved = Math.hypot(
+      posAfter[0]! - posBefore[0]!,
+      posAfter[1]! - posBefore[1]!,
+      posAfter[2]! - posBefore[2]!,
+    );
+    expect(moved).toBeGreaterThan(1);
+
+    // Exit follow cleanly
+    await page.getByTestId('sim-exit-follow-btn').click();
+    expect(errors).toEqual([]);
+  });
+
+  test('14. Atlas v2.0 Underground Explorer Interior Entry, Zero Label Overlap & Safe Return to Surface', async ({
+    page,
+  }) => {
+    const errors: string[] = [];
+    page.on('pageerror', (err) => errors.push(String(err)));
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') errors.push(msg.text());
+    });
+
+    await page.goto('/');
+    await page.getByTestId('view-mode-3d').click();
+    await page.waitForSelector('canvas[data-testid="three-3d-canvas"]');
+    await page.waitForTimeout(1200);
+
+    // Verify hierarchical screen-space map labels have zero bounding-box overlaps
+    const overviewOverlaps = await page.evaluate(() => {
+      const boxes = Array.from(document.querySelectorAll('[data-testid^="map-label-"]'))
+        .map((el) => el.getBoundingClientRect())
+        .filter((r) => r.width > 1 && r.height > 1);
+      let ov = 0;
+      for (let i = 0; i < boxes.length; i++) {
+        for (let j = i + 1; j < boxes.length; j++) {
+          const a = boxes[i]!;
+          const b = boxes[j]!;
+          if (a.left < b.right - 1 && a.right > b.left + 1 && a.top < b.bottom - 1 && a.bottom > b.top + 1) {
+            ov++;
+          }
+        }
+      }
+      return ov;
+    });
+    expect(overviewOverlaps).toBe(0);
+
+    // Enter Underground Explorer inside dual-surface tunnel
+    await page.getByTestId('mode-btn-underground_explorer').click();
+    await expect(page.getByTestId('explorer-location-card')).toBeVisible();
+    await page.waitForTimeout(900);
+
+    const ugCamY = await page.evaluate(
+      () =>
+        (window as unknown as { __SENKIRO_3D_CAMERA__?: { pos: number[] } }).__SENKIRO_3D_CAMERA__
+          ?.pos[1] ?? 999,
+    );
+    expect(ugCamY).toBeLessThan(-5);
+
+    // One-click safe Return to Surface
+    await page.getByTestId('explorer-return-surface-btn').click();
+    await page.waitForTimeout(900);
+    const surfCamY = await page.evaluate(
+      () =>
+        (window as unknown as { __SENKIRO_3D_CAMERA__?: { pos: number[] } }).__SENKIRO_3D_CAMERA__
+          ?.pos[1] ?? -999,
+    );
+    expect(surfCamY).toBeGreaterThan(10);
+    expect(errors).toEqual([]);
+  });
 });

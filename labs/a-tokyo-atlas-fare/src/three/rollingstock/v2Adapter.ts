@@ -400,6 +400,12 @@ export class RollingStockRendererV2 implements RollingStockRendererAdapter {
 
   private readonly normalMaterial: THREE.MeshStandardMaterial;
   private readonly selectedMaterial: THREE.MeshStandardMaterial;
+  private readonly farInstancedMaterial: THREE.MeshStandardMaterial;
+  private readonly farInstancedMesh: THREE.InstancedMesh;
+  private readonly farInstanceTrainIds: string[] = [];
+  private readonly farDummy = new THREE.Object3D();
+  private readonly farColor = new THREE.Color();
+  private static readonly MAX_FAR_INSTANCES = 1600;
 
   private selectedTrainId: string | null = null;
   private isDark = false;
@@ -425,15 +431,38 @@ export class RollingStockRendererV2 implements RollingStockRendererAdapter {
       envMapIntensity: 1.15,
     });
 
+    // Subtle warm specular sheen preserves authentic Japanese livery colors (e.g., Marunouchi Red, Ginza Yellow)
     this.selectedMaterial = new THREE.MeshStandardMaterial({
       name: 'v2-rolling-stock-selected-pbr',
       vertexColors: true,
-      roughness: 0.28,
-      metalness: 0.48,
-      emissive: 0x38bdf8,
-      emissiveIntensity: 0.32,
+      roughness: 0.26,
+      metalness: 0.46,
+      emissive: 0xfff8eb,
+      emissiveIntensity: 0.08,
       envMapIntensity: 1.35,
     });
+
+    // Single-Draw-Call InstancedMesh batch for far-LOD (>= 1350m) non-selected trains across Tokyo!
+    const farBox = new THREE.BoxGeometry(1, 1, 1);
+    farBox.translate(0, 0.5, 0); // Bottom rests strictly at y = 0.0 (rail head!)
+    this.farInstancedMaterial = new THREE.MeshStandardMaterial({
+      name: 'v2-rolling-stock-far-instanced',
+      color: 0xffffff,
+      roughness: 0.4,
+      metalness: 0.32,
+      envMapIntensity: 1.0,
+    });
+    this.farInstancedMesh = new THREE.InstancedMesh(
+      farBox,
+      this.farInstancedMaterial,
+      RollingStockRendererV2.MAX_FAR_INSTANCES,
+    );
+    this.farInstancedMesh.name = 'SimTrains_FarLodInstancedBatch';
+    this.farInstancedMesh.count = 0;
+    this.farInstancedMesh.castShadow = false;
+    this.farInstancedMesh.receiveShadow = false;
+    this.farInstancedMesh.frustumCulled = false;
+    this.group.add(this.farInstancedMesh);
   }
 
   /**
@@ -529,30 +558,58 @@ export class RollingStockRendererV2 implements RollingStockRendererAdapter {
       this.isDark = isDark;
       this.normalMaterial.emissive.setHex(isDark ? 0x1e293b : 0x000000);
       this.normalMaterial.emissiveIntensity = isDark ? 0.22 : 0.0;
+      this.farInstancedMaterial.emissive.setHex(isDark ? 0x334155 : 0x000000);
+      this.farInstancedMaterial.emissiveIntensity = isDark ? 0.28 : 0.0;
     }
 
     const seenIds = new Set<string>();
     let renderedCars = 0;
+    let detailedDrawCalls = 0;
     let lodNear = 0;
     let lodMid = 0;
     let lodFar = 0;
+    let farInstanceIdx = 0;
 
     this.interactiveTrainMeshes.length = 0;
+    this.farInstanceTrainIds.length = 0;
 
     for (const train of trains) {
-      seenIds.add(train.trainId);
-
       const distM = Math.hypot(
         cameraPos.x - train.headPose.x,
         cameraPos.y - train.headPose.y,
         cameraPos.z - train.headPose.z,
       );
 
+      const isSelected = train.trainId === this.selectedTrainId;
       const lod: RollingStockLodLevel =
         distM < 380 ? 'high' : distM < 1350 ? 'medium' : 'low';
       if (lod === 'high') lodNear++;
       else if (lod === 'medium') lodMid++;
       else lodFar++;
+
+      // Batch all far-LOD (>= 1350m) non-selected trains into ONE GPU InstancedMesh (1 draw call total!)
+      if (lod === 'low' && !isSelected) {
+        const spec = this.getTrainSpec(train.modelId);
+        const bodyBase = new THREE.Color(spec.bodyBaseHex);
+        const primary = new THREE.Color(train.lineColor || spec.liveryPrimaryHex);
+        this.farColor.copy(bodyBase).lerp(primary, 0.58);
+        for (const cp of train.carPoses) {
+          if (farInstanceIdx >= RollingStockRendererV2.MAX_FAR_INSTANCES) break;
+          this.farDummy.position.set(cp.x, cp.y, cp.z);
+          this.farDummy.rotation.order = 'YXZ';
+          this.farDummy.rotation.set(cp.pitchRad, cp.yawRad, cp.rollRad, 'YXZ');
+          this.farDummy.scale.set(spec.carWidthM, spec.carHeightM, Math.max(8, cp.lengthM * 0.95));
+          this.farDummy.updateMatrix();
+          this.farInstancedMesh.setMatrixAt(farInstanceIdx, this.farDummy.matrix);
+          this.farInstancedMesh.setColorAt(farInstanceIdx, this.farColor);
+          this.farInstanceTrainIds.push(train.trainId);
+          farInstanceIdx++;
+          renderedCars++;
+        }
+        continue;
+      }
+
+      seenIds.add(train.trainId);
 
       const doorOpen =
         train.doorState === 'open' ||
@@ -573,7 +630,6 @@ export class RollingStockRendererV2 implements RollingStockRendererAdapter {
         trainGroup.userData = { trainId: train.trainId, modelId: train.modelId };
 
         const carMeshes: THREE.Mesh[] = [];
-        const isSelected = train.trainId === this.selectedTrainId;
         const mat = isSelected ? this.selectedMaterial : this.normalMaterial;
 
         for (const cp of train.carPoses) {
@@ -605,7 +661,6 @@ export class RollingStockRendererV2 implements RollingStockRendererAdapter {
       }
 
       const needsGeomSwap = visual.activeLod !== lod || visual.doorOpen !== doorOpen;
-      const isSelected = train.trainId === this.selectedTrainId;
       const targetMat = isSelected ? this.selectedMaterial : this.normalMaterial;
 
       for (let i = 0; i < train.carPoses.length; i++) {
@@ -628,13 +683,24 @@ export class RollingStockRendererV2 implements RollingStockRendererAdapter {
 
         this.interactiveTrainMeshes.push(mesh);
         renderedCars++;
+        detailedDrawCalls++;
       }
 
       visual.activeLod = lod;
       visual.doorOpen = doorOpen;
     }
 
-    // Remove stale trains that are no longer in the simulation state
+    this.farInstancedMesh.count = farInstanceIdx;
+    this.farInstancedMesh.visible = farInstanceIdx > 0;
+    if (farInstanceIdx > 0) {
+      this.farInstancedMesh.instanceMatrix.needsUpdate = true;
+      if (this.farInstancedMesh.instanceColor) {
+        this.farInstancedMesh.instanceColor.needsUpdate = true;
+      }
+      this.interactiveTrainMeshes.push(this.farInstancedMesh);
+    }
+
+    // Remove stale trains that are no longer detailed or in the simulation state
     for (const [tid, visual] of this.activeTrains.entries()) {
       if (!seenIds.has(tid)) {
         this.group.remove(visual.group);
@@ -648,7 +714,7 @@ export class RollingStockRendererV2 implements RollingStockRendererAdapter {
       lodNearTrains: lodNear,
       lodMidTrains: lodMid,
       lodFarTrains: lodFar,
-      drawCallsEstimate: renderedCars,
+      drawCallsEstimate: detailedDrawCalls + (farInstanceIdx > 0 ? 1 : 0),
     };
   }
 
@@ -663,6 +729,9 @@ export class RollingStockRendererV2 implements RollingStockRendererAdapter {
   }
 
   resolveTrainHit(hit: THREE.Intersection): string | null {
+    if (hit.object === this.farInstancedMesh && typeof hit.instanceId === 'number') {
+      return this.farInstanceTrainIds[hit.instanceId] ?? null;
+    }
     let cur: THREE.Object3D | null = hit.object;
     while (cur) {
       const tid = (cur.userData as { trainId?: unknown } | undefined)?.trainId;
@@ -689,6 +758,7 @@ export class RollingStockRendererV2 implements RollingStockRendererAdapter {
   dispose(): void {
     this.activeTrains.clear();
     this.interactiveTrainMeshes.length = 0;
+    this.farInstanceTrainIds.length = 0;
     while (this.group.children.length > 0) {
       this.group.remove(this.group.children[0]!);
     }
@@ -696,6 +766,8 @@ export class RollingStockRendererV2 implements RollingStockRendererAdapter {
       g.dispose();
     }
     this.geomCache.clear();
+    this.farInstancedMesh.geometry.dispose();
+    this.farInstancedMaterial.dispose();
     this.normalMaterial.dispose();
     this.selectedMaterial.dispose();
   }

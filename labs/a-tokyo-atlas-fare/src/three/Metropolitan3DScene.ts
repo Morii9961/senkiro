@@ -117,6 +117,7 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
   private verticalExaggeration = 1.0;
   private tunnelCutawayStyle: TunnelCutawayStyle = 'translucent_shell';
   private lastUndergroundSettings: UndergroundViewSettings | null = null;
+  private enclosedUndergroundActive = false;
 
   // v2.0 Subsystem Plugin Slots (injected by Integration Coordinator as branches merge)
   private simulationEngine: TrainSimulationEngineAdapter | null = null;
@@ -520,6 +521,10 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
     this.buildingManager.setTheme(isDark);
     this.cutawayVisuals.setTheme(isDark);
     this.tunnelLayer.setTheme(isDark);
+    if (this.enclosedUndergroundActive) {
+      this.scene.background = new THREE.Color(0x0a0f18);
+      this.scene.fog = new THREE.Fog(0x0a0f18, 85, 390);
+    }
   }
 
   applyFilters(params: {
@@ -1049,24 +1054,16 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
       this.smoothedFps = Math.round((1000 / Math.max(1, avg)) * 10) / 10;
     }
 
-    // Step v2.0 virtual train simulation & sync rolling stock meshes (unscaled 1:1 carbody!)
+    // 1. Step v2.0 virtual train simulation first so camera follow & rolling stock read the exact current frame
     if (this.simulationEngine) {
       this.latestTrains = this.simulationEngine.step(dtSec, this.verticalExaggeration);
-      if (this.rollingStockRenderer) {
-        this.rollingStockRenderer.syncTrains(
-          this.latestTrains,
-          this.camera.position,
-          this.verticalExaggeration,
-          this.isDark,
-        );
-      }
       if (now - this.lastSimEmitTime > 250) {
         this.lastSimEmitTime = now;
         this.emitSimulationState();
       }
     }
 
-    // Active Train Follow, Line Trace fly-through, or Interactive Spatial Camera
+    // 2. Active Train Follow, Line Trace fly-through, or Interactive Spatial Camera
     if (this.followTrainId && this.simulationEngine) {
       const targetTrain = this.simulationEngine.getTrainById(this.followTrainId);
       if (targetTrain) {
@@ -1083,6 +1080,39 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
       this.positionCameraOnTrace(this.traceProgress);
     } else {
       this.camCtrl.update(now, dtSec);
+    }
+
+    // 3. Enclosed subterranean atmosphere & surface occlusion when camera is physically inside a tunnel
+    const wantEnclosedUnderground = this.camera.position.y < -4.2 && !this.cutawayActive;
+    if (wantEnclosedUnderground !== this.enclosedUndergroundActive) {
+      this.enclosedUndergroundActive = wantEnclosedUnderground;
+      const skyDome = this.scene.getObjectByName('atmospheric-sky-dome');
+      if (skyDome) skyDome.visible = !wantEnclosedUnderground;
+      this.terrainLayer.group.visible = !wantEnclosedUnderground;
+      this.buildingManager.group.visible = !wantEnclosedUnderground;
+      this.viaductLayer.group.visible = !wantEnclosedUnderground;
+      if (wantEnclosedUnderground) {
+        this.scene.background = new THREE.Color(0x0a0f18);
+        this.scene.fog = new THREE.Fog(0x0a0f18, 85, 390);
+      } else {
+        this.skyEnv.applyToScene(this.scene, this.isDark);
+      }
+    }
+
+    // 4. Sync 1:1 unscaled rolling stock meshes (cull buried deep-tunnel trains while surface ground is opaque!)
+    if (this.rollingStockRenderer && this.latestTrains.length > 0) {
+      const groundOpaqueAbove = !this.cutawayActive && this.camera.position.y >= -1.5;
+      const trainsForRender = groundOpaqueAbove
+        ? this.latestTrains.filter(
+            (tr) => !(tr.isUnderground && tr.inTunnel) || tr.trainId === this.followTrainId,
+          )
+        : this.latestTrains;
+      this.rollingStockRenderer.syncTrains(
+        trainsForRender,
+        this.camera.position,
+        this.verticalExaggeration,
+        this.isDark,
+      );
     }
 
     const focusTarget = this.camCtrl.getFocusTarget();

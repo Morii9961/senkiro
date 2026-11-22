@@ -374,9 +374,11 @@ describe('SENKIRO Atlas v2 — Japanese Rolling Stock 3D Asset System & RollingS
     expect(stats.lodNearTrains).toBe(1);
     expect(stats.lodMidTrains).toBe(1);
     expect(stats.lodFarTrains).toBe(1);
-    expect(renderer.interactiveTrainMeshes).toHaveLength(9);
+    // 3 near + 3 mid detailed meshes + 1 GPU InstancedMesh batch for all far-LOD cars = 7 draw calls
+    expect(renderer.interactiveTrainMeshes).toHaveLength(7);
+    expect(stats.drawCallsEstimate).toBe(7);
 
-    // Selection & Raycast hit resolution
+    // Selection & Raycast hit resolution (both detailed mesh and far InstancedMesh)
     renderer.setSelectedTrain('train-1000-mid');
     const hitMesh = renderer.interactiveTrainMeshes[3]!;
     const resolvedId = renderer.resolveTrainHit({
@@ -385,6 +387,14 @@ describe('SENKIRO Atlas v2 — Japanese Rolling Stock 3D Asset System & RollingS
       point: new THREE.Vector3(),
     });
     expect(resolvedId).toBe('train-1000-mid');
+
+    const farInstHit = renderer.resolveTrainHit({
+      object: renderer.interactiveTrainMeshes[6]!,
+      instanceId: 0,
+      distance: 2200,
+      point: new THREE.Vector3(),
+    });
+    expect(farInstHit).toBe('train-17000-far');
 
     renderer.dispose();
     expect(renderer.interactiveTrainMeshes).toHaveLength(0);
