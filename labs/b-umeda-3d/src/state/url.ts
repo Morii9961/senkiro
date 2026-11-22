@@ -34,7 +34,7 @@ function integer(value: string | null): number | null {
 
 function endpoint(value: string | null): string | null {
   const place = value === null ? undefined : nodes.get(value)
-  return place && place.kind !== 'Landing' ? place.id : null
+  return place?.id ?? null
 }
 
 function parseSelection(raw: string | null): SelectionTarget | null {

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useReducer, useState } from 'react'
+import { useEffect, useMemo, useReducer, useRef, useState } from 'react'
 import { Scene } from './Scene'
 import { FloorPlan } from './FloorPlan'
 import { route, cost } from './domain/graph'
@@ -8,13 +8,13 @@ import { Guide } from './Guide'
 import { exampleService } from './providers/service'
 import { createFacilityIndex, ownersOf } from './domain/index'
 import { describePlatform } from './domain/describe/platform'
+import { describeFacility } from './domain/describe/facilities'
 import type { DetailAction } from './domain/describe/types'
 import { initialSelection, selectionReducer, targetFromOwner, type SelectionTarget } from './state/selection'
 import { parseUrl, serializeUrl } from './state/url'
 import { AppHeader } from './ui/controls/AppHeader'
 import { FloorControls } from './ui/controls/FloorControls'
 import { DetailControl } from './ui/controls/DetailControl'
-import { FeatureCard } from './ui/panels/FeatureCard'
 import { DetailSheet, type SheetHeight } from './ui/panels/DetailSheet'
 import { InfoDialog } from './ui/panels/InfoDialog'
 import { RoutePanel, instruction, tours } from './ui/panels/RoutePanel'
@@ -68,11 +68,14 @@ export function App() {
             (p) => p.kind === 'Platform' && inSite(p, siteId),
           ))
     if (!target) return
+    showPassenger(target.id)
+  }
+  function showPassenger(id: string) {
     selectStep(-1)
     clear()
     selectFloor(null)
     setPlan(false)
-    setEye(target.id)
+    setEye(id)
   }
   const [shell, setShell] = useState(true)
   const site = sites.find((s) => s.id === siteId)
@@ -103,6 +106,11 @@ export function App() {
     start: initial.from ?? tours[0].start,
     end: initial.to ?? tours[0].end,
   })
+  const [needsStart, setNeedsStart] = useState(
+    initial.from === null && !!initial.to && nodes.get(initial.to)?.kind === 'Entrance',
+  )
+  const exitOrigin = useRef<string | null>(null)
+  const panelElement = useRef<HTMLElement>(null)
   const [drawer, setDrawer] = useState(
     initial.step >= 0 || initial.stepFreeOnly || initial.from !== null || initial.to !== null,
   )
@@ -119,8 +127,8 @@ export function App() {
     [dialog, setDialog] = useState<'help' | 'sources' | null>(null)
   const t = (ja: string, en: string) => (lang === 'ja' ? ja : en)
   const steps = useMemo(
-      () => route(station, trip.start, trip.end, lift),
-      [trip.start, trip.end, lift],
+      () => needsStart ? null : route(station, trip.start, trip.end, lift),
+      [trip.start, trip.end, lift, needsStart],
     ),
     path = steps ?? [],
     stats = cost(path)
@@ -135,7 +143,8 @@ export function App() {
       mode: plan ? '2d' : '3d',
       detail,
       selection,
-      from: trip.start === tours[0].start ? null : trip.start,
+      from: needsStart || (trip.start === tours[0].start && nodes.get(trip.end)?.kind !== 'Entrance')
+        ? null : trip.start,
       to: trip.end === tours[0].end ? null : trip.end,
       stepFreeOnly: lift,
       step,
@@ -144,7 +153,7 @@ export function App() {
       feed,
     }, url.searchParams).toString()
     if (url.href !== window.location.href) window.history.replaceState(window.history.state, '', url)
-  }, [dark, detail, feed, floor, lang, lift, plan, selection, siteId, step, trip.start, trip.end])
+  }, [dark, detail, feed, floor, lang, lift, needsStart, plan, selection, siteId, step, trip.start, trip.end])
   const floorNow = floor ?? 0,
     shownFloor = floorLabels.find((f) => f[0] === floorNow)?.[1]
   function togglePlan(next: boolean) {
@@ -178,6 +187,7 @@ export function App() {
     setEye(null)
     setSiteId(null)
     setTrip({ start: tours[i].start, end: tours[i].end })
+    setNeedsStart(false)
     clear()
     selectStep(-1)
     selectFloor(plan ? 0 : null)
@@ -186,6 +196,7 @@ export function App() {
     setEye(null)
     setSiteId(null)
     setTrip({ ...trip, [which]: id })
+    if (which === 'start') setNeedsStart(false)
     selectStep(-1)
     clear()
     selectFloor(plan ? floors.get(nodes.get(id)!.levelId)!.ordinal : null)
@@ -196,11 +207,42 @@ export function App() {
     setPanel('route')
   }
   function detailAction(kind: DetailAction, target: SelectionTarget) {
+    const link = facilityIndex.link(target.id)
+    const targetSite = target.kind === 'station'
+      ? sites.find((entry) => entry.id === target.id || entry.stationId === target.id)
+      : undefined
     if (kind === 'start' || kind === 'end') {
-      openRoute(kind, target.id)
+      if (target.kind === 'entrance' && kind === 'end') {
+        openRoute('end', target.id)
+        setNeedsStart(!exitOrigin.current)
+        if (exitOrigin.current) setTrip({ start: exitOrigin.current, end: target.id })
+      } else {
+        openRoute(kind, link ? (kind === 'start' ? link.from : link.to) : target.id)
+      }
+    } else if (kind === 'through' && link) {
+      setEye(null)
+      setSiteId(null)
+      setTrip({ start: link.from, end: link.to })
+      setNeedsStart(false)
+      selectStep(0)
+      selectFloor(plan ? facilityIndex.levelOf(link.to)!.ordinal : null)
+      setDrawer(true)
+      setPanel('route')
+      clear()
+    } else if (kind === 'site' && targetSite) {
+      visit(targetSite.id)
+      dispatchSelection({ type: 'select', target })
     } else if (kind === 'passenger') {
-      interior()
-    } else {
+      if (targetSite) {
+        const position = targetSite.id === 'sk:context:whity'
+          ? 'sk:concourse:whity-east'
+          : station.places.find((place) => place.kind === 'Platform' && inSite(place, targetSite.id))?.id
+        if (position) {
+          setSiteId(targetSite.id)
+          showPassenger(position)
+        }
+      } else interior()
+    } else if (kind === 'floor') {
       const level = facilityIndex.levelOf(target.id)
       if (!level) return
       setEye(null)
@@ -212,6 +254,11 @@ export function App() {
   function inspect(id: string) {
     const target = targetFromOwner(id)
     if (!target) return
+    if (target.kind === 'entrance' && selection?.id !== id) {
+      exitOrigin.current = selection?.kind === 'platform' ? selection.id
+        : selection?.kind === 'gate' ? facilityIndex.gateView(selection.id).outsideSide.id
+          : null
+    }
     const places = targetPlaces(target)
     const sitePlaces = places.filter((place) => inSite(place, siteId))
     if (siteId && sitePlaces.length === 0) setSiteId(null)
@@ -242,9 +289,15 @@ export function App() {
     return () => document.removeEventListener('keydown', onEscape)
   }, [dialog])
   const place = selection ? nodes.get(selection.id) : null
-  const platformDetail = useMemo(() => selection?.kind === 'platform'
-    ? describePlatform(facilityIndex, selection.id, { lang, example: example ? exampleService.updates[0] : null })
-    : null, [example, lang, selection])
+  const objectDetail = useMemo(() => {
+    if (!selection) return null
+    return selection.kind === 'platform'
+      ? describePlatform(facilityIndex, selection.id, { lang, example: example ? exampleService.updates[0] : null })
+      : describeFacility(station, facilityIndex, selection, lang)
+  }, [example, lang, selection])
+  useEffect(() => {
+    if (selection) panelElement.current?.scrollTo(0, 0)
+  }, [selection])
   const selectionPlaces = useMemo(() => selection ? targetPlaces(selection) : [], [selection])
   const differentFloor = floor !== null && selectionPlaces.length > 0 &&
     !selectionPlaces.some((entry) => floors.get(entry.levelId)?.ordinal === floor)
@@ -257,8 +310,8 @@ export function App() {
         onTheme={() => theme(!dark)}
         onLanguage={() => language(lang === 'ja' ? 'en' : 'ja')}
       />
-      <div className={'workspace' + (drawer || platformDetail ? ' with-drawer' : '') +
-        (platformDetail ? ' with-detail' : '')} data-sheet-height={platformDetail ? sheetHeight : undefined}>
+      <div className={'workspace' + (drawer || objectDetail ? ' with-drawer' : '') +
+        (objectDetail ? ' with-detail' : '')} data-sheet-height={objectDetail ? sheetHeight : undefined}>
         <section className="viewer">
           <div className="viewer-bar">
             <strong>
@@ -320,10 +373,6 @@ export function App() {
                 {exampleService.updates[0].observedAt}
               </div>
             )}
-            <FeatureCard
-              lang={lang} selection={platformDetail ? null : selection} clear={clear}
-              onRoute={openRoute}
-            />
             {!plan && differentFloor && (
               <div className="eye-hint">
                 {t('対象は別の階にあります。', 'This feature is on another floor.')}{' '}
@@ -458,8 +507,8 @@ export function App() {
             </small>
           </div>
         </section>
-        <aside hidden={!drawer && !platformDetail}>
-          {platformDetail && <DetailSheet spec={platformDetail} lang={lang} height={sheetHeight}
+        <aside ref={panelElement} hidden={!drawer && !objectDetail}>
+          {objectDetail && <DetailSheet spec={objectDetail} lang={lang} height={sheetHeight}
             onHeight={setSheetHeight} onClose={clear} onSelect={(target) => inspect(target.id)} onAction={detailAction} />}
           {drawer && (
             <>
@@ -479,7 +528,7 @@ export function App() {
               </nav>
               {panel === 'route' ? (
                 <RoutePanel
-                  {...{ lang, tour, trip, step, lift, steps, stats, pickTour, endpoint, highlight }}
+                  {...{ lang, tour, trip, step, lift, steps, stats, pickTour, endpoint, highlight, needsStart }}
                   onSwap={() => {
                     setTrip({ start: trip.end, end: trip.start })
                     selectStep(-1)

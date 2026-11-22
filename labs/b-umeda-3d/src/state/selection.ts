@@ -1,4 +1,4 @@
-import { nodes, sites, station } from '../model'
+import { linesById, nodes, sites, station } from '../model'
 import { linkTarget, placeTarget } from '../domain/index'
 
 export type SelectionKind =
@@ -48,6 +48,7 @@ export function targetFromOwner(id: string): SelectionTarget | null {
   if (place) return placeTarget(place)
   const link = links.get(id)
   if (link) return linkTarget(link)
+  if (linesById.has(id)) return { kind: 'line', id }
   return sites.some((site) => site.id === id) || station.stations.some((site) => site.id === id)
     ? { kind: 'station', id }
     : null

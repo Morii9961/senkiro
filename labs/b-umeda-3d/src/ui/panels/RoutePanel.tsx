@@ -1,6 +1,6 @@
 import type { Step } from '../../domain/graph'
 import type { Language } from '../../domain/types'
-import { floors, station } from '../../model'
+import { floors, nodes, station } from '../../model'
 import { areaText } from '../../Guide'
 
 export const tours = [
@@ -60,6 +60,7 @@ interface Props {
   trip: { start: string; end: string }
   step: number
   lift: boolean
+  needsStart: boolean
   steps: Step[] | null
   stats: { segments: number; changes: number; gates: number }
   pickTour: (index: number) => void
@@ -70,7 +71,7 @@ interface Props {
 }
 
 export function RoutePanel({
-  lang, tour, trip, step, lift, steps, stats, pickTour, endpoint, highlight, onSwap, onLiftChange,
+  lang, tour, trip, step, lift, needsStart, steps, stats, pickTour, endpoint, highlight, onSwap, onLiftChange,
 }: Props) {
   const t = (ja: string, en: string) => (lang === 'ja' ? ja : en)
   const path = steps ?? []
@@ -103,10 +104,13 @@ export function RoutePanel({
               <small>{i ? t('到着', 'To') : t('出発', 'From')}</small>
               <select
                 aria-label={i ? t('到着', 'To') : t('出発', 'From')}
-                value={trip[key]}
+                value={needsStart && key === 'start' ? '' : trip[key]}
                 onChange={(e) => endpoint(key, e.target.value)}
               >
-                {endpoints.map((n) => (
+                {needsStart && key === 'start' && (
+                  <option value="" disabled>{t('出発地を選択', 'Choose a departure')}</option>
+                )}
+                {(nodes.get(trip[key])?.kind === 'Landing' ? [nodes.get(trip[key])!, ...endpoints] : endpoints).map((n) => (
                   <option key={n.id} value={n.id}>
                     {n.names[lang]} · {floors.get(n.levelId)?.label}
                   </option>
@@ -114,9 +118,7 @@ export function RoutePanel({
               </select>
             </label>
           ))}
-          <button
-            onClick={onSwap}
-          >
+          <button onClick={onSwap} disabled={needsStart}>
             {t('出発地と到着地を交換', 'Swap endpoints')} ⇅
           </button>
         </div>
@@ -199,10 +201,14 @@ export function RoutePanel({
       ) : (
         <p className="panel-top">
           {t(
-            lift
+            needsStart
+              ? '出発地を選択'
+              : lift
               ? '確認済みの段差なし経路がありません。'
               : 'この区間の経路は未確認です。',
-            lift
+            needsStart
+              ? 'Choose a departure'
+              : lift
               ? 'No verified step-free route for these endpoints.'
               : 'No verified route for these endpoints.',
           )}

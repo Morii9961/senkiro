@@ -949,8 +949,7 @@ header {
   font-size: 11px;
   padding: 2px 7px;
 }
-.walk-hud,
-.place-card {
+.walk-hud {
   position: absolute;
   z-index: 3;
   background: var(--card);
@@ -972,34 +971,8 @@ header {
 .walk-hud b {
   margin-right: 6px;
 }
-.walk-hud button,
-.place-card button {
+.walk-hud button {
   padding: 4px 8px;
-}
-.place-card {
-  top: 48px;
-  left: 14px;
-  max-width: min(320px, 85%);
-  padding: 10px 30px 10px 12px;
-  display: grid;
-  gap: 5px;
-  font-size: 12px;
-}
-.place-card strong {
-  font-size: 16px;
-}
-.place-card small {
-  color: var(--sub);
-}
-.place-card .dismiss {
-  position: absolute;
-  top: 2px;
-  right: 2px;
-  border: none;
-}
-.place-card div {
-  display: flex;
-  gap: 5px;
 }
 .pin.station-pin {
   font-size: 13px;

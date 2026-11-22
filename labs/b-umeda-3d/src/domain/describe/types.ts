@@ -13,7 +13,7 @@ export interface DetailRelation {
   badge?: string
 }
 
-export type DetailAction = 'start' | 'end' | 'floor' | 'passenger'
+export type DetailAction = 'start' | 'end' | 'floor' | 'passenger' | 'through' | 'site'
 
 export interface DetailSpec {
   target: SelectionTarget

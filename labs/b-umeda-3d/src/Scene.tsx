@@ -115,6 +115,9 @@ export function Scene(props: Props) {
     const unit = new T.BoxGeometry(),
       material = architecturalMaterial()
     const outlineMaterial = new T.MeshBasicMaterial({ color: selected, side: T.BackSide })
+    const passageMarker = new T.Mesh(unit, new T.MeshBasicMaterial({ color: selected }))
+    passageMarker.visible = false
+    world.add(passageMarker)
     const motion = matchMedia('(prefers-reduced-motion: reduce)')
     const signs = signage()
     const dummy = new T.Object3D(),
@@ -225,7 +228,7 @@ export function Scene(props: Props) {
         .map((value) => value.toFixed(2)).join(',')
       const stage = box.getBoundingClientRect()
       const reserved = Array.from(box.parentElement!.querySelectorAll<HTMLElement>(
-        '.view-tag, .surround, .zoom, .place-card, .walk-hud, .sample-tag, .eye-hint, .detail-control',
+        '.view-tag, .surround, .zoom, .walk-hud, .sample-tag, .eye-hint, .detail-control',
       )).filter((element) => element.offsetWidth > 0).map((element) => {
         const rect = element.getBoundingClientRect()
         return { x: rect.x - stage.x, y: rect.y - stage.y, width: rect.width, height: rect.height }
@@ -447,7 +450,11 @@ export function Scene(props: Props) {
       const colors = group.instanceColor.array as Float32Array
       const next = baseColors.slice()
       const count = showRoute ? group.instanceMatrix.count : previewStart
-      const dimOthers = !!selection && owners.slice(0, count).some((owner) => highlighted.has(owner))
+      const hasInstances = !!selection && owners.slice(0, count).some((owner) => highlighted.has(owner))
+      markCoveredPassage(hasInstances)
+      const dimOthers = hasInstances || passageMarker.visible
+      const selectionColor = selection?.kind === 'line' ? 0x2f7f86 : selected
+      outlineMaterial.color.setHex(selectionColor)
       const updateOutline = rebuilt || group.count !== count || previous?.selection !== selection
       if (group.count !== count) {
         group.count = count
@@ -461,7 +468,7 @@ export function Scene(props: Props) {
         if (routeTint) color.copy(routeTint)
         else color.fromArray(baseColors, i * 3)
         if (highlighted.has(owner)) {
-          color.setHex(selected)
+          color.setHex(selectionColor)
           selectedIndices.push(i)
         } else if (dimOthers) {
           const isRelated = related.has(owner)
@@ -475,13 +482,13 @@ export function Scene(props: Props) {
       }
       const data = gl.domElement.dataset
       data.selected = selection ? selection.kind + ':' + selection.id : ''
-      data.highlighted = String(selectedIndices.length)
+      data.highlighted = String(selectedIndices.length + (passageMarker.visible ? 1 : 0))
       data.dimmed = String(dimmed)
       box.style.cursor = hovered ? 'pointer' : ''
       const hasLabel = (id: string) => labels.some((label) =>
         label.targetId === id && (!label.routeOnly || showRoute),
       )
-      const emphasized = selection && selectedIndices.length > 0 && !hasLabel(selection.id)
+      const emphasized = selection && (selectedIndices.length > 0 || passageMarker.visible) && !hasLabel(selection.id)
         ? selection : hovered && !hasLabel(hovered.id) ? hovered : null
       if (supplementalLabel?.targetId !== emphasized?.id) {
         supplementalLabel?.el.remove()
@@ -527,9 +534,34 @@ export function Scene(props: Props) {
       draw()
     }
 
+    function markCoveredPassage(hasInstances: boolean) {
+      passageMarker.visible = false
+      const { selection, floor, spread, route, step, siteId, eye } = propsNow
+      if (hasInstances || eye || selection?.kind !== 'passage') return
+      const link = station.links.find((entry) => entry.id === selection.id)
+      if (!link || link.connection !== 'verified') return
+      const [from, to] = [nodes.get(link.from)!, nodes.get(link.to)!]
+      const visible = scenePlaceFilter(station, { floor, siteId }, route[step])
+      if (!visible(from) || !visible(to)) return
+      const anchor = (place: Place) => new T.Vector3(
+        place.point[0], floors.get(place.levelId)!.ordinal * (spread ? 9 : 5) + 0.43, place.point[1],
+      )
+      const start = anchor(from)
+      const end = anchor(to)
+      const delta = end.clone().sub(start)
+      passageMarker.position.copy(start).lerp(end, 0.5)
+      passageMarker.scale.set(Math.max(0.2, delta.length()), 0.1, 0.25)
+      passageMarker.rotation.y = -Math.atan2(delta.z, delta.x)
+      passageMarker.visible = true
+    }
+
     function focusSelection() {
       focus = null
-      if (!group || !selectedIndices.length || propsNow.eye) return
+      if (!group || propsNow.eye) return
+      if (!selectedIndices.length) {
+        if (passageMarker.visible) focusBounds(new T.Box3().setFromObject(passageMarker))
+        return
+      }
       unit.computeBoundingBox()
       const selectedBounds = new T.Box3()
       const matrix = new T.Matrix4()
@@ -1144,7 +1176,7 @@ export function Scene(props: Props) {
       const rebuildGeometry = key !== geometryKey
       const needsView = lastReset !== p.reset || lastZoom !== p.zoom.tick
       const changedSelection = p.selection !== previous?.selection
-      const wasVisible = selectedIndices.length > 0
+      const wasVisible = selectedIndices.length > 0 || passageMarker.visible
       if (rebuildGeometry) {
         geometryKey = key
         focus = null
@@ -1157,7 +1189,7 @@ export function Scene(props: Props) {
           p.dark !== previous?.dark || p.showRoute !== previous?.showRoute) {
         applyAppearance(rebuildGeometry, previous)
       } else if (needsView || p.detail !== previous?.detail) draw()
-      if (changedSelection || (rebuildGeometry && !wasVisible && selectedIndices.length > 0)) {
+      if (changedSelection || (rebuildGeometry && !wasVisible && (selectedIndices.length > 0 || passageMarker.visible))) {
         // The detail sheet can resize the viewport before ResizeObserver runs.
         if (p.selection && (gl.domElement.clientWidth !== box.clientWidth ||
           gl.domElement.clientHeight !== box.clientHeight)) size()
@@ -1336,6 +1368,7 @@ export function Scene(props: Props) {
       signs.dispose()
       material.dispose()
       outlineMaterial.dispose()
+      passageMarker.material.dispose()
       unit.dispose()
       gl.dispose()
       gl.domElement.remove()

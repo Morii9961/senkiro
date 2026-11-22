@@ -1,5 +1,5 @@
 import type { Step } from '../../domain/graph'
-import { linkTarget, placeTarget } from '../../domain/index'
+import { linkTarget, ownersOf, placeTarget } from '../../domain/index'
 import type { Language, Model, Place } from '../../domain/types'
 import { sample } from '../../providers/service'
 import type { SelectionKind, SelectionTarget } from '../../state/selection'
@@ -222,8 +222,15 @@ export function buildLabels(
 
 export function objectLabel(model: Model, view: LabelView, target: SelectionTarget): SceneLabelSpec | null {
   const link = model.links.find((entry) => entry.id === target.id)
-  const place = model.places.find((entry) => entry.id === (link?.from ?? target.id))
-  if (!place) return null
+  const entity = link ?? model.places.find((entry) => entry.id === target.id) ??
+    model.context.find((entry) => entry.id === target.id) ??
+    model.stations.find((entry) => entry.id === target.id) ??
+    model.lines.find((entry) => entry.id === target.id)
+  const related = ownersOf(model, target)
+  const visible = scenePlaceFilter(model, view, undefined)
+  const place = model.places.find((entry) => entry.id === (link?.from ?? target.id)) ??
+    model.places.find((entry) => related.has(entry.id) && entry.kind !== 'Landing' && visible(entry))
+  if (!place || !entity) return null
   const level = model.levels.find((entry) => entry.id === place.levelId)!
   const anchor: Anchor = [place.point[0], level.ordinal * (view.spread ? 9 : 5) + 1.6, place.point[1]]
   if (link) {
@@ -235,6 +242,6 @@ export function objectLabel(model: Model, view: LabelView, target: SelectionTarg
   }
   return {
     key: 'object:' + target.id, targetId: target.id, targetKind: target.kind, level: 0, priority: -2,
-    anchor, floorOrdinal: level.ordinal, text: (link ?? place).names[view.lang],
+    anchor, floorOrdinal: level.ordinal, text: entity.names[view.lang],
   }
 }
