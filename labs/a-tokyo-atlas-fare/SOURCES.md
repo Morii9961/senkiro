@@ -16,7 +16,7 @@
 | `src-manual-verified-tokyo-ref` | 東京圏主要路线 站名/站号/直通/换乘人工核实表 | SENKIRO Lab（对照各社官方页面） | CC0 1.0（事实元数据整理） | yes | yes | false | 2026-11-21 | 千代田↔常磐↔小田急、浅草↔京急↔京成直通关系、主要枢纽改札内外区分；未核实写 `null`/`unknown` |
 | `src-synthetic-fare-tariff` | SENKIRO Lab 合成运价与附加费演示表 | SENKIRO Lab | MIT | yes | yes | false | 2026-11-21 | **仅用于规则验证演示，非官方实时购票价格** |
 | `src-osm-overpass-vertical` | OpenStreetMap 铁路纵断标签（`tunnel`/`bridge`/`layer`） | OpenStreetMap Contributors | **ODbL 1.0** | yes | yes | **true** | 2026-11-21 | **物理隔离于独立文件 `data/processed/osm-vertical.json`**，不混入主数据库；仅输出模式 `verticalClass` 与 `verticalOrder`，`elevationM` 均为 `null` |
-| `src-osm-urban-3d-chunks` | OpenStreetMap 东京23区都市地理分块（建筑轮廓/高度、主要道路、河川水域、公园） | OpenStreetMap Contributors | **ODbL 1.0** | yes | yes | **true** | 2026-11-21 | **物理隔离于 `public/data/urban-chunks/`**（130 分块、24,216 栋真实建筑、5,574 条主干道、河川与公园）；未标注高度建筑的示意高度标为 `hb="i"`，非官方测量值 |
+| `src-osm-urban-3d-chunks` | OpenStreetMap 东京23区都市地理分块（建筑轮廓/高度、土地利用、三级路网、站前广场、河川水域、公园） | OpenStreetMap Contributors | **ODbL 1.0** | yes | yes | **true** | 2026-11-22 | **物理隔离于 `public/data/urban-chunks/`**（145 分块、6.91 MB：38,050 栋真实 OSM 建筑 + 10,646 栋沿真实道路与土地利用生成的示意街区补全 `hb="p"`、10,741 条道路、398 处公园、430 块土地利用、465 处广场、1,008 处水体/河道）；`hb="i"` 与 `hb="p"` 均如实标为示意建模，非官方测量值 |
 
 ---
 

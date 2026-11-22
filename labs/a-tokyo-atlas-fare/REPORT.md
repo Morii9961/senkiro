@@ -1,7 +1,7 @@
 # REPORT — SENKIRO Lab · Tokyo Atlas & Fare
 
 ## 1. 一句话结果
-在 `labs/a-tokyo-atlas-fare/` 完成了基于**同一套真实开放数据实体**（MLIT 国土数値情報 N02-24 + ODPT 免密钥都営 GTFS + 人工核实 JR 営業キロ与规则 + 独立隔离 ODbL 东京 23 区都市地理分块）驱动的 **SENKIRO Lab · Tokyo Atlas & Fare（含 Three.js 东京大都市三维城市与地下铁路网络系统）**，保留并回归验证了全部既有 2D 地图、搜索、筛选与可解释 JR 运价功能，通过 **42 条 Vitest 单元测试 + 10 条 Playwright 端到端交互测试**。
+在 `labs/a-tokyo-atlas-fare/` 完成了基于**同一套真实开放数据实体**（MLIT 国土数値情報 N02-24 + ODPT 免密钥都営 GTFS + 人工核实 JR 営業キロ与规则 + 独立隔离 ODbL 东京 23 区都市地理分块）驱动的 **SENKIRO Lab · Tokyo Atlas & Fare（含 Phase 2 半写实 Three.js 东京大都市三维城市与地下开削铁路网络系统）**，保留并回归验证了全部既有 2D 地图、搜索、筛选与可解释 JR 运价功能，通过 **42 条 Vitest 单元测试 + 12 条 Playwright 端到端交互测试**。第二阶段（P0–P7）全面优化详情与前后性能对比数据见 [PHASE2-REPORT.md](file:///e:/SENKIRO/labs/a-tokyo-atlas-fare/PHASE2-REPORT.md)。
 
 ---
 

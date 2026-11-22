@@ -241,17 +241,22 @@ export class RailTrackLayer {
         const rb = sweepProfileAlong3D(seg.points, roadbedProfile, false);
         if (rb) roadbedGeoms.push(rb);
 
-        // Sleek 3-point open steel rail profiles (right-to-left for upward +Y outward normals!)
-        const railYBase = isSurface ? 0.32 : 0.12;
-        const railOffsets = seg.isDoubleTrack ? [-2.55, -1.15, 1.15, 2.55] : [-0.72, 0.72];
-        for (const off of railOffsets) {
-          const railProf: [number, number][] = [
-            [off + 0.15, railYBase],
-            [off, railYBase + 0.36],
-            [off - 0.15, railYBase],
-          ];
-          const rg = sweepProfileAlong3D(seg.points, railProf, false);
-          if (rg) steelRailGeoms.push(rg);
+        // P7: Only sweep fine 4-rail steel tubes inside Tokyo 23 wards (< 16km); distant regional corridors
+        // beyond 16km keep crisp ballast roadbed + slim fascia stripe + Far network skeleton!
+        const midPt = seg.points[Math.floor(seg.points.length / 2)]!;
+        const inCoreMetro = Math.hypot(midPt.x, midPt.z) < 16_000;
+        if (inCoreMetro) {
+          const railYBase = isSurface ? 0.32 : 0.12;
+          const railOffsets = seg.isDoubleTrack ? [-2.55, -1.15, 1.15, 2.55] : [-0.72, 0.72];
+          for (const off of railOffsets) {
+            const railProf: [number, number][] = [
+              [off + 0.15, railYBase],
+              [off, railYBase + 0.36],
+              [off - 0.15, railYBase],
+            ];
+            const rg = sweepProfileAlong3D(seg.points, railProf, false);
+            if (rg) steelRailGeoms.push(rg);
+          }
         }
 
         // Restrained slim line-color architectural fascia stripe along roadbed shoulders (+R -> -R upward!)
@@ -282,7 +287,6 @@ export class RailTrackLayer {
         if (sk) skeletonGeoms.push(sk);
 
         // Sample sleepers & overhead catenary gantries on surface/elevated tracks within 12km of Tokyo center
-        const midPt = seg.points[Math.floor(seg.points.length / 2)]!;
         if (!isUnderground && Math.hypot(midPt.x, midPt.z) < 12_500) {
           if (sleeperTransforms.length < 18_000) {
             this.sampleAlongPolyline(

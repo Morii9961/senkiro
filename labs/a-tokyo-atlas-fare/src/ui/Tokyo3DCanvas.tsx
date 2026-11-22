@@ -1,9 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ArrowUpFromLine,
+  Compass,
   EyeOff,
   Layers,
   Moon,
+  Navigation,
   Pause,
   Play,
   RotateCcw,
@@ -24,6 +26,8 @@ import type {
 import { TOKYO_HUB_PRESETS } from '../three/geoProjection.js';
 import { Metropolitan3DScene } from '../three/Metropolitan3DScene.js';
 import type {
+  CameraMoveSpeed,
+  CameraNavMode,
   LineTraceStatus,
   SceneTelemetry,
   UndergroundViewSettings,
@@ -103,6 +107,8 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
   });
   const [hudCollapsed, setHudCollapsed] = useState(false);
   const [sceneNight, setSceneNight] = useState(theme === 'dark');
+  const [cameraMode, setCameraMode] = useState<CameraNavMode>('map');
+  const [cameraSpeed, setCameraSpeed] = useState<CameraMoveSpeed>('normal');
 
   // Sync 3D lighting when global light/dark theme switches
   useEffect(() => {
@@ -143,6 +149,15 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
   useEffect(() => {
     sceneRef.current?.setTheme(sceneNight);
   }, [sceneNight]);
+
+  // Sync Camera Mode & Free-Explore Speed (P6)
+  useEffect(() => {
+    sceneRef.current?.setCameraMode(cameraMode);
+  }, [cameraMode]);
+
+  useEffect(() => {
+    sceneRef.current?.setCameraSpeed(cameraSpeed);
+  }, [cameraSpeed]);
 
   // Sync filters, selection & Underground View settings
   useEffect(() => {
@@ -272,6 +287,46 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
               {locale === 'ja' ? hub.labelJa : hub.labelEn}
             </button>
           ))}
+          <button
+            type="button"
+            className="hub-chip"
+            style={
+              cameraMode === 'free'
+                ? { background: '#0ea5e9', color: '#ffffff', borderColor: '#0ea5e9' }
+                : undefined
+            }
+            data-testid="toggle-camera-mode"
+            title={
+              locale === 'ja'
+                ? '地図閲覧モード / 自由飛行モード切替'
+                : 'Toggle Map Browse / Free Explore Mode'
+            }
+            onClick={() => setCameraMode((m) => (m === 'map' ? 'free' : 'map'))}
+          >
+            {cameraMode === 'free' ? <Navigation size={12} /> : <Compass size={12} />}
+            <span>
+              {cameraMode === 'free'
+                ? locale === 'ja'
+                  ? '自由探索 ON'
+                  : 'Free Explore ON'
+                : locale === 'ja'
+                  ? '地図閲覧'
+                  : 'Map Browse'}
+            </span>
+          </button>
+          {cameraMode === 'free' && (
+            <select
+              className="hub-chip"
+              data-testid="free-speed-select"
+              aria-label={locale === 'ja' ? '移動速度' : 'Flight Speed'}
+              value={cameraSpeed}
+              onChange={(e) => setCameraSpeed(e.target.value as CameraMoveSpeed)}
+            >
+              <option value="slow">{locale === 'ja' ? '速度: 低速' : 'Speed: Slow'}</option>
+              <option value="normal">{locale === 'ja' ? '速度: 標準' : 'Speed: Normal'}</option>
+              <option value="fast">{locale === 'ja' ? '速度: 高速' : 'Speed: Fast'}</option>
+            </select>
+          )}
           <button
             type="button"
             className="hub-chip"
@@ -569,19 +624,50 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
         </div>
       )}
 
-      {/* Bottom-Right Live Streaming / LOD / GPU Telemetry */}
-      {telemetry && (
-        <div className="telemetry-chip mono" data-testid="three-telemetry">
-          {telemetry.fps > 0 ? `${telemetry.fps} FPS · ` : ''}
-          DC:{telemetry.drawCalls} · Tris:{Math.round(telemetry.triangles / 1000)}k
-          {telemetry.railwayLod ? ` · Rail:${telemetry.railwayLod}` : ''} · Chunks{' '}
-          {telemetry.loadedChunks}/{telemetry.totalChunks} (L0:{telemetry.lod0Chunks}/L1:
-          {telemetry.lod1Chunks}) · Bldgs {telemetry.renderedBuildings.toLocaleString()}
-          {typeof telemetry.infillBuildings === 'number' && telemetry.infillBuildings > 0
-            ? ` (OSM ${(telemetry.realOsmBuildings ?? 0).toLocaleString()} + Infill ${telemetry.infillBuildings.toLocaleString()})`
-            : ''}
+      {/* Bottom-Right Live Streaming / LOD / GPU Telemetry & Active Control Hint */}
+      <div
+        style={{
+          position: 'absolute',
+          right: 12,
+          bottom: 12,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-end',
+          gap: 4,
+          pointerEvents: 'none',
+          zIndex: 4,
+        }}
+      >
+        <div
+          className="telemetry-chip"
+          style={{ position: 'static', fontSize: 10.5, opacity: 0.9 }}
+          data-testid="camera-control-hint"
+        >
+          {cameraMode === 'free'
+            ? locale === 'ja'
+              ? '自由探索: WASD移動 · ドラッグ視点 · E/Space上昇 · Q/Shift下降'
+              : 'Free Explore: WASD Move · Drag Look · E/Space Up · Q/Shift Down'
+            : locale === 'ja'
+              ? '地図閲覧: 左ドラッグ回転 · 中/右ドラッグ自由移動 · ホイール拡大 · ダブルクリック焦点'
+              : 'Map Browse: Left Orbit · Mid/Right Free Pan · Wheel Zoom · Dbl-Click Focus'}
         </div>
-      )}
+        {telemetry && (
+          <div
+            className="telemetry-chip mono"
+            style={{ position: 'static' }}
+            data-testid="three-telemetry"
+          >
+            {telemetry.fps > 0 ? `${telemetry.fps} FPS · ` : ''}
+            DC:{telemetry.drawCalls} · Tris:{Math.round(telemetry.triangles / 1000)}k
+            {telemetry.railwayLod ? ` · Rail:${telemetry.railwayLod}` : ''} · Chunks{' '}
+            {telemetry.loadedChunks}/{telemetry.totalChunks} (L0:{telemetry.lod0Chunks}/L1:
+            {telemetry.lod1Chunks}) · Buildings {telemetry.renderedBuildings.toLocaleString()}
+            {typeof telemetry.infillBuildings === 'number' && telemetry.infillBuildings > 0
+              ? ` (OSM ${(telemetry.realOsmBuildings ?? 0).toLocaleString()} + Infill ${telemetry.infillBuildings.toLocaleString()})`
+              : ''}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

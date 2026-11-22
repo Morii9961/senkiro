@@ -291,4 +291,124 @@ test.describe('SENKIRO Lab · Tokyo Atlas & Fare Interactive E2E', () => {
     await expect(page.getByTestId('map-canvas-pane')).toBeVisible();
     await expect(page.getByTestId('path-diff-banner')).toBeVisible();
   });
+
+  test('11. Phase 2 GPU Radial Cutaway Explorer, Vertical Exaggeration, Return to Surface & Day/Night Lighting', async ({
+    page,
+  }) => {
+    const errors: string[] = [];
+    page.on('pageerror', (err) => errors.push(String(err)));
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') errors.push(msg.text());
+    });
+
+    await page.goto('/');
+    await page.getByTestId('view-mode-3d').click();
+    await page.waitForSelector('canvas[data-testid="three-3d-canvas"]');
+
+    // Focus Shibuya hub -> activates GPU Radial Cutaway Explorer
+    await page.getByTestId('hub-btn-shibuya').click();
+    await expect(page.getByTestId('toggle-underground-view')).toContainText('ON');
+    await expect(page.getByTestId('cutaway-radius-slider')).toBeVisible();
+    await expect(page.getByTestId('vertical-exaggeration-slider')).toBeVisible();
+    await expect(page.getByTestId('return-to-surface-btn')).toBeVisible();
+
+    // Adjust cutaway radius, vertical exaggeration & pin cutaway location
+    await page.getByTestId('cutaway-radius-slider').fill('1100');
+    await page.getByTestId('vertical-exaggeration-slider').fill('1.8');
+    await page.getByTestId('pin-cutaway-checkbox').check();
+
+    // One-click Return to Surface View restores surface state cleanly
+    await page.getByTestId('return-to-surface-btn').click();
+    await expect(page.getByTestId('toggle-underground-view')).not.toContainText('ON');
+    await expect(page.getByTestId('return-to-surface-btn')).toHaveCount(0);
+
+    // Toggle Day/Night architectural lighting smoothly
+    const dnBtn = page.getByTestId('toggle-3d-day-night');
+    await dnBtn.click();
+    await expect(dnBtn).toContainText(/昼間|Day/);
+    await dnBtn.click();
+    await expect(dnBtn).toContainText(/夜間|Night/);
+
+    expect(errors).toEqual([]);
+  });
+
+  test('12. Phase 2 Spatial Navigation: Middle-Mouse Ground Pan, Double-Click Focus & Free Explore WASD Flight', async ({
+    page,
+  }) => {
+    const pageErrors: string[] = [];
+    page.on('pageerror', (err) => pageErrors.push(String(err)));
+
+    await page.goto('/');
+    await page.getByTestId('view-mode-3d').click();
+    await page.waitForSelector('canvas[data-testid="three-3d-canvas"]');
+    await page.waitForTimeout(1000);
+
+    const canvas = page.locator('canvas[data-testid="three-3d-canvas"]');
+    const box = (await canvas.boundingBox())!;
+    const cx = box.x + box.width * 0.5;
+    const cy = box.y + box.height * 0.5;
+
+    // 1. Verify Middle-Mouse hold + drag pans camera freely along ground plane!
+    const beforePan = await page.evaluate(
+      () =>
+        (window as unknown as { __SENKIRO_3D_CAMERA__?: { target: number[]; pos: number[] } })
+          .__SENKIRO_3D_CAMERA__,
+    );
+    expect(beforePan).toBeTruthy();
+
+    await page.mouse.move(cx, cy);
+    await page.mouse.down({ button: 'middle' });
+    await page.mouse.move(cx + 140, cy + 90, { steps: 6 });
+    await page.mouse.up({ button: 'middle' });
+    await page.waitForTimeout(450);
+
+    const afterPan = await page.evaluate(
+      () =>
+        (window as unknown as { __SENKIRO_3D_CAMERA__?: { target: number[]; pos: number[] } })
+          .__SENKIRO_3D_CAMERA__,
+    );
+    expect(afterPan).toBeTruthy();
+    const panMoved = Math.hypot(
+      afterPan!.target[0]! - beforePan!.target[0]!,
+      afterPan!.target[2]! - beforePan!.target[2]!,
+    );
+    expect(panMoved).toBeGreaterThan(20);
+
+    // 2. Switch seamlessly to Free Explore Mode & test WASD + E flight!
+    await page.getByTestId('toggle-camera-mode').click();
+    await expect(page.getByTestId('toggle-camera-mode')).toContainText('ON');
+    await expect(page.getByTestId('free-speed-select')).toBeVisible();
+    await page.getByTestId('free-speed-select').selectOption('fast');
+
+    const beforeFly = await page.evaluate(
+      () =>
+        (window as unknown as { __SENKIRO_3D_CAMERA__?: { mode: string; pos: number[] } })
+          .__SENKIRO_3D_CAMERA__,
+    );
+    expect(beforeFly?.mode).toBe('free');
+
+    await page.keyboard.down('KeyW');
+    await page.keyboard.down('KeyE');
+    await page.waitForTimeout(550);
+    await page.keyboard.up('KeyW');
+    await page.keyboard.up('KeyE');
+    await page.waitForTimeout(350);
+
+    const afterFly = await page.evaluate(
+      () =>
+        (window as unknown as { __SENKIRO_3D_CAMERA__?: { mode: string; pos: number[] } })
+          .__SENKIRO_3D_CAMERA__,
+    );
+    const flyMoved = Math.hypot(
+      afterFly!.pos[0]! - beforeFly!.pos[0]!,
+      afterFly!.pos[1]! - beforeFly!.pos[1]!,
+      afterFly!.pos[2]! - beforeFly!.pos[2]!,
+    );
+    expect(flyMoved).toBeGreaterThan(30);
+
+    // 3. Return seamlessly to Map Browse Mode
+    await page.getByTestId('toggle-camera-mode').click();
+    await expect(page.getByTestId('free-speed-select')).toHaveCount(0);
+    expect(pageErrors).toEqual([]);
+  });
 });

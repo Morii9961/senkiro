@@ -11,7 +11,6 @@
  */
 
 import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import {
   classifyTier,
   solveRailwayNetwork3D,
@@ -25,6 +24,7 @@ import type {
   OsmVerticalDataset,
   SkId,
 } from '../domain/types.js';
+import { SpatialCameraController } from './cameraController.js';
 import { CutawayPitVisuals } from './environment/cutawayVisuals.js';
 import { SkyEnvironmentSystem } from './environment/skyEnvironment.js';
 import { CityChunkManager } from './generators/buildingGenerator.js';
@@ -40,6 +40,8 @@ import {
 } from './geoProjection.js';
 import { createCutawayUniforms, type CutawayUniforms } from './materials/cutawayShader.js';
 import type {
+  CameraMoveSpeed,
+  CameraNavMode,
   LineTraceStatus,
   SceneTelemetry,
   UndergroundViewSettings,
@@ -55,15 +57,6 @@ export interface SceneCallbacks {
   onCameraMoved?: (lon: number, lat: number, zoomEquiv: number) => void;
 }
 
-interface CameraAnim {
-  startPos: THREE.Vector3;
-  endPos: THREE.Vector3;
-  startTarget: THREE.Vector3;
-  endTarget: THREE.Vector3;
-  startTime: number;
-  durationMs: number;
-}
-
 export class Metropolitan3DScene {
   readonly solved: SolvedRailwayNetwork3D;
 
@@ -71,7 +64,7 @@ export class Metropolitan3DScene {
   private readonly renderer: THREE.WebGLRenderer;
   private readonly scene: THREE.Scene;
   private readonly camera: THREE.PerspectiveCamera;
-  private readonly controls: OrbitControls;
+  private readonly camCtrl: SpatialCameraController;
   private readonly clipPlane: THREE.Plane;
   private readonly clipPlanes: THREE.Plane[];
 
@@ -102,7 +95,6 @@ export class Metropolitan3DScene {
   private disposed = false;
   private isDark: boolean;
   private lastChunkUpdateTime = 0;
-  private cameraAnim: CameraAnim | null = null;
 
   // Line Trace Fly-Through state
   private traceLineId: SkId<'line'> | null = null;
@@ -165,17 +157,14 @@ export class Metropolitan3DScene {
     this.scene = new THREE.Scene();
     this.skyEnv = new SkyEnvironmentSystem(this.renderer, this.scene, isDark);
 
-    // 4. Camera & OrbitControls
+    // 4. Camera & Unified Spatial Camera Controller (P6: Map Browse + Free Explore!)
     const aspect = (container.clientWidth || 960) / Math.max(1, container.clientHeight || 640);
     this.camera = new THREE.PerspectiveCamera(46, aspect, 4, 90_000);
-    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-    this.controls.enableDamping = true;
-    this.controls.dampingFactor = 0.08;
-    this.controls.screenSpacePanning = false;
-    this.controls.minDistance = 120;
-    this.controls.maxDistance = 18_500;
-    this.controls.minPolarAngle = 0.14;
-    this.controls.maxPolarAngle = Math.PI * 0.47;
+    this.camCtrl = new SpatialCameraController(
+      this.camera,
+      this.renderer.domElement,
+      this.handleControlsEnd,
+    );
 
     // 5. Lighting (Semi-Realistic Architectural Viz Sunlight + Soft Shadows + Bounce Fill)
     this.hemiLight = new THREE.HemisphereLight(
@@ -257,7 +246,7 @@ export class Metropolitan3DScene {
     // 10. Event listeners
     this.renderer.domElement.addEventListener('pointerdown', this.handlePointerDown);
     this.renderer.domElement.addEventListener('pointerup', this.handlePointerUp);
-    this.controls.addEventListener('end', this.handleControlsEnd);
+    this.renderer.domElement.addEventListener('dblclick', this.handleDoubleClick);
 
     this.resizeObserver = new ResizeObserver(() => this.handleResize());
     this.resizeObserver.observe(container);
@@ -281,7 +270,7 @@ export class Metropolitan3DScene {
         if (manifestRes.ok) {
           const manifest = (await manifestRes.json()) as UrbanManifest;
           this.buildingManager.setManifest(manifest, env.landmarks);
-          this.buildingManager.updateForCamera(this.camera, this.controls.target);
+          this.buildingManager.updateForCamera(this.camera, this.camCtrl.getFocusTarget());
           this.urbanLoadedMs = Math.round(performance.now() - this.sceneCreatedAt);
           this.emitTelemetry();
         }
@@ -289,6 +278,16 @@ export class Metropolitan3DScene {
     } catch {
       // Graceful fallback: 3D railway & terrain continue running cleanly even if urban chunks fail
     }
+  }
+
+  setCameraMode(mode: CameraNavMode): void {
+    this.tracePlaying = false;
+    this.camCtrl.setMode(mode);
+    this.emitTelemetry();
+  }
+
+  setCameraSpeed(speed: CameraMoveSpeed): void {
+    this.camCtrl.setSpeed(speed);
   }
 
   setTheme(isDark: boolean): void {
@@ -332,11 +331,8 @@ export class Metropolitan3DScene {
     );
     if (underground.enabled && !wasActive) {
       // Snap cutaway pit immediately onto current focus target upon entering Underground Mode!
-      this.cutawayUniforms.uCutawayCenter.value.set(
-        this.controls.target.x,
-        0,
-        this.controls.target.z,
-      );
+      const focus = this.camCtrl.getFocusTarget();
+      this.cutawayUniforms.uCutawayCenter.value.set(focus.x, 0, focus.z);
     }
 
     // Visual-only vertical exaggeration on 3D railway layers (NEVER mutates legal operatingKm!)
@@ -373,7 +369,7 @@ export class Metropolitan3DScene {
     );
 
     // Allow diving cleanly underneath ground level when Underground Explorer is active!
-    this.controls.maxPolarAngle = underground.enabled ? Math.PI * 0.72 : Math.PI * 0.47;
+    this.camCtrl.setUndergroundBounds(underground.enabled, this.verticalExaggeration);
     this.clipPlane.constant = underground.clipEnabled ? underground.clipY : 10_000;
 
     this.railLayer.applyFilters({
@@ -451,11 +447,12 @@ export class Metropolitan3DScene {
 
   private jumpToHubPreset(preset: CameraHubPreset): void {
     const { x, z } = lonLatToWorld(preset.lon, preset.lat);
-    const target = new THREE.Vector3(x, preset.targetY, z);
-    const pos = this.sphericalToPos(target, preset.distance, preset.polarDeg, preset.azimuthDeg);
-    this.controls.target.copy(target);
-    this.camera.position.copy(pos);
-    this.controls.update();
+    this.camCtrl.jumpTo(
+      new THREE.Vector3(x, preset.targetY, z),
+      preset.distance,
+      preset.polarDeg,
+      preset.azimuthDeg,
+    );
   }
 
   flyToStation(stationId: SkId<'station'>): void {
@@ -493,16 +490,13 @@ export class Metropolitan3DScene {
   setViewFromLonLat(lon: number, lat: number, mapZoom = 12): void {
     const { x, z } = lonLatToWorld(lon, lat);
     const dist = Math.max(380, Math.min(14_000, 1400 * Math.pow(2, 12.5 - mapZoom)));
-    const target = new THREE.Vector3(x, 0, z);
-    const pos = this.sphericalToPos(target, dist, 55, -24);
-    this.controls.target.copy(target);
-    this.camera.position.copy(pos);
-    this.controls.update();
+    this.camCtrl.jumpTo(new THREE.Vector3(x, 0, z), dist, 55, -24);
   }
 
   getViewLonLatZoom(): { lon: number; lat: number; zoom: number } {
-    const [lon, lat] = worldToLonLat(this.controls.target.x, this.controls.target.z);
-    const dist = this.camera.position.distanceTo(this.controls.target);
+    const focus = this.camCtrl.getFocusTarget();
+    const [lon, lat] = worldToLonLat(focus.x, focus.z);
+    const dist = this.camCtrl.getDistanceToFocus();
     const zoom = Math.max(8.5, Math.min(16, 12.5 - Math.log2(Math.max(120, dist) / 1400)));
     return { lon, lat, zoom };
   }
@@ -550,7 +544,7 @@ export class Metropolitan3DScene {
     this.traceProgress = 0;
     this.tracePlaying = autoPlay;
     this.traceProbe.visible = true;
-    this.cameraAnim = null;
+    this.camCtrl.cancelAnimation();
     this.positionCameraOnTrace(0);
     return true;
   }
@@ -613,8 +607,8 @@ export class Metropolitan3DScene {
     const lookTarget = new THREE.Vector3(x + dirX * 90, y, z + dirZ * 90);
 
     this.camera.position.lerp(camPos, 0.25);
-    this.controls.target.lerp(lookTarget, 0.25);
-    this.controls.update();
+    this.camCtrl.controls.target.lerp(lookTarget, 0.25);
+    this.camCtrl.controls.update();
     this.emitTraceStatus(y, targetDist);
   }
 
@@ -656,22 +650,6 @@ export class Metropolitan3DScene {
     });
   }
 
-  private sphericalToPos(
-    target: THREE.Vector3,
-    distance: number,
-    polarDeg: number,
-    azimuthDeg: number,
-  ): THREE.Vector3 {
-    const phi = THREE.MathUtils.degToRad(polarDeg);
-    const theta = THREE.MathUtils.degToRad(azimuthDeg);
-    const sinPhi = Math.sin(phi);
-    return new THREE.Vector3(
-      target.x + distance * sinPhi * Math.sin(theta),
-      target.y + distance * Math.cos(phi),
-      target.z + distance * sinPhi * Math.cos(theta),
-    );
-  }
-
   private animateCameraTo(
     endTarget: THREE.Vector3,
     distance: number,
@@ -680,21 +658,44 @@ export class Metropolitan3DScene {
     durationMs: number,
   ): void {
     this.tracePlaying = false;
-    const endPos = this.sphericalToPos(endTarget, distance, polarDeg, azimuthDeg);
-    this.cameraAnim = {
-      startPos: this.camera.position.clone(),
-      endPos,
-      startTarget: this.controls.target.clone(),
-      endTarget,
-      startTime: performance.now(),
-      durationMs,
-    };
+    this.camCtrl.animateTo(endTarget, distance, polarDeg, azimuthDeg, durationMs);
   }
 
   private handlePointerDown = (e: PointerEvent): void => {
     this.pointerDownPos = { x: e.clientX, y: e.clientY };
-    // User manual drag cancels automated fly-through animation cleanly
-    this.cameraAnim = null;
+    this.camCtrl.cancelAnimation();
+  };
+
+  private handleDoubleClick = (e: MouseEvent): void => {
+    // P6: Double-click anywhere on buildings, stations, tracks, or ground to smoothly focus that location!
+    const rect = this.renderer.domElement.getBoundingClientRect();
+    this.pointerNdc.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    this.pointerNdc.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+    this.raycaster.setFromCamera(this.pointerNdc, this.camera);
+
+    const hitTargets: THREE.Object3D[] = [
+      ...this.tunnelLayer.interactiveStationMeshes,
+      ...this.railLayer.interactiveMeshes,
+      this.buildingManager.landmarksGroup,
+      this.terrainLayer.group,
+    ];
+    const hits = this.raycaster
+      .intersectObjects(hitTargets, true)
+      .filter((h) => h.object.visible);
+
+    if (hits.length > 0) {
+      this.tracePlaying = false;
+      this.camCtrl.focusWorldPoint(hits[0]!.point);
+      return;
+    }
+
+    // Fallback: intersect horizontal ground plane y = 0 cleanly
+    const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+    const pt = new THREE.Vector3();
+    if (this.raycaster.ray.intersectPlane(groundPlane, pt)) {
+      this.tracePlaying = false;
+      this.camCtrl.focusWorldPoint(pt);
+    }
   };
 
   private handlePointerUp = (e: PointerEvent): void => {
@@ -763,6 +764,24 @@ export class Metropolitan3DScene {
     };
     (window as unknown as { __SENKIRO_3D_METRICS__?: SceneTelemetry }).__SENKIRO_3D_METRICS__ =
       telemetry;
+    const focus = this.camCtrl.getFocusTarget();
+    (
+      window as unknown as {
+        __SENKIRO_3D_CAMERA__?: {
+          mode: CameraNavMode;
+          pos: [number, number, number];
+          target: [number, number, number];
+        };
+      }
+    ).__SENKIRO_3D_CAMERA__ = {
+      mode: this.camCtrl.getMode(),
+      pos: [
+        Math.round(this.camera.position.x),
+        Math.round(this.camera.position.y),
+        Math.round(this.camera.position.z),
+      ],
+      target: [Math.round(focus.x), Math.round(focus.y), Math.round(focus.z)],
+    };
     this.callbacks.onTelemetry?.(telemetry);
   }
 
@@ -783,8 +802,22 @@ export class Metropolitan3DScene {
       this.smoothedFps = Math.round((1000 / Math.max(1, avg)) * 10) / 10;
     }
 
+    // Active Line Trace fly-through progression
+    if (this.tracePlaying && this.tracePath.length >= 2) {
+      this.traceProgress += dtSec * 0.045;
+      if (this.traceProgress >= 1) {
+        this.traceProgress = 1;
+        this.tracePlaying = false;
+      }
+      this.positionCameraOnTrace(this.traceProgress);
+    } else {
+      this.camCtrl.update(now, dtSec);
+    }
+
+    const focusTarget = this.camCtrl.getFocusTarget();
+    const camDist = this.camCtrl.getDistanceToFocus();
+
     // Adaptive near/far planes for optimal depth buffer precision across all zoom levels (P0)
-    const camDist = this.camera.position.distanceTo(this.controls.target);
     const targetNear = Math.max(4, Math.min(75, camDist * 0.012));
     const targetFar = Math.max(28_000, camDist * 8.5);
     if (
@@ -801,35 +834,6 @@ export class Metropolitan3DScene {
     this.viaductLayer.updateLod(camDist);
     this.tunnelLayer.updateLod(camDist);
 
-    // Smooth camera animation
-    if (this.cameraAnim) {
-      const elapsed = (now - this.cameraAnim.startTime) / this.cameraAnim.durationMs;
-      if (elapsed >= 1) {
-        this.camera.position.copy(this.cameraAnim.endPos);
-        this.controls.target.copy(this.cameraAnim.endTarget);
-        this.cameraAnim = null;
-      } else {
-        const ease = elapsed * elapsed * (3 - 2 * elapsed);
-        this.camera.position.lerpVectors(this.cameraAnim.startPos, this.cameraAnim.endPos, ease);
-        this.controls.target.lerpVectors(
-          this.cameraAnim.startTarget,
-          this.cameraAnim.endTarget,
-          ease,
-        );
-      }
-    }
-
-    // Active Line Trace fly-through progression
-    if (this.tracePlaying && this.tracePath.length >= 2) {
-      this.traceProgress += dtSec * 0.045;
-      if (this.traceProgress >= 1) {
-        this.traceProgress = 1;
-        this.tracePlaying = false;
-      }
-      this.positionCameraOnTrace(this.traceProgress);
-    }
-
-    this.controls.update();
     this.skyEnv.updateForCamera(this.camera.position);
 
     // Smoothly track cutaway pit center onto camera focus target unless pinned (P5)
@@ -837,12 +841,12 @@ export class Metropolitan3DScene {
       if (!this.cutawayPinned) {
         this.cutawayUniforms.uCutawayCenter.value.x = THREE.MathUtils.lerp(
           this.cutawayUniforms.uCutawayCenter.value.x,
-          this.controls.target.x,
+          focusTarget.x,
           0.18,
         );
         this.cutawayUniforms.uCutawayCenter.value.z = THREE.MathUtils.lerp(
           this.cutawayUniforms.uCutawayCenter.value.z,
-          this.controls.target.z,
+          focusTarget.z,
           0.18,
         );
       }
@@ -856,17 +860,17 @@ export class Metropolitan3DScene {
     }
 
     // Keep shadow frustum centered near camera target along solar direction for crisp local shadows!
-    this.sunLight.target.position.set(this.controls.target.x, 0, this.controls.target.z);
+    this.sunLight.target.position.set(focusTarget.x, 0, focusTarget.z);
     this.sunLight.position.set(
-      this.controls.target.x + this.skyEnv.sunDirection.x * 3000,
+      focusTarget.x + this.skyEnv.sunDirection.x * 3000,
       this.skyEnv.sunDirection.y * 3000,
-      this.controls.target.z + this.skyEnv.sunDirection.z * 3000,
+      focusTarget.z + this.skyEnv.sunDirection.z * 3000,
     );
 
-    // Throttled chunk streaming & LOD update (~4Hz)
+    // Throttled chunk streaming, lazy LOD0 & GPU memory eviction (~4Hz)
     if (now - this.lastChunkUpdateTime > 260) {
       this.lastChunkUpdateTime = now;
-      this.buildingManager.updateForCamera(this.camera, this.controls.target);
+      this.buildingManager.updateForCamera(this.camera, focusTarget);
       this.emitTelemetry();
     }
 
@@ -879,8 +883,8 @@ export class Metropolitan3DScene {
     this.resizeObserver.disconnect();
     this.renderer.domElement.removeEventListener('pointerdown', this.handlePointerDown);
     this.renderer.domElement.removeEventListener('pointerup', this.handlePointerUp);
-    this.controls.removeEventListener('end', this.handleControlsEnd);
-    this.controls.dispose();
+    this.renderer.domElement.removeEventListener('dblclick', this.handleDoubleClick);
+    this.camCtrl.dispose();
 
     this.skyEnv.dispose();
     this.cutawayVisuals.dispose();

@@ -538,7 +538,7 @@ function buildProceduralLandmark(
 interface LoadedChunk {
   meta: UrbanChunkMeta;
   buildings: UrbanBuildingRecord[];
-  lod0Group: THREE.Group;
+  lod0Group: THREE.Group | null;
   lod1Mesh: THREE.InstancedMesh;
   activeLod: 0 | 1 | -1;
 }
@@ -623,6 +623,9 @@ export class CityChunkManager {
     }
 
     const box = new THREE.Box3();
+    let lazyBuiltThisTick = 0;
+    const lod0EvictRadius = 5800;
+
     for (const chunk of this.loaded.values()) {
       const half = (this.manifest.chunkSizeMeters ?? 2000) * 0.65;
       box.min.set(chunk.meta.centerX - half, -10, chunk.meta.centerZ - half);
@@ -632,8 +635,13 @@ export class CityChunkManager {
       const distToCam = Math.hypot(chunk.meta.centerX - camPos.x, chunk.meta.centerZ - camPos.z);
       const distToTarget = Math.hypot(chunk.meta.centerX - target.x, chunk.meta.centerZ - target.z);
 
+      // P7 GPU Memory Eviction: dispose heavy LOD0 geometry for distant chunks while keeping LOD1 skyline!
+      if (chunk.lod0Group && distToTarget > lod0EvictRadius && distToCam > lod0EvictRadius) {
+        this.disposeLod0(chunk);
+      }
+
       if (!this.buildingsVisible || !inFrustum || distToTarget > loadRadius + 2800) {
-        chunk.lod0Group.visible = false;
+        if (chunk.lod0Group) chunk.lod0Group.visible = false;
         chunk.lod1Mesh.visible = false;
         chunk.activeLod = -1;
       } else {
@@ -642,16 +650,35 @@ export class CityChunkManager {
             ? distToCam < lod0ExitRadius || (chunk.meta.hub && distToTarget < 2100)
             : distToCam < lod0EnterRadius || (chunk.meta.hub && distToTarget < 1700);
         if (wantLod0) {
-          chunk.lod0Group.visible = true;
-          chunk.lod1Mesh.visible = false;
-          chunk.activeLod = 0;
+          if (!chunk.lod0Group && lazyBuiltThisTick < 2) {
+            chunk.lod0Group = this.buildLod0Group(chunk.meta, chunk.buildings);
+            this.group.add(chunk.lod0Group);
+            lazyBuiltThisTick++;
+          }
+          if (chunk.lod0Group) {
+            chunk.lod0Group.visible = true;
+            chunk.lod1Mesh.visible = false;
+            chunk.activeLod = 0;
+          } else {
+            chunk.lod1Mesh.visible = true;
+            chunk.activeLod = 1;
+          }
         } else {
-          chunk.lod0Group.visible = false;
+          if (chunk.lod0Group) chunk.lod0Group.visible = false;
           chunk.lod1Mesh.visible = true;
           chunk.activeLod = 1;
         }
       }
     }
+  }
+
+  private disposeLod0(chunk: LoadedChunk): void {
+    if (!chunk.lod0Group) return;
+    chunk.lod0Group.traverse((o) => {
+      if (o instanceof THREE.Mesh) o.geometry.dispose();
+    });
+    this.group.remove(chunk.lod0Group);
+    chunk.lod0Group = null;
   }
 
   private async loadChunk(meta: UrbanChunkMeta): Promise<void> {
@@ -660,9 +687,9 @@ export class CityChunkManager {
       const res = await fetch(`./data/urban-chunks/${meta.file}`);
       if (!res.ok) return;
       const data = (await res.json()) as UrbanChunkData;
-      const built = this.buildChunkMeshes(meta, data.buildings);
+      // P7 Lazy LOD0: build only ultra-light InstancedMesh LOD1 on fetch; LOD0 extrudes on demand!
+      const built = this.buildChunkLod1(meta, data.buildings);
       this.loaded.set(meta.key, built);
-      this.group.add(built.lod0Group);
       this.group.add(built.lod1Mesh);
     } catch {
       // Graceful degradation if chunk fetch fails offline
@@ -671,11 +698,10 @@ export class CityChunkManager {
     }
   }
 
-  private buildChunkMeshes(
+  private buildLod0Group(
     meta: UrbanChunkMeta,
     buildings: UrbanBuildingRecord[],
-  ): LoadedChunk {
-    // --- LOD0: Batched walls by typology + separate flat architectural roof layer ---
+  ): THREE.Group {
     const lod0Group = new THREE.Group();
     lod0Group.name = `chunk-lod0-${meta.key}`;
     const byTypology: Record<'o' | 'c' | 'r' | 's', THREE.BufferGeometry[]> = {
@@ -725,6 +751,13 @@ export class CityChunkManager {
       allRoofs.forEach((g) => g.dispose());
     }
 
+    return lod0Group;
+  }
+
+  private buildChunkLod1(
+    meta: UrbanChunkMeta,
+    buildings: UrbanBuildingRecord[],
+  ): LoadedChunk {
     // --- LOD1/LOD2: Single textured InstancedMesh with natural Japanese architectural palette ---
     const lod1Mesh = new THREE.InstancedMesh(
       this.unitBoxGeom,
@@ -752,10 +785,9 @@ export class CityChunkManager {
     if (lod1Mesh.instanceColor) lod1Mesh.instanceColor.needsUpdate = true;
     lod1Mesh.computeBoundingSphere();
 
-    lod0Group.visible = false;
     lod1Mesh.visible = this.buildingsVisible;
 
-    return { meta, buildings, lod0Group, lod1Mesh, activeLod: 1 };
+    return { meta, buildings, lod0Group: null, lod1Mesh, activeLod: 1 };
   }
 
   setVisibilityAndOpacity(visible: boolean, opacity: number, cutawayActive = false): void {
@@ -802,7 +834,7 @@ export class CityChunkManager {
 
     if (!visible) {
       for (const chunk of this.loaded.values()) {
-        chunk.lod0Group.visible = false;
+        if (chunk.lod0Group) chunk.lod0Group.visible = false;
         chunk.lod1Mesh.visible = false;
       }
     }
@@ -861,9 +893,7 @@ export class CityChunkManager {
 
   dispose(): void {
     for (const c of this.loaded.values()) {
-      c.lod0Group.traverse((o) => {
-        if (o instanceof THREE.Mesh) o.geometry.dispose();
-      });
+      this.disposeLod0(c);
       c.lod1Mesh.dispose();
     }
     this.landmarksGroup.traverse((o) => {

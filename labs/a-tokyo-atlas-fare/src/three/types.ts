@@ -140,6 +140,9 @@ export interface LineTraceStatus {
   currentY: number | null;
 }
 
+export type CameraNavMode = 'map' | 'free';
+export type CameraMoveSpeed = 'slow' | 'normal' | 'fast';
+
 export interface SceneTelemetry {
   loadedChunks: number;
   totalChunks: number;
