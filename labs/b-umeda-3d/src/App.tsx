@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useReducer, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState } from 'react'
 import { Scene } from './Scene'
 import { FloorPlan } from './FloorPlan'
 import { route, cost } from './domain/graph'
@@ -7,6 +7,7 @@ import { floorLabels, floors, nodes, station, sites, inSite } from './model'
 import { Guide } from './Guide'
 import { exampleService } from './providers/service'
 import { createFacilityIndex, ownersOf } from './domain/index'
+import { createSearchIndex } from './domain/searchIndex'
 import { exits } from '../data/manual/exits'
 import { services } from '../data/manual/services'
 import { describePlatform } from './domain/describe/platform'
@@ -20,8 +21,10 @@ import { DetailControl } from './ui/controls/DetailControl'
 import { DetailSheet, type SheetHeight } from './ui/panels/DetailSheet'
 import { InfoDialog } from './ui/panels/InfoDialog'
 import { RoutePanel, instruction, tours } from './ui/panels/RoutePanel'
+import { SearchPanel } from './ui/panels/SearchPanel'
 
 const facilityIndex = createFacilityIndex(station, { services, exits })
+const searchIndex = createSearchIndex(station, sites)
 
 function targetPlaces(target: SelectionTarget) {
   if (target.kind === 'station' || target.kind === 'line') {
@@ -113,6 +116,8 @@ export function App() {
   )
   const exitOrigin = useRef<string | null>(null)
   const panelElement = useRef<HTMLElement>(null)
+  const searchInput = useRef<HTMLInputElement>(null)
+  const [recent, setRecent] = useState<string[]>([])
   const [drawer, setDrawer] = useState(
     initial.step >= 0 || initial.stepFreeOnly || initial.from !== null || initial.to !== null,
   )
@@ -125,7 +130,7 @@ export function App() {
   const [detail, setDetail] = useState(initial.detail)
   const [sheetHeight, setSheetHeight] = useState<SheetHeight>('half')
   const example = feed === 'demo'
-  const [panel, setPanel] = useState<'route' | 'layers'>('route'),
+  const [panel, setPanel] = useState<'search' | 'route' | 'layers'>('route'),
     [dialog, setDialog] = useState<'help' | 'sources' | null>(null)
   const t = (ja: string, en: string) => (lang === 'ja' ? ja : en)
   const steps = useMemo(
@@ -275,6 +280,10 @@ export function App() {
     setEye(null)
     if (selection?.id !== id) setSheetHeight('half')
     dispatchSelection({ type: 'select', target })
+    const viewed = searchIndex.get(id)?.target.id
+    if (viewed) setRecent((previous) =>
+      previous[0] === viewed ? previous : [viewed, ...previous.filter((key) => key !== viewed)].slice(0, 5),
+    )
   }
   function resetView() {
     setEye(null)
@@ -283,12 +292,19 @@ export function App() {
     setReset((v) => v + 1)
     setPlanZoom(1)
   }
-  useEffect(() => {
-    const onEscape = (event: KeyboardEvent) => {
+  useLayoutEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.defaultPrevented || event.isComposing) return
       if (event.key === 'Escape' && !dialog) dispatchSelection({ type: 'clear' })
+      if (event.key !== '/' || dialog || event.ctrlKey || event.metaKey || event.altKey) return
+      if (event.target instanceof HTMLElement && event.target.closest('input,textarea,select,[contenteditable=true]')) return
+      event.preventDefault()
+      setDrawer(true)
+      setPanel('search')
+      searchInput.current?.focus()
     }
-    document.addEventListener('keydown', onEscape)
-    return () => document.removeEventListener('keydown', onEscape)
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
   }, [dialog])
   const place = selection ? nodes.get(selection.id) : null
   const objectDetail = useMemo(() => {
@@ -515,6 +531,9 @@ export function App() {
           {drawer && (
             <>
               <nav>
+                <button aria-pressed={panel === 'search'} onClick={() => setPanel('search')}>
+                  {t('探す', 'Search')}
+                </button>
                 <button
                   aria-pressed={panel === 'route'}
                   onClick={() => setPanel('route')}
@@ -528,7 +547,14 @@ export function App() {
                   {t('モデル情報', 'Model guide')}
                 </button>
               </nav>
-              {panel === 'route' ? (
+              {panel === 'search' ? (
+                <SearchPanel lang={lang} input={searchInput}
+                  search={(query) => searchIndex.find(query, { floor, site: siteId })}
+                  recent={recent.flatMap((id) => searchIndex.get(id) ?? [])}
+                  presets={tours} onSelect={inspect} onEndpoint={openRoute}
+                  onPreset={(index) => { pickTour(index); setPanel('route') }}
+                />
+              ) : panel === 'route' ? (
                 <RoutePanel
                   {...{ lang, tour, trip, step, lift, steps, stats, pickTour, endpoint, highlight, needsStart }}
                   onSwap={() => {
