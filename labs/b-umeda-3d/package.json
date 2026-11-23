@@ -12,7 +12,8 @@
     "data:check": "node --experimental-strip-types scripts/build-data.ts --check",
     "build": "npm run data:check && tsc --noEmit && vite build",
     "preview": "vite preview",
-    "test": "vitest run && npm run test:e2e",
+    "check:routes": "node --experimental-strip-types scripts/check-routes.ts",
+    "test": "npm run check:routes && vitest run && npm run test:e2e",
     "test:e2e": "node scripts/browser.mjs && playwright test"
   },
   "dependencies": {
