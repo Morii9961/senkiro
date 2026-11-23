@@ -18,6 +18,7 @@ import { parseUrl, serializeUrl } from './state/url'
 import { AppHeader } from './ui/controls/AppHeader'
 import { FloorControls } from './ui/controls/FloorControls'
 import { DetailControl } from './ui/controls/DetailControl'
+import { FloorChangeBanner } from './ui/controls/FloorChangeBanner'
 import { DetailSheet, type SheetHeight } from './ui/panels/DetailSheet'
 import { InfoDialog } from './ui/panels/InfoDialog'
 import { RoutePanel, instruction, tours } from './ui/panels/RoutePanel'
@@ -140,6 +141,9 @@ export function App() {
   const path = result && 'steps' in result ? result.steps : []
   const routeDraft = !trip.start || !trip.end
   const step = path[routeStep] ? routeStep : -1
+  const currentStep = path[step]
+  const fromLevel = currentStep && floors.get(currentStep.from.levelId)
+  const toLevel = currentStep && floors.get(currentStep.to.levelId)
 
   useEffect(() => {
     document.documentElement.lang = lang
@@ -401,6 +405,10 @@ export function App() {
                 <br />
                 {t('内装はイメージです。', 'Illustrative interior finishes.')}
               </div>
+            )}
+            {!plan && fromLevel && toLevel && fromLevel.ordinal !== toLevel.ordinal && (
+              <FloorChangeBanner key={currentStep.link.id + ':' + currentStep.from.id} lang={lang}
+                down={toLevel.ordinal < fromLevel.ordinal} label={toLevel.label} />
             )}
             {step >= 0 && path[step] && (
               <div className="walk-hud">

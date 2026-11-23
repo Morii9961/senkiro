@@ -1,4 +1,4 @@
-import type { Step } from '../../domain/graph'
+import { vertical, type Step } from '../../domain/graph'
 import { linkTarget, ownersOf, placeTarget } from '../../domain/index'
 import type { Language, Model, Place } from '../../domain/types'
 import { sample } from '../../providers/service'
@@ -20,7 +20,7 @@ export interface SceneLabelSpec {
   meaningKey?: string
   floorOrdinal: number | null
   // The existing renderer uses these flags until the label layout changes.
-  variant?: 'station' | 'platform' | 'floor' | 'lines' | 'facility'
+  variant?: 'station' | 'platform' | 'floor' | 'lines' | 'facility' | 'route-floor'
   icon?: string
   title?: string
   active?: boolean
@@ -179,7 +179,7 @@ export function buildLabels(
         text: link.names[lang],
       })
     }
-    if (active && (link.kind === 'Elevator' || focus)) {
+    if (active && (vertical(link) || focus)) {
       const anchor = fromVisible && toVisible ? middle : fromVisible ? start : end
       const linkFloor = fromVisible && toVisible && ordinal(from) !== ordinal(to)
         ? null : ordinal(fromVisible ? from : to)
@@ -199,6 +199,21 @@ export function buildLabels(
         anchor: [anchor[0], anchor[1] + 1.5, anchor[2]],
         floorOrdinal: fromVisible && toVisible ? null : ordinal(fromVisible ? from : to),
         text: link.names[lang], title: link.names[lang],
+      })
+    }
+  }
+  const routeVisible = scenePlaceFilter(model, view, undefined)
+  for (const { link, from, to } of route.steps) {
+    if (ordinal(from) === ordinal(to)) continue
+    for (const [side, place, other] of [['from', from, to], ['to', to, from]] as const) {
+      if (!routeVisible(place)) continue
+      const floorText = levels.get(place.levelId)!.label
+      labels.push({
+        key: 'route-floor:' + link.id + ':' + side, targetId: link.id, targetKind: linkTarget(link).kind,
+        level: 0, priority: current?.link.id === link.id ? -1 : 1,
+        anchor: position(place, 1.12), floorOrdinal: ordinal(place),
+        text: (ordinal(place) < ordinal(other) ? '▼ ' : '▲ ') + floorText,
+        title: link.names[lang], variant: 'route-floor', active: true, routeOnly: true,
       })
     }
   }

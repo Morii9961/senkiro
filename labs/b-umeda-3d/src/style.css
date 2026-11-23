@@ -1215,6 +1215,35 @@ header {
     600 10px/1.45 Consolas,
     monospace;
 }
+.pin.route-floor-pin {
+  padding: 2px 5px;
+  border: 1px solid #c54316;
+  border-radius: 3px;
+  background: var(--card);
+  color: var(--ink);
+  font: 700 11px/1.3 Consolas, monospace;
+}
+.floor-change-banner {
+  position: absolute;
+  z-index: 3;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 5px 10px;
+  border: 1px solid #c54316;
+  border-radius: 4px;
+  background: var(--card);
+  color: var(--ink);
+  font: 700 12px/1.4 Consolas, monospace;
+  animation: floor-change-in 160ms ease-out;
+}
+@keyframes floor-change-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .floor-change-banner { animation: none; }
+}
 .surround {
   font-family: inherit;
   max-width: min(235px, 62%);

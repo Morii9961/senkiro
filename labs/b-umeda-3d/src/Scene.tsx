@@ -11,6 +11,7 @@ import { labelAttachment, layoutLabels, type LabelCandidate, type PlacedLabel } 
 import { effectiveBand, nextBand, permitsLabel, type LabelDepth, type ZoomBand } from './scene/labels/config'
 import { isLabelOccluded, proxyBounds, type OcclusionProxy } from './scene/labels/occlusion'
 import { scenePlaceFilter } from './scene/view'
+import { createRouteOverlay, routeBands } from './scene/route3d'
 import { targetFromOwner, type SelectionTarget } from './state/selection'
 
 import { shopWindows, type ShopWindow } from './shopWindows'
@@ -118,6 +119,7 @@ export function Scene(props: Props) {
     const passageMarker = new T.Mesh(unit, new T.MeshBasicMaterial({ color: selected }))
     passageMarker.visible = false
     world.add(passageMarker)
+    const routeOverlay = createRouteOverlay(world)
     const motion = matchMedia('(prefers-reduced-motion: reduce)')
     const signs = signage()
     const dummy = new T.Object3D(),
@@ -145,8 +147,7 @@ export function Scene(props: Props) {
       frame = 0
     let geometryKey = ''
     let baseColors = new Float32Array(0)
-    let previewStart = 0
-    const previewTreads = new Map<number, T.Color>()
+    let outsideRouteFloors = new Set<string>()
     let selectedIndices: number[] = []
     let outline: T.InstancedMesh | null = null
     let raf = 0
@@ -155,11 +156,13 @@ export function Scene(props: Props) {
       from: T.Vector3
       to: T.Vector3
       offset: T.Vector3
+      endOffset?: T.Vector3
       zoom: number
       endZoom: number
     } | null = null
     let fade: { start: number; from: Float32Array; to: Float32Array } | null = null
     const shopDisplay = shopWindows(world, draw)
+    const animatedOffset = new T.Vector3()
     const view = new T.Vector3(53, 67, 116),
       right = new T.Vector3(view.z, 0, -view.x).normalize()
     const up = view.clone().normalize().cross(right).normalize()
@@ -228,7 +231,7 @@ export function Scene(props: Props) {
         .map((value) => value.toFixed(2)).join(',')
       const stage = box.getBoundingClientRect()
       const reserved = Array.from(box.parentElement!.querySelectorAll<HTMLElement>(
-        '.view-tag, .surround, .zoom, .walk-hud, .sample-tag, .eye-hint, .detail-control',
+        '.view-tag, .surround, .zoom, .walk-hud, .sample-tag, .eye-hint, .detail-control, .floor-change-banner',
       )).filter((element) => element.offsetWidth > 0).map((element) => {
         const rect = element.getBoundingClientRect()
         return { x: rect.x - stage.x, y: rect.y - stage.y, width: rect.width, height: rect.height }
@@ -426,7 +429,9 @@ export function Scene(props: Props) {
         const t = motion.matches ? 1 : T.MathUtils.clamp((now - focus.start) / 600, 0, 1)
         const eased = t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2
         controls.target.lerpVectors(focus.from, focus.to, eased)
-        camera.position.copy(controls.target).add(focus.offset)
+        camera.position.copy(controls.target).add(
+          focus.endOffset ? animatedOffset.lerpVectors(focus.offset, focus.endOffset, eased) : focus.offset,
+        )
         camera.zoom = T.MathUtils.lerp(focus.zoom, focus.endZoom, eased)
         camera.updateProjectionMatrix()
         if (t === 1) focus = null
@@ -449,24 +454,20 @@ export function Scene(props: Props) {
       const hoverColor = new T.Color(0xffefd0)
       const colors = group.instanceColor.array as Float32Array
       const next = baseColors.slice()
-      const count = showRoute ? group.instanceMatrix.count : previewStart
+      const count = group.instanceMatrix.count
+      const visibleRoute = routeOverlay.show(showRoute && !propsNow.eye)
       const hasInstances = !!selection && owners.slice(0, count).some((owner) => highlighted.has(owner))
       markCoveredPassage(hasInstances)
       const dimOthers = hasInstances || passageMarker.visible
       const selectionColor = selection?.kind === 'line' ? 0x2f7f86 : selected
       outlineMaterial.color.setHex(selectionColor)
-      const updateOutline = rebuilt || group.count !== count || previous?.selection !== selection
-      if (group.count !== count) {
-        group.count = count
-        gl.shadowMap.needsUpdate = true
-      }
+      const updateOutline = rebuilt || previous?.selection !== selection
       selectedIndices = []
       let dimmed = 0
+      let routeDimmed = 0
       for (let i = 0; i < count; i++) {
         const owner = owners[i]
-        const routeTint = showRoute ? previewTreads.get(i) : undefined
-        if (routeTint) color.copy(routeTint)
-        else color.fromArray(baseColors, i * 3)
+        color.fromArray(baseColors, i * 3)
         if (highlighted.has(owner)) {
           color.setHex(selectionColor)
           selectedIndices.push(i)
@@ -474,6 +475,9 @@ export function Scene(props: Props) {
           const isRelated = related.has(owner)
           color.lerp(background, isRelated ? 0.23 : 0.55)
           if (!isRelated) dimmed++
+        } else if (visibleRoute.length && outsideRouteFloors.has(owner)) {
+          color.lerp(background, 0.55)
+          routeDimmed++
         }
         if (hoverOwners.has(owner) && !highlighted.has(owner)) {
           color.lerp(hoverColor, 0.19)
@@ -481,6 +485,10 @@ export function Scene(props: Props) {
         color.toArray(next, i * 3)
       }
       const data = gl.domElement.dataset
+      data.routeLinks = JSON.stringify(visibleRoute)
+      data.routeActive = visibleRoute.includes(propsNow.route[propsNow.step]?.link.id ?? '')
+        ? propsNow.route[propsNow.step].link.id : ''
+      data.routeDimmed = String(routeDimmed)
       data.selected = selection ? selection.kind + ':' + selection.id : ''
       data.highlighted = String(selectedIndices.length + (passageMarker.visible ? 1 : 0))
       data.dimmed = String(dimmed)
@@ -536,12 +544,12 @@ export function Scene(props: Props) {
 
     function markCoveredPassage(hasInstances: boolean) {
       passageMarker.visible = false
-      const { selection, floor, spread, route, step, siteId, eye } = propsNow
+      const { selection, floor, spread, siteId, eye } = propsNow
       if (hasInstances || eye || selection?.kind !== 'passage') return
       const link = station.links.find((entry) => entry.id === selection.id)
       if (!link || link.connection !== 'verified') return
       const [from, to] = [nodes.get(link.from)!, nodes.get(link.to)!]
-      const visible = scenePlaceFilter(station, { floor, siteId }, route[step])
+      const visible = scenePlaceFilter(station, { floor, siteId }, undefined)
       if (!visible(from) || !visible(to)) return
       const anchor = (place: Place) => new T.Vector3(
         place.point[0], floors.get(place.levelId)!.ordinal * (spread ? 9 : 5) + 0.43, place.point[1],
@@ -654,7 +662,6 @@ export function Scene(props: Props) {
         eyeCamera.updateProjectionMatrix()
       }
       owners = []
-      previewTreads.clear()
       fade = null
       let owner = ''
       if (refit) bounds = fit(p)
@@ -680,18 +687,22 @@ export function Scene(props: Props) {
       const panes: ShopWindow[] = []
       const boards: Board[] = []
       const finishes: number[] = []
-      // In overview, prebuild the route marks at the end of the same instance buffer.
-      const routeMarks: { owner: string; matrix: T.Matrix4; color: T.Color; finish: number }[] = []
-      let routeMark = false
       let finish: number = Finish.metal
       const plate = 0xb8b9b4,
         rim = 0xd4d2c5,
         hall = 0xddccb1,
         steel = 0x686963
-      const routeColor = 0xff870c
-      const overviewTread = new T.Color(routeColor)
       const gap = p.spread ? 9 : 5
-      const visible = scenePlaceFilter(station, p, current)
+      const visible = scenePlaceFilter(station, p, undefined)
+      const ordinal = (place: Place) => floors.get(place.levelId)!.ordinal
+      const routeFloors = new Set((current ? [current] : p.route)
+        .flatMap(({ from, to }) => [ordinal(from), ordinal(to)]))
+      outsideRouteFloors = new Set(p.floor === null && routeFloors.size ? [
+        ...station.places.filter((place) => !routeFloors.has(ordinal(place))).map(({ id }) => id),
+        ...station.links.filter(({ from, to }) =>
+          !routeFloors.has(ordinal(nodes.get(from)!)) && !routeFloors.has(ordinal(nodes.get(to)!)),
+        ).map(({ id }) => id),
+      ] : [])
       const pos = (n: Place, h = 0) =>
         new T.Vector3(
           n.point[0],
@@ -711,10 +722,6 @@ export function Scene(props: Props) {
         dummy.scale.set(w, h, d)
         dummy.quaternion.copy(rotation ?? new T.Quaternion())
         dummy.updateMatrix()
-        if (routeMark) {
-          routeMarks.push({ owner, matrix: dummy.matrix.clone(), color: new T.Color(color), finish: surface })
-          return
-        }
         finishes.push(surface)
         owners.push(owner)
         matrices.push(dummy.matrix.clone())
@@ -914,7 +921,6 @@ export function Scene(props: Props) {
           }
         }, beam)
       }
-      const activeIds = new Set(p.route.map((s) => s.link.id))
       const liftStops = new Set<string>()
       for (const e of station.links) {
         owner = e.id
@@ -925,8 +931,6 @@ export function Scene(props: Props) {
         if (!va && !vb) continue
         const start = pos(a, 0.46),
           end = pos(b, 0.46)
-        const active = activeIds.has(e.id),
-          focus = p.route[p.step]?.link.id === e.id
         if (e.kind === 'Elevator') {
           architecture.lift(
             start,
@@ -942,27 +946,7 @@ export function Scene(props: Props) {
         }
         if (va && vb) {
           if (e.kind === 'Stairs' || e.kind === 'Escalator') {
-            const parts: number[] = []
-            const preview = active && !current
-            architecture.stairs(
-              e,
-              start,
-              end,
-              preview ? (...args) => {
-                parts.push(matrices.length)
-                block(...args)
-              } : block,
-              beam,
-              active && current ? (focus ? selected : routeColor) : undefined,
-            )
-            if (preview) {
-              // Match the tread positions supplied by the original generator's tint option.
-              let part = 0
-              architecture.stairs(e, start, end, (_at, _w, _h, _d, color) => {
-                if (color === routeColor) previewTreads.set(parts[part], overviewTread)
-                part++
-              }, () => {}, routeColor)
-            }
+            architecture.stairs(e, start, end, block, beam)
           }
           if (e.kind === 'Passage' || e.kind === 'Gate') {
             const deckOffset = new T.Vector3(0, -0.23, 0)
@@ -1015,52 +999,6 @@ export function Scene(props: Props) {
               architecture.gate(start, end, block)
             }
           }
-          if (active && e.kind !== 'Stairs' && e.kind !== 'Escalator') {
-            routeMark = !current
-            const offset = new T.Vector3(0, start.y === end.y ? 0.1 : 0.5, 0)
-            const c = focus ? selected : routeColor
-            if (start.y === end.y)
-              architecture.horizontalSpan(
-                start.clone().add(offset),
-                end.clone().add(offset),
-                focus ? 0.51 : 0.34,
-                0.07,
-                c,
-                block,
-              )
-            else
-              beam(
-                start.clone().add(offset),
-                end.clone().add(offset),
-                0.28,
-                0.28,
-                c,
-              )
-            if (focus && current && start.y === end.y) {
-              const forward = pos(current.to)
-                .sub(pos(current.from))
-                .setY(0)
-                .normalize()
-              const side = new T.Vector3(forward.z, 0, -forward.x)
-              const tip = pos(current.from, 0.64).lerp(
-                pos(current.to, 0.64),
-                0.82,
-              )
-              for (const sign of [-1, 1])
-                architecture.horizontalSpan(
-                  tip
-                    .clone()
-                    .addScaledVector(forward, -0.49)
-                    .addScaledVector(side, sign * 0.29),
-                  tip,
-                  0.13,
-                  0.08,
-                  0xffe2a0,
-                  block,
-                )
-            }
-            routeMark = false
-          }
         }
         if (
           !current &&
@@ -1077,13 +1015,7 @@ export function Scene(props: Props) {
           )
         }
       }
-      previewStart = matrices.length
-      for (const mark of routeMarks) {
-        matrices.push(mark.matrix)
-        colors.push(mark.color)
-        finishes.push(mark.finish)
-        owners.push(mark.owner)
-      }
+      routeOverlay.rebuild(routeBands(p.route, { ordinal, visible, gap, active: p.step }))
       shopDisplay.rebuild(panes)
       signs.rebuild(boards, world)
       unit.dispose()
@@ -1098,7 +1030,6 @@ export function Scene(props: Props) {
       })
       baseColors = (group.instanceColor!.array as Float32Array).slice()
       group.computeBoundingSphere()
-      group.count = p.showRoute ? matrices.length : previewStart
       group.castShadow = true
       group.receiveShadow = true
       gl.shadowMap.needsUpdate = true
@@ -1118,7 +1049,6 @@ export function Scene(props: Props) {
       if (current && (previous !== current.link.id || refit)) {
         const a = pos(current.from, 0.6),
           b = pos(current.to, 0.6)
-        controls.target.copy(a).lerp(b, 0.5)
         const span = b.clone().sub(a)
         // Look up the flight from its lower landing so the treads remain legible.
         const lowerSide = span
@@ -1132,21 +1062,25 @@ export function Scene(props: Props) {
         sideView.y = 82
         const flight =
           current.link.kind === 'Stairs' || current.link.kind === 'Escalator'
-        camera.position.copy(controls.target).add(flight ? sideView : view)
         const desiredHeight = Math.max(
           10,
           Math.abs(span.dot(up)) + 6,
           ((Math.abs(span.dot(right)) + 8) * box.clientHeight) /
             Math.max(1, box.clientWidth),
         )
-        camera.zoom = T.MathUtils.clamp(
-          (camera.top - camera.bottom) / desiredHeight,
-          0.65,
-          5,
-        )
-        camera.updateProjectionMatrix()
-        controls.update()
-        draw()
+        focus = {
+          start: performance.now(),
+          from: controls.target.clone(),
+          to: a.lerp(b, 0.5),
+          offset: camera.position.clone().sub(controls.target),
+          endOffset: flight ? sideView : view,
+          zoom: camera.zoom,
+          endZoom: T.MathUtils.clamp((camera.top - camera.bottom) / desiredHeight, 0.65, 5),
+        }
+        if (motion.matches) {
+          cancelAnimationFrame(raf)
+          animate(performance.now())
+        } else scheduleFrame()
       }
       gl.domElement.dataset.focus = current?.link.id ?? ''
     }
@@ -1189,11 +1123,14 @@ export function Scene(props: Props) {
           p.dark !== previous?.dark || p.showRoute !== previous?.showRoute) {
         applyAppearance(rebuildGeometry, previous)
       } else if (needsView || p.detail !== previous?.detail) draw()
-      if (changedSelection || (rebuildGeometry && !wasVisible && (selectedIndices.length > 0 || passageMarker.visible))) {
+      if (p.selection && (changedSelection ||
+          (rebuildGeometry && !wasVisible && (selectedIndices.length > 0 || passageMarker.visible)))) {
         // The detail sheet can resize the viewport before ResizeObserver runs.
-        if (p.selection && (gl.domElement.clientWidth !== box.clientWidth ||
-          gl.domElement.clientHeight !== box.clientHeight)) size()
+        if (gl.domElement.clientWidth !== box.clientWidth ||
+          gl.domElement.clientHeight !== box.clientHeight) size()
         focusSelection()
+      } else if (changedSelection && !p.route[p.step]) {
+        focus = null
       }
     }
     let pressed: { x: number; y: number; owner: string; cluster?: string[] } | null = null
@@ -1362,6 +1299,7 @@ export function Scene(props: Props) {
       labelLeaders.remove()
       window.clearTimeout(settleTimer)
       clearProxyOverlay()
+      routeOverlay.dispose()
       group?.dispose()
       outline?.dispose()
       shopDisplay.dispose()
