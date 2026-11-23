@@ -14,6 +14,9 @@ import { scenePlaceFilter } from './scene/view'
 import { createRouteOverlay, routeBands } from './scene/route3d'
 import { targetFromOwner, type SelectionTarget } from './state/selection'
 import { deriveTrackPaths, railCenterHeight, railHeight, trackFloorGap, trackOffset } from './trains/trackPaths'
+import { trainClockSeconds, type TrainClock } from './trains/clock'
+import { createTrainLayer } from './trains/layer'
+import type { TrainPlan } from './trains/simulate'
 
 import { shopWindows, type ShopWindow } from './shopWindows'
 import { signage, type Board } from './signage'
@@ -41,6 +44,8 @@ interface Props {
   reset: number
   zoom: { tick: number; factor: number }
   example: boolean
+  trainClock: TrainClock
+  trainPlans: readonly TrainPlan[]
   eye: string | null
   shell: boolean
   siteId: string | null
@@ -135,6 +140,9 @@ export function Scene(props: Props) {
     let supplementalLabel: Label | null = null
     const occlusionProxies: OcclusionProxy[] = []
     const debug = new URLSearchParams(location.search).get('debug')
+    const trainLayer = createTrainLayer(world, gl.domElement, debug === 'trains')
+    let visibleTrainPlans: readonly TrainPlan[] = []
+    let trainWake = 0
     const debugOcclusion = debug === 'labels'
     const tracks = debug === 'tracks' ? deriveTrackPaths(station) : null
     const trackDebug = tracks && new T.LineSegments(
@@ -329,6 +337,10 @@ export function Scene(props: Props) {
       labelLeaders.replaceChildren(...leaders)
       previousLabels = visible
       gl.domElement.dataset.labels = JSON.stringify([...previousLabels.keys()].sort())
+      renderFrame(lens)
+    }
+
+    function renderFrame(lens = activeCamera()) {
       gl.render(world, lens)
       gl.domElement.dataset.frame = String(++frame)
       gl.domElement.dataset.calls = String(gl.info.render.calls)
@@ -425,8 +437,22 @@ export function Scene(props: Props) {
       if (!raf) raf = requestAnimationFrame(animate)
     }
 
+    function scheduleTrainFrame(now: number) {
+      window.clearTimeout(trainWake)
+      if (!visibleTrainPlans.length) return
+      const clock = propsNow.trainClock
+      const seconds = trainClockSeconds(clock, now)
+      if (visibleTrainPlans.some(({ enter, leave }) => enter <= seconds && seconds < leave)) {
+        scheduleFrame()
+        return
+      }
+      const next = visibleTrainPlans.find(({ enter }) => enter > seconds)
+      if (next) trainWake = window.setTimeout(scheduleFrame, Math.ceil((next.enter - seconds) * 1000 / clock.speed))
+    }
+
     function animate(now: number) {
       raf = 0
+      const animateView = !!(fade || focus)
       if (fade && group?.instanceColor) {
         const t = motion.matches ? 1 : T.MathUtils.clamp((now - fade.start) / 160, 0, 1)
         const colors = group.instanceColor.array
@@ -447,8 +473,13 @@ export function Scene(props: Props) {
         camera.updateProjectionMatrix()
         if (t === 1) focus = null
       }
-      if (!controls.update()) draw()
+      const updatedTrains = trainLayer.update(visibleTrainPlans, trainClockSeconds(propsNow.trainClock, now),
+        propsNow.spread ? 9 - trackFloorGap : 0)
+      if (animateView) {
+        if (!controls.update()) draw()
+      } else if (updatedTrains) renderFrame()
       if (fade || focus) scheduleFrame()
+      scheduleTrainFrame(now)
     }
 
     function applyAppearance(rebuilt: boolean, previous?: Props) {
@@ -1136,13 +1167,22 @@ export function Scene(props: Props) {
 
     function sync(p: Props) {
       const key = JSON.stringify([
-        p.lang, p.floor, p.spread, p.siteId, p.shell, p.eye, p.example,
+        p.lang, p.floor, p.spread, p.siteId, p.shell, p.eye,
         p.route.map(({ link, from }) => [link.id, from.id]), p.step,
       ])
       const previous = propsNow
       const rebuildGeometry = key !== geometryKey
       const needsView = lastReset !== p.reset || lastZoom !== p.zoom.tick
       const changedSelection = p.selection !== previous?.selection
+      const changedExample = p.example !== previous?.example
+      const changedSchedule = rebuildGeometry || p.trainPlans !== previous?.trainPlans ||
+        p.trainClock !== previous?.trainClock
+      let updatedTrains = false
+      if (changedSchedule) {
+        const visible = scenePlaceFilter(station, p, undefined)
+        visibleTrainPlans = p.eye ? [] : p.trainPlans.filter(({ track }) => visible(nodes.get(track.platformId)!))
+        updatedTrains = trainLayer.update(visibleTrainPlans, trainClockSeconds(p.trainClock), p.spread ? 9 - trackFloorGap : 0)
+      }
       const wasVisible = selectedIndices.length > 0 || passageMarker.visible
       if (rebuildGeometry) {
         geometryKey = key
@@ -1151,11 +1191,23 @@ export function Scene(props: Props) {
       } else {
         propsNow = p
         if (needsView) updateView()
+        if (changedExample) {
+          const existing = labels.findIndex(({ key }) => key.startsWith('example:'))
+          if (existing >= 0) labels.splice(existing, 1)[0].el.remove()
+          if (p.example) {
+            const spec = buildLabels(station, p, p.selection, { steps: p.route, step: p.step })
+              .find(({ key }) => key.startsWith('example:'))
+            if (spec) labels.push(createLabel(spec))
+          }
+          occlusionPose = ''
+        }
       }
-      if (rebuildGeometry || changedSelection || p.hovered !== previous?.hovered ||
+      if (rebuildGeometry || changedExample || changedSelection || p.hovered !== previous?.hovered ||
           p.dark !== previous?.dark || p.showRoute !== previous?.showRoute) {
         applyAppearance(rebuildGeometry, previous)
       } else if (needsView || p.detail !== previous?.detail) draw()
+      else if (updatedTrains) renderFrame()
+      if (changedSchedule) scheduleTrainFrame(performance.now())
       if (p.selection && (changedSelection ||
           (rebuildGeometry && !wasVisible && (selectedIndices.length > 0 || passageMarker.visible)))) {
         // The detail sheet can resize the viewport before ResizeObserver runs.
@@ -1331,8 +1383,10 @@ export function Scene(props: Props) {
       for (const { el } of clusterPins.values()) el.remove()
       labelLeaders.remove()
       window.clearTimeout(settleTimer)
+      window.clearTimeout(trainWake)
       clearProxyOverlay()
       routeOverlay.dispose()
+      trainLayer.dispose()
       trackDebug?.geometry.dispose()
       trackDebug?.material.dispose()
       group?.dispose()

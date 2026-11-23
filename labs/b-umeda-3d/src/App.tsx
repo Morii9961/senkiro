@@ -25,9 +25,15 @@ import { InfoDialog } from './ui/panels/InfoDialog'
 import { RoutePanel, instruction, tours } from './ui/panels/RoutePanel'
 import { SearchPanel } from './ui/panels/SearchPanel'
 import { SimBanner, TrainPanel } from './ui/panels/TrainPanel'
+import { vehicleSeries } from '../data/manual/vehicles'
+import type { DayType } from './timetable/time'
+import { startTrainClock, trainClockSeconds, type TrainSpeed } from './trains/clock'
+import { buildTrainPlans } from './trains/simulate'
+import { deriveTrackPaths } from './trains/trackPaths'
 
 const facilityIndex = createFacilityIndex(station, { services, exits })
 const searchIndex = createSearchIndex(station, sites)
+const trackPaths = deriveTrackPaths(station)
 
 function targetPlaces(target: SelectionTarget) {
   if (target.kind === 'station' || target.kind === 'line') {
@@ -130,12 +136,26 @@ export function App() {
   const [routeStep, selectStep] = useState(initial.step),
     [lift, setLift] = useState(initial.stepFreeOnly)
   const [feed, setFeed] = useState(() => availableFeed(initial.feed))
+  const [trainClock, setTrainClock] = useState(startTrainClock)
+  const [trainDay, setTrainDay] = useState<DayType>('weekday')
   const [detail, setDetail] = useState(initial.detail)
   const [sheetHeight, setSheetHeight] = useState<SheetHeight>('half')
   const example = feed.kind === 'demo'
+  const trainPlans = useMemo(() => feed.kind === 'demo'
+    ? buildTrainPlans(feed.dataset.records, trackPaths, vehicleSeries, { day: trainDay, serviceDate: null, feedKind: 'demo' })
+    : [], [feed, trainDay])
   const [panel, setPanel] = useState<'search' | 'route' | 'layers' | 'trains'>('route'),
     [dialog, setDialog] = useState<'help' | 'sources' | null>(null)
   const t = (ja: string, en: string) => (lang === 'ja' ? ja : en)
+  function changeTrainMode(mode: 'off' | 'demo') {
+    if (mode === feed.kind) return
+    if (mode === 'demo') setTrainClock(startTrainClock())
+    setFeed(availableFeed(mode))
+  }
+  function changeTrainSpeed(speed: TrainSpeed) {
+    const now = performance.now()
+    setTrainClock((clock) => ({ startedAt: now, seconds: trainClockSeconds(clock, now), speed }))
+  }
   const result = useMemo(
     () => trip.start && trip.end ? planRoute(station, trip.start, trip.end, { stepFreeOnly: lift }) : null,
     [trip.start, trip.end, lift],
@@ -376,6 +396,8 @@ export function App() {
                   eye,
                   selection,
                   hovered,
+                  trainClock,
+                  trainPlans,
                 }}
                 route={path}
                 showRoute={step >= 0 || drawer}
@@ -584,7 +606,8 @@ export function App() {
                   }}
                 />
               ) : panel === 'trains' ? (
-                <TrainPanel lang={lang} feed={feed} onMode={(mode) => setFeed(availableFeed(mode))} />
+                <TrainPanel lang={lang} feed={feed} clock={trainClock} day={trainDay}
+                  onMode={changeTrainMode} onDay={setTrainDay} onSpeed={changeTrainSpeed} />
               ) : (
                 <Guide
                   lang={lang}
@@ -592,7 +615,7 @@ export function App() {
                   onSelect={inspect}
                   onClear={clear}
                   example={example}
-                  onExample={() => setFeed(availableFeed(example ? 'off' : 'demo'))}
+                  onExample={() => changeTrainMode(example ? 'off' : 'demo')}
                   showSources={() => setDialog('sources')}
                 />
               )}
