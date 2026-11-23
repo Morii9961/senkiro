@@ -61,11 +61,7 @@ export function App() {
   const [lang, language] = useState<Language>(initial.lang),
     [dark, theme] = useState(initial.theme === 'dark'),
     [plan, setPlan] = useState(initial.mode === '2d')
-  const [floor, selectFloor] = useState<number | null>(() => {
-      if (initial.floor !== null || initial.mode === '3d') return initial.floor
-      const site = sites.find((entry) => entry.id === initial.site)
-      return site ? floors.get(nodes.get(site.anchorId)!.levelId)!.ordinal : 0
-    }),
+  const [floor, selectFloor] = useState<number | null>(initial.floor),
     [spread, setSpread] = useState(false),
     [reset, setReset] = useState(0)
   const [zoom, setZoom] = useState({ tick: 0, factor: 1 }),
@@ -212,21 +208,16 @@ export function App() {
     }, url.searchParams).toString()
     if (url.href !== window.location.href) window.history.replaceState(window.history.state, '', url)
   }, [dark, detail, feed, floor, lang, lift, plan, routeDraft, selection, siteId, step, trip.start, trip.end])
-  const floorNow = floor ?? 0,
+  const selectionPlaces = useMemo(() => selectedTrain ? [nodes.get(selectedTrain.track.platformId)!]
+    : selection ? targetPlaces(selection) : [], [selectedTrain, selection])
+  const planAnchor = selectionPlaces[0] ?? currentStep?.to ?? (site ? nodes.get(site.anchorId) : null)
+  const floorNow = floor ?? (planAnchor ? floors.get(planAnchor.levelId)!.ordinal : 0),
     shownFloor = floorLabels.find((f) => f[0] === floorNow)?.[1]
   function togglePlan(next: boolean) {
+    if (next === plan) return
     setEye(null)
     setPlan(next)
-    clear()
-    if (!next && path[step]) selectFloor(null)
-    if (next && floor === null)
-      selectFloor(
-        path[step]
-          ? floors.get(path[step].to.levelId)!.ordinal
-          : site
-            ? floors.get(nodes.get(site.anchorId)!.levelId)!.ordinal
-            : 0,
-      )
+    if (next) setFollowing(null)
     setPlanZoom(1)
   }
   function changeZoom(factor: number) {
@@ -372,10 +363,12 @@ export function App() {
   const place = selection ? nodes.get(selection.id) : null
   const objectDetail = useMemo(() => {
     if (!selection) return null
-    if (selection.kind === 'train') return selectedTrain ? describeTrain(
-      facilityIndex, selectedTrain, trainStage?.id === selectedTrain.id ? trainStage.phase : null,
-      lang, following === selectedTrain.id,
-    ) : null
+    if (selection.kind === 'train') {
+      if (!selectedTrain) return null
+      const spec = describeTrain(facilityIndex, selectedTrain,
+        trainStage?.id === selectedTrain.id ? trainStage.phase : null, lang, following === selectedTrain.id)
+      return plan ? { ...spec, actions: [] } : spec
+    }
     return selection.kind === 'platform'
       ? describePlatform(facilityIndex, selection.id, {
         lang,
@@ -383,11 +376,10 @@ export function App() {
         demoRecords: trainPlans.filter(({ track }) => track.platformId === selection.id).map(({ record }) => record),
       })
       : describeFacility(station, facilityIndex, selection, lang)
-  }, [example, following, lang, selectedTrain, selection, trainPlans, trainStage])
+  }, [example, following, lang, plan, selectedTrain, selection, trainPlans, trainStage])
   useEffect(() => {
     if (selection) panelElement.current?.scrollTo(0, 0)
   }, [selection])
-  const selectionPlaces = useMemo(() => selection ? targetPlaces(selection) : [], [selection])
   const differentFloor = floor !== null && selectionPlaces.length > 0 &&
     !selectionPlaces.some((entry) => floors.get(entry.levelId)?.ordinal === floor)
   return (
@@ -425,7 +417,11 @@ export function App() {
                 steps={step >= 0 || drawer ? path : []}
                 active={step}
                 zoom={planZoom}
+                reset={reset}
                 example={example}
+                selection={selection}
+                onInspect={inspect}
+                onClear={clear}
               />
             ) : (
               <Scene
@@ -526,7 +522,7 @@ export function App() {
                       ),
                     ),
                   ].join(' → ')
-                : floor === null
+                : !plan && floor === null
                   ? t('全階', 'ALL LEVELS')
                   : shownFloor}
             </div>
@@ -576,7 +572,8 @@ export function App() {
             </div>
           </div>
           <FloorControls
-            {...{ lang, plan, floor, siteFloors, eye, shell, spread, interior }}
+            {...{ lang, plan, siteFloors, eye, shell, spread, interior }}
+            floor={plan ? floorNow : floor}
             onFloor={(next) => {
               setEye(null)
               selectFloor(next)

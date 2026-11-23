@@ -25,6 +25,7 @@ async function clickTrainBody(page: Page, id = train) {
   const { [id]: point } = JSON.parse((await canvas.getAttribute('data-train-points'))!)
   const canvasBox = (await canvas.boundingBox())!
   await page.mouse.click(canvasBox.x + point[0], canvasBox.y + point[1])
+  await expect(canvas).toHaveAttribute('data-selected', 'train:' + id)
 }
 
 test('AT-TRN-07: a real canvas hit selects the train and links to its platform schedule', async ({ page }) => {
@@ -60,7 +61,7 @@ test('AT-TRN-08 and AT-SEL-05: follow moves the camera, and clearing selection p
   await expect(canvas).toHaveAttribute('data-camera', parked!)
   await clickTrainBody(page)
   const model = (await canvas.boundingBox())!
-  await page.mouse.click(model.x + model.width * 0.04, model.y + model.height * 0.7)
+  await page.mouse.click(model.x + model.width * 0.04, model.y + model.height * 0.11)
   await expect(canvas).toHaveAttribute('data-selected', '')
   await expect(canvas).toHaveAttribute('data-camera', parked!)
   await clickTrainBody(page)
@@ -102,4 +103,16 @@ test('AT-TRN-07: an unknown vehicle and missing service class stay explicit', as
   await expect(card.locator('[data-field="class"] .unknown-value')).toHaveText('Unverified')
   await expect(card.locator('[data-vehicle-status="unknown"]')).toHaveText('Vehicle unverified (generic body)')
   await expect(card.getByRole('button', { name: 'Hankyu track 8', exact: true })).toBeVisible()
+})
+
+test('AT-2D-03: a scheduled demo selection survives the view switch while its trip is active', async ({ page }) => {
+  const canvas = await startDemo(page)
+  await clickTrainBody(page)
+  const card = page.getByTestId('detail-sheet')
+  await page.getByRole('button', { name: '2D', exact: true }).evaluate((button) => (button as HTMLButtonElement).click())
+  await expect(card).toHaveAttribute('data-target', target)
+  await expect(card.getByRole('button', { name: 'Follow', exact: true })).toHaveCount(0)
+  await page.getByRole('button', { name: '3D', exact: true }).evaluate((button) => (button as HTMLButtonElement).click())
+  await expect(canvas).toHaveAttribute('data-selected', target)
+  await expect(card.getByRole('button', { name: 'Follow', exact: true })).toHaveAttribute('aria-pressed', 'false')
 })

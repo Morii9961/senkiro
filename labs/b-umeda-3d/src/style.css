@@ -52,45 +52,162 @@
 .sheets {
   position: absolute;
   inset: 45px 10px 52px;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(210px, 100%), 1fr));
-  align-content: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: safe center;
   gap: 8px;
   overflow: auto;
+}
+.plan-columns {
+  display: flex;
+  align-items: center;
+  justify-content: safe center;
+  gap: 10px;
+}
+.plan-column {
+  display: grid;
+  flex: 0 0 auto;
+  gap: 10px;
+  max-width: 100%;
 }
 .sheet {
   background: var(--card);
   border: 1px solid var(--line);
-  border-radius: 5px;
-  padding: 8px;
+  border-radius: 4px;
   min-width: 0;
+  overflow: hidden;
+}
+.plan-panel-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: space-between;
+  min-height: 26px;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--line);
 }
 .sheet h3 {
   font-size: 12px;
-  margin: 0 0 5px;
+  margin: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.plan-panel-heading span {
+  flex: none;
+  font-size: 11px;
+  color: var(--sub);
 }
 .sheet svg {
   width: 100%;
-  height: clamp(98px, 17vh, 190px);
   display: block;
-  background: var(--map);
+  background: var(--paper);
+  touch-action: none;
+  cursor: grab;
+}
+.sheet svg:active {
+  cursor: grabbing;
 }
 .sheet rect.platform {
-  fill: #75a5a1;
+  fill: var(--plan-platform, #d4dbe0);
 }
 .sheet rect.paid {
-  fill: #adc5af;
+  fill: var(--plan-paid, #d8e0d9);
 }
 .sheet rect.unpaid {
-  fill: #cbbfa3;
+  fill: var(--plan-unpaid, #ebe5da);
 }
-.sheet .index-label {
-  font:
-    bold 1.25px/1 Consolas,
-    monospace;
-  fill: white;
+.sheet .plan-object > rect {
+  stroke: var(--plan-outline, #79848c);
+  stroke-width: 0.13;
+}
+.plan-trackbed:not([stroke]) {
+  stroke: var(--plan-trackbed, #a7b0b7);
+}
+.plan-rail {
+  stroke: var(--plan-rail, #4e5962);
+}
+.plan-track-badge {
+  fill: var(--card);
+  stroke: var(--sub);
+  stroke-width: 0.9;
+}
+.plan-track-badge[data-active='true'] {
+  stroke: var(--route);
+  stroke-width: 1.4;
+}
+.plan-track-number {
+  fill: var(--ink);
+  font-size: 11px;
+  font-weight: 700;
   text-anchor: middle;
-  dominant-baseline: middle;
+  pointer-events: none;
+}
+.sheet [data-plan-owner],
+.sheet [data-plan-marker],
+.plan-caption {
+  cursor: pointer;
+}
+.sheet .plan-object[data-plan-route-place='true'] > rect {
+  stroke: var(--route, #db8321);
+  stroke-width: 0.24;
+}
+.sheet .plan-object[data-plan-selected='true'] > rect {
+  fill: var(--route-strong, #c54815);
+  stroke: var(--card);
+  stroke-width: 0.22;
+}
+.sheet[data-plan-has-selection='true'] .plan-object[data-plan-selected='false'] {
+  opacity: 0.54;
+}
+.plan-caption rect {
+  fill: var(--card);
+  stroke: var(--line);
+}
+.plan-caption line {
+  stroke: var(--sub);
+  pointer-events: none;
+}
+.plan-caption text {
+  fill: var(--ink);
+  font: 11px Consolas, monospace;
+  pointer-events: none;
+}
+.plan-places {
+  padding: 5px 8px;
+  border-top: 1px solid var(--line);
+  font-size: 11px;
+}
+.plan-places summary {
+  cursor: pointer;
+  color: var(--sub);
+}
+.plan-orientation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 24px;
+  color: var(--sub);
+  font-size: 11px;
+}
+.plan-compass {
+  display: inline-grid;
+  place-items: center;
+  min-width: 25px;
+  height: 23px;
+  padding: 1px 5px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--card);
+  color: var(--ink);
+  font-weight: 650;
+}
+.plan-lines {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
 }
 .sheet ul {
   display: flex;
@@ -103,11 +220,10 @@
 .sheet li {
   font-size: 11px;
 }
-.sheet li b {
-  font:
-    600 10px Consolas,
-    monospace;
-  margin-right: 4px;
+.sheet li button {
+  padding: 2px 4px;
+  font-size: inherit;
+  text-align: left;
 }
 .header-actions button {
   white-space: nowrap;

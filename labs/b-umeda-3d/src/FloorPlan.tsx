@@ -1,7 +1,14 @@
-import { floors, nodes, station, inSite } from './model'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type MouseEvent, type RefObject } from 'react'
+import { floors, lineStyleById, linesById, nodes, station, inSite } from './model'
 import { vertical, type Step } from './domain/graph'
+import { ownersOf } from './domain/index'
 import type { Language, Place } from './domain/types'
 import { sample } from './providers/service'
+import { labelAttachment, layoutLabels, type LabelCandidate } from './scene/labels/layout'
+import type { SelectionTarget } from './state/selection'
+import { deriveTrackPaths } from './trains/trackPaths'
+import { LineBadge } from './ui/atoms/LineBadge'
+import { fitPlanBlocks, floorPlanBlocks, type PlanPanel } from './ui/planLayout'
 
 interface Props {
   siteId: string | null
@@ -10,80 +17,169 @@ interface Props {
   steps: Step[]
   active: number
   zoom: number
+  reset: number
   example: boolean
+  selection: SelectionTarget | null
+  onInspect: (id: string) => void
+  onClear: () => void
 }
-function section(n: Place, floor: number) {
-  if (
-    n.stationId &&
-    !['sk:station:jr-osaka', 'sk:station:metro-umeda'].includes(n.stationId)
-  )
-    return n.stationId
-  if (!n.stationId && n.zone === 'unpaid' && floor < 0) return 'public'
-  if (floor === 0) return 'street'
-  if (!n.stationId || n.stationId === 'sk:station:metro-umeda') return 'metro'
-  if (floor === -2 && ['sk:concourse:ac-b2', 'sk:landing:ab-b2'].includes(n.id))
-    return 'passage'
-  return 'jr'
+
+const tracks = deriveTrackPaths(station)
+const initialView = { x: 0, y: 0, zoom: 1 }
+
+function useSize(element: RefObject<Element | null>) {
+  const [size, setSize] = useState({ width: 0, height: 0 })
+  useLayoutEffect(() => {
+    const node = element.current!
+    const resize = () => {
+      const { clientWidth: width, clientHeight: height } = node
+      setSize((old) => old.width === width && old.height === height ? old : { width, height })
+    }
+    resize()
+    const observer = new ResizeObserver(resize)
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [element])
+  return size
 }
+
 function Sheet({
-  places,
+  panel,
   title,
+  rotate,
+  baseScale,
   lang,
   zoom,
   steps,
   active,
   example,
-}: { places: Place[]; title: string } & Omit<Props, 'floor' | 'siteId'>) {
-  const xs = places.flatMap((n) => [
-      n.point[0] - n.size[0] / 2,
-      n.point[0] + n.size[0] / 2,
-    ]),
-    zs = places.flatMap((n) => [
-      n.point[1] - n.size[1] / 2,
-      n.point[1] + n.size[1] / 2,
-    ])
-  const width = Math.max(...xs) - Math.min(...xs),
-    depth = Math.max(...zs) - Math.min(...zs)
-  const rotate = depth > width
-  const xy = (n: Place) => (rotate ? [n.point[1], -n.point[0]] : n.point)
-  const cx = (Math.max(...xs) + Math.min(...xs)) / 2,
-    cz = (Math.max(...zs) + Math.min(...zs)) / 2
-  const w = (Math.max(width, depth) + 6) / zoom,
-    h = (Math.min(width, depth) + 5) / zoom
+  selection,
+  selected,
+  onInspect,
+}: {
+  panel: PlanPanel; title: string; rotate: boolean; baseScale: number; selected: Set<string>
+} & Omit<Props, 'floor' | 'siteId' | 'onClear' | 'reset'>) {
+  const places = panel.block.places
+  const drawing = useRef<SVGSVGElement>(null)
+  // The floor fit sets each panel's size. Derive the viewBox from that same fit
+  // so a neighboring panel cannot recenter when its SVG is measured later.
+  const viewport = { width: panel.width - 2, height: panel.height }
+  const [view, setView] = useState(initialView)
+  const drag = useRef({ x: 0, y: 0, originX: 0, originY: 0, active: false, moved: false })
+  useEffect(() => {
+    const svg = drawing.current!
+    const wheel = (event: WheelEvent) => {
+      event.preventDefault()
+      const bounds = svg.getBoundingClientRect()
+      const x = event.clientX - bounds.left - bounds.width / 2
+      const y = event.clientY - bounds.top - bounds.height / 2
+      setView((old) => {
+        const next = Math.max(0.5, Math.min(5, old.zoom * Math.exp(-event.deltaY * 0.002)))
+        const ratio = next / old.zoom
+        return { zoom: next, x: x + (old.x - x) * ratio, y: y + (old.y - y) * ratio }
+      })
+    }
+    svg.addEventListener('wheel', wheel, { passive: false })
+    return () => svg.removeEventListener('wheel', wheel)
+  }, [])
+  const turn = (x: number, z: number) => rotate ? [z, -x] : [x, z]
+  const xy = (n: Place) => turn(...n.point)
+  const { minX, minY, maxX, maxY } = panel.block.bounds
+  const scale = baseScale * zoom * view.zoom
+  const originX = viewport.width / 2 - (minX + maxX) * scale / 2 + view.x
+  const originY = viewport.height / 2 - (minY + maxY) * scale / 2 + view.y
   const keys = places.filter((p) => p.kind !== 'Landing')
+  const lines = [...new Set(keys.flatMap(({ serviceLineIds }) => serviceLineIds ?? []))]
+    .flatMap((id) => linesById.get(id) ?? [])
   const ids = new Set(places.map((n) => n.id))
   const drawnLinks = station.links.filter(
     (e) => ids.has(e.from) || ids.has(e.to),
   )
-  const paint = (id: string) =>
-    steps[active]?.link.id === id
-      ? '#c54815'
-      : steps.some((s) => s.link.id === id)
-        ? '#db8321'
-        : '#547a78'
+  const routeIds = new Set(steps.map(({ link }) => link.id))
+  const routePlaces = new Set(steps.flatMap(({ from, to }) => [from.id, to.id]))
+  const paint = (id: string) => selected.has(id) || steps[active]?.link.id === id
+    ? 'var(--route-strong, #c54815)'
+    : routeIds.has(id) ? 'var(--route, #db8321)' : '#547a78'
+  const select = (event: MouseEvent, id: string) => {
+    event.stopPropagation()
+    onInspect(id)
+  }
+  const markers = keys.map((place) => {
+    const [x, y] = xy(place)
+    return { x: x * scale + originX, y: y * scale + originY }
+  })
+  const labels = layoutLabels(keys.map<LabelCandidate>((place, index) => {
+    const maximum = Math.min(196, viewport.width * 0.7)
+    let text = ''
+    let textWidth = 0
+    for (const char of place.names[lang]) {
+      const glyphWidth = char.charCodeAt(0) < 128 ? 7 : 12
+      if (textWidth + glyphWidth + 23 > maximum) {
+        text += '…'
+        textWidth += 12
+        break
+      }
+      text += char
+      textWidth += glyphWidth
+    }
+    return {
+      ...markers[index], key: place.id, width: textWidth + 11, height: 17, text,
+      level: selection?.id === place.id ? 0 : place.kind === 'Platform' ? 2 : 3,
+      priority: selected.has(place.id) ? -2 : routePlaces.has(place.id) ? -1 : index / keys.length,
+    }
+  }).filter(({ x, y }) => x >= 0 && y >= 0 && x <= viewport.width && y <= viewport.height), viewport,
+  markers.map(({ x, y }) => ({ x: x - 9, y: y - 8, width: 18, height: 16 })))
   return (
-    <section className="sheet">
-      <h3>{title}</h3>
+    <section className="sheet" data-plan-has-selection={keys.some(({ id }) => selected.has(id)) || undefined}>
+      <div className="plan-panel-heading">
+        <h3 title={title}>{title}</h3>
+        <span aria-hidden="true">{rotate ? '←' : '↑'} {lang === 'ja' ? '北' : 'N'}</span>
+      </div>
       <svg
+        ref={drawing}
+        style={{ height: panel.height }}
+        data-plan-scale={baseScale.toFixed(4)}
         role="img"
         aria-label={
           (lang === 'ja' ? '模式平面図' : 'Schematic floor plan') +
           ' · ' +
           title
         }
-        viewBox={[
-          (rotate ? cz : cx) - w / 2,
-          (rotate ? -cx : cz) - h / 2,
-          w,
-          h,
-        ].join(' ')}
+        viewBox={`0 0 ${viewport.width} ${viewport.height}`}
+        onContextMenu={(event) => event.preventDefault()}
+        onPointerDown={(event) => {
+          drag.current = { active: true, moved: false, x: event.clientX, y: event.clientY, originX: view.x, originY: view.y }
+        }}
+        onPointerMove={(event) => {
+          const start = drag.current
+          if (!start.active || !event.buttons) return
+          const dx = event.clientX - start.x
+          const dy = event.clientY - start.y
+          if (!start.moved && Math.hypot(dx, dy) < 4) return
+          if (!start.moved) event.currentTarget.setPointerCapture(event.pointerId)
+          start.moved = true
+          setView((old) => ({ ...old, x: start.originX + dx, y: start.originY + dy }))
+        }}
+        onPointerUp={() => { drag.current.active = false }}
+        onPointerCancel={() => { drag.current.active = false }}
+        onClickCapture={(event) => {
+          if (drag.current.moved) event.stopPropagation()
+        }}
+        onDoubleClick={() => setView(initialView)}
       >
         <title>{keys.map((n) => n.names[lang]).join(' · ')}</title>
+        <g data-plan-transform="" transform={`translate(${originX} ${originY}) scale(${scale})`}>
         {keys.map((n) => {
           const [x, y] = xy(n),
             [w, h] = rotate ? [n.size[1], n.size[0]] : n.size
+          const colors = new Set((n.serviceLineIds ?? []).flatMap((id) => lineStyleById.get(id)?.color?.hex ?? []))
+          const lineColor = colors.size === 1 ? [...colors][0] : undefined
           return (
-            <g key={n.id}>
+            <g key={n.id} className="plan-object" data-plan-owner={n.id}
+              data-plan-selected={selected.has(n.id)}
+              data-plan-route-place={routePlaces.has(n.id) || undefined}
+              onClick={(event) => select(event, n.id)}>
+              <title>{n.names[lang]}</title>
               <rect
                 x={x - w / 2}
                 y={y - h / 2}
@@ -92,13 +188,21 @@ function Sheet({
                 rx=".25"
                 className={n.kind === 'Platform' ? 'platform' : n.zone}
               />
-              {n.kind === 'Platform' && (
-                <path
-                  d={`M${x - w / 2 + 0.2} ${y - h / 2 + 0.22}h${w - 0.4} M${x - w / 2 + 0.2} ${y + h / 2 - 0.22}h${w - 0.4}`}
-                  stroke="#ffdf86"
-                  strokeWidth=".15"
-                />
-              )}
+              {n.kind === 'Platform' && tracks.filter(({ platformId }) => platformId === n.id).map((track) => {
+                const [[ax, , az], [bx, , bz]] = track.polyline
+                const [x1, y1] = turn(ax, az)
+                const [x2, y2] = turn(bx, bz)
+                const horizontal = Math.abs(x2 - x1) > Math.abs(y2 - y1)
+                return <g key={track.id} data-plan-rails="" data-line-color={lineColor ? 'known' : 'unknown'}>
+                  <line x1={x1} y1={y1} x2={x2} y2={y2} className="plan-trackbed" strokeWidth=".58" stroke={lineColor} />
+                  {[-0.13, 0.13].map((offset) => (
+                    <line key={offset}
+                      x1={x1 + (horizontal ? 0 : offset)} y1={y1 + (horizontal ? offset : 0)}
+                      x2={x2 + (horizontal ? 0 : offset)} y2={y2 + (horizontal ? offset : 0)}
+                      className="plan-rail" strokeWidth=".10" />
+                  ))}
+                </g>
+              })}
             </g>
           )
         })}
@@ -111,9 +215,15 @@ function Sheet({
             [ax, ay] = xy(a),
             [bx, by] = xy(b),
             col = paint(e.id)
+          const linkProps = {
+            'data-plan-owner': e.id,
+            'data-plan-selected': selected.has(e.id),
+            'data-plan-route': routeIds.has(e.id) ? e.id : undefined,
+            onClick: (event: MouseEvent) => select(event, e.id),
+          }
           if (vertical(e))
             return (
-              <g key={e.id}>
+              <g key={e.id} {...linkProps}>
                 <title>{e.names[lang]}</title>
                 <rect
                   x={x - 0.51}
@@ -124,11 +234,19 @@ function Sheet({
                   stroke="#fff"
                   strokeWidth=".12"
                 />
+                <path d={e.kind === 'Elevator' ? `M${x - .25},${y} h.5 M${x},${y - .25} v.5`
+                  : `M${x - .30},${y + .22} h.2 v-.2 h.2 v-.2 h.2`}
+                  fill="none" stroke="white" strokeWidth=".09" />
               </g>
             )
-          if (!here || !there) return null
+          if (!here || !there) return routeIds.has(e.id) || selected.has(e.id) ? (
+            <g key={e.id} {...linkProps}>
+              <title>{e.names[lang]}</title>
+              <circle cx={x} cy={y} r="1.22" fill="none" stroke={col} strokeWidth=".26" />
+            </g>
+          ) : null
           return (
-            <g key={e.id}>
+            <g key={e.id} {...linkProps}>
               <title>{e.names[lang]}</title>
               <line
                 x1={ax}
@@ -137,37 +255,58 @@ function Sheet({
                 y2={by}
                 stroke={col}
                 strokeWidth={
-                  steps.some((s) => s.link.id === e.id) ? 0.48 : 0.14
+                  selected.has(e.id) || routeIds.has(e.id) ? 0.48 : 0.14
                 }
               />
+              <line x1={ax} y1={ay} x2={bx} y2={by} stroke="transparent" strokeWidth=".65" pointerEvents="stroke" />
               {e.kind === 'Gate' && (
                 <circle
                   cx={(ax + bx) / 2}
                   cy={(ay + by) / 2}
-                  r=".65"
+                  r=".47"
                   fill={col}
                 />
               )}
             </g>
           )
         })}
-        {keys.map((n, i) => {
+        {keys.filter(({ kind }) => kind === 'Platform' || kind === 'Entrance').map((n) => {
           const [x, y] = xy(n)
+          const namedNumber = n.names.en.match(/\b\d+(?:\s*[·/]\s*\d+)?\b/)?.[0].replace(/\s*[·/]\s*/g, '·')
+          const text = n.kind === 'Platform' ? n.boarding?.label ?? namedNumber ?? '•' : '↗'
+          const wide = Math.max(19, 10 + text.length * 6)
           return (
-            <g key={n.id} transform={`translate(${x} ${y})`}>
-              <circle r=".98" fill="#233f40" />
-              <text className="index-label" dy=".04em">
-                {i + 1}
-              </text>
+            <g key={n.id} data-plan-marker={n.id} transform={`translate(${x} ${y}) scale(${1 / scale})`}
+              onClick={(event) => select(event, n.id)}>
+              <rect className="plan-track-badge" data-active={selected.has(n.id) || routePlaces.has(n.id)}
+                x={-wide / 2} y="-9" width={wide} height="18" rx="3" />
+              <text className="plan-track-number" y="4">{text}</text>
+            </g>
+          )
+        })}
+        </g>
+        {labels.map(({ key, text, rect, anchor, leader }) => {
+          const at = labelAttachment(rect, anchor)
+          return (
+            <g key={key} className="plan-caption" onClick={(event) => select(event, key)}>
+              {leader && <line x1={at.x} y1={at.y} x2={anchor.x} y2={anchor.y} />}
+              <rect data-plan-label={key} x={rect.x} y={rect.y} width={rect.width} height={rect.height} rx="2.5" />
+              <text x={rect.x + 5} y={rect.y + 12}>{text}</text>
             </g>
           )
         })}
       </svg>
+      <details className="plan-places" onClick={(event) => event.stopPropagation()}>
+      <summary>{lang === 'ja' ? 'この図の施設' : 'Places on this plan'}</summary>
+      {lines.length > 0 && <div className="plan-lines">
+        {lines.map((line) => <LineBadge key={line.id} line={line} lang={lang} size="xs" />)}
+      </div>}
       <ul>
-        {keys.map((n, i) => (
+        {keys.map((n) => (
           <li key={n.id}>
-            <b>{i + 1}</b>
-            {n.names[lang]}
+            <button aria-pressed={selected.has(n.id)} onClick={(event) => select(event, n.id)}>
+              {n.names[lang]}
+            </button>
             {example && n.id === sample.platformId
               ? ' · ' +
                 (lang === 'ja' ? 'サンプル' : 'EXAMPLE') +
@@ -178,32 +317,47 @@ function Sheet({
           </li>
         ))}
       </ul>
+      </details>
     </section>
   )
 }
 export function FloorPlan(p: Props) {
-  const groups = new Map<string, Place[]>()
-  const title: Record<string, string> = {
-    ...Object.fromEntries(station.stations.map((s) => [s.id, s.names[p.lang]])),
-    public:
-      p.lang === 'ja' ? '地下歩行通路・地下街' : 'Public passages & arcades',
-    jr: p.lang === 'ja' ? 'JR 大阪駅' : 'JR Osaka',
-    street:
-      p.lang === 'ja' ? 'JR 大阪駅・地上経路' : 'JR Osaka & street crossing',
-    metro: p.lang === 'ja' ? '地下鉄 梅田駅' : 'Metro Umeda',
-    passage: p.lang === 'ja' ? '改札内連絡通路' : 'Paid connecting passage',
-  }
-  for (const n of station.places.filter(
+  const stage = useRef<HTMLDivElement>(null)
+  const viewport = useSize(stage)
+  const { blocks, rotate } = useMemo(() => floorPlanBlocks(station.places.filter(
     (n) => inSite(n, p.siteId) && floors.get(n.levelId)!.ordinal === p.floor,
-  )) {
-    const key = section(n, p.floor)
-    groups.set(key, [...(groups.get(key) ?? []), n])
-  }
+  ), station.links), [p.floor, p.siteId])
+  const { columns, scale } = fitPlanBlocks(blocks, {
+    width: Math.max(120, viewport.width - 20), height: Math.max(135, viewport.height - 34),
+  })
+  const selected = p.selection ? ownersOf(station, p.selection) : new Set<string>()
+  const ja = p.lang === 'ja'
+  const names = new Map(station.stations.map((entry) => [entry.id, entry.names[p.lang]]))
+  names.set('sk:station:jr-osaka', ja ? 'JR 大阪駅' : 'JR Osaka')
+  names.set('sk:station:metro-umeda', ja ? '地下鉄 梅田駅' : 'Metro Umeda')
   return (
-    <div className="sheets">
-      {[...groups.entries()].map(([id, places]) => (
-        <Sheet key={id} {...p} places={places} title={title[id]} />
-      ))}
+    <div className="sheets" ref={stage} data-plan-north={rotate ? 'left' : 'up'} onClick={p.onClear}>
+      <div className="plan-columns">
+        {columns.map((column) => (
+          <div className="plan-column" key={column[0].block.id} style={{ width: column[0].width }}>
+            {column.map((panel) => {
+              const stations = panel.block.places.flatMap(({ stationId }) => stationId ? names.get(stationId) ?? [] : [])
+              const title = [...new Set(stations)].join(' · ') || (ja ? '公共通路・地下街' : 'Public passages and arcades')
+              return <Sheet key={panel.block.id + ':' + p.reset} {...p} {...{ panel, title, rotate, selected }} baseScale={scale} />
+            })}
+          </div>
+        ))}
+      </div>
+      <div className="plan-orientation">
+        <span className="plan-compass" role="img" aria-label={ja
+          ? (rotate ? '模式方位、左が北' : '模式方位、上が北')
+          : (rotate ? 'Schematic orientation, north to the left' : 'Schematic orientation, north up')}>
+          {rotate ? '←' : '↑'} {ja ? '北' : 'N'}
+        </span>
+        {blocks.length > 1 && <span className="plan-block-note">{ja
+          ? '図の間の位置・距離は縮尺外'
+          : 'Spacing and positions between plans are not to scale'}</span>}
+      </div>
     </div>
   )
 }

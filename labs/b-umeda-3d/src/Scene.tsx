@@ -1288,11 +1288,11 @@ export function Scene(props: Props) {
         if (followingTrain) focus = null
       }
       if (updateFollow() && !controls.update()) draw()
+      // Closing a detail sheet can also resize the viewport before ResizeObserver runs.
+      if (gl.domElement.clientWidth !== box.clientWidth ||
+          gl.domElement.clientHeight !== box.clientHeight) size()
       if (p.selection && (changedSelection ||
           (rebuildGeometry && !wasVisible && (selectedIndices.length > 0 || passageMarker.visible)))) {
-        // The detail sheet can resize the viewport before ResizeObserver runs.
-        if (gl.domElement.clientWidth !== box.clientWidth ||
-          gl.domElement.clientHeight !== box.clientHeight) size()
         focusSelection()
       } else if (changedSelection && !p.route[p.step]) {
         focus = null
