@@ -13,6 +13,7 @@ import { exits } from '../data/manual/exits'
 import { services } from '../data/manual/services'
 import { describePlatform } from './domain/describe/platform'
 import { describeFacility } from './domain/describe/facilities'
+import { describeTrain } from './domain/describe/train'
 import type { DetailAction } from './domain/describe/types'
 import { initialSelection, selectionReducer, targetFromOwner, type SelectionTarget } from './state/selection'
 import { parseUrl, serializeUrl } from './state/url'
@@ -28,7 +29,7 @@ import { SimBanner, TrainPanel } from './ui/panels/TrainPanel'
 import { vehicleSeries } from '../data/manual/vehicles'
 import type { DayType } from './timetable/time'
 import { startTrainClock, trainClockSeconds, type TrainSpeed } from './trains/clock'
-import { buildTrainPlans } from './trains/simulate'
+import { buildTrainPlans, positionAt, type TrainPhase } from './trains/simulate'
 import { deriveTrackPaths } from './trains/trackPaths'
 
 const facilityIndex = createFacilityIndex(station, { services, exits })
@@ -52,7 +53,11 @@ export function App() {
     ...initialSelection,
     selection: initial.selection,
   })
-  const clear = () => dispatchSelection({ type: 'clear' })
+  const [following, setFollowing] = useState<string | null>(null)
+  const clear = () => {
+    dispatchSelection({ type: 'clear' })
+    setFollowing(null)
+  }
   const [lang, language] = useState<Language>(initial.lang),
     [dark, theme] = useState(initial.theme === 'dark'),
     [plan, setPlan] = useState(initial.mode === '2d')
@@ -144,11 +149,30 @@ export function App() {
   const trainPlans = useMemo(() => feed.kind === 'demo'
     ? buildTrainPlans(feed.dataset.records, trackPaths, vehicleSeries, { day: trainDay, serviceDate: null, feedKind: 'demo' })
     : [], [feed, trainDay])
+  const selectedTrain = selection?.kind === 'train' ? trainPlans.find(({ id }) => id === selection.id) : undefined
+  const [trainStage, setTrainStage] = useState<{ id: string; phase: TrainPhase } | null>(null)
+  useEffect(() => {
+    if (selection?.kind !== 'train') return
+    if (!selectedTrain) {
+      clear()
+      return
+    }
+    const refresh = () => {
+      const state = positionAt(selectedTrain, trainClockSeconds(trainClock))
+      if (state) setTrainStage((old) => old?.id === selectedTrain.id && old.phase === state.phase
+        ? old : { id: selectedTrain.id, phase: state.phase })
+      else clear()
+    }
+    refresh()
+    const timer = window.setInterval(refresh, 200)
+    return () => window.clearInterval(timer)
+  }, [selection, selectedTrain, trainClock])
   const [panel, setPanel] = useState<'search' | 'route' | 'layers' | 'trains'>('route'),
     [dialog, setDialog] = useState<'help' | 'sources' | null>(null)
   const t = (ja: string, en: string) => (lang === 'ja' ? ja : en)
   function changeTrainMode(mode: 'off' | 'demo') {
     if (mode === feed.kind) return
+    if (mode === 'off' && selection?.kind === 'train') clear()
     if (mode === 'demo') setTrainClock(startTrainClock())
     setFeed(availableFeed(mode))
   }
@@ -175,7 +199,7 @@ export function App() {
       floor,
       mode: plan ? '2d' : '3d',
       detail,
-      selection,
+      selection: selection?.kind === 'train' ? null : selection,
       from: !routeDraft && trip.start === tours[0].start && nodes.get(trip.end!)?.kind !== 'Entrance'
         ? null : trip.start,
       to: !routeDraft && trip.end === tours[0].end ? null : trip.end,
@@ -239,6 +263,12 @@ export function App() {
     setPanel('route')
   }
   function detailAction(kind: DetailAction, target: SelectionTarget) {
+    if (kind === 'follow') {
+      if (target.kind === 'train' && !plan && !eye) {
+        setFollowing((old) => old === target.id ? null : target.id)
+      }
+      return
+    }
     const link = facilityIndex.link(target.id)
     const targetSite = target.kind === 'station'
       ? sites.find((entry) => entry.id === target.id || entry.stationId === target.id)
@@ -282,8 +312,18 @@ export function App() {
     }
   }
   function inspect(id: string) {
+    const train = trainPlans.find((candidate) => candidate.id === id)
+    if (train && positionAt(train, trainClockSeconds(trainClock))) {
+      if (selection?.id !== id) {
+        setSheetHeight('half')
+        setFollowing(null)
+      }
+      dispatchSelection({ type: 'select', target: { kind: 'train', id } })
+      return
+    }
     const target = targetFromOwner(id)
     if (!target) return
+    setFollowing(null)
     if (target.kind === 'entrance' && selection?.id !== id) {
       exitOrigin.current = selection?.kind === 'platform' ? selection.id
         : selection?.kind === 'gate' ? facilityIndex.gateView(selection.id).outsideSide.id
@@ -318,7 +358,7 @@ export function App() {
   useLayoutEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.defaultPrevented || event.isComposing) return
-      if (event.key === 'Escape' && !dialog) dispatchSelection({ type: 'clear' })
+      if (event.key === 'Escape' && !dialog) clear()
       if (event.key !== '/' || dialog || event.ctrlKey || event.metaKey || event.altKey) return
       if (event.target instanceof HTMLElement && event.target.closest('input,textarea,select,[contenteditable=true]')) return
       event.preventDefault()
@@ -332,10 +372,18 @@ export function App() {
   const place = selection ? nodes.get(selection.id) : null
   const objectDetail = useMemo(() => {
     if (!selection) return null
+    if (selection.kind === 'train') return selectedTrain ? describeTrain(
+      facilityIndex, selectedTrain, trainStage?.id === selectedTrain.id ? trainStage.phase : null,
+      lang, following === selectedTrain.id,
+    ) : null
     return selection.kind === 'platform'
-      ? describePlatform(facilityIndex, selection.id, { lang, example: example ? exampleService.updates[0] : null })
+      ? describePlatform(facilityIndex, selection.id, {
+        lang,
+        example: example ? exampleService.updates[0] : null,
+        demoRecords: trainPlans.filter(({ track }) => track.platformId === selection.id).map(({ record }) => record),
+      })
       : describeFacility(station, facilityIndex, selection, lang)
-  }, [example, lang, selection])
+  }, [example, following, lang, selectedTrain, selection, trainPlans, trainStage])
   useEffect(() => {
     if (selection) panelElement.current?.scrollTo(0, 0)
   }, [selection])
@@ -398,10 +446,12 @@ export function App() {
                   hovered,
                   trainClock,
                   trainPlans,
+                  following,
                 }}
                 route={path}
                 showRoute={step >= 0 || drawer}
                 onInspect={inspect}
+                onStopFollowing={() => setFollowing(null)}
                 onClear={clear}
                 onHover={(target) => dispatchSelection({ type: 'hover', target })}
                 onReset={resetView}

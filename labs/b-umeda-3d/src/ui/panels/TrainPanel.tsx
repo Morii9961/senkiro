@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { describeVehicle } from '../../domain/describe/train'
 import type { Language } from '../../domain/types'
 import { timetableRegistry } from '../../providers/timetable'
 import { formatServiceTime, serviceClockAt, serviceDateTypeApplies, type DayType } from '../../timetable/time'
@@ -49,12 +50,17 @@ export function TrainPanel({ lang, feed, clock, day, onMode, onDay, onSpeed }: P
           {records.map((record) => {
             const line = timetableRegistry.lines.get(record.line_id)
             const platform = record.platform_id === null ? undefined : timetableRegistry.platforms.get(record.platform_id)
+            const vehicle = describeVehicle(record, record.vehicle_assignment_status, lang)
             return (
               <li key={record.trip_id} data-train-card="demo">
                 <strong>{t('架空', 'Fictional')}</strong>
                 {line && <LineBadge line={line} lang={lang} />}
+                {(record.service_class || record.destination_text) && (
+                  <span>{record.service_class} {record.destination_text}</span>
+                )}
                 <span>{t('予定', 'Scheduled')} {record.departure_time_local ?? record.arrival_time_local}</span>
                 <small>{platform?.names[lang] ?? t('番線未確認', 'Platform unverified')}</small>
+                <small data-vehicle-status={vehicle.status}>{vehicle.label}</small>
               </li>
             )
           })}

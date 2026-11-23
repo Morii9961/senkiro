@@ -54,6 +54,7 @@ export function DetailSheet({ spec, lang, height, onHeight, onClose, onSelect, o
             <LineBadge key={line.id} line={line} lang={lang} />) : <UnknownValue lang={lang} />}
           {chips.floor && <span>{chips.floor}</span>}
           {chips.area && <span>{chips.area}</span>}
+          {chips.vehicle && <span data-vehicle-status={chips.vehicle.status}>{chips.vehicle.label}</span>}
         </div>
         <dl className="detail-facts">
           {facts.map((fact) => <FieldRow key={fact.key} fact={fact} lang={lang} />)}
@@ -63,6 +64,17 @@ export function DetailSheet({ spec, lang, height, onHeight, onClose, onSelect, o
             <h3>{t('運行情報', 'Service')}</h3>
             {service.kind === 'unavailable' ? (
               <p>{t('リアルタイム配信なし', 'Live feed unavailable')}</p>
+            ) : service.kind === 'demo-timetable' ? (
+              <div className="fixture">
+                <strong>{t('DEMO · 架空のダイヤ', 'DEMO · Fictional timetable')}</strong>
+                {service.records.map((record) => (
+                  <p key={record.trip_id}>
+                    {record.service_class} {record.destination_text} ·{' '}
+                    {t('予定到着', 'Scheduled arrival')} {record.arrival_time_local ?? <UnknownValue lang={lang} />} ·{' '}
+                    {t('予定発車', 'Scheduled departure')} {record.departure_time_local ?? <UnknownValue lang={lang} />}
+                  </p>
+                ))}
+              </div>
             ) : (
               <div className="fixture">
                 <strong>{t('サンプル・架空', 'EXAMPLE · SYNTHETIC')}</strong>
@@ -73,9 +85,9 @@ export function DetailSheet({ spec, lang, height, onHeight, onClose, onSelect, o
           </div>
         )}
         <div className="detail-actions">
-          {actions.map(({ kind, label }) => (
+          {actions.map(({ kind, label, pressed }) => (
             <button key={kind} className={kind === 'start' || kind === 'end' ? 'primary' : undefined}
-              onClick={() => onAction(kind, target)}>{label}</button>
+              aria-pressed={pressed} onClick={() => onAction(kind, target)}>{label}</button>
           ))}
         </div>
         {relations.map(({ key, title, items, derived }) => (

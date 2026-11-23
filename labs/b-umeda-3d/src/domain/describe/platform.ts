@@ -1,11 +1,14 @@
 import { linkTarget, type FacilityIndex } from '../index'
 import type { Language, PlatformUpdate } from '../types'
 import type { DetailFact, DetailRelation, DetailSpec } from './types'
+import type { TimetableRecord } from '../../timetable/types'
 
 export function describePlatform(
   index: FacilityIndex,
   id: string,
-  { lang, example = null }: { lang: Language; example?: PlatformUpdate | null },
+  { lang, example = null, demoRecords = [] }: {
+    lang: Language; example?: PlatformUpdate | null; demoRecords?: readonly TimetableRecord[]
+  },
 ): DetailSpec {
   const view = index.platformView(id)
   const { platform, operator, lines } = view
@@ -52,7 +55,8 @@ export function describePlatform(
       area: platform.zone === 'paid' ? t('改札内', 'Inside gates') : t('改札外', 'Outside gates'),
     },
     facts,
-    service: example?.platformId === id ? { kind: 'example', update: example } : { kind: 'unavailable' },
+    service: demoRecords.length ? { kind: 'demo-timetable', records: demoRecords }
+      : example?.platformId === id ? { kind: 'example', update: example } : { kind: 'unavailable' },
     relations: [
       { key: 'transfers', title: t('乗換', 'Transfers'), items: transfers, derived: true },
       { key: 'same-station', title: t('同駅のホーム', 'Other platforms at this station'), items: otherPlatforms },

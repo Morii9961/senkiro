@@ -8,12 +8,15 @@ export function createTrainLayer(world: T.Scene, canvas: HTMLCanvasElement, trac
   const material = new T.MeshStandardMaterial({ roughness: 0.85, metalness: 0.02 })
   const transform = new T.Object3D()
   const color = new T.Color()
+  const accent = new T.Color('#e14815')
   const box = new T.Box3()
   const unit = new T.Box3(new T.Vector3(-0.5, -0.5, -0.5), new T.Vector3(0.5, 0.5, 0.5))
+  const drawn = new Map<string, { bounds: T.Box3; instance: NonNullable<ReturnType<typeof trainInstanceAt>> }>()
   let mesh: T.InstancedMesh | null = null
   let capacity = 0
   let previous: ReturnType<typeof framesAt> = []
   let previousGap = 0
+  let previousSelection: string | null = null
   canvas.dataset.trains = '[]'
   if (trace) canvas.dataset.trainState = '[]'
 
@@ -24,9 +27,9 @@ export function createTrainLayer(world: T.Scene, canvas: HTMLCanvasElement, trac
     })
   }
 
-  function update(plans: readonly TrainPlan[], seconds: number, spreadGap: number) {
+  function update(plans: readonly TrainPlan[], seconds: number, spreadGap: number, selection: string | null) {
     const frames = framesAt(plans, seconds)
-    if (previousGap === spreadGap && frames.length === previous.length &&
+    if (previousSelection === selection && previousGap === spreadGap && frames.length === previous.length &&
       frames.every(({ plan, instance }, index) => {
         const old = previous[index]
         return old.plan === plan && old.instance.s === instance.s &&
@@ -34,6 +37,7 @@ export function createTrainLayer(world: T.Scene, canvas: HTMLCanvasElement, trac
       })) return false
     previous = frames
     previousGap = spreadGap
+    previousSelection = selection
 
     const needed = frames.reduce((count, { plan }) => count + plan.body.parts.reduce(
       (parts, part) => parts + (part.kind === 'door' ? 3 : 1), 0,
@@ -50,8 +54,7 @@ export function createTrainLayer(world: T.Scene, canvas: HTMLCanvasElement, trac
       world.add(mesh)
     }
     let count = 0
-    const visible: string[] = []
-    const traced: object[] = []
+    drawn.clear()
     for (const { plan, instance } of frames) {
       const [dx, , dz] = plan.trackHeading
       const [x, y, z] = plan.track.polyline[0]
@@ -59,7 +62,7 @@ export function createTrainLayer(world: T.Scene, canvas: HTMLCanvasElement, trac
       const baseY = y + ordinal * spreadGap
       transform.rotation.y = -Math.atan2(dz, dx)
       const start = count
-      const bounds = trace ? new T.Box3() : null
+      const bounds = new T.Box3()
       const add = (along: number, height: number, cross: number, width: number, h: number, d: number, paint: string) => {
         // Clip each physical part to the modeled rail ends as the train crosses the boundary.
         const near = Math.max(0, instance.s + along - width / 2)
@@ -70,9 +73,11 @@ export function createTrainLayer(world: T.Scene, canvas: HTMLCanvasElement, trac
         transform.scale.set(far - near, h, d)
         transform.updateMatrix()
         mesh!.setMatrixAt(count, transform.matrix)
-        mesh!.setColorAt(count, color.set(paint))
+        color.set(paint)
+        if (selection === instance.id) color.lerp(accent, 0.58)
+        mesh!.setColorAt(count, color)
         count++
-        bounds?.union(box.copy(unit).applyMatrix4(transform.matrix))
+        bounds.union(box.copy(unit).applyMatrix4(transform.matrix))
       }
       for (const { kind, center: [along, height, cross], size: [width, h, d], color: paint } of plan.body.parts) {
         if (kind !== 'door' || instance.doors === 0) {
@@ -86,8 +91,7 @@ export function createTrainLayer(world: T.Scene, canvas: HTMLCanvasElement, trac
         }
       }
       if (count === start) continue
-      visible.push(instance.id)
-      if (bounds) traced.push({ ...instance, bounds: [bounds.min.toArray(), bounds.max.toArray()] })
+      drawn.set(instance.id, { instance, bounds })
     }
     if (mesh) {
       mesh.count = count
@@ -95,13 +99,26 @@ export function createTrainLayer(world: T.Scene, canvas: HTMLCanvasElement, trac
       mesh.instanceMatrix.needsUpdate = true
       if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true
     }
-    canvas.dataset.trains = JSON.stringify(visible)
-    if (trace) canvas.dataset.trainState = JSON.stringify(traced)
+    canvas.dataset.trains = JSON.stringify([...drawn.keys()])
+    if (trace) canvas.dataset.trainState = JSON.stringify([...drawn.values()].map(({ instance, bounds }) =>
+      ({ ...instance, bounds: [bounds.min.toArray(), bounds.max.toArray()] }),
+    ))
     return true
   }
 
   return {
     update,
+    drawn,
+    hitTest(ray: T.Ray) {
+      let closest: { id: string; distance: number } | null = null
+      const point = new T.Vector3()
+      for (const [id, { bounds }] of drawn) {
+        if (!ray.intersectBox(bounds, point)) continue
+        const distance = point.distanceTo(ray.origin)
+        if (!closest || distance < closest.distance) closest = { id, distance }
+      }
+      return closest
+    },
     dispose() {
       if (mesh) {
         world.remove(mesh)

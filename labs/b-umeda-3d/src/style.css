@@ -528,6 +528,23 @@ nav button[aria-pressed='true'] {
   color: #462f10;
   border: 1px solid #a66b20;
 }
+.train-marker {
+  position: absolute;
+  z-index: 2;
+  transform: translate(-50%, -100%);
+  pointer-events: none;
+  white-space: nowrap;
+  padding: 3px 5px;
+  border: 1px solid #a66b20;
+  border-radius: 3px;
+  color: #462f10;
+  background: #ffdda1;
+  font-size: 11px;
+}
+.train-marker.selected-train {
+  font-weight: 700;
+  box-shadow: 0 0 0 1px #e14815;
+}
 .train-panel {
   display: grid;
   gap: 10px;

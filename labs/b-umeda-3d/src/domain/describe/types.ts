@@ -1,5 +1,6 @@
 import type { SelectionTarget } from '../../state/selection'
 import type { DataNature, GeometryConfidence, PlatformUpdate, RailLine } from '../types'
+import type { TimetableRecord, VehicleAssignmentStatus } from '../../timetable/types'
 
 export interface DetailFact {
   key: string
@@ -13,17 +14,21 @@ export interface DetailRelation {
   badge?: string
 }
 
-export type DetailAction = 'start' | 'end' | 'floor' | 'passenger' | 'through' | 'site'
+export type DetailAction = 'start' | 'end' | 'floor' | 'passenger' | 'through' | 'site' | 'follow'
 
 export interface DetailSpec {
   target: SelectionTarget
   title: string
   subtitle: string
-  chips: { lines: RailLine[]; floor: string | null; area: string | null }
+  chips: {
+    lines: RailLine[]; floor: string | null; area: string | null
+    vehicle?: { label: string; status: VehicleAssignmentStatus }
+  }
   facts: DetailFact[]
   service?: { kind: 'unavailable' } | { kind: 'example'; update: PlatformUpdate }
+    | { kind: 'demo-timetable'; records: readonly TimetableRecord[] }
   relations: { key: string; title: string; items: DetailRelation[]; derived?: boolean }[]
-  actions: { kind: DetailAction; label: string }[]
+  actions: { kind: DetailAction; label: string; pressed?: boolean }[]
   provenance: {
     sourceIds: string[]
     nature: DataNature

@@ -46,6 +46,7 @@ interface Props {
   example: boolean
   trainClock: TrainClock
   trainPlans: readonly TrainPlan[]
+  following: string | null
   eye: string | null
   shell: boolean
   siteId: string | null
@@ -53,6 +54,7 @@ interface Props {
   hovered: SelectionTarget | null
   onReset: () => void
   onInspect: (id: string) => void
+  onStopFollowing: () => void
   onClear: () => void
   onHover: (target: SelectionTarget | null) => void
   onFallback: () => void
@@ -141,6 +143,9 @@ export function Scene(props: Props) {
     const occlusionProxies: OcclusionProxy[] = []
     const debug = new URLSearchParams(location.search).get('debug')
     const trainLayer = createTrainLayer(world, gl.domElement, debug === 'trains')
+    const trainMarkers = new Map<string, HTMLSpanElement>()
+    let followingTrain: string | null = null
+    gl.domElement.dataset.following = ''
     let visibleTrainPlans: readonly TrainPlan[] = []
     let trainWake = 0
     const debugOcclusion = debug === 'labels'
@@ -341,10 +346,74 @@ export function Scene(props: Props) {
     }
 
     function renderFrame(lens = activeCamera()) {
+      updateTrainMarkers(lens)
       gl.render(world, lens)
       gl.domElement.dataset.frame = String(++frame)
       gl.domElement.dataset.calls = String(gl.info.render.calls)
       gl.domElement.dataset.triangles = String(gl.info.render.triangles)
+    }
+
+    function updateTrainMarkers(lens: T.Camera) {
+      const visible = new Set<string>()
+      const probe: Record<string, [number, number]> = {}
+      const w = box.clientWidth
+      const h = box.clientHeight
+      const fullDetail = permitsLabel(3, effectiveBand(zoomBand, propsNow.floor !== null || propsNow.step >= 0), propsNow.detail)
+      const project = (point: T.Vector3): [number, number] => {
+        point.project(lens)
+        return [(point.x + 1) * w / 2, (1 - point.y) * h / 2]
+      }
+      for (const [id, { bounds, instance }] of trainLayer.drawn) {
+        const selected = propsNow.selection?.kind === 'train' && propsNow.selection.id === id
+        const center = bounds.getCenter(new T.Vector3())
+        if (debug === 'trains') probe[id] = project(center.clone().setY(bounds.max.y - 0.06))
+        if (!selected && !fullDetail) continue
+        const [x, y] = project(center.setY(bounds.max.y + 0.49))
+        if (x < 20 || x > w - 20 || y < 36 || y > h - 10) continue
+        let marker = trainMarkers.get(id)
+        if (!marker) {
+          marker = document.createElement('span')
+          marker.className = 'train-marker'
+          marker.dataset.owner = id
+          trainMarkers.set(id, marker)
+          box.appendChild(marker)
+        }
+        const ja = propsNow.lang === 'ja'
+        const destination = instance.destinationText?.slice(0, 18)
+        const label = [ja ? '架空' : 'Fictional', instance.serviceClass, destination].filter(Boolean).join(' · ')
+        if (marker.textContent !== label) marker.textContent = label
+        marker.style.left = x + 'px'
+        marker.style.top = y + 'px'
+        marker.classList.toggle('selected-train', selected)
+        visible.add(id)
+      }
+      for (const [id, marker] of trainMarkers) {
+        if (visible.has(id)) continue
+        marker.remove()
+        trainMarkers.delete(id)
+      }
+      if (debug === 'trains') gl.domElement.dataset.trainPoints = JSON.stringify(probe)
+    }
+
+    function stopFollowing() {
+      if (followingTrain === null) return
+      followingTrain = null
+      gl.domElement.dataset.following = ''
+      propsNow.onStopFollowing()
+    }
+
+    function updateFollow() {
+      if (!followingTrain) return false
+      const train = trainLayer.drawn.get(followingTrain)
+      if (!train) {
+        stopFollowing()
+        return false
+      }
+      const delta = train.bounds.getCenter(new T.Vector3()).sub(controls.target)
+      if (delta.lengthSq() < 0.000001) return false
+      controls.target.add(delta)
+      camera.position.add(delta)
+      return true
     }
 
     function settleOcclusion(currentLabels: Label[]) {
@@ -474,8 +543,9 @@ export function Scene(props: Props) {
         if (t === 1) focus = null
       }
       const updatedTrains = trainLayer.update(visibleTrainPlans, trainClockSeconds(propsNow.trainClock, now),
-        propsNow.spread ? 9 - trackFloorGap : 0)
-      if (animateView) {
+        propsNow.spread ? 9 - trackFloorGap : 0, propsNow.selection?.kind === 'train' ? propsNow.selection.id : null)
+      const movedWithTrain = updatedTrains && updateFollow()
+      if (animateView || movedWithTrain) {
         if (!controls.update()) draw()
       } else if (updatedTrains) renderFrame()
       if (fade || focus) scheduleFrame()
@@ -500,7 +570,8 @@ export function Scene(props: Props) {
       const visibleRoute = routeOverlay.show(showRoute && !propsNow.eye)
       const hasInstances = !!selection && owners.slice(0, count).some((owner) => highlighted.has(owner))
       markCoveredPassage(hasInstances)
-      const dimOthers = hasInstances || passageMarker.visible
+      const trainSelected = selection?.kind === 'train' && trainLayer.drawn.has(selection.id)
+      const dimOthers = hasInstances || passageMarker.visible || trainSelected
       const selectionColor = selection?.kind === 'line' ? 0x2f7f86 : selected
       outlineMaterial.color.setHex(selectionColor)
       const updateOutline = rebuilt || previous?.selection !== selection
@@ -532,7 +603,7 @@ export function Scene(props: Props) {
         ? propsNow.route[propsNow.step].link.id : ''
       data.routeDimmed = String(routeDimmed)
       data.selected = selection ? selection.kind + ':' + selection.id : ''
-      data.highlighted = String(selectedIndices.length + (passageMarker.visible ? 1 : 0))
+      data.highlighted = String(selectedIndices.length + Number(passageMarker.visible) + Number(trainSelected))
       data.dimmed = String(dimmed)
       box.style.cursor = hovered ? 'pointer' : ''
       const hasLabel = (id: string) => labels.some((label) =>
@@ -1181,7 +1252,10 @@ export function Scene(props: Props) {
       if (changedSchedule) {
         const visible = scenePlaceFilter(station, p, undefined)
         visibleTrainPlans = p.eye ? [] : p.trainPlans.filter(({ track }) => visible(nodes.get(track.platformId)!))
-        updatedTrains = trainLayer.update(visibleTrainPlans, trainClockSeconds(p.trainClock), p.spread ? 9 - trackFloorGap : 0)
+      }
+      if (changedSchedule || changedSelection) {
+        updatedTrains = trainLayer.update(visibleTrainPlans, trainClockSeconds(p.trainClock), p.spread ? 9 - trackFloorGap : 0,
+          p.selection?.kind === 'train' ? p.selection.id : null)
       }
       const wasVisible = selectedIndices.length > 0 || passageMarker.visible
       if (rebuildGeometry) {
@@ -1208,6 +1282,12 @@ export function Scene(props: Props) {
       } else if (needsView || p.detail !== previous?.detail) draw()
       else if (updatedTrains) renderFrame()
       if (changedSchedule) scheduleTrainFrame(performance.now())
+      if (p.following !== previous?.following) {
+        followingTrain = p.following
+        gl.domElement.dataset.following = followingTrain ?? ''
+        if (followingTrain) focus = null
+      }
+      if (updateFollow() && !controls.update()) draw()
       if (p.selection && (changedSelection ||
           (rebuildGeometry && !wasVisible && (selectedIndices.length > 0 || passageMarker.visible)))) {
         // The detail sheet can resize the viewport before ResizeObserver runs.
@@ -1220,6 +1300,7 @@ export function Scene(props: Props) {
     }
     let pressed: { x: number; y: number; owner: string; cluster?: string[] } | null = null
     let drag: { x: number; y: number } | null = null
+    let gesture: { x: number; y: number } | null = null
     let moved = false
     const ray = new T.Raycaster()
     const pointer = new T.Vector2()
@@ -1229,6 +1310,7 @@ export function Scene(props: Props) {
       return x >= bounds.left && x <= bounds.right && y >= bounds.top && y <= bounds.bottom
     }
     function ownerAt(x: number, y: number) {
+      for (const [id, marker] of trainMarkers) if (contains(marker, x, y)) return id
       for (const { el } of supplementalLabel ? [supplementalLabel, ...labels] : labels) {
         if (el.style.visibility !== 'visible') continue
         if (contains(el, x, y)) return el.dataset.owner ?? ''
@@ -1238,6 +1320,8 @@ export function Scene(props: Props) {
       pointer.set((2 * (x - r.left)) / r.width - 1, 1 - (2 * (y - r.top)) / r.height)
       ray.setFromCamera(pointer, activeCamera())
       const hit = ray.intersectObject(group, false)[0]
+      const train = trainLayer.hitTest(ray.ray)
+      if (train && (!hit || train.distance < hit.distance)) return train.id
       return hit?.instanceId === undefined ? '' : owners[hit.instanceId]
     }
     const clearHover = () => {
@@ -1246,12 +1330,14 @@ export function Scene(props: Props) {
       propsNow?.onHover(null)
     }
     const pointerMove = (e: PointerEvent) => {
+      if (gesture && Math.hypot(e.clientX - gesture.x, e.clientY - gesture.y) > 5) stopFollowing()
       if (!drag || !propsNow.eye) {
         if (e.pointerType === 'mouse' && e.buttons === 0) {
           cancelAnimationFrame(hoverFrame)
           hoverFrame = requestAnimationFrame(() => {
             hoverFrame = 0
-            propsNow.onHover(targetFromOwner(ownerAt(e.clientX, e.clientY)))
+            const id = ownerAt(e.clientX, e.clientY)
+            propsNow.onHover(trainLayer.drawn.has(id) ? { kind: 'train', id } : targetFromOwner(id))
           })
         }
         return
@@ -1271,6 +1357,7 @@ export function Scene(props: Props) {
     }
     const wheel = (e: WheelEvent) => {
       focus = null
+      stopFollowing()
       if (!propsNow.eye) return
       e.preventDefault()
       eyeCamera.zoom = T.MathUtils.clamp(
@@ -1283,6 +1370,7 @@ export function Scene(props: Props) {
     }
     const pointerDown = (e: PointerEvent) => {
       focus = null
+      gesture = { x: e.clientX, y: e.clientY }
       const cluster = [...clusterPins.values()].find(({ el }) => contains(el, e.clientX, e.clientY))
       pressed = e.button === 0 ? {
         x: e.clientX, y: e.clientY,
@@ -1298,6 +1386,7 @@ export function Scene(props: Props) {
     }
     const pointerUp = (e: PointerEvent) => {
       drag = null
+      gesture = null
       if (
         moved ||
         !pressed ||
@@ -1315,6 +1404,7 @@ export function Scene(props: Props) {
     }
     const cancel = () => {
       drag = null
+      gesture = null
       pressed = null
       clearHover()
     }
@@ -1333,6 +1423,7 @@ export function Scene(props: Props) {
       }
       if (delta[ev.key]) {
         focus = null
+        stopFollowing()
         ev.preventDefault()
         const [x, z] = delta[ev.key]
         if (propsNow.eye) {
@@ -1348,6 +1439,7 @@ export function Scene(props: Props) {
         controls.target.z += z
       } else if (ev.key === '+' || ev.key === '-') {
         focus = null
+        stopFollowing()
         ev.preventDefault()
         const lens = activeCamera()
         lens.zoom = T.MathUtils.clamp(
@@ -1381,6 +1473,7 @@ export function Scene(props: Props) {
       labels.forEach((l) => l.el.remove())
       supplementalLabel?.el.remove()
       for (const { el } of clusterPins.values()) el.remove()
+      for (const marker of trainMarkers.values()) marker.remove()
       labelLeaders.remove()
       window.clearTimeout(settleTimer)
       window.clearTimeout(trainWake)
