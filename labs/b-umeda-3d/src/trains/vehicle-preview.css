@@ -2,7 +2,7 @@
   margin: 0 auto;
   max-width: 1440px;
   padding: 28px 28px 42px;
-  color: #233b3b;
+  color: #25282b;
 }
 .vehicle-preview h1 {
   margin: 0 0 6px;
@@ -11,7 +11,7 @@
 }
 .vehicle-preview > p {
   margin: 0 0 21px;
-  color: #526662;
+  color: #535a61;
 }
 .vehicle-preview-grid {
   display: grid;
@@ -21,8 +21,8 @@
 .vehicle-preview-grid article {
   min-width: 0;
   padding: 12px 13px 9px;
-  border: 1px solid #bfc9c1;
-  background: #fffef8;
+  border: 1px solid #cfd3d7;
+  background: #ffffff;
 }
 .vehicle-preview-title {
   display: flex;
@@ -38,13 +38,13 @@
 .vehicle-preview-title span, .vehicle-preview-grid p {
   margin: 4px 0;
   font-size: 11px;
-  color: #526662;
+  color: #535a61;
 }
 .vehicle-preview-grid canvas {
   display: block;
   width: 100%;
   height: auto;
-  background: #eef1ec;
+  background: #eceef0;
 }
 .vehicle-preview-grid .vehicle-preview-formation {
   text-align: right;

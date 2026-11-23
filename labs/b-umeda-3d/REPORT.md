@@ -52,9 +52,11 @@
 
 四家铁路运营方共七站的楼层与选定路线按运营商图和大阪市资料录入为 manual-verified。阪急收录京都线、宝塚线、神户线九条终端股道，阪神本线与 JR 东西线各保留独立站点。三座 Metro 站分别属于御堂筋线、谷町线、四桥线。JR 大阪站部分站台聚合两个番线；服务线路仅登记确认的关联。Whity 的商业通道有经营方资料。
 
-共 65 条 SourceRecord，包含官方图版、设施页、线路站点目录、车辆资料、目录检索、许可说明和项目自制素材。JR 大阪构内图为 2026-01-14，大阪市换乘图为 2026-06，北新地站图为 2026-10-02，Whity 双语街区图为 2026-04，阪神图标示 2025-12-24。阪急现行构内图未标发布日期。读取日期按条目登记在 2026-11-21 至 2026-11-23。
+共 70 条 SourceRecord，包含官方图版、设施页、线路站点目录、车辆资料、目录检索、许可说明和项目自制素材。JR 大阪构内图为 2026-01-14，大阪市换乘图为 2026-06，北新地站图为 2026-10-02，Whity 双语街区图为 2026-04，阪神图标示 2025-12-24。阪急现行构内图未标发布日期。读取日期按条目登记在 2026-11-21 至 2026-11-23。
 
-车辆注册表记录四家运营方九个系列，十一条线有资料支持的代表车型。JR 东西线归入未知。车型比例、配色和程序化外观为本项目示意。三款有公开资料支持八辆编组示例，阪神 5700 系有四辆编组示例。逐班次车种和编组保持未知。 [JR 西日本车辆资料](https://www.westjr.co.jp/company/info/issue/data/pdf/data2025_15.pdf) [阪急 9300 系车型](https://www.hankyu.co.jp/railfan/maroon/9300.html) [阪神车辆资料](https://www.hanshin.co.jp/safety/barrierfree/pdf/barrierfree_keikaku_2019_vehicle.pdf)
+车辆注册表记录四家运营方九个系列，十一条线有资料支持的代表车型。JR 东西线归入未知。原创车体参考公开外观资料塑造车头斜面、贯通门、灯位、客门与侧窗。阪急 9300 系采用后掠车头与大侧窗，1000 系采用较方正车头与分组侧窗。御堂筋 30000 系和谷町 32 系共用同家族的结构。车辆涂装用于外观示意，线路徽章仍为中性灰。 [JR 西日本 323 系技术资料](https://www.westjr.co.jp/company/action/technology/technical/pdf/36_3.pdf) [Osaka Metro 车辆指南](https://www.jametro.or.jp/subway/japan/osaka/guide.html) [阪急 9300 系](https://www.hankyu.co.jp/railfan/maroon/9300.html) [阪急 1000 系](https://www.hankyu.co.jp/railfan/maroon/1000.html) [阪神 5700 系](https://www.hanshin.co.jp/company/press/pdf/20150330-5700kei.pdf)
+
+模拟和开发预览共用这些车体。三款有公开资料支持八辆编组示例，阪神 5700 系有四辆编组示例。仿真中编组未知时用重复示意车厢表现可见长度。逐班次车种和编组保持未知。车体未做实车尺寸校准；车顶及底盘设备、同系列车厢差异均有简化。 [JR 西日本车辆统计](https://www.westjr.co.jp/company/info/issue/data/pdf/data2025_15.pdf) [阪急 9300 系编组示例](https://www.hankyu.co.jp/railfan/news_event/2023/009674.html) [阪神车辆资料](https://www.hanshin.co.jp/safety/barrierfree/pdf/barrierfree_keikaku_2019_vehicle.pdf)
 
 运营商原件保留权利，市政府图件亦未取得本项目的原件再分发许可。本仓库只含用自有表达记录的事实、原创示意坐标与代码，以及本项目为匿名橱窗生成的商业内景材质。未分发原图、描摹图、网页快照、底图或字体。逐份许可状态见 [SOURCES.md](SOURCES.md)。
 

@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import * as T from 'three'
 import { vehicleSeries } from '../../data/manual/vehicles'
 import { station } from '../model'
-import { buildVehicleBody } from './vehicles'
+import { createVehicleGeometries } from './vehicleGeometry'
+import { buildVehicleBody, type VehiclePart, type VehicleShape } from './vehicles'
 import './vehicle-preview.css'
 
 const samples = [...vehicleSeries, null]
@@ -29,10 +30,10 @@ export function VehiclePreview() {
       return
     }
     const scene = new T.Scene()
-    const sunlight = new T.DirectionalLight(0xfff6e2, 2.3)
+    const sunlight = new T.DirectionalLight(0xffffff, 2.0)
     sunlight.position.set(5, 8, 6)
-    scene.add(new T.HemisphereLight(0xe7f3ff, 0x777b74, 1.85), sunlight)
-    const unit = new T.BoxGeometry()
+    scene.add(new T.HemisphereLight(0xf1f6ff, 0x777777, 1.70), sunlight)
+    const geometries = createVehicleGeometries()
     const material = new T.MeshStandardMaterial({ roughness: 0.82 })
     const dummy = new T.Object3D()
     const color = new T.Color()
@@ -41,25 +42,35 @@ export function VehiclePreview() {
       context: CanvasRenderingContext2D, body: ReturnType<typeof buildVehicleBody>,
       x: number, y: number, width: number, height: number,
     ) {
-      const mesh = new T.InstancedMesh(unit, material, body.parts.length)
-      for (const [index, part] of body.parts.entries()) {
-        dummy.position.set(...part.center)
-        dummy.scale.set(...part.size)
-        dummy.updateMatrix()
-        mesh.setMatrixAt(index, dummy.matrix)
-        mesh.setColorAt(index, color.set(part.color))
+      const grouped = new Map<VehicleShape, VehiclePart[]>()
+      for (const part of body.parts) {
+        const group = grouped.get(part.shape) ?? []
+        group.push(part)
+        grouped.set(part.shape, group)
       }
+      const meshes = [...grouped].map(([shape, parts]) => {
+        const mesh = new T.InstancedMesh(geometries.get(shape)!, material, parts.length)
+        for (const [index, part] of parts.entries()) {
+          dummy.position.set(...part.center)
+          dummy.scale.set(...part.size)
+          dummy.rotation.y = part.facing < 0 ? Math.PI : 0
+          dummy.updateMatrix()
+          mesh.setMatrixAt(index, dummy.matrix)
+          mesh.setColorAt(index, color.set(part.color))
+        }
+        return mesh
+      })
       const aspect = width / height
       const half = Math.max(0.62, (body.length * 0.51 + 0.14) / aspect)
       const camera = new T.OrthographicCamera(-half * aspect, half * aspect, half, -half, 0.05, 160)
       camera.position.set(3.0, 2.8, 7.2)
       camera.lookAt(0, 0.39, 0)
       renderer.setSize(width * 2, height * 2, false)
-      scene.add(mesh)
+      scene.add(...meshes)
       renderer.render(scene, camera)
       context.drawImage(renderer.domElement, x, y, width, height)
-      scene.remove(mesh)
-      mesh.dispose()
+      scene.remove(...meshes)
+      for (const mesh of meshes) mesh.dispose()
     }
 
     let count = 0
@@ -71,7 +82,7 @@ export function VehiclePreview() {
       paint(context, buildVehicleBody(series, 35, series?.formations[0]?.cars ?? null), 248, 29, 182, 76)
       count++
     })
-    unit.dispose()
+    for (const geometry of geometries.values()) geometry.dispose()
     material.dispose()
     renderer.dispose()
     setRendered(count)
@@ -80,8 +91,8 @@ export function VehiclePreview() {
   return (
     <main className="vehicle-preview" data-testid="vehicle-preview" data-rendered={rendered} lang={lang}>
       <h1>{t('車体プレビュー', 'Vehicle appearance preview')}</h1>
-      <p>{t('外観は模式表現です。左は先頭車、右は編成例です。',
-        'Schematic appearance. The end car is shown on the left and an example consist on the right.')}</p>
+      <p>{t('公開資料を参考にした模式表現です。左は先頭車、右は編成例です。未確認の編成は参考用に車体を並べています。',
+        'Schematic models from published references. A cab car is shown on the left. Unverified consists on the right use repeated sample cars.')}</p>
       {rendered === -1 && <p role="status">{t('3D プレビューは利用できません。', '3D preview is unavailable.')}</p>}
       <div className="vehicle-preview-grid" ref={gallery}>
         {samples.map((series) => {

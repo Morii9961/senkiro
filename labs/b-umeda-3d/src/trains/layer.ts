@@ -1,10 +1,12 @@
 import * as T from 'three'
 import { trainInstanceAt, type TrainPlan } from './simulate'
 import { railCenterHeight, railHeight, trackFloorGap } from './trackPaths'
+import { createVehicleGeometries } from './vehicleGeometry'
+import type { VehicleShape } from './vehicles'
 
-/** The train layer owns only its box instances. The station mesh and shadows stay static. */
+/** Vehicle primitives update separately from the station mesh and its static shadows. */
 export function createTrainLayer(world: T.Scene, canvas: HTMLCanvasElement, trace: boolean) {
-  const geometry = new T.BoxGeometry()
+  const geometries = createVehicleGeometries()
   const material = new T.MeshStandardMaterial({ roughness: 0.85, metalness: 0.02 })
   const transform = new T.Object3D()
   const color = new T.Color()
@@ -12,8 +14,7 @@ export function createTrainLayer(world: T.Scene, canvas: HTMLCanvasElement, trac
   const box = new T.Box3()
   const unit = new T.Box3(new T.Vector3(-0.5, -0.5, -0.5), new T.Vector3(0.5, 0.5, 0.5))
   const drawn = new Map<string, { bounds: T.Box3; instance: NonNullable<ReturnType<typeof trainInstanceAt>> }>()
-  let mesh: T.InstancedMesh | null = null
-  let capacity = 0
+  const batches = new Map<VehicleShape, { mesh: T.InstancedMesh; capacity: number; count: number }>()
   let previous: ReturnType<typeof framesAt> = []
   let previousGap = 0
   let previousSelection: string | null = null
@@ -39,61 +40,57 @@ export function createTrainLayer(world: T.Scene, canvas: HTMLCanvasElement, trac
     previousGap = spreadGap
     previousSelection = selection
 
-    const needed = frames.reduce((count, { plan }) => count + plan.body.parts.reduce(
-      (parts, part) => parts + (part.kind === 'door' ? 3 : 1), 0,
-    ), 0)
-    if (needed > capacity) {
-      if (mesh) {
-        world.remove(mesh)
-        mesh.dispose()
+    const needed = new Map<VehicleShape, number>()
+    for (const { plan } of frames) {
+      for (const { shape } of plan.body.parts) needed.set(shape, (needed.get(shape) ?? 0) + 1)
+    }
+    for (const batch of batches.values()) batch.count = 0
+    for (const [shape, count] of needed) {
+      const previous = batches.get(shape)
+      if (previous && previous.capacity >= count) continue
+      if (previous) {
+        world.remove(previous.mesh)
+        previous.mesh.dispose()
       }
-      capacity = Math.max(needed, capacity * 2)
-      mesh = new T.InstancedMesh(geometry, material, capacity)
+      const capacity = Math.max(count, (previous?.capacity ?? 0) * 2)
+      const mesh = new T.InstancedMesh(geometries.get(shape)!, material, capacity)
       mesh.instanceMatrix.setUsage(T.DynamicDrawUsage)
       mesh.frustumCulled = false
       world.add(mesh)
+      batches.set(shape, { mesh, capacity, count: 0 })
     }
-    let count = 0
     drawn.clear()
     for (const { plan, instance } of frames) {
       const [dx, , dz] = plan.trackHeading
       const [x, y, z] = plan.track.polyline[0]
       const ordinal = (y - railCenterHeight - railHeight / 2) / trackFloorGap
       const baseY = y + ordinal * spreadGap
-      transform.rotation.y = -Math.atan2(dz, dx)
-      const start = count
+      const heading = -Math.atan2(dz, dx)
       const bounds = new T.Box3()
-      const add = (along: number, height: number, cross: number, width: number, h: number, d: number, paint: string) => {
+      for (const part of plan.body.parts) {
+        const [offset, height, cross] = part.center
+        const [width, h, d] = part.size
+        const along = offset + (part.slide ?? 0) * instance.doors
         // Clip each physical part to the modeled rail ends as the train crosses the boundary.
         const near = Math.max(0, instance.s + along - width / 2)
         const far = Math.min(plan.trackLength, instance.s + along + width / 2)
-        if (far <= near) return
+        if (far <= near) continue
         const s = (near + far) / 2
+        transform.rotation.y = heading + (part.facing < 0 ? Math.PI : 0)
         transform.position.set(x + s * dx - cross * dz, baseY + height, z + s * dz + cross * dx)
         transform.scale.set(far - near, h, d)
         transform.updateMatrix()
-        mesh!.setMatrixAt(count, transform.matrix)
-        color.set(paint)
-        if (selection === instance.id) color.lerp(accent, 0.58)
-        mesh!.setColorAt(count, color)
-        count++
+        const batch = batches.get(part.shape)!
+        batch.mesh.setMatrixAt(batch.count, transform.matrix)
+        color.set(part.color)
+        if (selection === instance.id) color.lerp(accent, 0.18)
+        batch.mesh.setColorAt(batch.count, color)
+        batch.count++
         bounds.union(box.copy(unit).applyMatrix4(transform.matrix))
       }
-      for (const { kind, center: [along, height, cross], size: [width, h, d], color: paint } of plan.body.parts) {
-        if (kind !== 'door' || instance.doors === 0) {
-          add(along, height, cross, width, h, d, paint)
-        } else {
-          add(along, height, cross, width, h, d, '#263438')
-          for (const side of [-1, 1]) {
-            const shifted = along + side * width * (0.25 + 0.4 * instance.doors)
-            add(shifted, height, cross + Math.sign(cross) * 0.003, width / 2, h, d, paint)
-          }
-        }
-      }
-      if (count === start) continue
-      drawn.set(instance.id, { instance, bounds })
+      if (!bounds.isEmpty()) drawn.set(instance.id, { instance, bounds })
     }
-    if (mesh) {
+    for (const { mesh, count } of batches.values()) {
       mesh.count = count
       mesh.visible = count > 0
       mesh.instanceMatrix.needsUpdate = true
@@ -120,11 +117,11 @@ export function createTrainLayer(world: T.Scene, canvas: HTMLCanvasElement, trac
       return closest
     },
     dispose() {
-      if (mesh) {
+      for (const { mesh } of batches.values()) {
         world.remove(mesh)
         mesh.dispose()
       }
-      geometry.dispose()
+      for (const geometry of geometries.values()) geometry.dispose()
       material.dispose()
     },
   }

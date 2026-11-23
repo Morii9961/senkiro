@@ -86,6 +86,30 @@ Repository license。商业使用 yes，原件再分发 yes，相同方式共享
 
 署名 JR西日本 · 323系の投入完了
 
+### sk:source:jr-vehicle-323-design
+
+323系新製車両について · JR西日本
+
+[原文](https://www.westjr.co.jp/company/action/technology/technical/pdf/36_3.pdf)
+
+资料日期 未知，读取日期 2026-11-23。参考三对客门、银色车身和橙色门侧面板。模型未使用原图。
+
+运营商网站条款，原作保留权利。商业使用 unknown，原件再分发 no，相同方式共享 unknown。 [条款](https://www.jr-odekake.net/use/about.html)
+
+署名 JR西日本 · 323系新製車両について
+
+### sk:source:jr-vehicle-exterior
+
+普通列車・221系と225系 · JR西日本
+
+[原文](https://www.westjr.co.jp/fan/paper/local/)
+
+资料日期 未知，读取日期 2026-11-23。参考 221 系车头与 225 系早期代表车的轮廓、窗带和腰线。模型未使用纸模图形。
+
+运营商网站条款，原作保留权利。商业使用 unknown，原件再分发 no，相同方式共享 unknown。 [条款](https://www.jr-odekake.net/use/about.html)
+
+署名 JR西日本 · 普通列車・221系と225系
+
 ### sk:source:jr-vehicle-225
 
 在来線車両の新製投入 · JR西日本
@@ -116,11 +140,35 @@ Repository license。商业使用 yes，原件再分发 yes，相同方式共享
 
 [原文](https://subway.osakametro.co.jp/news/news_release/20250227_satsueikai_dainichi.php)
 
-资料日期 2025-02-27，读取日期 2026-11-23。核对御堂筋线 30000 系、谷町线 32 系。
+资料日期 2025-02-27，读取日期 2026-11-23。核对御堂筋线 30000 系、谷町线 32 系。大日检车场资料提供谷町线车型外观参考。
 
 运营商网站条款，原作保留权利。商业使用 unknown，原件再分发 no，相同方式共享 unknown。 [条款](https://www.osakametro.co.jp/site_info.php)
 
 署名 Osaka Metro · 谷町線車両・大日検車場
+
+### sk:source:metro-vehicle-30000-exterior
+
+中百舌鳥検車場 車両撮影会 · Osaka Metro
+
+[原文](https://subway.osakametro.co.jp/news/news_release/20240408_satsueikai_nakamozukensha.php)
+
+资料日期 2024-04-08，读取日期 2026-11-23。参考御堂筋线 30000 系车头与外观。模型未使用原图。
+
+运营商网站条款，原作保留权利。商业使用 unknown，原件再分发 no，相同方式共享 unknown。 [条款](https://www.osakametro.co.jp/site_info.php)
+
+署名 Osaka Metro · 中百舌鳥検車場 車両撮影会
+
+### sk:source:metro-vehicle-guide
+
+Osaka Metroの車両ガイド · 日本地下鉄協会
+
+[原文](https://www.jametro.or.jp/subway/japan/osaka/guide.html)
+
+资料日期 未知，读取日期 2026-11-23。核对 23 系属于新 20 系、银色车身配蓝色带，以及 30000 系家族的车身和第三轨供电。
+
+未确认原作再分发授权。商业使用 unknown，原件再分发 unknown，相同方式共享 unknown。
+
+署名 日本地下鉄協会 · Osaka Metroの車両ガイド
 
 ### sk:source:metro-vehicle-23
 
@@ -140,7 +188,7 @@ Repository license。商业使用 yes，原件再分发 yes，相同方式共享
 
 [原文](https://www.hankyu.co.jp/railfan/maroon/9300.html)
 
-资料日期 未知，读取日期 2026-11-23。核对京都线系列型号。
+资料日期 未知，读取日期 2026-11-23。核对京都线系列型号及后掠车头、上缘额框、中央贯通门和大侧窗。
 
 运营商网站条款，原作保留权利。商业使用 unknown，原件再分发 no，相同方式共享 unknown。 [条款](https://www.hankyu.co.jp/sitepolicy/index.html)
 
@@ -176,7 +224,7 @@ Repository license。商业使用 yes，原件再分发 yes，相同方式共享
 
 [原文](https://www.hankyu.co.jp/railfan/maroon/1000.html)
 
-资料日期 未知，读取日期 2026-11-23。核对神户线及宝塚线用途。
+资料日期 未知，读取日期 2026-11-23。核对神户线及宝塚线用途，参考方正车头和分组侧窗。
 
 运营商网站条款，原作保留权利。商业使用 unknown，原件再分发 no，相同方式共享 unknown。 [条款](https://www.hankyu.co.jp/sitepolicy/index.html)
 
@@ -193,6 +241,18 @@ Repository license。商业使用 yes，原件再分发 yes，相同方式共享
 运营商网站条款，原作保留权利。商业使用 unknown，原件再分发 no，相同方式共享 unknown。 [条款](https://hanshin.co.jp/terms/)
 
 署名 阪神電気鉄道 · 車両のご案内・普通5700系
+
+### sk:source:hanshin-vehicle-5700-design
+
+普通用車両5700系を導入します · 阪神電気鉄道
+
+[原文](https://www.hanshin.co.jp/company/press/pdf/20150330-5700kei.pdf)
+
+资料日期 2015-03-30，读取日期 2026-11-23。参考前端造型、银色不锈钢车身和蓝色车体装饰。模型未使用原图、标识或门侧图形。
+
+运营商网站条款，原作保留权利。商业使用 unknown，原件再分发 no，相同方式共享 unknown。 [条款](https://hanshin.co.jp/terms/)
+
+署名 阪神電気鉄道 · 普通用車両5700系を導入します
 
 ### sk:source:hanshin-vehicle-5700-set
 

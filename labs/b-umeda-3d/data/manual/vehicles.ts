@@ -30,7 +30,7 @@ function series(operator: string, id: string, label: string, category: VehicleSe
     operatorId: 'sk:operator:' + operator,
     names: { ja: label + '系', en: label + ' series', ja_kana: null, zh: null },
     category,
-    // Original display palettes and ratios have no operating or trademark meaning.
+    // Approximate exterior paint and display proportions, independent of line badge colors.
     livery: { body, accent, stripe, nature: 'schematic' },
     proportions: { carLengthToWidth: design.ratio, carCountDefault: null },
     formations,
@@ -39,36 +39,38 @@ function series(operator: string, id: string, label: string, category: VehicleSe
 }
 
 const loop = series('jr-west', 'jr-323', '323', 'commuter', {
-  ratio: 5.9, colors: ['#b5a68c', '#4b493b', '#d7ca9e'],
-  sources: ['jr-vehicle-323'], formation: [8, 'jr-vehicle-323'],
+  ratio: 5.9, colors: ['#b6b9bb', '#717474', '#d55a22'],
+  sources: ['jr-vehicle-323', 'jr-vehicle-323-design'], formation: [8, 'jr-vehicle-323'],
 })
 const rapid = series('jr-west', 'jr-225', '225', 'rapid', {
-  ratio: 6.25, colors: ['#889caa', '#24385b', '#d9a664'],
-  sources: ['jr-vehicle-225', 'jr-vehicle-formations'], formation: [8, 'jr-vehicle-formations'],
+  ratio: 6.25, colors: ['#b0b3b7', '#656b70', '#607d91'],
+  sources: ['jr-vehicle-225', 'jr-vehicle-formations', 'jr-vehicle-exterior'], formation: [8, 'jr-vehicle-formations'],
 })
 const east = series('jr-west', 'jr-221', '221', 'commuter', {
-  ratio: 5.75, colors: ['#ccc7a9', '#486861', '#6b7983'], sources: ['jr-vehicle-225'],
+  ratio: 5.75, colors: ['#e8e2d7', '#747575', '#416b86'], sources: ['jr-vehicle-225', 'jr-vehicle-exterior'],
 })
 const midosuji = series('osaka-metro', 'metro-30000', '30000', 'subway', {
-  ratio: 5.55, colors: ['#b4a5c0', '#473c5d', '#d3cb94'], sources: ['metro-vehicle-30000'],
+  ratio: 5.55, colors: ['#c2c6cc', '#757b84', '#bb2635'],
+  sources: ['metro-vehicle-30000', 'metro-vehicle-30000-exterior', 'metro-vehicle-guide'],
 })
 const tanimachi = series('osaka-metro', 'metro-32', '32', 'subway', {
-  ratio: 5.7, colors: ['#c6b69e', '#54473b', '#7698a0'], sources: ['metro-vehicle-30000'],
+  ratio: 5.55, colors: ['#c2c6cc', '#757b84', '#763e80'], sources: ['metro-vehicle-30000', 'metro-vehicle-guide'],
 })
 const yotsubashi = series('osaka-metro', 'metro-23', '23', 'subway', {
-  ratio: 5.65, colors: ['#a8b4a2', '#364833', '#b99478'], sources: ['metro-vehicle-23'],
+  ratio: 5.65, colors: ['#b4b9be', '#6a7078', '#326faa'], sources: ['metro-vehicle-23', 'metro-vehicle-guide'],
 })
 const hankyuKyoto = series('hankyu', 'hankyu-9300', '9300', 'limited-express', {
-  ratio: 6.75, colors: ['#597e80', '#254346', '#d2c498'],
+  ratio: 6.75, colors: ['#4c1823', '#bcb9ad', '#ede2c8'],
   sources: ['hankyu-vehicle-9300', 'hankyu-vehicle-express', 'hankyu-vehicle-9300-set'],
   formation: [8, 'hankyu-vehicle-9300-set'],
 })
 const hankyu = series('hankyu', 'hankyu-1000', '1000', 'commuter', {
-  ratio: 6.85, colors: ['#8e8464', '#373b36', '#c2c09c'], sources: ['hankyu-vehicle-1000'],
+  ratio: 6.85, colors: ['#4c1823', '#bcb9ad', '#ede2c8'], sources: ['hankyu-vehicle-1000'],
 })
 const hanshin = series('hanshin', 'hanshin-5700', '5700', 'commuter', {
-  ratio: 6.05, colors: ['#a9a4a9', '#514656', '#9fa782'],
-  sources: ['hanshin-vehicle-5700', 'hanshin-vehicle-5700-set'], formation: [4, 'hanshin-vehicle-5700-set'],
+  ratio: 6.05, colors: ['#bbc1c5', '#6e7479', '#3e91b7'],
+  sources: ['hanshin-vehicle-5700', 'hanshin-vehicle-5700-set', 'hanshin-vehicle-5700-design'],
+  formation: [4, 'hanshin-vehicle-5700-set'],
 })
 
 export const vehicleSeries = [loop, rapid, east, midosuji, tanimachi, yotsubashi, hankyuKyoto, hankyu, hanshin]

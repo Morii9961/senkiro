@@ -10,9 +10,9 @@
     },
     "category": "commuter",
     "livery": {
-      "body": "#b5a68c",
-      "accent": "#4b493b",
-      "stripe": "#d7ca9e",
+      "body": "#b6b9bb",
+      "accent": "#717474",
+      "stripe": "#d55a22",
       "nature": "schematic"
     },
     "proportions": {
@@ -29,7 +29,8 @@
     ],
     "provenance": {
       "sourceIds": [
-        "sk:source:jr-vehicle-323"
+        "sk:source:jr-vehicle-323",
+        "sk:source:jr-vehicle-323-design"
       ],
       "dataNature": "manual-verified",
       "lastVerifiedAt": "2026-11-23"
@@ -46,9 +47,9 @@
     },
     "category": "rapid",
     "livery": {
-      "body": "#889caa",
-      "accent": "#24385b",
-      "stripe": "#d9a664",
+      "body": "#b0b3b7",
+      "accent": "#656b70",
+      "stripe": "#607d91",
       "nature": "schematic"
     },
     "proportions": {
@@ -66,7 +67,8 @@
     "provenance": {
       "sourceIds": [
         "sk:source:jr-vehicle-225",
-        "sk:source:jr-vehicle-formations"
+        "sk:source:jr-vehicle-formations",
+        "sk:source:jr-vehicle-exterior"
       ],
       "dataNature": "manual-verified",
       "lastVerifiedAt": "2026-11-23"
@@ -83,9 +85,9 @@
     },
     "category": "commuter",
     "livery": {
-      "body": "#ccc7a9",
-      "accent": "#486861",
-      "stripe": "#6b7983",
+      "body": "#e8e2d7",
+      "accent": "#747575",
+      "stripe": "#416b86",
       "nature": "schematic"
     },
     "proportions": {
@@ -95,7 +97,8 @@
     "formations": [],
     "provenance": {
       "sourceIds": [
-        "sk:source:jr-vehicle-225"
+        "sk:source:jr-vehicle-225",
+        "sk:source:jr-vehicle-exterior"
       ],
       "dataNature": "manual-verified",
       "lastVerifiedAt": "2026-11-23"
@@ -112,9 +115,9 @@
     },
     "category": "subway",
     "livery": {
-      "body": "#b4a5c0",
-      "accent": "#473c5d",
-      "stripe": "#d3cb94",
+      "body": "#c2c6cc",
+      "accent": "#757b84",
+      "stripe": "#bb2635",
       "nature": "schematic"
     },
     "proportions": {
@@ -124,7 +127,9 @@
     "formations": [],
     "provenance": {
       "sourceIds": [
-        "sk:source:metro-vehicle-30000"
+        "sk:source:metro-vehicle-30000",
+        "sk:source:metro-vehicle-30000-exterior",
+        "sk:source:metro-vehicle-guide"
       ],
       "dataNature": "manual-verified",
       "lastVerifiedAt": "2026-11-23"
@@ -141,19 +146,20 @@
     },
     "category": "subway",
     "livery": {
-      "body": "#c6b69e",
-      "accent": "#54473b",
-      "stripe": "#7698a0",
+      "body": "#c2c6cc",
+      "accent": "#757b84",
+      "stripe": "#763e80",
       "nature": "schematic"
     },
     "proportions": {
-      "carLengthToWidth": 5.7,
+      "carLengthToWidth": 5.55,
       "carCountDefault": null
     },
     "formations": [],
     "provenance": {
       "sourceIds": [
-        "sk:source:metro-vehicle-30000"
+        "sk:source:metro-vehicle-30000",
+        "sk:source:metro-vehicle-guide"
       ],
       "dataNature": "manual-verified",
       "lastVerifiedAt": "2026-11-23"
@@ -170,9 +176,9 @@
     },
     "category": "subway",
     "livery": {
-      "body": "#a8b4a2",
-      "accent": "#364833",
-      "stripe": "#b99478",
+      "body": "#b4b9be",
+      "accent": "#6a7078",
+      "stripe": "#326faa",
       "nature": "schematic"
     },
     "proportions": {
@@ -182,7 +188,8 @@
     "formations": [],
     "provenance": {
       "sourceIds": [
-        "sk:source:metro-vehicle-23"
+        "sk:source:metro-vehicle-23",
+        "sk:source:metro-vehicle-guide"
       ],
       "dataNature": "manual-verified",
       "lastVerifiedAt": "2026-11-23"
@@ -199,9 +206,9 @@
     },
     "category": "limited-express",
     "livery": {
-      "body": "#597e80",
-      "accent": "#254346",
-      "stripe": "#d2c498",
+      "body": "#4c1823",
+      "accent": "#bcb9ad",
+      "stripe": "#ede2c8",
       "nature": "schematic"
     },
     "proportions": {
@@ -237,9 +244,9 @@
     },
     "category": "commuter",
     "livery": {
-      "body": "#8e8464",
-      "accent": "#373b36",
-      "stripe": "#c2c09c",
+      "body": "#4c1823",
+      "accent": "#bcb9ad",
+      "stripe": "#ede2c8",
       "nature": "schematic"
     },
     "proportions": {
@@ -266,9 +273,9 @@
     },
     "category": "commuter",
     "livery": {
-      "body": "#a9a4a9",
-      "accent": "#514656",
-      "stripe": "#9fa782",
+      "body": "#bbc1c5",
+      "accent": "#6e7479",
+      "stripe": "#3e91b7",
       "nature": "schematic"
     },
     "proportions": {
@@ -286,7 +293,8 @@
     "provenance": {
       "sourceIds": [
         "sk:source:hanshin-vehicle-5700",
-        "sk:source:hanshin-vehicle-5700-set"
+        "sk:source:hanshin-vehicle-5700-set",
+        "sk:source:hanshin-vehicle-5700-design"
       ],
       "dataNature": "manual-verified",
       "lastVerifiedAt": "2026-11-23"

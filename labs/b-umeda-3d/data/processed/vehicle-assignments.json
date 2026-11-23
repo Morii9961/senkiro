@@ -4,7 +4,8 @@
     "seriesId": "sk:vehicle:jr-323",
     "status": "representative",
     "sourceIds": [
-      "sk:source:jr-vehicle-323"
+      "sk:source:jr-vehicle-323",
+      "sk:source:jr-vehicle-323-design"
     ]
   },
   {
@@ -13,7 +14,8 @@
     "status": "representative",
     "sourceIds": [
       "sk:source:jr-vehicle-225",
-      "sk:source:jr-vehicle-formations"
+      "sk:source:jr-vehicle-formations",
+      "sk:source:jr-vehicle-exterior"
     ]
   },
   {
@@ -22,7 +24,8 @@
     "status": "representative",
     "sourceIds": [
       "sk:source:jr-vehicle-225",
-      "sk:source:jr-vehicle-formations"
+      "sk:source:jr-vehicle-formations",
+      "sk:source:jr-vehicle-exterior"
     ]
   },
   {
@@ -30,7 +33,8 @@
     "seriesId": "sk:vehicle:jr-221",
     "status": "representative",
     "sourceIds": [
-      "sk:source:jr-vehicle-225"
+      "sk:source:jr-vehicle-225",
+      "sk:source:jr-vehicle-exterior"
     ]
   },
   {
@@ -38,7 +42,9 @@
     "seriesId": "sk:vehicle:metro-30000",
     "status": "representative",
     "sourceIds": [
-      "sk:source:metro-vehicle-30000"
+      "sk:source:metro-vehicle-30000",
+      "sk:source:metro-vehicle-30000-exterior",
+      "sk:source:metro-vehicle-guide"
     ]
   },
   {
@@ -46,7 +52,8 @@
     "seriesId": "sk:vehicle:metro-32",
     "status": "representative",
     "sourceIds": [
-      "sk:source:metro-vehicle-30000"
+      "sk:source:metro-vehicle-30000",
+      "sk:source:metro-vehicle-guide"
     ]
   },
   {
@@ -54,7 +61,8 @@
     "seriesId": "sk:vehicle:metro-23",
     "status": "representative",
     "sourceIds": [
-      "sk:source:metro-vehicle-23"
+      "sk:source:metro-vehicle-23",
+      "sk:source:metro-vehicle-guide"
     ]
   },
   {
@@ -89,7 +97,8 @@
     "status": "representative",
     "sourceIds": [
       "sk:source:hanshin-vehicle-5700",
-      "sk:source:hanshin-vehicle-5700-set"
+      "sk:source:hanshin-vehicle-5700-set",
+      "sk:source:hanshin-vehicle-5700-design"
     ]
   },
   {
