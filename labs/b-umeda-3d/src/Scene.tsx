@@ -13,6 +13,7 @@ import { isLabelOccluded, proxyBounds, type OcclusionProxy } from './scene/label
 import { scenePlaceFilter } from './scene/view'
 import { createRouteOverlay, routeBands } from './scene/route3d'
 import { targetFromOwner, type SelectionTarget } from './state/selection'
+import { deriveTrackPaths, railCenterHeight, railHeight, trackFloorGap, trackOffset } from './trains/trackPaths'
 
 import { shopWindows, type ShopWindow } from './shopWindows'
 import { signage, type Board } from './signage'
@@ -133,7 +134,17 @@ export function Scene(props: Props) {
     let zoomBand: ZoomBand = 'far'
     let supplementalLabel: Label | null = null
     const occlusionProxies: OcclusionProxy[] = []
-    const debugOcclusion = new URLSearchParams(location.search).get('debug') === 'labels'
+    const debug = new URLSearchParams(location.search).get('debug')
+    const debugOcclusion = debug === 'labels'
+    const tracks = debug === 'tracks' ? deriveTrackPaths(station) : null
+    const trackDebug = tracks && new T.LineSegments(
+      new T.BufferGeometry(), new T.LineBasicMaterial({ vertexColors: true, depthTest: false, depthWrite: false }),
+    )
+    if (trackDebug) {
+      trackDebug.frustumCulled = false
+      trackDebug.renderOrder = 10
+      world.add(trackDebug)
+    }
     const proxyOverlay = new T.Group()
     if (debugOcclusion) world.add(proxyOverlay)
     let occludedLabels = new Set<string>()
@@ -692,7 +703,7 @@ export function Scene(props: Props) {
         rim = 0xd4d2c5,
         hall = 0xddccb1,
         steel = 0x686963
-      const gap = p.spread ? 9 : 5
+      const gap = p.spread ? 9 : trackFloorGap
       const visible = scenePlaceFilter(station, p, undefined)
       const ordinal = (place: Place) => floors.get(place.levelId)!.ordinal
       const routeFloors = new Set((current ? [current] : p.route)
@@ -709,6 +720,28 @@ export function Scene(props: Props) {
           floors.get(n.levelId)!.ordinal * gap + h,
           n.point[1],
         )
+      if (tracks && trackDebug) {
+        const displayed = tracks.filter((track) => visible(nodes.get(track.platformId)!))
+        const positions: number[] = []
+        const colors: number[] = []
+        const known = new T.Color(0x00a7b2)
+        const unknown = new T.Color(0xd88923)
+        for (const track of displayed) {
+          const floorOffset = ordinal(nodes.get(track.platformId)!) * (gap - trackFloorGap)
+          for (const [x, y, z] of track.polyline) {
+            positions.push(x, y + floorOffset + 0.10, z)
+            colors.push(...(track.entrance === null ? unknown : known).toArray())
+          }
+        }
+        trackDebug.geometry.dispose()
+        trackDebug.geometry = new T.BufferGeometry()
+        trackDebug.geometry.setAttribute('position', new T.Float32BufferAttribute(positions, 3))
+        trackDebug.geometry.setAttribute('color', new T.Float32BufferAttribute(colors, 3))
+        trackDebug.visible = displayed.length > 0 && !p.eye
+        gl.domElement.dataset.trackPaths = JSON.stringify(trackDebug.visible ? displayed.map(({ id }) => id) : [])
+        gl.domElement.dataset.trackEntrances = String(trackDebug.visible
+          ? displayed.filter(({ entrance }) => entrance !== null).length : 0)
+      }
       function block(
         at: T.Vector3,
         w: number,
@@ -847,7 +880,7 @@ export function Scene(props: Props) {
               0.04,
               0xe8ba56,
             )
-            const track = side * (breadth / 2 + 0.54)
+            const track = trackOffset(breadth, side)
             finish = Finish.ballast
             slat(0, track, -0.47, length, 1.12, 0.12, 0x786e61)
             finish = Finish.metal
@@ -868,7 +901,7 @@ export function Scene(props: Props) {
             for (let x = -length / 2 + 0.3; x < length / 2; x += 0.62)
               slat(x, track, -0.35, 0.14, 0.98, 0.12, 0x716a60)
             for (const shift of [-0.32, 0.32])
-              slat(0, track + shift, -0.22, length, 0.085, 0.17, steel)
+              slat(0, track + shift, railCenterHeight, length, 0.085, railHeight, steel)
           }
         } else if (n.id === 'sk:entrance:surface-crossing') {
           for (let x = -1.7; x <= 1.7; x += 0.7)
@@ -1300,6 +1333,8 @@ export function Scene(props: Props) {
       window.clearTimeout(settleTimer)
       clearProxyOverlay()
       routeOverlay.dispose()
+      trackDebug?.geometry.dispose()
+      trackDebug?.material.dispose()
       group?.dispose()
       outline?.dispose()
       shopDisplay.dispose()

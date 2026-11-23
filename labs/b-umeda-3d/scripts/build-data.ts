@@ -7,12 +7,15 @@ import { sources } from '../data/manual/sources.ts'
 import { entities, validate } from '../src/domain/graph.ts'
 import { validateLineStyles } from '../src/domain/lines.ts'
 import { validatePassengerData } from '../src/domain/passengerData.ts'
+import { deriveTrackPaths, validateTrackPaths } from '../src/trains/trackPaths.ts'
 import { sample } from '../src/providers/service.ts'
 const byId = new Map(sources.map((s) => [s.id, s]))
 const sourceIds = new Set(byId.keys())
 validate(model, sourceIds)
 validateLineStyles(model, lineStyles, sourceIds)
 validatePassengerData(model, services, exits, sourceIds)
+const tracks = deriveTrackPaths(model)
+validateTrackPaths(model, tracks)
 function output(path: string, value: string) {
   const contents = value + '\n'
   if (process.argv.includes('--check')) {
@@ -91,5 +94,6 @@ console.log(
     model.links.length +
     ' links, ' +
     lineStyles.length +
-    ' line styles, ' + services.length + ' platform services, ' + exits.length + ' exit records; sources validated',
+    ' line styles, ' + services.length + ' platform services, ' + exits.length + ' exit records, ' +
+    tracks.length + ' track paths; sources validated',
 )
