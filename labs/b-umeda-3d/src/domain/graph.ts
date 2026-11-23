@@ -173,3 +173,57 @@ export function route(
   }
   return null
 }
+
+export interface RoutePlan {
+  steps: Step[]
+  summary: { gates: number; levelChanges: number; segments: number }
+  floorSpans: { fromLabel: string; toLabel: string; stepIndexes: number[] }[]
+  unknownStepFree: string[]
+  distanceMeters: null
+  durationSeconds: null
+}
+
+export type RouteFailure =
+  | { reason: 'no-path' }
+  | {
+      reason: 'step-free-blocked'
+      firstBlockingLinkId: string
+      blocker: 'stairs' | 'escalator-direction-unknown' | 'unknown-step-free' | 'unverified'
+    }
+
+export function planRoute(
+  model: Model, start: string, end: string, { stepFreeOnly = false }: { stepFreeOnly?: boolean } = {},
+): RoutePlan | RouteFailure {
+  const steps = route(model, start, end, stepFreeOnly)
+  if (!steps) {
+    if (stepFreeOnly) {
+      const blocking = route(model, start, end)?.find(({ link }) => link.stepFree !== true)?.link
+      if (blocking) return {
+        reason: 'step-free-blocked',
+        firstBlockingLinkId: blocking.id,
+        blocker: blocking.kind === 'Stairs' ? 'stairs' : 'unknown-step-free',
+      }
+    }
+    return { reason: 'no-path' }
+  }
+  const levels = new Map(model.levels.map((level) => [level.id, level]))
+  const floorSpans: RoutePlan['floorSpans'] = []
+  for (const [index, { from, to }] of steps.entries()) {
+    const fromLabel = levels.get(from.levelId)!.label
+    const toLabel = levels.get(to.levelId)!.label
+    const span = floorSpans.at(-1)
+    if (span?.fromLabel === fromLabel && span.toLabel === fromLabel) {
+      span.stepIndexes.push(index)
+      span.toLabel = toLabel
+    } else floorSpans.push({ fromLabel, toLabel, stepIndexes: [index] })
+  }
+  const { gates, changes, segments } = cost(steps)
+  return {
+    steps,
+    summary: { gates, levelChanges: changes, segments },
+    floorSpans,
+    unknownStepFree: steps.filter(({ link }) => link.stepFree === null).map(({ link }) => link.id),
+    distanceMeters: null,
+    durationSeconds: null,
+  }
+}

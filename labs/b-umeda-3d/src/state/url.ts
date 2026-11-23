@@ -10,6 +10,7 @@ export interface UrlState {
   selection: SelectionTarget | null
   from: string | null
   to: string | null
+  routeDraft?: true
   stepFreeOnly: boolean
   step: number
   lang: Language
@@ -66,6 +67,7 @@ export function parseUrl(params: URLSearchParams): UrlState {
     selection: parseSelection(params.get('sel')),
     from: endpoint(params.get('from')),
     to: endpoint(params.get('to')),
+    ...(params.get('draft') === '1' ? { routeDraft: true as const } : {}),
     stepFreeOnly: params.get('sf') === '1',
     step: step !== null && step >= 0 ? step : defaultUrlState.step,
     lang: choice(params.get('lang'), ['ja', 'en'], defaultUrlState.lang),
@@ -84,6 +86,7 @@ export function serializeUrl(state: UrlState, existing?: URLSearchParams): URLSe
     sel: state.selection && state.selection.kind + ':' + state.selection.id,
     from: state.from,
     to: state.to,
+    draft: state.routeDraft ? '1' : null,
     sf: state.stepFreeOnly ? '1' : null,
     step: state.step >= 0 ? state.step : null,
     lang: state.lang !== defaultUrlState.lang ? state.lang : null,

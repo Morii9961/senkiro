@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState } from 'react'
 import { Scene } from './Scene'
 import { FloorPlan } from './FloorPlan'
-import { route, cost } from './domain/graph'
+import { planRoute } from './domain/graph'
 import type { Language } from './domain/types'
 import { floorLabels, floors, nodes, station, sites, inSite } from './model'
 import { Guide } from './Guide'
@@ -107,19 +107,19 @@ export function App() {
     )
     setReset((r) => r + 1)
   }
-  const [trip, setTrip] = useState({
-    start: initial.from ?? tours[0].start,
-    end: initial.to ?? tours[0].end,
+  const [trip, setTrip] = useState<{ start: string | null; end: string | null }>(() => {
+    const pendingExit = initial.from === null && initial.to !== null && nodes.get(initial.to)?.kind === 'Entrance'
+    return {
+      start: initial.from ?? (initial.routeDraft || pendingExit ? null : tours[0].start),
+      end: initial.to ?? (initial.routeDraft ? null : tours[0].end),
+    }
   })
-  const [needsStart, setNeedsStart] = useState(
-    initial.from === null && !!initial.to && nodes.get(initial.to)?.kind === 'Entrance',
-  )
   const exitOrigin = useRef<string | null>(null)
   const panelElement = useRef<HTMLElement>(null)
   const searchInput = useRef<HTMLInputElement>(null)
   const [recent, setRecent] = useState<string[]>([])
   const [drawer, setDrawer] = useState(
-    initial.step >= 0 || initial.stepFreeOnly || initial.from !== null || initial.to !== null,
+    initial.step >= 0 || initial.stepFreeOnly || initial.from !== null || initial.to !== null || !!initial.routeDraft,
   )
   const tour = tours.findIndex(
     (x) => x.start === trip.start && x.end === trip.end,
@@ -133,12 +133,12 @@ export function App() {
   const [panel, setPanel] = useState<'search' | 'route' | 'layers'>('route'),
     [dialog, setDialog] = useState<'help' | 'sources' | null>(null)
   const t = (ja: string, en: string) => (lang === 'ja' ? ja : en)
-  const steps = useMemo(
-      () => needsStart ? null : route(station, trip.start, trip.end, lift),
-      [trip.start, trip.end, lift, needsStart],
-    ),
-    path = steps ?? [],
-    stats = cost(path)
+  const result = useMemo(
+    () => trip.start && trip.end ? planRoute(station, trip.start, trip.end, { stepFreeOnly: lift }) : null,
+    [trip.start, trip.end, lift],
+  )
+  const path = result && 'steps' in result ? result.steps : []
+  const routeDraft = !trip.start || !trip.end
   const step = path[routeStep] ? routeStep : -1
 
   useEffect(() => {
@@ -150,9 +150,10 @@ export function App() {
       mode: plan ? '2d' : '3d',
       detail,
       selection,
-      from: needsStart || (trip.start === tours[0].start && nodes.get(trip.end)?.kind !== 'Entrance')
+      from: !routeDraft && trip.start === tours[0].start && nodes.get(trip.end!)?.kind !== 'Entrance'
         ? null : trip.start,
-      to: trip.end === tours[0].end ? null : trip.end,
+      to: !routeDraft && trip.end === tours[0].end ? null : trip.end,
+      routeDraft: routeDraft ? true : undefined,
       stepFreeOnly: lift,
       step,
       lang,
@@ -160,7 +161,7 @@ export function App() {
       feed,
     }, url.searchParams).toString()
     if (url.href !== window.location.href) window.history.replaceState(window.history.state, '', url)
-  }, [dark, detail, feed, floor, lang, lift, needsStart, plan, selection, siteId, step, trip.start, trip.end])
+  }, [dark, detail, feed, floor, lang, lift, plan, routeDraft, selection, siteId, step, trip.start, trip.end])
   const floorNow = floor ?? 0,
     shownFloor = floorLabels.find((f) => f[0] === floorNow)?.[1]
   function togglePlan(next: boolean) {
@@ -194,7 +195,6 @@ export function App() {
     setEye(null)
     setSiteId(null)
     setTrip({ start: tours[i].start, end: tours[i].end })
-    setNeedsStart(false)
     clear()
     selectStep(-1)
     selectFloor(plan ? 0 : null)
@@ -202,8 +202,7 @@ export function App() {
   function endpoint(which: 'start' | 'end', id: string) {
     setEye(null)
     setSiteId(null)
-    setTrip({ ...trip, [which]: id })
-    if (which === 'start') setNeedsStart(false)
+    setTrip((previous) => ({ ...previous, [which]: id }))
     selectStep(-1)
     clear()
     selectFloor(plan ? floors.get(nodes.get(id)!.levelId)!.ordinal : null)
@@ -221,8 +220,7 @@ export function App() {
     if (kind === 'start' || kind === 'end') {
       if (target.kind === 'entrance' && kind === 'end') {
         openRoute('end', target.id)
-        setNeedsStart(!exitOrigin.current)
-        if (exitOrigin.current) setTrip({ start: exitOrigin.current, end: target.id })
+        setTrip({ start: exitOrigin.current, end: target.id })
       } else {
         openRoute(kind, link ? (kind === 'start' ? link.from : link.to) : target.id)
       }
@@ -230,7 +228,6 @@ export function App() {
       setEye(null)
       setSiteId(null)
       setTrip({ start: link.from, end: link.to })
-      setNeedsStart(false)
       selectStep(0)
       selectFloor(plan ? facilityIndex.levelOf(link.to)!.ordinal : null)
       setDrawer(true)
@@ -556,7 +553,13 @@ export function App() {
                 />
               ) : panel === 'route' ? (
                 <RoutePanel
-                  {...{ lang, tour, trip, step, lift, steps, stats, pickTour, endpoint, highlight, needsStart }}
+                  {...{ lang, tour, trip, step, lift, result, pickTour, endpoint, highlight }}
+                  onFind={() => { clear(); setPanel('search') }}
+                  onClear={() => {
+                    setTrip({ start: null, end: null })
+                    selectStep(-1)
+                    clear()
+                  }}
                   onSwap={() => {
                     setTrip({ start: trip.end, end: trip.start })
                     selectStep(-1)
