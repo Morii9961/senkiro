@@ -15,7 +15,7 @@ export function AppHeader({ lang, dark, drawer, onDrawer, onHelp, onTheme, onLan
   return (
     <header>
       <div className="signature">
-        <i aria-hidden="true">≋</i> SENKIRO <span>Lab</span>
+        SENKIRO <span>Lab</span>
       </div>
       <span className="head-divider" />{' '}
       <h1 className="header-title">Umeda Station 3D</h1>

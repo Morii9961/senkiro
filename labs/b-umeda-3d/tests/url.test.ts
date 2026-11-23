@@ -32,3 +32,10 @@ it('ignores unknown parameters and falls back for invalid IDs, enums and indices
   expect(serializeUrl(defaultUrlState, new URLSearchParams('lang=en&debug=labels')).toString())
     .toBe('debug=labels')
 })
+
+it('AT-URL-01: the modeled mezzanine is a shareable floor', () => {
+  const state = { ...defaultUrlState, floor: 0.5 }
+  expect(parseUrl(serializeUrl(state))).toEqual(state)
+  expect(parseUrl(new URLSearchParams('floor=0.6')).floor).toBeNull()
+  expect(parseUrl(new URLSearchParams('floor=5e-1')).floor).toBeNull()
+})

@@ -53,7 +53,8 @@ function parseSelection(raw: string | null): SelectionTarget | null {
 export function parseUrl(params: URLSearchParams): UrlState {
   const wantedSite = params.get('site')
   const site = sites.some((entry) => entry.id === wantedSite) ? wantedSite : null
-  const floor = integer(params.get('floor'))
+  const floorText = params.get('floor')
+  const floor = floorText !== null && /^-?\d+(?:\.\d+)?$/.test(floorText) ? Number(floorText) : null
   const validFloor = floorLabels.some(([ordinal]) => ordinal === floor) &&
     (site === null || station.places.some((place) =>
       inSite(place, site) && floors.get(place.levelId)?.ordinal === floor,

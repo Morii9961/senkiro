@@ -59,17 +59,17 @@ test('App split regression snapshots preserve header, floor controls and itinera
     - button "日本語"
   `)
   await expect(page.locator('.floors')).toMatchAriaSnapshot(`
-    - text: Floor
-    - button "All" [pressed]
-    - button "3F"
-    - button "2F"
-    - button "中2F"
-    - button "1F"
-    - button "B1F"
-    - button "B2F"
-    - button "Passenger view"
-    - button "Architecture" [pressed]
-    - button "Explode"
+    - group "Floor":
+      - button "All" [pressed]
+      - button "3F"
+      - button "2F"
+      - button "中2F"
+      - button "1F"
+      - button "B1F"
+      - button "B2F"
+      - button "Passenger view"
+      - button "Architecture" [pressed]
+      - button "Explode"
   `)
   await page.getByRole('button', { name: 'Routes & places' }).click()
   await expect(page.locator('aside')).toMatchAriaSnapshot(`

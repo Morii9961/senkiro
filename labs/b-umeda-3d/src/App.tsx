@@ -210,6 +210,10 @@ export function App() {
   }, [dark, detail, feed, floor, lang, lift, plan, routeDraft, selection, siteId, step, trip.start, trip.end])
   const selectionPlaces = useMemo(() => selectedTrain ? [nodes.get(selectedTrain.track.platformId)!]
     : selection ? targetPlaces(selection) : [], [selectedTrain, selection])
+  const selectionFloors = new Set(selectionPlaces.map((place) => floors.get(place.levelId)!.ordinal))
+  const routeFloors = new Set(step >= 0 || drawer
+    ? path.flatMap(({ from, to }) => [floors.get(from.levelId)!.ordinal, floors.get(to.levelId)!.ordinal])
+    : [])
   const planAnchor = selectionPlaces[0] ?? currentStep?.to ?? (site ? nodes.get(site.anchorId) : null)
   const floorNow = floor ?? (planAnchor ? floors.get(planAnchor.levelId)!.ordinal : 0),
     shownFloor = floorLabels.find((f) => f[0] === floorNow)?.[1]
@@ -380,8 +384,7 @@ export function App() {
   useEffect(() => {
     if (selection) panelElement.current?.scrollTo(0, 0)
   }, [selection])
-  const differentFloor = floor !== null && selectionPlaces.length > 0 &&
-    !selectionPlaces.some((entry) => floors.get(entry.levelId)?.ordinal === floor)
+  const differentFloor = floor !== null && selectionFloors.size > 0 && !selectionFloors.has(floor)
   return (
     <main className={dark ? 'app dark' : 'app'}>
       <AppHeader
@@ -396,7 +399,6 @@ export function App() {
         <section className="viewer">
           <div className="viewer-bar">
             <strong>
-              <i className="status-dot" />
               {site?.names[lang] ?? t('大阪・梅田', 'Osaka / Umeda')}
             </strong>
             <div className="seg">
@@ -462,10 +464,13 @@ export function App() {
                 {exampleService.updates[0].observedAt}
               </div>
             )}
-            {!plan && differentFloor && (
+            {differentFloor && (
               <div className="eye-hint">
                 {t('対象は別の階にあります。', 'This feature is on another floor.')}{' '}
-                <button onClick={() => inspect(selection!.id)}>{t('移動', 'Go to floor')}</button>
+                <button onClick={() => {
+                  if (selectedTrain) selectFloor(floors.get(nodes.get(selectedTrain.track.platformId)!.levelId)!.ordinal)
+                  else inspect(selection!.id)
+                }}>{t('移動', 'Go to floor')}</button>
               </div>
             )}
             {eye && (
@@ -572,7 +577,7 @@ export function App() {
             </div>
           </div>
           <FloorControls
-            {...{ lang, plan, siteFloors, eye, shell, spread, interior }}
+            {...{ lang, plan, siteFloors, selectionFloors, routeFloors, eye, shell, spread, interior }}
             floor={plan ? floorNow : floor}
             onFloor={(next) => {
               setEye(null)
@@ -672,6 +677,9 @@ export function App() {
       </div>
 
       {dialog && <InfoDialog lang={lang} dialog={dialog} close={() => setDialog(null)} />}
+      <div className="selection-announcement" data-selection-announcement="" aria-live="polite" aria-atomic="true">
+        {objectDetail ? t(objectDetail.title + 'を選択', 'Selected ' + objectDetail.title) : ''}
+      </div>
     </main>
   )
 }

@@ -753,8 +753,6 @@ export function Scene(props: Props) {
       const oldEye = propsNow?.eye
       propsNow = p
       controls.enabled = !p.eye
-      world.background = p.eye ? new T.Color(0xb5bdbe) : null
-      world.fog = p.eye ? new T.FogExp2(0xb5bdbe, 0.018) : null
       if (p.eye && (p.eye !== oldEye || refit)) {
         const place = nodes.get(p.eye)!
         const alongX = place.size[0] >= place.size[1]
@@ -1242,6 +1240,11 @@ export function Scene(props: Props) {
         p.route.map(({ link, from }) => [link.id, from.id]), p.step,
       ])
       const previous = propsNow
+      if (p.eye !== previous?.eye || p.dark !== previous?.dark) {
+        const color = p.dark ? 0x262a2e : 0xb5bdbe
+        world.background = p.eye ? new T.Color(color) : null
+        world.fog = p.eye ? new T.FogExp2(color, 0.018) : null
+      }
       const rebuildGeometry = key !== geometryKey
       const needsView = lastReset !== p.reset || lastZoom !== p.zoom.tick
       const changedSelection = p.selection !== previous?.selection
