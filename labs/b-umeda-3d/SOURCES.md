@@ -2,6 +2,138 @@
 
 AI 对照运营商和大阪市公开资料录入；无实地或人工复核。资料日期、读取日期和业务有效期分别保存。手绘坐标与尺寸仅用于示意；原图未随项目分发。所有 UI 字体使用本机字体，无底图。
 
+### sk:source:jr-vehicle-323
+
+323系の投入完了 · JR西日本
+
+[原文](https://www.westjr.co.jp/press/article/2019/05/page_14241.html)
+
+资料日期 2019-05，读取日期 2026-11-23。核对大阪环状线用途及 8 辆编组。
+
+运营商网站条款，原作保留权利。商业使用 unknown，原件再分发 no，相同方式共享 unknown。 [条款](https://www.jr-odekake.net/use/about.html)
+
+署名 JR西日本 · 323系の投入完了
+
+### sk:source:jr-vehicle-225
+
+在来線車両の新製投入 · JR西日本
+
+[原文](https://www.westjr.co.jp/press/article/2020/02/page_15648.html)
+
+资料日期 2020-02-19，读取日期 2026-11-23。核对 JR 京都线及神户线新快速 225 系，及 221 系转用大阪东线。
+
+运营商网站条款，原作保留权利。商业使用 unknown，原件再分发 no，相同方式共享 unknown。 [条款](https://www.jr-odekake.net/use/about.html)
+
+署名 JR西日本 · 在来線車両の新製投入
+
+### sk:source:jr-vehicle-formations
+
+データで見るJR西日本2025・車両 · JR西日本
+
+[原文](https://www.westjr.co.jp/company/info/issue/data/pdf/data2025_15.pdf)
+
+资料日期 2025，读取日期 2026-11-23。225 系 0 代的代表编组为 8 辆。
+
+运营商网站条款，原作保留权利。商业使用 unknown，原件再分发 no，相同方式共享 unknown。 [条款](https://www.jr-odekake.net/use/about.html)
+
+署名 JR西日本 · データで見るJR西日本2025・車両
+
+### sk:source:metro-vehicle-30000
+
+谷町線車両・大日検車場 · Osaka Metro
+
+[原文](https://subway.osakametro.co.jp/news/news_release/20250227_satsueikai_dainichi.php)
+
+资料日期 2025-02-27，读取日期 2026-11-23。核对御堂筋线 30000 系、谷町线 32 系。
+
+运营商网站条款，原作保留权利。商业使用 unknown，原件再分发 no，相同方式共享 unknown。 [条款](https://www.osakametro.co.jp/site_info.php)
+
+署名 Osaka Metro · 谷町線車両・大日検車場
+
+### sk:source:metro-vehicle-23
+
+車内防犯カメラ・対象車両 · Osaka Metro
+
+[原文](https://subway.osakametro.co.jp/news/news/other/20250707_syanai_bouhan_camera.php)
+
+资料日期 2025-07-07，读取日期 2026-11-23。核对四桥线 23 系。
+
+运营商网站条款，原作保留权利。商业使用 unknown，原件再分发 no，相同方式共享 unknown。 [条款](https://www.osakametro.co.jp/site_info.php)
+
+署名 Osaka Metro · 車内防犯カメラ・対象車両
+
+### sk:source:hankyu-vehicle-9300
+
+車両図鑑・9300系 · 阪急電鉄
+
+[原文](https://www.hankyu.co.jp/railfan/maroon/9300.html)
+
+资料日期 未知，读取日期 2026-11-23。核对京都线系列型号。
+
+运营商网站条款，原作保留权利。商业使用 unknown，原件再分发 no，相同方式共享 unknown。 [条款](https://www.hankyu.co.jp/sitepolicy/index.html)
+
+署名 阪急電鉄 · 車両図鑑・9300系
+
+### sk:source:hankyu-vehicle-express
+
+2010年安全報告書・新形式車両の建造 · 阪急電鉄
+
+[原文](https://www.hankyu.co.jp/company/approach/anzen/anzen_2010/pdf/3-2.pdf)
+
+资料日期 2010，读取日期 2026-11-23。核对 9300 系替换京都线特急车型。
+
+运营商网站条款，原作保留权利。商业使用 unknown，原件再分发 no，相同方式共享 unknown。 [条款](https://www.hankyu.co.jp/sitepolicy/index.html)
+
+署名 阪急電鉄 · 2010年安全報告書・新形式車両の建造
+
+### sk:source:hankyu-vehicle-9300-set
+
+9300系誕生20周年記念列車 · 阪急電鉄
+
+[原文](https://www.hankyu.co.jp/railfan/news_event/2023/009674.html)
+
+资料日期 2023-09，读取日期 2026-11-23。核对一组 9300 系的 8 辆编组。
+
+运营商网站条款，原作保留权利。商业使用 unknown，原件再分发 no，相同方式共享 unknown。 [条款](https://www.hankyu.co.jp/sitepolicy/index.html)
+
+署名 阪急電鉄 · 9300系誕生20周年記念列車
+
+### sk:source:hankyu-vehicle-1000
+
+車両図鑑・1000系 · 阪急電鉄
+
+[原文](https://www.hankyu.co.jp/railfan/maroon/1000.html)
+
+资料日期 未知，读取日期 2026-11-23。核对神户线及宝塚线用途。
+
+运营商网站条款，原作保留权利。商业使用 unknown，原件再分发 no，相同方式共享 unknown。 [条款](https://www.hankyu.co.jp/sitepolicy/index.html)
+
+署名 阪急電鉄 · 車両図鑑・1000系
+
+### sk:source:hanshin-vehicle-5700
+
+車両のご案内・普通5700系 · 阪神電気鉄道
+
+[原文](https://www.hanshin.co.jp/fans/car/)
+
+资料日期 未知，读取日期 2026-11-23。核对 5700 系普通型。
+
+运营商网站条款，原作保留权利。商业使用 unknown，原件再分发 no，相同方式共享 unknown。 [条款](https://hanshin.co.jp/terms/)
+
+署名 阪神電気鉄道 · 車両のご案内・普通5700系
+
+### sk:source:hanshin-vehicle-5700-set
+
+鉄道車両移動等円滑化取組報告書 · 阪神電気鉄道
+
+[原文](https://www.hanshin.co.jp/safety/barrierfree/pdf/barrierfree_keikaku_2019_vehicle.pdf)
+
+资料日期 2019，读取日期 2026-11-23。核对本线 5700 系及该批两列共八辆。
+
+运营商网站条款，原作保留权利。商业使用 unknown，原件再分发 no，相同方式共享 unknown。 [条款](https://hanshin.co.jp/terms/)
+
+署名 阪神電気鉄道 · 鉄道車両移動等円滑化取組報告書
+
 ### sk:source:metro-umeda-stations
 
 梅田 駅案内・隣接駅 · Osaka Metro

@@ -1,0 +1,101 @@
+[
+  {
+    "lineId": "sk:line:loop",
+    "seriesId": "sk:vehicle:jr-323",
+    "status": "representative",
+    "sourceIds": [
+      "sk:source:jr-vehicle-323"
+    ]
+  },
+  {
+    "lineId": "sk:line:kyoto",
+    "seriesId": "sk:vehicle:jr-225",
+    "status": "representative",
+    "sourceIds": [
+      "sk:source:jr-vehicle-225",
+      "sk:source:jr-vehicle-formations"
+    ]
+  },
+  {
+    "lineId": "sk:line:kobe",
+    "seriesId": "sk:vehicle:jr-225",
+    "status": "representative",
+    "sourceIds": [
+      "sk:source:jr-vehicle-225",
+      "sk:source:jr-vehicle-formations"
+    ]
+  },
+  {
+    "lineId": "sk:line:east",
+    "seriesId": "sk:vehicle:jr-221",
+    "status": "representative",
+    "sourceIds": [
+      "sk:source:jr-vehicle-225"
+    ]
+  },
+  {
+    "lineId": "sk:line:midosuji",
+    "seriesId": "sk:vehicle:metro-30000",
+    "status": "representative",
+    "sourceIds": [
+      "sk:source:metro-vehicle-30000"
+    ]
+  },
+  {
+    "lineId": "sk:line:tanimachi",
+    "seriesId": "sk:vehicle:metro-32",
+    "status": "representative",
+    "sourceIds": [
+      "sk:source:metro-vehicle-30000"
+    ]
+  },
+  {
+    "lineId": "sk:line:yotsubashi",
+    "seriesId": "sk:vehicle:metro-23",
+    "status": "representative",
+    "sourceIds": [
+      "sk:source:metro-vehicle-23"
+    ]
+  },
+  {
+    "lineId": "sk:line:hk-kyoto",
+    "seriesId": "sk:vehicle:hankyu-9300",
+    "status": "representative",
+    "sourceIds": [
+      "sk:source:hankyu-vehicle-9300",
+      "sk:source:hankyu-vehicle-express",
+      "sk:source:hankyu-vehicle-9300-set"
+    ]
+  },
+  {
+    "lineId": "sk:line:hk-kobe",
+    "seriesId": "sk:vehicle:hankyu-1000",
+    "status": "representative",
+    "sourceIds": [
+      "sk:source:hankyu-vehicle-1000"
+    ]
+  },
+  {
+    "lineId": "sk:line:hk-takarazuka",
+    "seriesId": "sk:vehicle:hankyu-1000",
+    "status": "representative",
+    "sourceIds": [
+      "sk:source:hankyu-vehicle-1000"
+    ]
+  },
+  {
+    "lineId": "sk:line:hs-main",
+    "seriesId": "sk:vehicle:hanshin-5700",
+    "status": "representative",
+    "sourceIds": [
+      "sk:source:hanshin-vehicle-5700",
+      "sk:source:hanshin-vehicle-5700-set"
+    ]
+  },
+  {
+    "lineId": "sk:line:jr-tozai",
+    "seriesId": null,
+    "status": "unknown",
+    "sourceIds": []
+  }
+]

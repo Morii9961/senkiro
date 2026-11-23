@@ -73,9 +73,11 @@ try {
     await page.goto(url, { waitUntil: 'networkidle' })
     await button('EN').click()
     if (name === 'gate') {
+      await page.emulateMedia({ reducedMotion: 'reduce' })
       await button('Routes & places').click()
       await page.getByRole('button', { name: 'Start walkthrough' }).click()
       await expect(canvas).toHaveAttribute('data-focus', id)
+      await page.emulateMedia({ reducedMotion: 'no-preference' })
     }
     if (name === 'entrance') {
       await button('1F').click()

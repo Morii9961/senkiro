@@ -1,0 +1,295 @@
+[
+  {
+    "id": "sk:vehicle:jr-323",
+    "operatorId": "sk:operator:jr-west",
+    "names": {
+      "ja": "323系",
+      "en": "323 series",
+      "ja_kana": null,
+      "zh": null
+    },
+    "category": "commuter",
+    "livery": {
+      "body": "#b5a68c",
+      "accent": "#4b493b",
+      "stripe": "#d7ca9e",
+      "nature": "schematic"
+    },
+    "proportions": {
+      "carLengthToWidth": 5.9,
+      "carCountDefault": null
+    },
+    "formations": [
+      {
+        "cars": 8,
+        "sourceIds": [
+          "sk:source:jr-vehicle-323"
+        ]
+      }
+    ],
+    "provenance": {
+      "sourceIds": [
+        "sk:source:jr-vehicle-323"
+      ],
+      "dataNature": "manual-verified",
+      "lastVerifiedAt": "2026-11-23"
+    }
+  },
+  {
+    "id": "sk:vehicle:jr-225",
+    "operatorId": "sk:operator:jr-west",
+    "names": {
+      "ja": "225系",
+      "en": "225 series",
+      "ja_kana": null,
+      "zh": null
+    },
+    "category": "rapid",
+    "livery": {
+      "body": "#889caa",
+      "accent": "#24385b",
+      "stripe": "#d9a664",
+      "nature": "schematic"
+    },
+    "proportions": {
+      "carLengthToWidth": 6.25,
+      "carCountDefault": null
+    },
+    "formations": [
+      {
+        "cars": 8,
+        "sourceIds": [
+          "sk:source:jr-vehicle-formations"
+        ]
+      }
+    ],
+    "provenance": {
+      "sourceIds": [
+        "sk:source:jr-vehicle-225",
+        "sk:source:jr-vehicle-formations"
+      ],
+      "dataNature": "manual-verified",
+      "lastVerifiedAt": "2026-11-23"
+    }
+  },
+  {
+    "id": "sk:vehicle:jr-221",
+    "operatorId": "sk:operator:jr-west",
+    "names": {
+      "ja": "221系",
+      "en": "221 series",
+      "ja_kana": null,
+      "zh": null
+    },
+    "category": "commuter",
+    "livery": {
+      "body": "#ccc7a9",
+      "accent": "#486861",
+      "stripe": "#6b7983",
+      "nature": "schematic"
+    },
+    "proportions": {
+      "carLengthToWidth": 5.75,
+      "carCountDefault": null
+    },
+    "formations": [],
+    "provenance": {
+      "sourceIds": [
+        "sk:source:jr-vehicle-225"
+      ],
+      "dataNature": "manual-verified",
+      "lastVerifiedAt": "2026-11-23"
+    }
+  },
+  {
+    "id": "sk:vehicle:metro-30000",
+    "operatorId": "sk:operator:osaka-metro",
+    "names": {
+      "ja": "30000系",
+      "en": "30000 series",
+      "ja_kana": null,
+      "zh": null
+    },
+    "category": "subway",
+    "livery": {
+      "body": "#b4a5c0",
+      "accent": "#473c5d",
+      "stripe": "#d3cb94",
+      "nature": "schematic"
+    },
+    "proportions": {
+      "carLengthToWidth": 5.55,
+      "carCountDefault": null
+    },
+    "formations": [],
+    "provenance": {
+      "sourceIds": [
+        "sk:source:metro-vehicle-30000"
+      ],
+      "dataNature": "manual-verified",
+      "lastVerifiedAt": "2026-11-23"
+    }
+  },
+  {
+    "id": "sk:vehicle:metro-32",
+    "operatorId": "sk:operator:osaka-metro",
+    "names": {
+      "ja": "32系",
+      "en": "32 series",
+      "ja_kana": null,
+      "zh": null
+    },
+    "category": "subway",
+    "livery": {
+      "body": "#c6b69e",
+      "accent": "#54473b",
+      "stripe": "#7698a0",
+      "nature": "schematic"
+    },
+    "proportions": {
+      "carLengthToWidth": 5.7,
+      "carCountDefault": null
+    },
+    "formations": [],
+    "provenance": {
+      "sourceIds": [
+        "sk:source:metro-vehicle-30000"
+      ],
+      "dataNature": "manual-verified",
+      "lastVerifiedAt": "2026-11-23"
+    }
+  },
+  {
+    "id": "sk:vehicle:metro-23",
+    "operatorId": "sk:operator:osaka-metro",
+    "names": {
+      "ja": "23系",
+      "en": "23 series",
+      "ja_kana": null,
+      "zh": null
+    },
+    "category": "subway",
+    "livery": {
+      "body": "#a8b4a2",
+      "accent": "#364833",
+      "stripe": "#b99478",
+      "nature": "schematic"
+    },
+    "proportions": {
+      "carLengthToWidth": 5.65,
+      "carCountDefault": null
+    },
+    "formations": [],
+    "provenance": {
+      "sourceIds": [
+        "sk:source:metro-vehicle-23"
+      ],
+      "dataNature": "manual-verified",
+      "lastVerifiedAt": "2026-11-23"
+    }
+  },
+  {
+    "id": "sk:vehicle:hankyu-9300",
+    "operatorId": "sk:operator:hankyu",
+    "names": {
+      "ja": "9300系",
+      "en": "9300 series",
+      "ja_kana": null,
+      "zh": null
+    },
+    "category": "limited-express",
+    "livery": {
+      "body": "#597e80",
+      "accent": "#254346",
+      "stripe": "#d2c498",
+      "nature": "schematic"
+    },
+    "proportions": {
+      "carLengthToWidth": 6.75,
+      "carCountDefault": null
+    },
+    "formations": [
+      {
+        "cars": 8,
+        "sourceIds": [
+          "sk:source:hankyu-vehicle-9300-set"
+        ]
+      }
+    ],
+    "provenance": {
+      "sourceIds": [
+        "sk:source:hankyu-vehicle-9300",
+        "sk:source:hankyu-vehicle-express",
+        "sk:source:hankyu-vehicle-9300-set"
+      ],
+      "dataNature": "manual-verified",
+      "lastVerifiedAt": "2026-11-23"
+    }
+  },
+  {
+    "id": "sk:vehicle:hankyu-1000",
+    "operatorId": "sk:operator:hankyu",
+    "names": {
+      "ja": "1000系",
+      "en": "1000 series",
+      "ja_kana": null,
+      "zh": null
+    },
+    "category": "commuter",
+    "livery": {
+      "body": "#8e8464",
+      "accent": "#373b36",
+      "stripe": "#c2c09c",
+      "nature": "schematic"
+    },
+    "proportions": {
+      "carLengthToWidth": 6.85,
+      "carCountDefault": null
+    },
+    "formations": [],
+    "provenance": {
+      "sourceIds": [
+        "sk:source:hankyu-vehicle-1000"
+      ],
+      "dataNature": "manual-verified",
+      "lastVerifiedAt": "2026-11-23"
+    }
+  },
+  {
+    "id": "sk:vehicle:hanshin-5700",
+    "operatorId": "sk:operator:hanshin",
+    "names": {
+      "ja": "5700系",
+      "en": "5700 series",
+      "ja_kana": null,
+      "zh": null
+    },
+    "category": "commuter",
+    "livery": {
+      "body": "#a9a4a9",
+      "accent": "#514656",
+      "stripe": "#9fa782",
+      "nature": "schematic"
+    },
+    "proportions": {
+      "carLengthToWidth": 6.05,
+      "carCountDefault": null
+    },
+    "formations": [
+      {
+        "cars": 4,
+        "sourceIds": [
+          "sk:source:hanshin-vehicle-5700-set"
+        ]
+      }
+    ],
+    "provenance": {
+      "sourceIds": [
+        "sk:source:hanshin-vehicle-5700",
+        "sk:source:hanshin-vehicle-5700-set"
+      ],
+      "dataNature": "manual-verified",
+      "lastVerifiedAt": "2026-11-23"
+    }
+  }
+]

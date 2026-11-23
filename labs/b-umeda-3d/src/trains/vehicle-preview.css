@@ -1,0 +1,51 @@
+.vehicle-preview {
+  margin: 0 auto;
+  max-width: 1440px;
+  padding: 28px 28px 42px;
+  color: #233b3b;
+}
+.vehicle-preview h1 {
+  margin: 0 0 6px;
+  font-size: clamp(24px, 4vw, 36px);
+  letter-spacing: -0.04em;
+}
+.vehicle-preview > p {
+  margin: 0 0 21px;
+  color: #526662;
+}
+.vehicle-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr));
+  gap: 12px;
+}
+.vehicle-preview-grid article {
+  min-width: 0;
+  padding: 12px 13px 9px;
+  border: 1px solid #bfc9c1;
+  background: #fffef8;
+}
+.vehicle-preview-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.vehicle-preview-title h2 {
+  margin: 0;
+  font-size: 17px;
+  letter-spacing: -0.02em;
+}
+.vehicle-preview-title span, .vehicle-preview-grid p {
+  margin: 4px 0;
+  font-size: 11px;
+  color: #526662;
+}
+.vehicle-preview-grid canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: #eef1ec;
+}
+.vehicle-preview-grid .vehicle-preview-formation {
+  text-align: right;
+}

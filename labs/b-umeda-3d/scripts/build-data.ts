@@ -8,6 +8,8 @@ import { entities, validate } from '../src/domain/graph.ts'
 import { validateLineStyles } from '../src/domain/lines.ts'
 import { validatePassengerData } from '../src/domain/passengerData.ts'
 import { deriveTrackPaths, validateTrackPaths } from '../src/trains/trackPaths.ts'
+import { vehicleAssignments, vehicleSeries } from '../data/manual/vehicles.ts'
+import { validateVehicles } from '../src/trains/vehicles.ts'
 import { sample } from '../src/providers/service.ts'
 const byId = new Map(sources.map((s) => [s.id, s]))
 const sourceIds = new Set(byId.keys())
@@ -16,6 +18,7 @@ validateLineStyles(model, lineStyles, sourceIds)
 validatePassengerData(model, services, exits, sourceIds)
 const tracks = deriveTrackPaths(model)
 validateTrackPaths(model, tracks)
+validateVehicles(model, vehicleSeries, vehicleAssignments, sourceIds)
 function output(path: string, value: string) {
   const contents = value + '\n'
   if (process.argv.includes('--check')) {
@@ -28,6 +31,8 @@ output('data/processed/station.json', JSON.stringify(model, null, 2))
 output('data/processed/line-styles.json', JSON.stringify(lineStyles, null, 2))
 output('data/processed/services.json', JSON.stringify(services, null, 2))
 output('data/processed/exits.json', JSON.stringify(exits, null, 2))
+output('data/processed/vehicle-series.json', JSON.stringify(vehicleSeries, null, 2))
+output('data/processed/vehicle-assignments.json', JSON.stringify(vehicleAssignments, null, 2))
 output('data/sources.json', JSON.stringify(sources, null, 2))
 const records = sources
   .map((s) =>
@@ -95,5 +100,5 @@ console.log(
     ' links, ' +
     lineStyles.length +
     ' line styles, ' + services.length + ' platform services, ' + exits.length + ' exit records, ' +
-    tracks.length + ' track paths; sources validated',
+    tracks.length + ' track paths, ' + vehicleSeries.length + ' vehicle series; sources validated',
 )
