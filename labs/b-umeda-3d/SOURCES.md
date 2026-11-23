@@ -2,6 +2,54 @@
 
 AI 对照运营商和大阪市公开资料录入；无实地或人工复核。资料日期、读取日期和业务有效期分别保存。手绘坐标与尺寸仅用于示意；原图未随项目分发。所有 UI 字体使用本机字体，无底图。
 
+### sk:source:metro-umeda-stations
+
+梅田 駅案内・隣接駅 · Osaka Metro
+
+[原文](https://subway.osakametro.co.jp/station_guide/m/m16/index.php)
+
+资料日期 未知，读取日期 2026-11-23。M16 的两侧相邻站为 M15 中津和 M17 淀屋橋。配合构内图确认 1 番线方向。
+
+运营商网站条款，原作保留权利。商业使用 unknown，原件再分发 no，相同方式共享 unknown。 [条款](https://www.osakametro.co.jp/site_info.php)
+
+署名 Osaka Metro · 梅田 駅案内・隣接駅
+
+### sk:source:metro-nishi-map
+
+西梅田 駅構内図 · Osaka Metro
+
+[原文](https://subway.osakametro.co.jp/station_guide/station/Y11_%E8%A5%BF%E6%A2%85%E7%94%B0_%E6%A7%8B%E5%86%85%E5%9B%B3.pdf)
+
+资料日期 未知，读取日期 2026-11-23。确认 1、2 番线共同的方面标识；西梅田站页列出相邻站 Y12 肥後橋。
+
+运营商网站条款，原作保留权利。商业使用 unknown，原件再分发 no，相同方式共享 unknown。 [条款](https://www.osakametro.co.jp/site_info.php)
+
+署名 Osaka Metro · 西梅田 駅構内図
+
+### sk:source:hankyu-network
+
+路線・駅 · 阪急電鉄
+
+[原文](https://www.hankyu.co.jp/station/index.html)
+
+资料日期 未知，读取日期 2026-11-23。分别核对神户、宝塚、京都三条本线的地理相邻站。具体列车可能越站。
+
+运营商网站条款，原作保留权利。商业使用 unknown，原件再分发 no，相同方式共享 unknown。 [条款](https://www.hankyu.co.jp/sitepolicy/index.html)
+
+署名 阪急電鉄 · 路線・駅
+
+### sk:source:hanshin-network
+
+駅のサービス一覧・阪神本線 · 阪神電気鉄道
+
+[原文](https://www.hanshin.co.jp/station/list.html)
+
+资料日期 未知，读取日期 2026-11-23。核对大阪梅田侧的本线地理相邻站。具体列车可能越站。
+
+运营商网站条款，原作保留权利。商业使用 unknown，原件再分发 no，相同方式共享 unknown。 [条款](https://hanshin.co.jp/terms/)
+
+署名 阪神電気鉄道 · 駅のサービス一覧・阪神本線
+
 ### sk:source:higashi-map
 
 東梅田 駅構内図 · Osaka Metro

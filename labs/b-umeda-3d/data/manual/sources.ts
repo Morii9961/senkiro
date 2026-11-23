@@ -20,6 +20,7 @@ function record(
   url: string | null,
   sourceDate: string | null,
   notes: string,
+  retrievedAt = ['whity-district', 'whity-plaza'].includes(id) ? '2026-11-22' : checked,
 ): SourceRecord {
   return {
     id: 'sk:source:' + id,
@@ -28,9 +29,7 @@ function record(
     url,
     sourceDate,
     notes,
-    retrievedAt: ['whity-district', 'whity-plaza'].includes(id)
-      ? '2026-11-22'
-      : checked,
+    retrievedAt,
     license: terms[publisher]
       ? '运营商网站条款，原作保留权利'
       : '未确认原作再分发授权',
@@ -42,6 +41,30 @@ function record(
   }
 }
 export const sources: SourceRecord[] = [
+  record(
+    'metro-umeda-stations', metro, '梅田 駅案内・隣接駅',
+    metroUrl + 'm/m16/index.php', null,
+    'M16 的两侧相邻站为 M15 中津和 M17 淀屋橋。配合构内图确认 1 番线方向。',
+    '2026-11-23',
+  ),
+  record(
+    'metro-nishi-map', metro, '西梅田 駅構内図',
+    metroUrl + 'station/Y11_%E8%A5%BF%E6%A2%85%E7%94%B0_%E6%A7%8B%E5%86%85%E5%9B%B3.pdf',
+    null, '确认 1、2 番线共同的方面标识；西梅田站页列出相邻站 Y12 肥後橋。',
+    '2026-11-23',
+  ),
+  record(
+    'hankyu-network', hankyu, '路線・駅',
+    'https://www.hankyu.co.jp/station/index.html', null,
+    '分别核对神户、宝塚、京都三条本线的地理相邻站。具体列车可能越站。',
+    '2026-11-23',
+  ),
+  record(
+    'hanshin-network', hanshin, '駅のサービス一覧・阪神本線',
+    'https://www.hanshin.co.jp/station/list.html', null,
+    '核对大阪梅田侧的本线地理相邻站。具体列车可能越站。',
+    '2026-11-23',
+  ),
   record(
     'higashi-map',
     metro,

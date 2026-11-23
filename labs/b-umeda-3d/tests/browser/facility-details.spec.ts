@@ -49,7 +49,8 @@ test('AT-DET-06: an entrance offers a reachable line and retains unknown officia
   const panel = sheet(page)
   await expect(panel).toContainText('Midosuji concourse')
   await expect(panel).toContainText('Reachable lines')
-  await expect(panel.locator('[data-field="exit-label"]')).toHaveText(/Unverified/)
+  await expect(panel.locator('[data-field="exit-label"]')).toContainText('Midosuji South Exit')
+  await expect(panel.locator('[data-field="surface"]')).toHaveText(/Unverified/)
   await expect(panel.getByRole('button', { name: 'Route here', exact: true })).toBeVisible()
   const line = panel.locator('button[data-target^="line:"]').first()
   const target = (await line.getAttribute('data-target'))!

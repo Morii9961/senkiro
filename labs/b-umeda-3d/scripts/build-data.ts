@@ -1,13 +1,18 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { model } from '../data/manual/model.ts'
 import { lineStyles } from '../data/manual/lines.ts'
+import { exits } from '../data/manual/exits.ts'
+import { services } from '../data/manual/services.ts'
 import { sources } from '../data/manual/sources.ts'
 import { entities, validate } from '../src/domain/graph.ts'
 import { validateLineStyles } from '../src/domain/lines.ts'
+import { validatePassengerData } from '../src/domain/passengerData.ts'
 import { sample } from '../src/providers/service.ts'
 const byId = new Map(sources.map((s) => [s.id, s]))
-validate(model, new Set(byId.keys()))
-validateLineStyles(model, lineStyles, new Set(byId.keys()))
+const sourceIds = new Set(byId.keys())
+validate(model, sourceIds)
+validateLineStyles(model, lineStyles, sourceIds)
+validatePassengerData(model, services, exits, sourceIds)
 function output(path: string, value: string) {
   const contents = value + '\n'
   if (process.argv.includes('--check')) {
@@ -18,6 +23,8 @@ function output(path: string, value: string) {
 mkdirSync('data/processed', { recursive: true })
 output('data/processed/station.json', JSON.stringify(model, null, 2))
 output('data/processed/line-styles.json', JSON.stringify(lineStyles, null, 2))
+output('data/processed/services.json', JSON.stringify(services, null, 2))
+output('data/processed/exits.json', JSON.stringify(exits, null, 2))
 output('data/sources.json', JSON.stringify(sources, null, 2))
 const records = sources
   .map((s) =>
@@ -84,5 +91,5 @@ console.log(
     model.links.length +
     ' links, ' +
     lineStyles.length +
-    ' line styles; sources validated',
+    ' line styles, ' + services.length + ' platform services, ' + exits.length + ' exit records; sources validated',
 )

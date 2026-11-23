@@ -2,15 +2,18 @@ import { expect, it } from 'vitest'
 import { createFacilityIndex, type PlatformService } from '../src/domain/index'
 import { describePlatform } from '../src/domain/describe/platform'
 import { station } from '../src/model'
+import { services } from '../data/manual/services'
 
 it('AT-DET-02: each of the 24 platform pages represents missing fields as null', () => {
-  const index = createFacilityIndex(station)
+  const index = createFacilityIndex(station, { services })
   const platforms = station.places.filter((place) => place.kind === 'Platform')
   expect(platforms).toHaveLength(24)
   for (const platform of platforms) {
     const result = describePlatform(index, platform.id, { lang: 'ja' })
     expect(result.title.trim()).not.toBe('')
-    expect(result.facts.find((fact) => fact.key === 'direction')?.value).toBeNull()
+    if (!services.some((entry) => entry.platformId === platform.id && entry.directions?.some((item) => item.towards))) {
+      expect(result.facts.find((fact) => fact.key === 'direction')?.value).toBeNull()
+    }
     expect(result.facts.every((fact) => fact.label.trim() && (
       fact.value === null || (typeof fact.value === 'string' && fact.value.trim() !== '')
     ))).toBe(true)

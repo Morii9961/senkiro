@@ -7,6 +7,8 @@ import { floorLabels, floors, nodes, station, sites, inSite } from './model'
 import { Guide } from './Guide'
 import { exampleService } from './providers/service'
 import { createFacilityIndex, ownersOf } from './domain/index'
+import { exits } from '../data/manual/exits'
+import { services } from '../data/manual/services'
 import { describePlatform } from './domain/describe/platform'
 import { describeFacility } from './domain/describe/facilities'
 import type { DetailAction } from './domain/describe/types'
@@ -19,7 +21,7 @@ import { DetailSheet, type SheetHeight } from './ui/panels/DetailSheet'
 import { InfoDialog } from './ui/panels/InfoDialog'
 import { RoutePanel, instruction, tours } from './ui/panels/RoutePanel'
 
-const facilityIndex = createFacilityIndex(station)
+const facilityIndex = createFacilityIndex(station, { services, exits })
 
 function targetPlaces(target: SelectionTarget) {
   if (target.kind === 'station' || target.kind === 'line') {
