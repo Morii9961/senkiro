@@ -522,6 +522,78 @@ nav button[aria-pressed='true'] {
   color: var(--ink);
   box-shadow: inset 0 -3px #cc8234;
 }
+.sim-banner,
+.train-clock-banner {
+  background: #ffdda1;
+  color: #462f10;
+  border: 1px solid #a66b20;
+}
+.train-panel {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+}
+.train-modes,
+.train-clock-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.train-modes button {
+  flex: 1 1 auto;
+  padding: 7px 8px;
+}
+.train-modes button[aria-pressed='true'] {
+  border-color: var(--ink);
+  font-weight: 700;
+}
+.train-note {
+  margin: 0;
+  font-size: 12px;
+}
+.train-clock {
+  display: grid;
+  gap: 7px;
+}
+.train-clock-banner {
+  padding: 6px 8px;
+  border-radius: 4px;
+  font-size: 13px;
+}
+.train-clock-controls label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+}
+.train-clock select {
+  padding: 4px;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+.train-clock output {
+  font-variant-numeric: tabular-nums;
+}
+.train-schedule {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.train-schedule li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px 8px;
+  padding: 7px 8px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font-size: 13px;
+}
 .search-panel {
   padding: 16px;
 }

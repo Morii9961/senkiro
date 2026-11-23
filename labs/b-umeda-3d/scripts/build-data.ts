@@ -11,6 +11,9 @@ import { deriveTrackPaths, validateTrackPaths } from '../src/trains/trackPaths.t
 import { vehicleAssignments, vehicleSeries } from '../data/manual/vehicles.ts'
 import { validateVehicles } from '../src/trains/vehicles.ts'
 import { sample } from '../src/providers/service.ts'
+import { demoTimetable } from '../data/manual/demoTimetable.ts'
+import { createTimetableRegistry } from '../src/timetable/registry.ts'
+import { validateDataset } from '../src/timetable/validate.ts'
 const byId = new Map(sources.map((s) => [s.id, s]))
 const sourceIds = new Set(byId.keys())
 validate(model, sourceIds)
@@ -19,6 +22,11 @@ validatePassengerData(model, services, exits, sourceIds)
 const tracks = deriveTrackPaths(model)
 validateTrackPaths(model, tracks)
 validateVehicles(model, vehicleSeries, vehicleAssignments, sourceIds)
+const timetable = validateDataset(demoTimetable, createTimetableRegistry(model))
+const timetableErrors = timetable.issues.filter((issue) => issue.severity === 'error')
+if (timetableErrors.length || demoTimetable.sources.some(({ id }) => !sourceIds.has(id))) {
+  throw Error('Invalid demo timetable or unregistered source: ' + JSON.stringify(timetableErrors))
+}
 function output(path: string, value: string) {
   const contents = value + '\n'
   if (process.argv.includes('--check')) {
@@ -100,5 +108,6 @@ console.log(
     ' links, ' +
     lineStyles.length +
     ' line styles, ' + services.length + ' platform services, ' + exits.length + ' exit records, ' +
-    tracks.length + ' track paths, ' + vehicleSeries.length + ' vehicle series; sources validated',
+    tracks.length + ' track paths, ' + vehicleSeries.length + ' vehicle series, ' +
+    timetable.usable.length + ' fictional timetable records (' + timetable.runnable.length + ' with platforms); sources validated',
 )

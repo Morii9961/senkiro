@@ -1,0 +1,46 @@
+import { expect, test } from '@playwright/test'
+
+test.use({ reducedMotion: 'reduce' })
+
+test('AT-TT-02: off by default, with a separate unavailable timetable choice', async ({ page }) => {
+  await page.goto('/?sel=platform:sk:platform:hk-3&floor=2')
+  await expect(page.getByTestId('detail-sheet')).toContainText('リアルタイム配信なし')
+  await expect(page.getByTestId('sim-banner')).toHaveCount(0)
+  await expect(page.locator('[data-train-card]')).toHaveCount(0)
+  await page.getByRole('button', { name: '経路・施設' }).click()
+  await page.getByRole('button', { name: '列車', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'オフ', exact: true })).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.getByRole('button', { name: '時刻表シミュレーション', exact: true })).toBeDisabled()
+  await expect(page.getByText('利用できる時刻表データがありません。')).toBeVisible()
+})
+
+test('AT-TT-03/04, AT-HON-04: demo is marked on the stage and cards, and off clears it', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: '経路・施設' }).click()
+  await page.getByRole('button', { name: '列車', exact: true }).click()
+  await page.getByRole('button', { name: 'デモ', exact: true }).click()
+  const banner = page.getByTestId('sim-banner')
+  await expect(banner).toBeVisible()
+  await expect(banner).toContainText(/DEMO.*架空/)
+  await expect(banner.getByRole('button')).toHaveCount(0)
+  await expect(page.locator('[data-train-card]').first()).toContainText('架空')
+  await expect(page.locator('[data-train-card]').last()).toContainText('番線未確認')
+  await expect(page.getByLabel('日別')).toBeVisible()
+  await expect(page.getByLabel('倍速')).toBeVisible()
+  await page.getByRole('button', { name: '現在時刻', exact: true }).click()
+  await expect(page.getByText('本機時刻・列車位置ではありません')).toBeVisible()
+  await expect(page.locator('body')).not.toContainText('現在走行中の列車')
+  await page.getByRole('button', { name: 'オフ', exact: true }).click()
+  await expect(banner).toHaveCount(0)
+  await expect(page.locator('[data-train-card]')).toHaveCount(0)
+})
+
+test('AT-HON-04: a live URL has no feed, demo banner or cards', async ({ page }) => {
+  await page.goto('/?feed=live')
+  await page.getByRole('button', { name: '経路・施設' }).click()
+  await page.getByRole('button', { name: '列車', exact: true }).click()
+  await expect(page.getByText('リアルタイム配信なし', { exact: true })).toBeVisible()
+  await expect(page.getByTestId('sim-banner')).toHaveCount(0)
+  await expect(page.locator('[data-train-card]')).toHaveCount(0)
+  await expect(page.locator('body')).not.toContainText('現在走行中の列車')
+})

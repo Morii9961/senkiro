@@ -6,6 +6,7 @@ import type { Language } from './domain/types'
 import { floorLabels, floors, nodes, station, sites, inSite } from './model'
 import { Guide } from './Guide'
 import { exampleService } from './providers/service'
+import { availableFeed } from './providers/timetable'
 import { createFacilityIndex, ownersOf } from './domain/index'
 import { createSearchIndex } from './domain/searchIndex'
 import { exits } from '../data/manual/exits'
@@ -23,6 +24,7 @@ import { DetailSheet, type SheetHeight } from './ui/panels/DetailSheet'
 import { InfoDialog } from './ui/panels/InfoDialog'
 import { RoutePanel, instruction, tours } from './ui/panels/RoutePanel'
 import { SearchPanel } from './ui/panels/SearchPanel'
+import { SimBanner, TrainPanel } from './ui/panels/TrainPanel'
 
 const facilityIndex = createFacilityIndex(station, { services, exits })
 const searchIndex = createSearchIndex(station, sites)
@@ -127,11 +129,11 @@ export function App() {
   )
   const [routeStep, selectStep] = useState(initial.step),
     [lift, setLift] = useState(initial.stepFreeOnly)
-  const [feed, setFeed] = useState(initial.feed)
+  const [feed, setFeed] = useState(() => availableFeed(initial.feed))
   const [detail, setDetail] = useState(initial.detail)
   const [sheetHeight, setSheetHeight] = useState<SheetHeight>('half')
-  const example = feed === 'demo'
-  const [panel, setPanel] = useState<'search' | 'route' | 'layers'>('route'),
+  const example = feed.kind === 'demo'
+  const [panel, setPanel] = useState<'search' | 'route' | 'layers' | 'trains'>('route'),
     [dialog, setDialog] = useState<'help' | 'sources' | null>(null)
   const t = (ja: string, en: string) => (lang === 'ja' ? ja : en)
   const result = useMemo(
@@ -162,7 +164,7 @@ export function App() {
       step,
       lang,
       theme: dark ? 'dark' : 'light',
-      feed,
+      feed: feed.kind,
     }, url.searchParams).toString()
     if (url.href !== window.location.href) window.history.replaceState(window.history.state, '', url)
   }, [dark, detail, feed, floor, lang, lift, plan, routeDraft, selection, siteId, step, trip.start, trip.end])
@@ -385,8 +387,8 @@ export function App() {
               />
             )}
             {example && (
-              <div className="sample-tag">
-                {t('サンプルモード', 'EXAMPLE MODE')} ·{' '}
+              <div className="sample-tag sim-banner" data-testid="sim-banner">
+                <SimBanner lang={lang} /> · {t('サンプルモード', 'EXAMPLE MODE')} ·{' '}
                 {t('梅田 1番線', 'Umeda platform 1')} +
                 {exampleService.updates[0].delayMinutes} min · SENKIRO Lab ·{' '}
                 {exampleService.updates[0].observedAt}
@@ -551,6 +553,9 @@ export function App() {
                 >
                   {t('モデル情報', 'Model guide')}
                 </button>
+                <button aria-pressed={panel === 'trains'} onClick={() => setPanel('trains')}>
+                  {t('列車', 'Trains')}
+                </button>
               </nav>
               {panel === 'search' ? (
                 <SearchPanel lang={lang} input={searchInput}
@@ -578,6 +583,8 @@ export function App() {
                     selectStep(-1)
                   }}
                 />
+              ) : panel === 'trains' ? (
+                <TrainPanel lang={lang} feed={feed} onMode={(mode) => setFeed(availableFeed(mode))} />
               ) : (
                 <Guide
                   lang={lang}
@@ -585,7 +592,7 @@ export function App() {
                   onSelect={inspect}
                   onClear={clear}
                   example={example}
-                  onExample={() => setFeed(example ? 'off' : 'demo')}
+                  onExample={() => setFeed(availableFeed(example ? 'off' : 'demo'))}
                   showSources={() => setDialog('sources')}
                 />
               )}

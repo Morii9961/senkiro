@@ -2,6 +2,78 @@
 
 AI 对照运营商和大阪市公开资料录入；无实地或人工复核。资料日期、读取日期和业务有效期分别保存。手绘坐标与尺寸仅用于示意；原图未随项目分发。所有 UI 字体使用本机字体，无底图。
 
+### sk:source:timetable-catalog-odpt
+
+ODPT 开放数据目录 · 公共交通オープンデータ協議会
+
+[原文](https://ckan.odpt.org/ja/dataset)
+
+资料日期 未知，读取日期 2026-11-23。检索 ODPT CKAN official catalogue JR West Osaka Metro railway open data，并用 JR西日本、Osaka Metro、阪急電鉄、阪神電車筛选 CKAN。目录首页可查看，四个筛选 URL 在检索工具中均不可访问，未取得结果数量。另查 2026 挑战赛目录公告，未确认适用于本项目的梅田股道时刻数据。
+
+未确认原作再分发授权。商业使用 unknown，原件再分发 unknown，相同方式共享 unknown。
+
+署名 公共交通オープンデータ協議会 · ODPT 开放数据目录
+
+### sk:source:timetable-catalog-jr
+
+データで見るJR西日本 · JR西日本
+
+[原文](https://www.westjr.co.jp/company/info/issue/data/)
+
+资料日期 未知，读取日期 2026-11-23。在 westjr.co.jp 查询「オープンデータ API 鉄道データ カタログ JR西日本」。结果包括统计目录和乘客服务说明，未确认可用作本项目的开放时刻数据。
+
+运营商网站条款，原作保留权利。商业使用 unknown，原件再分发 no，相同方式共享 unknown。 [条款](https://www.jr-odekake.net/use/about.html)
+
+署名 JR西日本 · データで見るJR西日本
+
+### sk:source:timetable-catalog-metro
+
+ODPO 公开目录 · 大阪府
+
+[原文](https://www.pref.osaka.lg.jp/o060020/tokku_suishin2/orden/orden_riyou.html)
+
+资料日期 未知，读取日期 2026-11-23。在 osakametro.co.jp 查询「オープンデータ 鉄道 API データの公開」，另查「Osaka Metro オープンデータ カタログ API 公共交通オープンデータ ODPT」。大阪府 ODPO 列出地铁进出站统计，未确认可用作本项目的开放时刻数据。
+
+未确认原作再分发授权。商业使用 unknown，原件再分发 unknown，相同方式共享 unknown。
+
+署名 大阪府 · ODPO 公开目录
+
+### sk:source:timetable-catalog-hankyu
+
+阪急沿線アプリ · 阪急電鉄
+
+[原文](https://www.hankyu.co.jp/th/app_lp/index.html)
+
+资料日期 未知，读取日期 2026-11-23。在 hankyu.co.jp 查询「オープンデータ API データ公開 阪急電車」。结果包括乘客 App，未确认可用作本项目的开放时刻数据。
+
+运营商网站条款，原作保留权利。商业使用 unknown，原件再分发 no，相同方式共享 unknown。 [条款](https://www.hankyu.co.jp/sitepolicy/index.html)
+
+署名 阪急電鉄 · 阪急沿線アプリ
+
+### sk:source:timetable-catalog-hanshin
+
+運行情報の確認方法 · 阪神電気鉄道
+
+[原文](https://www.hanshin.co.jp/guide/information/)
+
+资料日期 未知，读取日期 2026-11-23。在 hanshin.co.jp 查询「オープンデータ API データ公開 阪神電車」。结果包括乘客服务说明，未确认可用作本项目的开放时刻数据。
+
+运营商网站条款，原作保留权利。商业使用 unknown，原件再分发 no，相同方式共享 unknown。 [条款](https://hanshin.co.jp/terms/)
+
+署名 阪神電気鉄道 · 運行情報の確認方法
+
+### demo:umeda-fictional-timetable
+
+Synthetic Umeda timetable fixture · SENKIRO Lab
+
+本项目自制。
+
+资料日期 未知，读取日期 2026-11-23。Synthetic。本项目编写的虚拟时刻、种别、方向和内部班次 ID。未读取运营商时刻表。
+
+Repository license。商业使用 yes，原件再分发 yes，相同方式共享 unknown。
+
+署名 SENKIRO Lab · Synthetic Umeda timetable fixture
+
 ### sk:source:jr-vehicle-323
 
 323系の投入完了 · JR西日本

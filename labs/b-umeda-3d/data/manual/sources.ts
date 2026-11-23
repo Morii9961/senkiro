@@ -1,4 +1,5 @@
 import type { SourceRecord } from '../../src/domain/types.ts'
+import { demoTimetable } from './demoTimetable.ts'
 export const checked = '2026-11-21'
 const jr = 'JR西日本',
   metro = 'Osaka Metro',
@@ -41,6 +42,29 @@ function record(
   }
 }
 export const sources: SourceRecord[] = [
+  record('timetable-catalog-odpt', '公共交通オープンデータ協議会', 'ODPT 开放数据目录',
+    'https://ckan.odpt.org/ja/dataset', null,
+    '检索 ODPT CKAN official catalogue JR West Osaka Metro railway open data，并用 JR西日本、Osaka Metro、阪急電鉄、阪神電車筛选 CKAN。目录首页可查看，四个筛选 URL 在检索工具中均不可访问，未取得结果数量。另查 2026 挑战赛目录公告，未确认适用于本项目的梅田股道时刻数据。', '2026-11-23'),
+  record('timetable-catalog-jr', jr, 'データで見るJR西日本',
+    'https://www.westjr.co.jp/company/info/issue/data/', null,
+    '在 westjr.co.jp 查询「オープンデータ API 鉄道データ カタログ JR西日本」。结果包括统计目录和乘客服务说明，未确认可用作本项目的开放时刻数据。', '2026-11-23'),
+  record('timetable-catalog-metro', '大阪府', 'ODPO 公开目录',
+    'https://www.pref.osaka.lg.jp/o060020/tokku_suishin2/orden/orden_riyou.html', null,
+    '在 osakametro.co.jp 查询「オープンデータ 鉄道 API データの公開」，另查「Osaka Metro オープンデータ カタログ API 公共交通オープンデータ ODPT」。大阪府 ODPO 列出地铁进出站统计，未确认可用作本项目的开放时刻数据。', '2026-11-23'),
+  record('timetable-catalog-hankyu', hankyu, '阪急沿線アプリ',
+    'https://www.hankyu.co.jp/th/app_lp/index.html', null,
+    '在 hankyu.co.jp 查询「オープンデータ API データ公開 阪急電車」。结果包括乘客 App，未确认可用作本项目的开放时刻数据。', '2026-11-23'),
+  record('timetable-catalog-hanshin', hanshin, '運行情報の確認方法',
+    'https://www.hanshin.co.jp/guide/information/', null,
+    '在 hanshin.co.jp 查询「オープンデータ API データ公開 阪神電車」。结果包括乘客服务说明，未确认可用作本项目的开放时刻数据。', '2026-11-23'),
+  ...demoTimetable.sources.map(({ id, publisher, title, url, retrievedAt }) => ({
+    ...record('demo-timetable', publisher!, title, url, null,
+      'Synthetic。本项目编写的虚拟时刻、种别、方向和内部班次 ID。未读取运营商时刻表。', retrievedAt!),
+    id,
+    license: 'Repository license',
+    redistribution: 'yes' as const,
+    commercialUse: 'yes' as const,
+  })),
   record('jr-vehicle-323', jr, '323系の投入完了', 'https://www.westjr.co.jp/press/article/2019/05/page_14241.html',
     '2019-05', '核对大阪环状线用途及 8 辆编组。', '2026-11-23'),
   record('jr-vehicle-225', jr, '在来線車両の新製投入',
