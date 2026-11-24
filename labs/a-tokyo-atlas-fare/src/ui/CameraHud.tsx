@@ -257,12 +257,13 @@ export const CameraHud: React.FC<CameraHudProps> = ({
                 data-testid="free-speed-select"
                 aria-label={locale === 'ja' ? '移動速度' : 'Flight Speed'}
                 value={modeState.moveSpeed}
-                onChange={(e) =>
+                onChange={(e) => {
                   onDispatch({
                     type: 'SET_MOVE_SPEED',
                     speed: e.target.value as CameraMoveSpeed,
-                  })
-                }
+                  });
+                  e.currentTarget.blur();
+                }}
               >
                 <option value="slow">{locale === 'ja' ? '速度: 低速' : 'Speed: Slow'}</option>
                 <option value="normal">{locale === 'ja' ? '速度: 標準' : 'Speed: Normal'}</option>

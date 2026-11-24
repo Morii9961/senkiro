@@ -1,0 +1,672 @@
+{
+  "stage": "final-v2",
+  "timestamp": "2026-11-22T23:42:15.441Z",
+  "initialLoadMs": 11619,
+  "consoleErrors": [],
+  "pageErrors": [],
+  "shots": [
+    {
+      "label": "01-city-overview-day",
+      "path": "E:\\SENKIRO\\docs\\atlas-v2\\screenshots\\01-city-overview-day.png",
+      "fps": 1.5,
+      "telemetryText": "1.6 FPS · DC:104 · Tris:492k · Rail:far · Chunks 49/145 (L0:0/L1:33) · Buildings 21,515 · Sim:108",
+      "metrics": {
+        "loadedChunks": 52,
+        "totalChunks": 145,
+        "renderedBuildings": 21975,
+        "realOsmBuildings": 17064,
+        "infillBuildings": 4911,
+        "lod0Chunks": 0,
+        "lod1Chunks": 34,
+        "landmarkCount": 13,
+        "provenance": {
+          "osmExplicitHeight": 10806,
+          "osmLevels": 3811,
+          "osmEstimated": 2447,
+          "schematicInfill": 4911
+        },
+        "deconflictedCrossings": 27,
+        "tunnelPortals": 48,
+        "fps": 1.6,
+        "drawCalls": 105,
+        "triangles": 497552,
+        "loadTimeMs": 4479,
+        "railwayLod": "far",
+        "activeTrains": 108,
+        "undergroundTrains": 56,
+        "simRunning": true,
+        "simTimeScale": 1,
+        "simClockSec": 1.9,
+        "cameraModeV2": "map",
+        "cameraUnderground": false,
+        "tunnelCutawayStyle": "translucent_shell",
+        "rollingStockCars": 312
+      },
+      "camera": {
+        "mode": "map",
+        "pos": [
+          -3747,
+          4186,
+          5166
+        ],
+        "target": [
+          -2450,
+          0,
+          -33
+        ]
+      },
+      "visibleLabelCount": 14,
+      "labelOverlaps": 0
+    },
+    {
+      "label": "02-shibuya-surface",
+      "path": "E:\\SENKIRO\\docs\\atlas-v2\\screenshots\\02-shibuya-surface.png",
+      "fps": 0.9,
+      "telemetryText": "1.1 FPS · DC:282 · Tris:2012k · Rail:near · Chunks 74/145 (L0:2/L1:7) · Buildings 6,536 · Sim:108",
+      "metrics": {
+        "loadedChunks": 74,
+        "totalChunks": 145,
+        "renderedBuildings": 6536,
+        "realOsmBuildings": 5026,
+        "infillBuildings": 1510,
+        "lod0Chunks": 2,
+        "lod1Chunks": 7,
+        "landmarkCount": 13,
+        "provenance": {
+          "osmExplicitHeight": 3021,
+          "osmLevels": 940,
+          "osmEstimated": 1065,
+          "schematicInfill": 1510
+        },
+        "deconflictedCrossings": 27,
+        "tunnelPortals": 48,
+        "fps": 1.1,
+        "drawCalls": 282,
+        "triangles": 2011984,
+        "loadTimeMs": 4479,
+        "railwayLod": "near",
+        "activeTrains": 108,
+        "undergroundTrains": 56,
+        "simRunning": true,
+        "simTimeScale": 1,
+        "simClockSec": 3.85,
+        "cameraModeV2": "map",
+        "cameraUnderground": false,
+        "tunnelCutawayStyle": "translucent_shell",
+        "rollingStockCars": 312
+      },
+      "camera": {
+        "mode": "map",
+        "pos": [
+          -6260,
+          287,
+          3010
+        ],
+        "target": [
+          -5927,
+          0,
+          2584
+        ]
+      },
+      "visibleLabelCount": 5,
+      "labelOverlaps": 0
+    },
+    {
+      "label": "03-shibuya-underground-cutaway",
+      "path": "E:\\SENKIRO\\docs\\atlas-v2\\screenshots\\03-shibuya-underground-cutaway.png",
+      "fps": 0.8,
+      "telemetryText": "0.9 FPS · DC:519 · Tris:2332k · Rail:near · Chunks 74/145 (L0:2/L1:7) · Buildings 6,536 · Sim:108",
+      "metrics": {
+        "loadedChunks": 74,
+        "totalChunks": 145,
+        "renderedBuildings": 6536,
+        "realOsmBuildings": 5026,
+        "infillBuildings": 1510,
+        "lod0Chunks": 2,
+        "lod1Chunks": 7,
+        "landmarkCount": 13,
+        "provenance": {
+          "osmExplicitHeight": 3021,
+          "osmLevels": 940,
+          "osmEstimated": 1065,
+          "schematicInfill": 1510
+        },
+        "deconflictedCrossings": 27,
+        "tunnelPortals": 48,
+        "fps": 0.9,
+        "drawCalls": 519,
+        "triangles": 2331732,
+        "loadTimeMs": 4479,
+        "railwayLod": "near",
+        "activeTrains": 108,
+        "undergroundTrains": 56,
+        "simRunning": true,
+        "simTimeScale": 1,
+        "simClockSec": 5.45,
+        "cameraModeV2": "underground_inspect",
+        "cameraUnderground": false,
+        "tunnelCutawayStyle": "translucent_shell",
+        "rollingStockCars": 648
+      },
+      "camera": {
+        "mode": "map",
+        "pos": [
+          -6260,
+          287,
+          3010
+        ],
+        "target": [
+          -5927,
+          0,
+          2584
+        ]
+      },
+      "visibleLabelCount": 6,
+      "labelOverlaps": 0
+    },
+    {
+      "label": "04-tokyo-otemachi-section-cutaway",
+      "path": "E:\\SENKIRO\\docs\\atlas-v2\\screenshots\\04-tokyo-otemachi-section-cutaway.png",
+      "fps": 1,
+      "telemetryText": "0.8 FPS · DC:536 · Tris:2138k · Rail:near · Chunks 74/145 (L0:4/L1:4) · Buildings 5,630 · Sim:108",
+      "metrics": {
+        "loadedChunks": 74,
+        "totalChunks": 145,
+        "renderedBuildings": 5630,
+        "realOsmBuildings": 4524,
+        "infillBuildings": 1106,
+        "lod0Chunks": 4,
+        "lod1Chunks": 4,
+        "landmarkCount": 13,
+        "provenance": {
+          "osmExplicitHeight": 872,
+          "osmLevels": 1861,
+          "osmEstimated": 1791,
+          "schematicInfill": 1106
+        },
+        "deconflictedCrossings": 27,
+        "tunnelPortals": 48,
+        "fps": 0.8,
+        "drawCalls": 536,
+        "triangles": 2137999,
+        "loadTimeMs": 4479,
+        "railwayLod": "near",
+        "activeTrains": 108,
+        "undergroundTrains": 57,
+        "simRunning": true,
+        "simTimeScale": 1,
+        "simClockSec": 7.05,
+        "cameraModeV2": "underground_inspect",
+        "cameraUnderground": false,
+        "tunnelCutawayStyle": "section_cutaway",
+        "rollingStockCars": 648
+      },
+      "camera": {
+        "mode": "map",
+        "pos": [
+          288,
+          464,
+          435
+        ],
+        "target": [
+          -81,
+          -6,
+          -156
+        ]
+      },
+      "visibleLabelCount": 9,
+      "labelOverlaps": 0
+    },
+    {
+      "label": "05-underground-explorer-interior",
+      "path": "E:\\SENKIRO\\docs\\atlas-v2\\screenshots\\05-underground-explorer-interior.png",
+      "fps": 1.1,
+      "telemetryText": "1 FPS · DC:227 · Tris:847k · Rail:near · Chunks 74/145 (L0:0/L1:0) · Buildings 0 · Sim:108",
+      "metrics": {
+        "loadedChunks": 74,
+        "totalChunks": 145,
+        "renderedBuildings": 0,
+        "realOsmBuildings": 0,
+        "infillBuildings": 0,
+        "lod0Chunks": 0,
+        "lod1Chunks": 0,
+        "landmarkCount": 13,
+        "provenance": {
+          "osmExplicitHeight": 0,
+          "osmLevels": 0,
+          "osmEstimated": 0,
+          "schematicInfill": 0
+        },
+        "deconflictedCrossings": 27,
+        "tunnelPortals": 48,
+        "fps": 1,
+        "drawCalls": 227,
+        "triangles": 846768,
+        "loadTimeMs": 4479,
+        "railwayLod": "near",
+        "activeTrains": 108,
+        "undergroundTrains": 57,
+        "simRunning": true,
+        "simTimeScale": 1,
+        "simClockSec": 8.85,
+        "cameraModeV2": "underground_inspect",
+        "cameraUnderground": true,
+        "tunnelCutawayStyle": "translucent_shell",
+        "rollingStockCars": 648
+      },
+      "camera": {
+        "mode": "free",
+        "pos": [
+          -5812,
+          -27,
+          2527
+        ],
+        "target": [
+          -5834,
+          -27,
+          2471
+        ]
+      },
+      "visibleLabelCount": 5,
+      "labelOverlaps": 0
+    },
+    {
+      "label": "06-shinjuku-street-level",
+      "path": "E:\\SENKIRO\\docs\\atlas-v2\\screenshots\\06-shinjuku-street-level.png",
+      "fps": 0.8,
+      "telemetryText": "0.9 FPS · DC:251 · Tris:1873k · Rail:near · Chunks 74/145 (L0:2/L1:15) · Buildings 11,149 · Sim:108",
+      "metrics": {
+        "loadedChunks": 74,
+        "totalChunks": 145,
+        "renderedBuildings": 11149,
+        "realOsmBuildings": 8624,
+        "infillBuildings": 2525,
+        "lod0Chunks": 2,
+        "lod1Chunks": 15,
+        "landmarkCount": 13,
+        "provenance": {
+          "osmExplicitHeight": 6460,
+          "osmLevels": 1359,
+          "osmEstimated": 805,
+          "schematicInfill": 2525
+        },
+        "deconflictedCrossings": 27,
+        "tunnelPortals": 48,
+        "fps": 0.9,
+        "drawCalls": 251,
+        "triangles": 1872864,
+        "loadTimeMs": 4479,
+        "railwayLod": "near",
+        "activeTrains": 108,
+        "undergroundTrains": 56,
+        "simRunning": true,
+        "simTimeScale": 1,
+        "simClockSec": 11.15,
+        "cameraModeV2": "station_focus",
+        "cameraUnderground": false,
+        "tunnelCutawayStyle": "translucent_shell",
+        "rollingStockCars": 312
+      },
+      "camera": {
+        "mode": "map",
+        "pos": [
+          -6091,
+          37,
+          -806
+        ],
+        "target": [
+          -6031,
+          2,
+          -934
+        ]
+      },
+      "visibleLabelCount": 5,
+      "labelOverlaps": 0
+    },
+    {
+      "label": "07-shinjuku-night",
+      "path": "E:\\SENKIRO\\docs\\atlas-v2\\screenshots\\07-shinjuku-night.png",
+      "fps": 1.1,
+      "telemetryText": "0.8 FPS · DC:448 · Tris:2078k · Rail:near · Chunks 74/145 (L0:3/L1:6) · Buildings 7,086 · Sim:108",
+      "metrics": {
+        "loadedChunks": 74,
+        "totalChunks": 145,
+        "renderedBuildings": 7086,
+        "realOsmBuildings": 5659,
+        "infillBuildings": 1427,
+        "lod0Chunks": 3,
+        "lod1Chunks": 6,
+        "landmarkCount": 13,
+        "provenance": {
+          "osmExplicitHeight": 4378,
+          "osmLevels": 684,
+          "osmEstimated": 597,
+          "schematicInfill": 1427
+        },
+        "deconflictedCrossings": 27,
+        "tunnelPortals": 48,
+        "fps": 0.8,
+        "drawCalls": 448,
+        "triangles": 2077684,
+        "loadTimeMs": 4479,
+        "railwayLod": "near",
+        "activeTrains": 108,
+        "undergroundTrains": 57,
+        "simRunning": true,
+        "simTimeScale": 1,
+        "simClockSec": 13.2,
+        "cameraModeV2": "underground_inspect",
+        "cameraUnderground": false,
+        "tunnelCutawayStyle": "translucent_shell",
+        "rollingStockCars": 648
+      },
+      "camera": {
+        "mode": "map",
+        "pos": [
+          -6311,
+          407,
+          -334
+        ],
+        "target": [
+          -6031,
+          -6,
+          -934
+        ]
+      },
+      "visibleLabelCount": 11,
+      "labelOverlaps": 0
+    }
+  ],
+  "undergroundTrainDemo": [
+    {
+      "label": "08-ug-train-demo-1-side",
+      "path": "E:\\SENKIRO\\docs\\atlas-v2\\screenshots\\08-ug-train-demo-1-side.png",
+      "train": {
+        "value": "sim:v2:metro-marunouchi:A01",
+        "label": "丸ノ内線 117A (L-1 · 50km/h)"
+      },
+      "rig": "side",
+      "fps": 1.1,
+      "telemetryText": "1.2 FPS · DC:175 · Tris:1651k · Rail:near · Chunks 81/145 (L0:2/L1:1) · Buildings 246 · Sim:108",
+      "metrics": {
+        "loadedChunks": 81,
+        "totalChunks": 145,
+        "renderedBuildings": 246,
+        "realOsmBuildings": 77,
+        "infillBuildings": 169,
+        "lod0Chunks": 2,
+        "lod1Chunks": 1,
+        "landmarkCount": 13,
+        "provenance": {
+          "osmExplicitHeight": 54,
+          "osmLevels": 20,
+          "osmEstimated": 3,
+          "schematicInfill": 169
+        },
+        "deconflictedCrossings": 27,
+        "tunnelPortals": 48,
+        "fps": 1.2,
+        "drawCalls": 183,
+        "triangles": 1666154,
+        "loadTimeMs": 4479,
+        "railwayLod": "near",
+        "activeTrains": 108,
+        "undergroundTrains": 57,
+        "simRunning": true,
+        "simTimeScale": 2,
+        "simClockSec": 15.95,
+        "cameraModeV2": "follow_train",
+        "cameraUnderground": false,
+        "tunnelCutawayStyle": "translucent_shell",
+        "rollingStockCars": 648
+      },
+      "camera": {
+        "mode": "map",
+        "pos": [
+          -12683,
+          7,
+          -2458
+        ],
+        "target": [
+          -12670,
+          -9,
+          -2490
+        ]
+      },
+      "visibleLabelCount": 0,
+      "labelOverlaps": 0
+    },
+    {
+      "label": "09-ug-train-demo-2-chase",
+      "path": "E:\\SENKIRO\\docs\\atlas-v2\\screenshots\\09-ug-train-demo-2-chase.png",
+      "train": {
+        "value": "sim:v2:metro-marunouchi:A01",
+        "label": "丸ノ内線 117A (L-1 · 50km/h)"
+      },
+      "rig": "chase",
+      "fps": 0.7,
+      "telemetryText": "1.2 FPS · DC:333 · Tris:1889k · Rail:near · Chunks 81/145 (L0:2/L1:13) · Buildings 8,063 · Sim:108",
+      "metrics": {
+        "loadedChunks": 81,
+        "totalChunks": 145,
+        "renderedBuildings": 8063,
+        "realOsmBuildings": 6443,
+        "infillBuildings": 1620,
+        "lod0Chunks": 2,
+        "lod1Chunks": 13,
+        "landmarkCount": 13,
+        "provenance": {
+          "osmExplicitHeight": 5024,
+          "osmLevels": 604,
+          "osmEstimated": 815,
+          "schematicInfill": 1620
+        },
+        "deconflictedCrossings": 27,
+        "tunnelPortals": 48,
+        "fps": 1.1,
+        "drawCalls": 333,
+        "triangles": 1889209,
+        "loadTimeMs": 4479,
+        "railwayLod": "near",
+        "activeTrains": 108,
+        "undergroundTrains": 56,
+        "simRunning": true,
+        "simTimeScale": 2,
+        "simClockSec": 19,
+        "cameraModeV2": "follow_train",
+        "cameraUnderground": false,
+        "tunnelCutawayStyle": "translucent_shell",
+        "rollingStockCars": 648
+      },
+      "camera": {
+        "mode": "map",
+        "pos": [
+          -12663,
+          9,
+          -2470
+        ],
+        "target": [
+          -12596,
+          -9,
+          -2445
+        ]
+      },
+      "visibleLabelCount": 1,
+      "labelOverlaps": 0
+    },
+    {
+      "label": "10-ug-train-demo-3-cab-t0",
+      "path": "E:\\SENKIRO\\docs\\atlas-v2\\screenshots\\10-ug-train-demo-3-cab-t0.png",
+      "train": {
+        "value": "sim:v2:metro-marunouchi:A01",
+        "label": "丸ノ内線 117A (L-1 · 50km/h)"
+      },
+      "rig": "cab",
+      "fps": 1.1,
+      "telemetryText": "0.8 FPS · DC:141 · Tris:721k · Rail:near · Chunks 81/145 (L0:2/L1:14) · Buildings 7,827 · Sim:108",
+      "metrics": {
+        "loadedChunks": 81,
+        "totalChunks": 145,
+        "renderedBuildings": 7827,
+        "realOsmBuildings": 6190,
+        "infillBuildings": 1637,
+        "lod0Chunks": 2,
+        "lod1Chunks": 14,
+        "landmarkCount": 13,
+        "provenance": {
+          "osmExplicitHeight": 4797,
+          "osmLevels": 571,
+          "osmEstimated": 822,
+          "schematicInfill": 1637
+        },
+        "deconflictedCrossings": 27,
+        "tunnelPortals": 48,
+        "fps": 0.8,
+        "drawCalls": 141,
+        "triangles": 720528,
+        "loadTimeMs": 4479,
+        "railwayLod": "near",
+        "activeTrains": 108,
+        "undergroundTrains": 57,
+        "simRunning": true,
+        "simTimeScale": 2,
+        "simClockSec": 22.2,
+        "cameraModeV2": "cab_ride",
+        "cameraUnderground": true,
+        "tunnelCutawayStyle": "translucent_shell",
+        "rollingStockCars": 648
+      },
+      "camera": {
+        "mode": "map",
+        "pos": [
+          -12579,
+          -8,
+          -2430
+        ],
+        "target": [
+          -12525,
+          -8,
+          -2391
+        ]
+      },
+      "visibleLabelCount": 0,
+      "labelOverlaps": 0
+    },
+    {
+      "label": "11-ug-train-demo-4-cab-t1",
+      "path": "E:\\SENKIRO\\docs\\atlas-v2\\screenshots\\11-ug-train-demo-4-cab-t1.png",
+      "train": {
+        "value": "sim:v2:metro-marunouchi:A01",
+        "label": "丸ノ内線 117A (L-1 · 50km/h)"
+      },
+      "rig": "cab",
+      "fps": 1.8,
+      "telemetryText": "1.7 FPS · DC:141 · Tris:721k · Rail:near · Chunks 82/145 (L0:2/L1:14) · Buildings 7,827 · Sim:108",
+      "metrics": {
+        "loadedChunks": 82,
+        "totalChunks": 145,
+        "renderedBuildings": 7827,
+        "realOsmBuildings": 6190,
+        "infillBuildings": 1637,
+        "lod0Chunks": 2,
+        "lod1Chunks": 14,
+        "landmarkCount": 13,
+        "provenance": {
+          "osmExplicitHeight": 4797,
+          "osmLevels": 571,
+          "osmEstimated": 822,
+          "schematicInfill": 1637
+        },
+        "deconflictedCrossings": 27,
+        "tunnelPortals": 48,
+        "fps": 1.7,
+        "drawCalls": 141,
+        "triangles": 720528,
+        "loadTimeMs": 4479,
+        "railwayLod": "near",
+        "activeTrains": 108,
+        "undergroundTrains": 56,
+        "simRunning": true,
+        "simTimeScale": 2,
+        "simClockSec": 25.6,
+        "cameraModeV2": "cab_ride",
+        "cameraUnderground": true,
+        "tunnelCutawayStyle": "translucent_shell",
+        "rollingStockCars": 648
+      },
+      "camera": {
+        "mode": "map",
+        "pos": [
+          -12541,
+          -8,
+          -2403
+        ],
+        "target": [
+          -12487,
+          -8,
+          -2364
+        ]
+      },
+      "visibleLabelCount": 0,
+      "labelOverlaps": 0
+    },
+    {
+      "label": "12-ug-train-demo-5-surface-exit",
+      "path": "E:\\SENKIRO\\docs\\atlas-v2\\screenshots\\12-ug-train-demo-5-surface-exit.png",
+      "train": {
+        "value": "sim:v2:metro-marunouchi:A01",
+        "label": "丸ノ内線 117A (L-1 · 50km/h)"
+      },
+      "rig": "surface_exit",
+      "fps": 1.6,
+      "telemetryText": "1.5 FPS · DC:109 · Tris:535k · Rail:far · Chunks 110/145 (L0:0/L1:40) · Buildings 24,287 · Sim:108",
+      "metrics": {
+        "loadedChunks": 110,
+        "totalChunks": 145,
+        "renderedBuildings": 24287,
+        "realOsmBuildings": 18961,
+        "infillBuildings": 5326,
+        "lod0Chunks": 0,
+        "lod1Chunks": 40,
+        "landmarkCount": 13,
+        "provenance": {
+          "osmExplicitHeight": 11855,
+          "osmLevels": 3967,
+          "osmEstimated": 3139,
+          "schematicInfill": 5326
+        },
+        "deconflictedCrossings": 27,
+        "tunnelPortals": 48,
+        "fps": 1.5,
+        "drawCalls": 109,
+        "triangles": 534944,
+        "loadTimeMs": 4479,
+        "railwayLod": "far",
+        "activeTrains": 108,
+        "undergroundTrains": 56,
+        "simRunning": true,
+        "simTimeScale": 2,
+        "simClockSec": 29.4,
+        "cameraModeV2": "map",
+        "cameraUnderground": false,
+        "tunnelCutawayStyle": "translucent_shell",
+        "rollingStockCars": 312
+      },
+      "camera": {
+        "mode": "map",
+        "pos": [
+          -3747,
+          4186,
+          5166
+        ],
+        "target": [
+          -2755,
+          450,
+          1190
+        ]
+      },
+      "visibleLabelCount": 5,
+      "labelOverlaps": 0
+    }
+  ]
+}

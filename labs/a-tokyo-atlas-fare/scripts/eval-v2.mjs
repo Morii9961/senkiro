@@ -15,7 +15,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { spawn } from 'node:child_process';
+import { execSync, spawn } from 'node:child_process';
 import { chromium } from '@playwright/test';
 
 const stageLabel = process.argv[2] || 'v2-integration';
@@ -315,13 +315,23 @@ async function main() {
     if (pageErrors.length > 0) console.log('PageErrors:', pageErrors);
   } finally {
     if (browser) await browser.close();
-    if (serverProc) {
-      serverProc.kill();
+    if (serverProc && serverProc.pid) {
+      try {
+        if (process.platform === 'win32') {
+          execSync(`taskkill /pid ${serverProc.pid} /T /F`, { stdio: 'ignore' });
+        } else {
+          serverProc.kill('SIGTERM');
+        }
+      } catch {
+        // already exited
+      }
     }
   }
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+main()
+  .then(() => process.exit(0))
+  .catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
