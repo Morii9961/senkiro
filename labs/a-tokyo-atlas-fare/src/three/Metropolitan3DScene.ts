@@ -54,6 +54,12 @@ import { CityTerrainLayer } from './generators/cityTerrainGenerator.js';
 import { RailTrackLayer, type RailwayLodTier } from './generators/railTrackGenerator.js';
 import { TunnelAndStationLayer } from './generators/tunnelGenerator.js';
 import { ViaductLayer } from './generators/viaductGenerator.js';
+import {
+  configureHighQualitySunShadow,
+  createOptimalRenderer,
+  probeWebGpuCapability,
+  type OptimalRendererBundle,
+} from './rendererFactory.js';
 import type { UndergroundRailwayQueryAPI } from './underground/domain/tunnelTypes.js';
 import {
   lonLatToWorld,
@@ -76,6 +82,7 @@ export interface SceneCallbacks {
   onSelectStation: (stationId: SkId<'station'>) => void;
   onSelectLine: (lineId: SkId<'line'>) => void;
   onSelectTrain?: (trainId: string | null) => void;
+  onClearSelection?: () => void;
   onTelemetry?: (telemetry: SceneTelemetry) => void;
   onTraceUpdate?: (status: LineTraceStatus) => void;
   onSimulationUpdate?: (
@@ -91,6 +98,7 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
   readonly physicalTracks: PhysicalTrackGraph;
 
   private readonly container: HTMLElement;
+  private readonly rendererBundle: OptimalRendererBundle;
   private readonly renderer: THREE.WebGLRenderer;
   private readonly scene: THREE.Scene;
   private readonly camera: THREE.PerspectiveCamera;
@@ -114,10 +122,14 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
 
   private cutawayActive = false;
   private cutawayPinned = false;
+  private selectedStationUnderground = false;
   private verticalExaggeration = 1.0;
   private tunnelCutawayStyle: TunnelCutawayStyle = 'translucent_shell';
   private lastUndergroundSettings: UndergroundViewSettings | null = null;
   private enclosedUndergroundActive = false;
+  private currentTimeOfDayHour: number;
+  private currentNightFactor: number;
+  private webGpuAdapterName: string | null = null;
 
   // v2.0 Subsystem Plugin Slots (injected by Integration Coordinator as branches merge)
   private simulationEngine: TrainSimulationEngineAdapter | null = null;
@@ -168,6 +180,8 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
     this.container = container;
     this.dataset = dataset;
     this.isDark = isDark;
+    this.currentTimeOfDayHour = isDark ? 21.0 : 13.5;
+    this.currentNightFactor = isDark ? 1.0 : 0.0;
     this.callbacks = callbacks;
     this.fareSliceLineIds = new Set(
       dataset.railLines.filter((l) => l.inFareSlice).map((l) => l.id),
@@ -177,31 +191,24 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
     this.solved = solveRailwayNetwork3D(dataset, osmVertical);
     this.physicalTracks = buildPhysicalTrackGraph(dataset, this.solved);
 
-    // 2. Renderer (logarithmicDepthBuffer: true eliminates distant coplanar ground/water Z-fighting!)
-    this.renderer = new THREE.WebGLRenderer({
-      antialias: true,
-      powerPreference: 'high-performance',
-      preserveDrawingBuffer: true,
-      logarithmicDepthBuffer: true,
+    // 2. High-Realism Renderer Bundle (WebGPU capability detection + HDR Bloom + 2048px shadows)
+    this.rendererBundle = createOptimalRenderer(container, {
+      enableBloom: true,
+      maxPixelRatio: 2,
+      initialNightFactor: this.currentNightFactor,
     });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    this.renderer.setSize(container.clientWidth || 960, container.clientHeight || 640);
-    this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    this.renderer.localClippingEnabled = true;
-    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.04;
-    this.renderer.domElement.style.display = 'block';
-    this.renderer.domElement.style.width = '100%';
-    this.renderer.domElement.style.height = '100%';
-    this.renderer.domElement.setAttribute('data-testid', 'three-3d-canvas');
-    container.appendChild(this.renderer.domElement);
+    this.renderer = this.rendererBundle.renderer;
+    void probeWebGpuCapability().then((rep) => {
+      if (!this.disposed && rep.supported) {
+        this.webGpuAdapterName = rep.adapterName;
+      }
+    });
 
-    // 3. Scene, Procedural Sky Dome, PMREM Reflections & Clean Distance Fog (P3)
+    // 3. Scene, Dynamic Time-of-Day Sky Dome, PMREM Reflections & Clean Distance Fog (P3)
     this.scene = new THREE.Scene();
     this.skyEnv = new SkyEnvironmentSystem(this.renderer, this.scene, isDark);
 
-    // 4. Camera & Unified Spatial Camera Controller (P6: Map Browse + Free Explore!)
+    // 4. Camera & Unified Spatial Camera Controller (P6: Map Browse + Street/Underground/Follow)
     const aspect = (container.clientWidth || 960) / Math.max(1, container.clientHeight || 640);
     this.camera = new THREE.PerspectiveCamera(46, aspect, 4, 90_000);
     this.camCtrl = new SpatialCameraController(
@@ -210,7 +217,7 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
       this.handleControlsEnd,
     );
 
-    // 5. Lighting (Semi-Realistic Architectural Viz Sunlight + Soft Shadows + Bounce Fill)
+    // 5. Dynamic Architectural Sunlight + Crisp 2048px Soft Shadows + Bounce Fill
     this.hemiLight = new THREE.HemisphereLight(
       isDark ? 0x7da4cc : 0xdcebf9,
       isDark ? 0x16202e : 0xa6a096,
@@ -223,17 +230,7 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
       isDark ? 0.92 : 1.78,
     );
     this.sunLight.position.set(1750, 2050, 1320);
-    this.sunLight.castShadow = true;
-    this.sunLight.shadow.mapSize.set(1536, 1536);
-    this.sunLight.shadow.camera.near = 250;
-    this.sunLight.shadow.camera.far = 7200;
-    const sc = 1650;
-    this.sunLight.shadow.camera.left = -sc;
-    this.sunLight.shadow.camera.right = sc;
-    this.sunLight.shadow.camera.top = sc;
-    this.sunLight.shadow.camera.bottom = -sc;
-    this.sunLight.shadow.bias = -0.00035;
-    this.sunLight.shadow.normalBias = 1.6;
+    configureHighQualitySunShadow(this.sunLight, 1850);
     this.scene.add(this.sunLight);
     this.scene.add(this.sunLight.target);
 
@@ -317,6 +314,7 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
       if (envRes.ok) {
         const env = (await envRes.json()) as UrbanBaseEnvironment;
         this.terrainLayer.populateFromEnvironment(env);
+        this.buildingManager.setEnvironmentForInfill(env);
         if (manifestRes.ok) {
           const manifest = (await manifestRes.json()) as UrbanManifest;
           this.buildingManager.setManifest(manifest, env.landmarks);
@@ -506,9 +504,57 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
     this.callbacks.onSimulationUpdate(this.getSimulationControlState(), this.latestTrains);
   }
 
+  setTimeOfDay(hour: number): void {
+    const normalizedHour = ((hour % 24) + 24) % 24;
+    this.currentTimeOfDayHour = normalizedHour;
+    const solar = this.skyEnv.applyTimeOfDay(this.scene, normalizedHour);
+    this.currentNightFactor = solar.nightFactor;
+
+    this.hemiLight.color.copy(solar.hemiSkyColor);
+    this.hemiLight.groundColor.copy(solar.hemiGroundColor);
+    this.hemiLight.intensity = solar.hemiIntensity;
+
+    this.sunLight.color.copy(solar.sunLightColor);
+    this.sunLight.intensity = solar.sunLightIntensity;
+
+    this.subFillLight.color.copy(solar.subFillColor);
+    const cutawayBoost = this.cutawayActive || this.selectedStationUnderground ? 0.35 : 0.0;
+    this.subFillLight.intensity = solar.subFillIntensity + cutawayBoost;
+
+    this.renderer.toneMappingExposure = solar.toneMappingExposure;
+    this.rendererBundle.setNightFactor(solar.nightFactor);
+
+    if (this.isDark !== solar.isDark) {
+      this.isDark = solar.isDark;
+      this.terrainLayer.setTheme(solar.isDark);
+      this.buildingManager.setTheme(solar.isDark);
+      this.cutawayVisuals.setTheme(solar.isDark);
+      this.tunnelLayer.setTheme(solar.isDark);
+    }
+
+    this.buildingManager.setNightFactor(solar.nightFactor);
+    this.terrainLayer.setTimeOfDay(normalizedHour, solar.nightFactor);
+    this.tunnelLayer.setNightFactor(solar.nightFactor);
+
+    if (this.enclosedUndergroundActive) {
+      this.scene.background = new THREE.Color(0x0a0f18);
+      this.scene.fog = new THREE.Fog(0x0a0f18, 85, 390);
+    }
+  }
+
+  getTimeOfDay(): number {
+    return this.currentTimeOfDayHour;
+  }
+
+  getWebGpuAdapterName(): string | null {
+    return this.webGpuAdapterName;
+  }
+
   setTheme(isDark: boolean): void {
     if (this.isDark === isDark) return;
     this.isDark = isDark;
+    this.currentTimeOfDayHour = isDark ? 21.0 : 13.5;
+    this.currentNightFactor = isDark ? 1.0 : 0.0;
     this.skyEnv.applyToScene(this.scene, isDark);
     this.hemiLight.color.setHex(isDark ? 0x7da4cc : 0xdcebf9);
     this.hemiLight.groundColor.setHex(isDark ? 0x16202e : 0xa6a096);
@@ -517,10 +563,13 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
     this.sunLight.intensity = isDark ? 0.92 : 1.78;
     this.subFillLight.color.setHex(isDark ? 0x3b82f6 : 0xbdd7f0);
     this.subFillLight.intensity = isDark ? 0.48 : 0.34;
+    this.rendererBundle.setNightFactor(this.currentNightFactor);
     this.terrainLayer.setTheme(isDark);
     this.buildingManager.setTheme(isDark);
+    this.buildingManager.setNightFactor(this.currentNightFactor);
     this.cutawayVisuals.setTheme(isDark);
     this.tunnelLayer.setTheme(isDark);
+    this.tunnelLayer.setNightFactor(this.currentNightFactor);
     if (this.enclosedUndergroundActive) {
       this.scene.background = new THREE.Color(0x0a0f18);
       this.scene.fog = new THREE.Fog(0x0a0f18, 85, 390);
@@ -560,16 +609,41 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
       this.cutawayUniforms.uCutawayCenter.value.set(focus.x, 0, focus.z);
     }
 
+    // Selected Station Focus Semi-Transparency (keeps surrounding buildings frosted/translucent
+    // even when underground cutaway is OFF, and opens a gentle X-ray window for underground stations!)
+    let stIsUnderground = false;
+    if (selectedStationId) {
+      const stNode = this.solved.stationNodes.find((n) => n.stationId === selectedStationId);
+      if (stNode) {
+        stIsUnderground =
+          stNode.structure === 'tunnel_box' ||
+          stNode.structure === 'tunnel_shield' ||
+          stNode.y < -2.4;
+        this.cutawayUniforms.uStationFocusActive.value = 1.0;
+        this.cutawayUniforms.uStationFocusCenter.value.set(stNode.x, stNode.y, stNode.z);
+        this.cutawayUniforms.uStationFocusRadius.value = stNode.isMajorHub ? 260.0 : 210.0;
+        this.cutawayUniforms.uStationFocusUnderground.value = stIsUnderground ? 1.0 : 0.0;
+      } else {
+        this.cutawayUniforms.uStationFocusActive.value = 0.0;
+        this.cutawayUniforms.uStationFocusUnderground.value = 0.0;
+      }
+    } else {
+      this.cutawayUniforms.uStationFocusActive.value = 0.0;
+      this.cutawayUniforms.uStationFocusUnderground.value = 0.0;
+    }
+    this.selectedStationUnderground = stIsUnderground;
+
     // Visual-only vertical exaggeration on 3D railway layers (NEVER mutates legal operatingKm!)
     this.railLayer.group.scale.y = this.verticalExaggeration;
     this.viaductLayer.group.scale.y = this.verticalExaggeration;
     this.tunnelLayer.group.scale.y = this.verticalExaggeration;
 
-    // Boost subterranean illumination gently inside cutaway pit so concrete tunnels pop crisply!
-    this.subFillLight.intensity = underground.enabled
+    // Boost subterranean illumination gently inside cutaway or selected underground station!
+    const effectiveUndergroundReveal = underground.enabled || stIsUnderground;
+    this.subFillLight.intensity = effectiveUndergroundReveal
       ? this.isDark
-        ? 0.85
-        : 0.72
+        ? 0.88
+        : 0.78
       : this.isDark
         ? 0.48
         : 0.34;
@@ -603,7 +677,7 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
       selectedLineId,
       fareSliceOnly,
       fareSliceLineIds: this.fareSliceLineIds,
-      undergroundActive: underground.enabled,
+      undergroundActive: effectiveUndergroundReveal,
       clipEnabled: underground.clipEnabled,
     });
 
@@ -622,7 +696,7 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
       selectedStationId,
       fareSliceOnly,
       fareSliceLineIds: this.fareSliceLineIds,
-      undergroundActive: underground.enabled,
+      undergroundActive: effectiveUndergroundReveal,
       clipEnabled: underground.clipEnabled,
     });
     this.tunnelLayer.setCutawayState(this.buildUndergroundCutawayState(underground));
@@ -662,6 +736,9 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
 
   flyToHubPreset(preset: CameraHubPreset): void {
     const { x, z } = lonLatToWorld(preset.lon, preset.lat);
+    if (!this.cutawayPinned) {
+      this.cutawayUniforms.uCutawayCenter.value.set(x, 0, z);
+    }
     this.animateCameraTo(
       new THREE.Vector3(x, preset.targetY, z),
       preset.distance,
@@ -684,6 +761,9 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
   flyToStation(stationId: SkId<'station'>): void {
     const node = this.solved.stationNodes.find((n) => n.stationId === stationId);
     if (!node) return;
+    if (!this.cutawayPinned) {
+      this.cutawayUniforms.uCutawayCenter.value.set(node.x, 0, node.z);
+    }
     this.animateCameraTo(new THREE.Vector3(node.x, node.y, node.z), 560, 58, -28, 650);
   }
 
@@ -968,8 +1048,13 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
       const lid = lineHits[0]!.object.userData?.lineId as SkId<'line'> | undefined;
       if (lid) {
         this.callbacks.onSelectLine(lid);
+        return;
       }
     }
+
+    // Clicking empty map/city space clears active station/line/train selections cleanly
+    this.selectTrain(null);
+    this.callbacks.onClearSelection?.();
   };
 
   private handleControlsEnd = (): void => {
@@ -985,7 +1070,7 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
     if (w <= 0 || h <= 0) return;
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
-    this.renderer.setSize(w, h);
+    this.rendererBundle.setSize(w, h);
   }
 
   private emitTelemetry(): void {
@@ -995,13 +1080,14 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
     const simCtrl = this.getSimulationControlState();
     const rsStats = this.rollingStockRenderer?.getStats();
     const camSnap = this.getCameraStateSnapshot();
+    const renderStats = this.rendererBundle.getSceneRenderStats();
     const telemetry: SceneTelemetry = {
       ...bStats,
       deconflictedCrossings: adjustedCount,
       tunnelPortals: portalCount,
       fps: this.smoothedFps,
-      drawCalls: this.renderer.info.render.calls,
-      triangles: this.renderer.info.render.triangles,
+      drawCalls: renderStats.calls,
+      triangles: renderStats.triangles,
       loadTimeMs: this.urbanLoadedMs,
       railwayLod: this.currentRailwayLod,
       activeTrains: simCtrl.totalActiveTrains,
@@ -1101,7 +1187,8 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
 
     // 4. Sync 1:1 unscaled rolling stock meshes (cull buried deep-tunnel trains while surface ground is opaque!)
     if (this.rollingStockRenderer && this.latestTrains.length > 0) {
-      const groundOpaqueAbove = !this.cutawayActive && this.camera.position.y >= -1.5;
+      const groundOpaqueAbove =
+        !this.cutawayActive && !this.selectedStationUnderground && this.camera.position.y >= -1.5;
       const trainsForRender = groundOpaqueAbove
         ? this.latestTrains.filter(
             (tr) => !(tr.isUnderground && tr.inTunnel) || tr.trainId === this.followTrainId,
@@ -1143,19 +1230,21 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
     this.tunnelLayer.updateLod(camDist, this.camera.position);
 
     this.skyEnv.updateForCamera(this.camera.position);
+    this.terrainLayer.updateAnimation(now * 0.001);
 
     // Smoothly track cutaway pit center onto camera focus target unless pinned (P5)
     if (this.cutawayActive) {
       if (!this.cutawayPinned) {
+        const cutAlpha = 1 - Math.exp(-10.0 * Math.max(0.016, dtSec));
         this.cutawayUniforms.uCutawayCenter.value.x = THREE.MathUtils.lerp(
           this.cutawayUniforms.uCutawayCenter.value.x,
           focusTarget.x,
-          0.18,
+          cutAlpha,
         );
         this.cutawayUniforms.uCutawayCenter.value.z = THREE.MathUtils.lerp(
           this.cutawayUniforms.uCutawayCenter.value.z,
           focusTarget.z,
-          0.18,
+          cutAlpha,
         );
       }
       this.cutawayVisuals.update(
@@ -1182,7 +1271,7 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
       this.emitTelemetry();
     }
 
-    this.renderer.render(this.scene, this.camera);
+    this.rendererBundle.render(this.scene, this.camera);
   };
 
   dispose(): void {
@@ -1204,7 +1293,7 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
     this.rollingStockRenderer?.dispose();
     this.traceProbe.geometry.dispose();
     (this.traceProbe.material as THREE.Material).dispose();
-    this.renderer.dispose();
+    this.rendererBundle.dispose();
     if (this.renderer.domElement.parentElement === this.container) {
       this.container.removeChild(this.renderer.domElement);
     }

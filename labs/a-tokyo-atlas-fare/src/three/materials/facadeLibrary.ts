@@ -8,6 +8,7 @@
  */
 
 import * as THREE from 'three';
+import { injectInstancedFacadeUv } from './cutawayShader.js';
 
 export type FacadeMaterialKey =
   | 'officeGlassCool'
@@ -24,7 +25,8 @@ export type FacadeMaterialKey =
   | 'roofParapet'
   | 'roofPitched'
   | 'roofEquipment'
-  | 'foundationPlinth';
+  | 'foundationPlinth'
+  | 'instancedFacade';
 
 export type BuildingFacadeVariant =
   | 'officeGlassCool'
@@ -237,20 +239,38 @@ function generateOfficeGlassSet(isDark: boolean, warm: boolean): FacadePbrSet {
         a.fillRect(gx, gy, gw, blindH);
       }
 
-      // Subtle diagonal sky reflection gradient
-      a.fillStyle = isDark ? 'rgba(180,210,240,0.05)' : 'rgba(255,255,255,0.12)';
+      // Richer architectural sky-reflection sheen & interior depth gradient
+      const skyGrad = a.createLinearGradient(gx, gy, gx + gw * 0.4, gy + gh);
+      if (isDark) {
+        skyGrad.addColorStop(0, 'rgba(175,215,250,0.11)');
+        skyGrad.addColorStop(0.55, 'rgba(120,165,210,0.03)');
+        skyGrad.addColorStop(1, 'rgba(10,16,24,0.18)');
+      } else {
+        skyGrad.addColorStop(0, warm ? 'rgba(255,248,236,0.24)' : 'rgba(226,242,255,0.28)');
+        skyGrad.addColorStop(0.5, 'rgba(255,255,255,0.08)');
+        skyGrad.addColorStop(1, 'rgba(22,32,44,0.14)');
+      }
+      a.fillStyle = skyGrad;
+      a.fillRect(gx, gy, gw, gh);
+
+      // Crisp diagonal sky reflection highlight
+      a.fillStyle = isDark ? 'rgba(185,220,255,0.08)' : 'rgba(255,255,255,0.17)';
       a.beginPath();
       a.moveTo(gx, gy);
-      a.lineTo(gx + gw * 0.62, gy);
-      a.lineTo(gx + gw * 0.18, gy + gh);
+      a.lineTo(gx + gw * 0.65, gy);
+      a.lineTo(gx + gw * 0.2, gy + gh);
       a.lineTo(gx, gy + gh);
       a.closePath();
       a.fill();
 
-      // Glossy glass roughness (~0.16) & recessed bump
-      r.fillStyle = '#282828';
+      // Subtle mullion shadow reveal under spandrel
+      a.fillStyle = 'rgba(8,14,22,0.24)';
+      a.fillRect(gx, gy, gw, 3);
+
+      // Glossy glass roughness (~0.12) & deeply recessed bump
+      r.fillStyle = '#1f1f1f';
       r.fillRect(gx, gy, gw, gh);
-      b.fillStyle = '#404040';
+      b.fillStyle = '#323232';
       b.fillRect(gx, gy, gw, gh);
 
       // Clustered realistic office lighting at night
@@ -1105,6 +1125,122 @@ function generateFoundationPlinthSet(isDark: boolean): FacadePbrSet {
 }
 
 /**
+ * Dedicated high-contrast architectural LOD1 instanced facade texture (repeat = 1, 1).
+ * Paired with `injectInstancedFacadeUv`, which computes true world-meter wall UVs from
+ * `instanceMatrix` scale so distant buildings remain richly detailed instead of flat white boxes.
+ */
+function generateInstancedFacadeSet(isDark: boolean): FacadePbrSet {
+  const w = 512;
+  const h = 512;
+  const [cAlb, a] = makeCanvas(w, h);
+  const [cRgh, r] = makeCanvas(w, h);
+  const [cBmp, b] = makeCanvas(w, h);
+  const [cEmi, e] = makeCanvas(w, h);
+
+  // Crisp precast architectural masonry / aluminum mullion grid base
+  a.fillStyle = isDark ? '#323a46' : '#c6c2b9';
+  a.fillRect(0, 0, w, h);
+  r.fillStyle = '#c8c8c8';
+  r.fillRect(0, 0, w, h);
+  b.fillStyle = '#d6d6d6';
+  b.fillRect(0, 0, w, h);
+  e.fillStyle = '#000000';
+  e.fillRect(0, 0, w, h);
+
+  const floors = 7;
+  const bays = 8;
+  const floorH = h / floors;
+  const bayW = w / bays;
+
+  for (let fy = 0; fy < floors; fy++) {
+    const y0 = Math.round(fy * floorH);
+    const y1 = Math.round((fy + 1) * floorH);
+    const fh = y1 - y0;
+    const spandrelH = Math.round(fh * 0.28);
+
+    // Distinct architectural floor slab band & shadow reveal
+    a.fillStyle = isDark ? '#242b36' : '#a8a49b';
+    a.fillRect(0, y0, w, spandrelH);
+    a.fillStyle = 'rgba(12,16,22,0.28)';
+    a.fillRect(0, y0 + spandrelH - 3, w, 3);
+    b.fillStyle = '#e8e8e8';
+    b.fillRect(0, y0, w, spandrelH);
+
+    const floorLit = hash2(2, fy, 613) > 0.34;
+
+    for (let bx = 0; bx < bays; bx++) {
+      const x0 = Math.round(bx * bayW);
+      const bw = Math.round((bx + 1) * bayW) - x0;
+      const rnd = hash2(bx, fy, 641);
+      const blindRnd = hash2(bx + 19, fy + 11, 709);
+
+      // Vertical architectural pilaster highlight
+      a.fillStyle = isDark ? '#3c4553' : '#d2cec6';
+      a.fillRect(x0, y0 + spandrelH, 4, fh - spandrelH);
+      b.fillStyle = '#f0f0f0';
+      b.fillRect(x0, y0 + spandrelH, 4, fh - spandrelH);
+
+      const gx = x0 + 6;
+      const gy = y0 + spandrelH + 3;
+      const gw = bw - 10;
+      const gh = fh - spandrelH - 6;
+
+      // High-contrast recessed dark architectural glazing (clearly reads from 5km+!)
+      a.fillStyle = isDark
+        ? rnd > 0.55
+          ? '#1a2838'
+          : '#14202d'
+        : rnd > 0.65
+          ? '#425568'
+          : rnd > 0.3
+            ? '#374859'
+            : '#2e3e4d';
+      a.fillRect(gx, gy, gw, gh);
+
+      // Interior blinds & diagonal sky reflection sheen
+      if (blindRnd > 0.58) {
+        a.fillStyle = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(218,224,230,0.22)';
+        a.fillRect(gx, gy, gw, Math.round(gh * 0.38));
+      }
+      a.fillStyle = isDark ? 'rgba(170,210,250,0.08)' : 'rgba(235,246,255,0.18)';
+      a.beginPath();
+      a.moveTo(gx, gy);
+      a.lineTo(gx + gw * 0.64, gy);
+      a.lineTo(gx + gw * 0.16, gy + gh);
+      a.lineTo(gx, gy + gh);
+      a.closePath();
+      a.fill();
+
+      // Deep lintel reveal shadow + center mullion bar
+      a.fillStyle = 'rgba(8,12,18,0.34)';
+      a.fillRect(gx, gy, gw, 4);
+      a.fillStyle = isDark ? '#3a4350' : '#8b9199';
+      a.fillRect(gx + Math.floor(gw * 0.5) - 1, gy, 2, gh);
+
+      // Glossy glass roughness & crisp recessed bump
+      r.fillStyle = '#242424';
+      r.fillRect(gx, gy, gw, gh);
+      b.fillStyle = '#363636';
+      b.fillRect(gx, gy, gw, gh);
+
+      // Crisp clustered Tokyo night window lights (warm amber & cool office whites)
+      if (floorLit && rnd > 0.32) {
+        e.fillStyle =
+          rnd > 0.76 ? '#ffd28a' : rnd > 0.5 ? '#ffe7bc' : '#d6ebff';
+        e.fillRect(gx + 2, gy + 3, gw - 4, gh - 5);
+      }
+    }
+  }
+
+  return {
+    map: finalizeTexture(cAlb, 1, 1, true),
+    roughnessMap: finalizeTexture(cRgh, 1, 1, false),
+    bumpMap: finalizeTexture(cBmp, 1, 1, false),
+    emissiveMap: finalizeTexture(cEmi, 1, 1, true),
+  };
+}
+
+/**
  * Legacy helper retained for backward compatibility; prefer surfaceTextures.createUrbanParcelTextureSet.
  */
 export function createUrbanGroundTexture(isDark: boolean): THREE.CanvasTexture {
@@ -1194,9 +1330,11 @@ export class FacadeMaterialLibrary {
     landmarkGlass: THREE.MeshStandardMaterial;
   };
   private isDark: boolean;
+  private nightFactor: number;
 
   constructor(isDark: boolean, clipPlanes: THREE.Plane[]) {
     this.isDark = isDark;
+    this.nightFactor = isDark ? 1.0 : 0.0;
     this.sets = this.buildAllSets(isDark);
 
     const baseOpaque = (opts: THREE.MeshStandardMaterialParameters) =>
@@ -1213,140 +1351,140 @@ export class FacadeMaterialLibrary {
         map: this.sets.officeGlassCool.map,
         roughnessMap: this.sets.officeGlassCool.roughnessMap,
         bumpMap: this.sets.officeGlassCool.bumpMap,
-        bumpScale: 0.42,
+        bumpScale: 0.52,
         emissiveMap: this.sets.officeGlassCool.emissiveMap,
         emissive: new THREE.Color(isDark ? 0xffe4b8 : 0x000000),
-        emissiveIntensity: isDark ? 0.62 : 0.0,
-        roughness: 0.68,
-        metalness: 0.36,
-        envMapIntensity: isDark ? 0.85 : 1.2,
+        emissiveIntensity: isDark ? 0.92 : 0.0,
+        roughness: 0.54,
+        metalness: 0.46,
+        envMapIntensity: isDark ? 1.1 : 1.55,
         vertexColors: true,
       }),
       officeGlassWarm: baseOpaque({
         map: this.sets.officeGlassWarm.map,
         roughnessMap: this.sets.officeGlassWarm.roughnessMap,
         bumpMap: this.sets.officeGlassWarm.bumpMap,
-        bumpScale: 0.42,
+        bumpScale: 0.52,
         emissiveMap: this.sets.officeGlassWarm.emissiveMap,
         emissive: new THREE.Color(isDark ? 0xffe0ad : 0x000000),
-        emissiveIntensity: isDark ? 0.6 : 0.0,
-        roughness: 0.66,
-        metalness: 0.38,
-        envMapIntensity: isDark ? 0.85 : 1.15,
+        emissiveIntensity: isDark ? 0.88 : 0.0,
+        roughness: 0.52,
+        metalness: 0.48,
+        envMapIntensity: isDark ? 1.05 : 1.48,
         vertexColors: true,
       }),
       commercialStone: baseOpaque({
         map: this.sets.commercialStone.map,
         roughnessMap: this.sets.commercialStone.roughnessMap,
         bumpMap: this.sets.commercialStone.bumpMap,
-        bumpScale: 0.58,
+        bumpScale: 0.62,
         emissiveMap: this.sets.commercialStone.emissiveMap,
         emissive: new THREE.Color(isDark ? 0xffd79e : 0x000000),
-        emissiveIntensity: isDark ? 0.44 : 0.0,
-        roughness: 0.85,
+        emissiveIntensity: isDark ? 0.68 : 0.0,
+        roughness: 0.84,
         metalness: 0.08,
-        envMapIntensity: 0.6,
+        envMapIntensity: 0.65,
         vertexColors: true,
       }),
       commercialMetal: baseOpaque({
         map: this.sets.commercialMetal.map,
         roughnessMap: this.sets.commercialMetal.roughnessMap,
         bumpMap: this.sets.commercialMetal.bumpMap,
-        bumpScale: 0.48,
+        bumpScale: 0.56,
         emissiveMap: this.sets.commercialMetal.emissiveMap,
         emissive: new THREE.Color(isDark ? 0xffdfb0 : 0x000000),
-        emissiveIntensity: isDark ? 0.5 : 0.0,
-        roughness: 0.6,
-        metalness: 0.48,
-        envMapIntensity: 1.05,
+        emissiveIntensity: isDark ? 0.76 : 0.0,
+        roughness: 0.56,
+        metalness: 0.52,
+        envMapIntensity: 1.2,
         vertexColors: true,
       }),
       commercialTile: baseOpaque({
         map: this.sets.commercialTile.map,
         roughnessMap: this.sets.commercialTile.roughnessMap,
         bumpMap: this.sets.commercialTile.bumpMap,
-        bumpScale: 0.52,
+        bumpScale: 0.56,
         emissiveMap: this.sets.commercialTile.emissiveMap,
         emissive: new THREE.Color(isDark ? 0xffd79c : 0x000000),
-        emissiveIntensity: isDark ? 0.45 : 0.0,
-        roughness: 0.78,
+        emissiveIntensity: isDark ? 0.68 : 0.0,
+        roughness: 0.76,
         metalness: 0.06,
-        envMapIntensity: 0.55,
+        envMapIntensity: 0.6,
         vertexColors: true,
       }),
       concreteModern: baseOpaque({
         map: this.sets.concreteModern.map,
         roughnessMap: this.sets.concreteModern.roughnessMap,
         bumpMap: this.sets.concreteModern.bumpMap,
-        bumpScale: 0.55,
+        bumpScale: 0.58,
         emissiveMap: this.sets.concreteModern.emissiveMap,
         emissive: new THREE.Color(isDark ? 0xffd9a0 : 0x000000),
-        emissiveIntensity: isDark ? 0.4 : 0.0,
+        emissiveIntensity: isDark ? 0.62 : 0.0,
         roughness: 0.88,
         metalness: 0.05,
-        envMapIntensity: 0.45,
+        envMapIntensity: 0.5,
         vertexColors: true,
       }),
       residentialBalcony: baseOpaque({
         map: this.sets.residentialBalcony.map,
         roughnessMap: this.sets.residentialBalcony.roughnessMap,
         bumpMap: this.sets.residentialBalcony.bumpMap,
-        bumpScale: 0.68,
+        bumpScale: 0.7,
         emissiveMap: this.sets.residentialBalcony.emissiveMap,
         emissive: new THREE.Color(isDark ? 0xffcf88 : 0x000000),
-        emissiveIntensity: isDark ? 0.36 : 0.0,
-        roughness: 0.9,
+        emissiveIntensity: isDark ? 0.58 : 0.0,
+        roughness: 0.88,
         metalness: 0.04,
-        envMapIntensity: 0.4,
+        envMapIntensity: 0.45,
         vertexColors: true,
       }),
       residentialPlaster: baseOpaque({
         map: this.sets.residentialPlaster.map,
         roughnessMap: this.sets.residentialPlaster.roughnessMap,
         bumpMap: this.sets.residentialPlaster.bumpMap,
-        bumpScale: 0.5,
+        bumpScale: 0.54,
         emissiveMap: this.sets.residentialPlaster.emissiveMap,
         emissive: new THREE.Color(isDark ? 0xffcf88 : 0x000000),
-        emissiveIntensity: isDark ? 0.35 : 0.0,
-        roughness: 0.92,
+        emissiveIntensity: isDark ? 0.56 : 0.0,
+        roughness: 0.9,
         metalness: 0.02,
-        envMapIntensity: 0.35,
+        envMapIntensity: 0.38,
         vertexColors: true,
       }),
       groundStorefront: baseOpaque({
         map: this.sets.groundStorefront.map,
         roughnessMap: this.sets.groundStorefront.roughnessMap,
         bumpMap: this.sets.groundStorefront.bumpMap,
-        bumpScale: 0.52,
+        bumpScale: 0.54,
         emissiveMap: this.sets.groundStorefront.emissiveMap,
         emissive: new THREE.Color(isDark ? 0xffd79b : 0xfff0d6),
-        emissiveIntensity: isDark ? 0.72 : 0.06,
-        roughness: 0.62,
-        metalness: 0.24,
-        envMapIntensity: 0.95,
+        emissiveIntensity: isDark ? 1.05 : 0.06,
+        roughness: 0.58,
+        metalness: 0.28,
+        envMapIntensity: 1.05,
         vertexColors: true,
       }),
       stationCivic: baseOpaque({
         map: this.sets.stationCivic.map,
         roughnessMap: this.sets.stationCivic.roughnessMap,
         bumpMap: this.sets.stationCivic.bumpMap,
-        bumpScale: 0.45,
+        bumpScale: 0.48,
         emissiveMap: this.sets.stationCivic.emissiveMap,
         emissive: new THREE.Color(isDark ? 0xdbeafe : 0x000000),
-        emissiveIntensity: isDark ? 0.45 : 0.0,
-        roughness: 0.72,
-        metalness: 0.18,
-        envMapIntensity: 0.85,
+        emissiveIntensity: isDark ? 0.72 : 0.0,
+        roughness: 0.68,
+        metalness: 0.22,
+        envMapIntensity: 0.95,
         vertexColors: true,
       }),
       brick: baseOpaque({
         map: this.sets.heritageBrick.map,
         roughnessMap: this.sets.heritageBrick.roughnessMap,
         bumpMap: this.sets.heritageBrick.bumpMap,
-        bumpScale: 0.6,
+        bumpScale: 0.64,
         emissiveMap: this.sets.heritageBrick.emissiveMap,
         emissive: new THREE.Color(isDark ? 0xffce85 : 0x000000),
-        emissiveIntensity: isDark ? 0.5 : 0.0,
+        emissiveIntensity: isDark ? 0.74 : 0.0,
         roughness: 0.82,
         metalness: 0.06,
       }),
@@ -1387,44 +1525,49 @@ export class FacadeMaterialLibrary {
         vertexColors: true,
       }),
       instanced: baseOpaque({
-        map: this.sets.commercialStone.map,
-        roughnessMap: this.sets.commercialStone.roughnessMap,
-        emissiveMap: this.sets.commercialStone.emissiveMap,
-        emissive: new THREE.Color(isDark ? 0xffd599 : 0x000000),
-        emissiveIntensity: isDark ? 0.28 : 0.0,
+        map: this.sets.instancedFacade.map,
+        roughnessMap: this.sets.instancedFacade.roughnessMap,
+        bumpMap: this.sets.instancedFacade.bumpMap,
+        bumpScale: 0.46,
+        emissiveMap: this.sets.instancedFacade.emissiveMap,
+        emissive: new THREE.Color(isDark ? 0xffdb9e : 0x000000),
+        emissiveIntensity: isDark ? 0.72 : 0.0,
         color: 0xffffff,
-        roughness: 0.82,
-        metalness: 0.1,
-        envMapIntensity: 0.55,
+        roughness: 0.72,
+        metalness: 0.22,
+        envMapIntensity: isDark ? 0.85 : 0.95,
       }),
       landmarkGlass: baseOpaque({
         map: this.sets.officeGlassCool.map,
         roughnessMap: this.sets.officeGlassCool.roughnessMap,
         bumpMap: this.sets.officeGlassCool.bumpMap,
-        bumpScale: 0.4,
+        bumpScale: 0.48,
         emissiveMap: this.sets.officeGlassCool.emissiveMap,
         emissive: new THREE.Color(isDark ? 0xffe4b8 : 0x000000),
-        emissiveIntensity: isDark ? 0.62 : 0.0,
+        emissiveIntensity: isDark ? 0.96 : 0.0,
         color: isDark ? 0x9bb5cf : 0xc8d8e6,
-        roughness: 0.58,
-        metalness: 0.42,
-        envMapIntensity: 1.25,
+        roughness: 0.46,
+        metalness: 0.52,
+        envMapIntensity: isDark ? 1.15 : 1.65,
       }),
       towerOrange: baseOpaque({
         color: 0xd94820,
-        roughness: 0.48,
-        metalness: 0.24,
-        emissive: new THREE.Color(isDark ? 0xea580c : 0x000000),
-        emissiveIntensity: isDark ? 0.35 : 0.0,
+        roughness: 0.46,
+        metalness: 0.26,
+        emissive: new THREE.Color(isDark ? 0xf97316 : 0x000000),
+        emissiveIntensity: isDark ? 0.62 : 0.0,
       }),
       towerWhite: baseOpaque({
         color: isDark ? 0xdbe5f0 : 0xf2f4f7,
-        roughness: 0.44,
-        metalness: 0.22,
+        roughness: 0.42,
+        metalness: 0.24,
         emissive: new THREE.Color(isDark ? 0x93c5fd : 0x000000),
-        emissiveIntensity: isDark ? 0.18 : 0.0,
+        emissiveIntensity: isDark ? 0.32 : 0.0,
       }),
     };
+
+    // Apply per-instance world-meter UV scaling + concrete roof shading to LOD1 instanced buildings
+    injectInstancedFacadeUv(this.materials.instanced);
   }
 
   private buildAllSets(isDark: boolean): Record<FacadeMaterialKey, FacadePbrSet> {
@@ -1444,6 +1587,7 @@ export class FacadeMaterialLibrary {
       roofPitched: generateRoofPitchedSet(isDark),
       roofEquipment: generateRoofEquipmentSet(isDark),
       foundationPlinth: generateFoundationPlinthSet(isDark),
+      instancedFacade: generateInstancedFacadeSet(isDark),
     };
   }
 
@@ -1456,76 +1600,106 @@ export class FacadeMaterialLibrary {
     }
   }
 
+  /**
+   * Smoothly controls time-of-day interior window illumination & reflection sheen:
+   *  - 0.0: bright noon (crisp daylight glass reflections, minimal emissive)
+   *  - 0.5: golden hour / twilight warm amber interior glow
+   *  - 1.0: full vibrant Tokyo night skyline (warm amber + cool office lights)
+   */
+  setNightFactor(rawNightFactor: number): void {
+    const nf = Math.max(0, Math.min(1, rawNightFactor));
+    this.nightFactor = nf;
+
+    // Smooth activation ramp so daylight stays clean while twilight/night lights bloom gracefully
+    const t = Math.max(0, Math.min(1, (nf - 0.16) / 0.84));
+    const glow = t * t * (3 - 2 * t);
+    // Warm amber accent strongest during golden hour / blue hour twilight (nf ~ 0.45..0.65)
+    const twilightWarm = Math.sin(nf * Math.PI);
+
+    const setEmissive = (
+      mat: THREE.MeshStandardMaterial,
+      nightHex: number,
+      maxIntensity: number,
+      dayFloor = 0,
+      dayHex = 0x000000,
+    ) => {
+      const intensity = dayFloor + (maxIntensity - dayFloor) * glow;
+      mat.emissiveIntensity = intensity;
+      if (intensity <= 0.002) {
+        mat.emissive.setHex(0x000000);
+      } else if (glow <= 0.002) {
+        mat.emissive.setHex(dayHex);
+      } else {
+        mat.emissive.setHex(nightHex).lerp(new THREE.Color(0xffb86c), twilightWarm * 0.22);
+      }
+    };
+
+    const m = this.materials;
+    setEmissive(m.officeGlassCool, 0xffe4b8, 0.92);
+    setEmissive(m.officeGlassWarm, 0xffe0ad, 0.88);
+    setEmissive(m.commercialStone, 0xffd79e, 0.68);
+    setEmissive(m.commercialMetal, 0xffdfb0, 0.76);
+    setEmissive(m.commercialTile, 0xffd79c, 0.68);
+    setEmissive(m.concreteModern, 0xffd9a0, 0.62);
+    setEmissive(m.residentialBalcony, 0xffcf88, 0.58);
+    setEmissive(m.residentialPlaster, 0xffcf88, 0.56);
+    setEmissive(m.groundStorefront, 0xffd79b, 1.05, 0.06, 0xfff0d6);
+    setEmissive(m.stationCivic, 0xdbeafe, 0.72);
+    setEmissive(m.brick, 0xffce85, 0.74);
+    setEmissive(m.instanced, 0xffdb9e, 0.72);
+    setEmissive(m.landmarkGlass, 0xffe4b8, 0.96);
+    setEmissive(m.towerOrange, 0xf97316, 0.62);
+    setEmissive(m.towerWhite, 0x93c5fd, 0.32);
+
+    // Rich daytime sky sheen -> atmospheric twilight/night reflection balance
+    m.officeGlassCool.envMapIntensity = 1.55 - nf * 0.45;
+    m.officeGlassWarm.envMapIntensity = 1.48 - nf * 0.43;
+    m.landmarkGlass.envMapIntensity = 1.65 - nf * 0.5;
+    m.instanced.envMapIntensity = 0.95 - nf * 0.1;
+  }
+
+  getNightFactor(): number {
+    return this.nightFactor;
+  }
+
   setTheme(isDark: boolean): void {
     if (this.isDark === isDark) return;
     this.isDark = isDark;
     const oldSets = this.sets;
     this.sets = this.buildAllSets(isDark);
 
-    const bind = (
-      mat: THREE.MeshStandardMaterial,
-      set: FacadePbrSet,
-      emissiveHexDay: number,
-      emissiveIntDay: number,
-      emissiveHexNight: number,
-      emissiveIntNight: number,
-    ) => {
+    const bind = (mat: THREE.MeshStandardMaterial, set: FacadePbrSet) => {
       mat.map = set.map;
       mat.roughnessMap = set.roughnessMap;
       mat.bumpMap = set.bumpMap;
       if (set.emissiveMap) {
         mat.emissiveMap = set.emissiveMap;
-        mat.emissive.setHex(isDark ? emissiveHexNight : emissiveHexDay);
-        mat.emissiveIntensity = isDark ? emissiveIntNight : emissiveIntDay;
       }
       mat.needsUpdate = true;
     };
 
-    bind(this.materials.officeGlassCool, this.sets.officeGlassCool, 0x000000, 0.0, 0xffe4b8, 0.62);
-    bind(this.materials.officeGlassWarm, this.sets.officeGlassWarm, 0x000000, 0.0, 0xffe0ad, 0.6);
-    bind(this.materials.commercialStone, this.sets.commercialStone, 0x000000, 0.0, 0xffd79e, 0.44);
-    bind(this.materials.commercialMetal, this.sets.commercialMetal, 0x000000, 0.0, 0xffdfb0, 0.5);
-    bind(this.materials.commercialTile, this.sets.commercialTile, 0x000000, 0.0, 0xffd79c, 0.45);
-    bind(this.materials.concreteModern, this.sets.concreteModern, 0x000000, 0.0, 0xffd9a0, 0.4);
-    bind(
-      this.materials.residentialBalcony,
-      this.sets.residentialBalcony,
-      0x000000,
-      0.0,
-      0xffcf88,
-      0.36,
-    );
-    bind(
-      this.materials.residentialPlaster,
-      this.sets.residentialPlaster,
-      0x000000,
-      0.0,
-      0xffcf88,
-      0.35,
-    );
-    bind(this.materials.groundStorefront, this.sets.groundStorefront, 0xfff0d6, 0.06, 0xffd79b, 0.72);
-    bind(this.materials.stationCivic, this.sets.stationCivic, 0x000000, 0.0, 0xdbeafe, 0.45);
-    bind(this.materials.brick, this.sets.heritageBrick, 0x000000, 0.0, 0xffce85, 0.5);
-    bind(this.materials.roof, this.sets.roofParapet, 0x000000, 0.0, 0x000000, 0.0);
-    bind(this.materials.roofPitched, this.sets.roofPitched, 0x000000, 0.0, 0x000000, 0.0);
-    bind(this.materials.roofEquipment, this.sets.roofEquipment, 0x000000, 0.0, 0x000000, 0.0);
-    bind(this.materials.foundationPlinth, this.sets.foundationPlinth, 0x000000, 0.0, 0x000000, 0.0);
-    bind(this.materials.landmarkGlass, this.sets.officeGlassCool, 0x000000, 0.0, 0xffe4b8, 0.62);
+    bind(this.materials.officeGlassCool, this.sets.officeGlassCool);
+    bind(this.materials.officeGlassWarm, this.sets.officeGlassWarm);
+    bind(this.materials.commercialStone, this.sets.commercialStone);
+    bind(this.materials.commercialMetal, this.sets.commercialMetal);
+    bind(this.materials.commercialTile, this.sets.commercialTile);
+    bind(this.materials.concreteModern, this.sets.concreteModern);
+    bind(this.materials.residentialBalcony, this.sets.residentialBalcony);
+    bind(this.materials.residentialPlaster, this.sets.residentialPlaster);
+    bind(this.materials.groundStorefront, this.sets.groundStorefront);
+    bind(this.materials.stationCivic, this.sets.stationCivic);
+    bind(this.materials.brick, this.sets.heritageBrick);
+    bind(this.materials.roof, this.sets.roofParapet);
+    bind(this.materials.roofPitched, this.sets.roofPitched);
+    bind(this.materials.roofEquipment, this.sets.roofEquipment);
+    bind(this.materials.foundationPlinth, this.sets.foundationPlinth);
+    bind(this.materials.landmarkGlass, this.sets.officeGlassCool);
     this.materials.landmarkGlass.color.setHex(isDark ? 0x9bb5cf : 0xc8d8e6);
 
-    this.materials.instanced.map = this.sets.commercialStone.map;
-    this.materials.instanced.roughnessMap = this.sets.commercialStone.roughnessMap;
-    this.materials.instanced.emissiveMap = this.sets.commercialStone.emissiveMap;
-    this.materials.instanced.emissive.setHex(isDark ? 0xffd599 : 0x000000);
-    this.materials.instanced.emissiveIntensity = isDark ? 0.28 : 0.0;
-    this.materials.instanced.needsUpdate = true;
-
-    this.materials.towerOrange.emissive.setHex(isDark ? 0xea580c : 0x000000);
-    this.materials.towerOrange.emissiveIntensity = isDark ? 0.35 : 0.0;
+    bind(this.materials.instanced, this.sets.instancedFacade);
     this.materials.towerWhite.color.setHex(isDark ? 0xdbe5f0 : 0xf2f4f7);
-    this.materials.towerWhite.emissive.setHex(isDark ? 0x93c5fd : 0x000000);
-    this.materials.towerWhite.emissiveIntensity = isDark ? 0.18 : 0.0;
 
+    this.setNightFactor(isDark ? 1.0 : 0.0);
     this.disposeSets(oldSets);
   }
 

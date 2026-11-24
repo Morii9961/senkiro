@@ -374,41 +374,23 @@ test.describe('SENKIRO Lab · Tokyo Atlas & Fare Interactive E2E', () => {
     );
     expect(panMoved).toBeGreaterThan(20);
 
-    // 2. Switch seamlessly to Free Explore Mode & test WASD + E flight!
-    await page.getByTestId('toggle-camera-mode').click();
-    await expect(page.getByTestId('toggle-camera-mode')).toContainText('ON');
-    await expect(page.getByTestId('free-speed-select')).toBeVisible();
-    await page.getByTestId('free-speed-select').selectOption('fast');
+    // 2. Verify Free Look button was removed, sidebar can collapse/reopen, Chinese locale & Time-of-Day work!
+    await expect(page.getByTestId('toggle-camera-mode')).toHaveCount(0);
 
-    const beforeFly = await page.evaluate(
-      () =>
-        (window as unknown as { __SENKIRO_3D_CAMERA__?: { mode: string; pos: number[] } })
-          .__SENKIRO_3D_CAMERA__,
-    );
-    expect(beforeFly?.mode).toBe('free');
+    // Collapsible left control sidebar
+    await page.getByTestId('toggle-sidebar-btn').click();
+    await expect(page.getByTestId('reopen-sidebar-btn')).toBeVisible();
+    await page.getByTestId('reopen-sidebar-btn').click();
+    await expect(page.getByTestId('tab-explore')).toBeVisible();
 
-    await page.keyboard.down('KeyW');
-    await page.keyboard.down('KeyE');
-    await page.waitForTimeout(550);
-    await page.keyboard.up('KeyW');
-    await page.keyboard.up('KeyE');
-    await page.waitForTimeout(350);
+    // Simplified Chinese localization switcher
+    await page.getByTestId('locale-zh').click();
+    await expect(page.getByTestId('tab-fare')).toContainText('票价');
 
-    const afterFly = await page.evaluate(
-      () =>
-        (window as unknown as { __SENKIRO_3D_CAMERA__?: { mode: string; pos: number[] } })
-          .__SENKIRO_3D_CAMERA__,
-    );
-    const flyMoved = Math.hypot(
-      afterFly!.pos[0]! - beforeFly!.pos[0]!,
-      afterFly!.pos[1]! - beforeFly!.pos[1]!,
-      afterFly!.pos[2]! - beforeFly!.pos[2]!,
-    );
-    expect(flyMoved).toBeGreaterThan(30);
-
-    // 3. Return seamlessly to Map Browse Mode
-    await page.getByTestId('toggle-camera-mode').click();
-    await expect(page.getByTestId('free-speed-select')).toHaveCount(0);
+    // Interactive Time-of-Day lighting control
+    await page.getByTestId('time-of-day-toggle').click();
+    await expect(page.getByTestId('time-of-day-popover')).toBeVisible();
+    await page.getByTestId('time-of-day-toggle').click();
     expect(pageErrors).toEqual([]);
   });
 

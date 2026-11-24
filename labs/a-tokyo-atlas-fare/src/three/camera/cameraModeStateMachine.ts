@@ -456,10 +456,13 @@ export function toSession0FollowView(rig: TrainFollowRig): TrainFollowView {
 export interface CameraModeLabelInfo {
   id: CameraModeId;
   labelJa: string;
+  labelZh: string;
   labelEn: string;
   shortJa: string;
+  shortZh: string;
   shortEn: string;
   descriptionJa: string;
+  descriptionZh: string;
   descriptionEn: string;
 }
 
@@ -467,46 +470,61 @@ export const CAMERA_MODE_METADATA: Record<CameraModeId, CameraModeLabelInfo> = {
   city_overview: {
     id: 'city_overview',
     labelJa: '都市俯瞰',
+    labelZh: '城市俯瞰',
     labelEn: 'City Overview',
     shortJa: '都市俯瞰',
+    shortZh: '俯瞰',
     shortEn: 'Overview',
     descriptionJa: '3D都市鳥瞰：左ドラッグ回転・中/右ドラッグ平行移動・ダブルクリック焦点',
+    descriptionZh: '3D 城市俯瞰：左键拖拽旋转・中/右键拖拽平移・双击聚焦',
     descriptionEn: '3D metropolitan overview: Left-drag orbit, Mid/Right pan, Dbl-click focus',
   },
   street_level: {
     id: 'street_level',
     labelJa: '街路レベル',
+    labelZh: '街道视角',
     labelEn: 'Street-Level',
     shortJa: '街路',
+    shortZh: '街道',
     shortEn: 'Street',
     descriptionJa: '近景都市観察：建物衝突回避・方位コンパス付で街路と高架を観察',
+    descriptionZh: '近景城市观察：带建筑碰撞回避与方向罗盘，观察街道与高架桥',
     descriptionEn: 'Street & viaduct view with building collision guard & orientation compass',
   },
   underground_cutaway: {
     id: 'underground_cutaway',
     labelJa: '地下剖切',
+    labelZh: '地下透视',
     labelEn: 'Underground Cutaway',
     shortJa: '地下剖切',
+    shortZh: '地下透视',
     shortEn: 'Cutaway',
     descriptionJa: '局所開削分析：階層フィルタ・単路線強調・深度関係可視化',
+    descriptionZh: '局部透视剖切：层级筛选・单线高亮・地下深度关系可视化',
     descriptionEn: 'Local radial cutaway: tier filters, single-line focus & depth visualization',
   },
   underground_explorer: {
     id: 'underground_explorer',
     labelJa: '地下トンネル漫遊',
+    labelZh: '地下隧道漫游',
     labelEn: 'Underground Explorer',
     shortJa: '地下漫遊',
+    shortZh: '隧道漫游',
     shortEn: 'Explorer',
     descriptionJa: 'トンネル内部視点：W/S・ホイールで軌道沿い移動・ドラッグ周囲観察',
+    descriptionZh: '隧道内部视角：W/S 或滚轮沿轨道移动・拖拽环顾四周',
     descriptionEn: 'Inside tunnels: W/S or wheel moves along bore, Drag looks around',
   },
   train_follow: {
     id: 'train_follow',
     labelJa: '仮想列車追従',
+    labelZh: '模拟列车跟随',
     labelEn: 'Train Follow',
     shortJa: '列車追従',
+    shortZh: '列车跟随',
     shortEn: 'Follow',
     descriptionJa: '仮想シミュレーション列車を追従（運転台/側面/後方/先頭・非実時）',
+    descriptionZh: '跟随虚拟仿真列车（驾驶室/侧面/后方/车头/俯视・非实时）',
     descriptionEn: 'Follow simulated train (Cab/Side/Rear/Front/Overhead · Non-realtime)',
   },
 };

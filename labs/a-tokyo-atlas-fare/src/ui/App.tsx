@@ -5,10 +5,13 @@ import {
   Layers,
   Map as MapIcon,
   Moon,
+  PanelLeftClose,
+  PanelLeftOpen,
   Route,
   ShieldCheck,
   Sun,
   TrainFront,
+  X,
 } from 'lucide-react';
 import {
   calculateFareQuote,
@@ -50,6 +53,7 @@ export const App: React.FC = () => {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [viewMode, setViewMode] = useState<ViewMode>('geo');
   const [activeTab, setActiveTab] = useState<SidebarTab>('explore');
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   // Filter & exploration state
   const [searchQuery, setSearchQuery] = useState('');
@@ -120,11 +124,12 @@ export const App: React.FC = () => {
     setSharedViewport({ lon, lat, zoom });
   }, []);
 
-  // Keyboard Escape clears active line/station highlight
+  // Keyboard Escape clears active line & station highlight
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setSelectedLineId(null);
+        setSelectedStationId(null);
       }
     };
     window.addEventListener('keydown', onKeyDown);
@@ -158,12 +163,10 @@ export const App: React.FC = () => {
   const handleSelectStation = useCallback(
     (stationId: SkId<'station'>) => {
       setSelectedStationId(stationId);
+      setSelectedLineId(null);
       const st = stationById.get(stationId);
       if (st) {
         setFocusCoords(st.coordinates);
-        if (st.railLineIds[0]) {
-          setSelectedLineId(st.railLineIds[0]);
-        }
       }
       setActiveTab('detail');
     },
@@ -173,6 +176,19 @@ export const App: React.FC = () => {
   const handleSelectLine = useCallback((lineId: SkId<'line'>) => {
     setSelectedLineId(lineId);
     setActiveTab('detail');
+  }, []);
+
+  const handleClearSelection = useCallback(() => {
+    setSelectedStationId(null);
+    setSelectedLineId(null);
+  }, []);
+
+  const handleClearStation = useCallback(() => {
+    setSelectedStationId(null);
+  }, []);
+
+  const handleClearLine = useCallback(() => {
+    setSelectedLineId(null);
   }, []);
 
   const handleCalculateFare = useCallback(
@@ -235,10 +251,33 @@ export const App: React.FC = () => {
     });
   };
 
+  const sidebarToggleLabel = sidebarOpen
+    ? locale === 'ja'
+      ? 'サイドバーを閉じる'
+      : locale === 'zh'
+        ? '收起侧边栏'
+        : 'Collapse Sidebar'
+    : locale === 'ja'
+      ? 'サイドバーを開く'
+      : locale === 'zh'
+        ? '展开侧边栏'
+        : 'Expand Sidebar';
+
   return (
     <div className="app-shell">
       <header className="topbar">
         <div className="brand-block">
+          <button
+            type="button"
+            className="icon-btn sidebar-toggle-btn"
+            data-testid="toggle-sidebar-btn"
+            aria-label={sidebarToggleLabel}
+            aria-expanded={sidebarOpen}
+            title={sidebarToggleLabel}
+            onClick={() => setSidebarOpen((open) => !open)}
+          >
+            {sidebarOpen ? <PanelLeftClose size={15} /> : <PanelLeftOpen size={15} />}
+          </button>
           <h1 className="brand-title">{t.appTitle}</h1>
           <span className="brand-sub">{t.subtitle}</span>
         </div>
@@ -274,21 +313,53 @@ export const App: React.FC = () => {
             </button>
           </div>
 
-          <button
-            type="button"
-            className="icon-btn"
-            data-testid="locale-toggle"
-            aria-label="Toggle Language"
-            onClick={() => setLocale((l) => (l === 'ja' ? 'en' : 'ja'))}
+          <div
+            className="segmented locale-switcher"
+            role="group"
+            aria-label={
+              locale === 'ja' ? '言語切替' : locale === 'zh' ? '语言切换' : 'Language Switcher'
+            }
           >
-            {locale === 'ja' ? 'EN' : '日本語'}
-          </button>
+            <button
+              type="button"
+              data-testid="locale-ja"
+              className={locale === 'ja' ? 'active' : ''}
+              aria-pressed={locale === 'ja'}
+              onClick={() => setLocale('ja')}
+            >
+              日本語
+            </button>
+            <button
+              type="button"
+              data-testid="locale-zh"
+              className={locale === 'zh' ? 'active' : ''}
+              aria-pressed={locale === 'zh'}
+              onClick={() => setLocale('zh')}
+            >
+              中文
+            </button>
+            <button
+              type="button"
+              data-testid="locale-toggle"
+              className={locale === 'en' ? 'active' : ''}
+              aria-pressed={locale === 'en'}
+              onClick={() => setLocale('en')}
+            >
+              EN
+            </button>
+          </div>
 
           <button
             type="button"
             className="icon-btn"
             data-testid="theme-toggle"
-            aria-label="Toggle Dark Mode"
+            aria-label={
+              locale === 'ja'
+                ? 'ダークモード切替'
+                : locale === 'zh'
+                  ? '切换深浅色主题'
+                  : 'Toggle Dark Mode'
+            }
             onClick={() => setTheme((cur) => (cur === 'light' ? 'dark' : 'light'))}
           >
             {theme === 'light' ? <Moon size={14} /> : <Sun size={14} />}
@@ -298,53 +369,83 @@ export const App: React.FC = () => {
       </header>
 
       <main className="workspace">
-        <aside className="sidebar" aria-label="Control Sidebar">
-          <nav className="sidebar-tabs" role="tablist">
+        <aside
+          className={`sidebar ${sidebarOpen ? '' : 'collapsed'}`}
+          aria-label={
+            locale === 'ja' ? 'コントロールサイドバー' : locale === 'zh' ? '控制侧边栏' : 'Control Sidebar'
+          }
+          aria-hidden={!sidebarOpen}
+        >
+          <div className="sidebar-tabs-row">
+            <nav className="sidebar-tabs" role="tablist">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeTab === 'explore'}
+                data-testid="tab-explore"
+                className={`sidebar-tab ${activeTab === 'explore' ? 'active' : ''}`}
+                onClick={() => setActiveTab('explore')}
+              >
+                <Compass size={14} />
+                <span>{t.tabExplore}</span>
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeTab === 'detail'}
+                data-testid="tab-detail"
+                className={`sidebar-tab ${activeTab === 'detail' ? 'active' : ''}`}
+                onClick={() => setActiveTab('detail')}
+              >
+                <Info size={14} />
+                <span>{t.tabDetail}</span>
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeTab === 'fare'}
+                data-testid="tab-fare"
+                className={`sidebar-tab ${activeTab === 'fare' ? 'active' : ''}`}
+                onClick={() => setActiveTab('fare')}
+              >
+                <Route size={14} />
+                <span>{t.tabFare}</span>
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeTab === 'coverage'}
+                data-testid="tab-coverage"
+                className={`sidebar-tab ${activeTab === 'coverage' ? 'active' : ''}`}
+                onClick={() => setActiveTab('coverage')}
+              >
+                <ShieldCheck size={14} />
+                <span>{t.tabCoverage}</span>
+              </button>
+            </nav>
             <button
               type="button"
-              role="tab"
-              aria-selected={activeTab === 'explore'}
-              data-testid="tab-explore"
-              className={`sidebar-tab ${activeTab === 'explore' ? 'active' : ''}`}
-              onClick={() => setActiveTab('explore')}
+              className="sidebar-close-btn"
+              data-testid="sidebar-close-btn"
+              title={
+                locale === 'ja'
+                  ? 'サイドバーを閉じる'
+                  : locale === 'zh'
+                    ? '收起侧边栏'
+                    : 'Collapse Sidebar'
+              }
+              aria-label={
+                locale === 'ja'
+                  ? 'サイドバーを閉じる'
+                  : locale === 'zh'
+                    ? '收起侧边栏'
+                    : 'Collapse Sidebar'
+              }
+              onClick={() => setSidebarOpen(false)}
             >
-              <Compass size={14} />
-              <span>{t.tabExplore}</span>
+              <X size={14} />
             </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={activeTab === 'detail'}
-              data-testid="tab-detail"
-              className={`sidebar-tab ${activeTab === 'detail' ? 'active' : ''}`}
-              onClick={() => setActiveTab('detail')}
-            >
-              <Info size={14} />
-              <span>{t.tabDetail}</span>
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={activeTab === 'fare'}
-              data-testid="tab-fare"
-              className={`sidebar-tab ${activeTab === 'fare' ? 'active' : ''}`}
-              onClick={() => setActiveTab('fare')}
-            >
-              <Route size={14} />
-              <span>{t.tabFare}</span>
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={activeTab === 'coverage'}
-              data-testid="tab-coverage"
-              className={`sidebar-tab ${activeTab === 'coverage' ? 'active' : ''}`}
-              onClick={() => setActiveTab('coverage')}
-            >
-              <ShieldCheck size={14} />
-              <span>{t.tabCoverage}</span>
-            </button>
-          </nav>
+          </div>
 
           <div className="sidebar-body">
             {activeTab === 'explore' && (
@@ -352,7 +453,13 @@ export const App: React.FC = () => {
                 {/* Search */}
                 <div className="card">
                   <label className="form-label">
-                    <span>{locale === 'ja' ? '駅名検索' : 'Station Search'}</span>
+                    <span>
+                      {locale === 'ja'
+                        ? '駅名検索'
+                        : locale === 'zh'
+                          ? '车站检索'
+                          : 'Station Search'}
+                    </span>
                     <input
                       type="search"
                       className="input-field"
@@ -366,7 +473,11 @@ export const App: React.FC = () => {
                     <div className="search-results" data-testid="search-results-list">
                       {searchResults.length === 0 ? (
                         <div className="muted" style={{ padding: 10 }}>
-                          {locale === 'ja' ? '該当駅なし' : 'No matching stations'}
+                          {locale === 'ja'
+                            ? '該当駅なし'
+                            : locale === 'zh'
+                              ? '未找到匹配车站'
+                              : 'No matching stations'}
                         </div>
                       ) : (
                         searchResults.map((st) => (
@@ -462,7 +573,7 @@ export const App: React.FC = () => {
                             onChange={() => toggleOperator(op.id)}
                           />
                           <span className="line-dot" style={{ background: op.brandColor }} />
-                          <span>{locale === 'ja' ? op.names.ja : op.names.en ?? op.names.ja}</span>
+                          <span>{locale === 'en' ? op.names.en ?? op.names.ja : op.names.ja}</span>
                         </label>
                       ))}
                   </div>
@@ -471,14 +582,20 @@ export const App: React.FC = () => {
                 {/* Line Selector (useful in both 2D & 3D views) */}
                 <div className="card">
                   <div className="section-title">
-                    <span>{locale === 'ja' ? '路線ハイライト選択' : 'Highlight Rail Line'}</span>
+                    <span>
+                      {locale === 'ja'
+                        ? '路線ハイライト選択'
+                        : locale === 'zh'
+                          ? '线路高亮选择'
+                          : 'Highlight Rail Line'}
+                    </span>
                     {selectedLineId && (
                       <button
                         type="button"
                         className="btn-secondary"
                         onClick={() => setSelectedLineId(null)}
                       >
-                        解除
+                        {locale === 'ja' ? '解除' : locale === 'zh' ? '清除' : 'Clear'}
                       </button>
                     )}
                   </div>
@@ -499,7 +616,7 @@ export const App: React.FC = () => {
                           onClick={() => setSelectedLineId(l.id)}
                         >
                           <span className="line-dot" style={{ background: l.color }} />
-                          <span>{l.names.ja}</span>
+                          <span>{locale === 'en' ? l.names.en ?? l.names.ja : l.names.ja}</span>
                         </button>
                       ))}
                   </div>
@@ -513,7 +630,12 @@ export const App: React.FC = () => {
                       {realtimeStatus?.status ?? 'unavailable'}
                     </span>
                     <span className="muted" style={{ fontSize: 11 }}>
-                      {realtimeStatus?.summary ?? '無実時データ / No real-time data'}
+                      {realtimeStatus?.summary ??
+                        (locale === 'ja'
+                          ? 'リアルタイムデータなし'
+                          : locale === 'zh'
+                            ? '暂无实时运行数据'
+                            : 'No real-time data')}
                     </span>
                   </div>
                 </div>
@@ -561,6 +683,32 @@ export const App: React.FC = () => {
           </div>
         </aside>
 
+        {!sidebarOpen && (
+          <button
+            type="button"
+            className="sidebar-reopen-pill"
+            data-testid="reopen-sidebar-btn"
+            aria-label={
+              locale === 'ja'
+                ? 'サイドバーを開く'
+                : locale === 'zh'
+                  ? '展开侧边栏'
+                  : 'Expand Sidebar'
+            }
+            title={
+              locale === 'ja'
+                ? 'サイドバーを開く'
+                : locale === 'zh'
+                  ? '展开侧边栏'
+                  : 'Expand Sidebar'
+            }
+            onClick={() => setSidebarOpen(true)}
+          >
+            <PanelLeftOpen size={15} />
+            <span>{locale === 'ja' ? 'パネル' : locale === 'zh' ? '控制栏' : 'Controls'}</span>
+          </button>
+        )}
+
         {viewMode === 'strip' ? (
           <div className="canvas-pane">
             <StripMapView
@@ -589,6 +737,9 @@ export const App: React.FC = () => {
             onViewportChange={handleViewportChange}
             onSelectStation={handleSelectStation}
             onSelectLine={handleSelectLine}
+            onClearSelection={handleClearSelection}
+            onClearStation={handleClearStation}
+            onClearLine={handleClearLine}
           />
         ) : (
           <MapCanvas

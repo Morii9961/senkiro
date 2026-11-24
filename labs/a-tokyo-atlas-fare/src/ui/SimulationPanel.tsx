@@ -17,7 +17,7 @@ import type {
   SimTrainDensity,
 } from '../contracts/atlasV2.js';
 import type { AtlasDataset, SkId } from '../domain/types.js';
-import type { Locale } from './i18n.js';
+import { pickLocale, type Locale } from './i18n.js';
 
 interface SimulationPanelProps {
   dataset: AtlasDataset;
@@ -63,10 +63,11 @@ export const SimulationPanel: React.FC<SimulationPanelProps> = ({
   const [collapsed, setCollapsed] = useState(false);
 
   const lineNameMap = React.useMemo(() => {
-    const m = new Map<SkId<'line'>, { ja: string; en: string }>();
+    const m = new Map<SkId<'line'>, { ja: string; zh: string; en: string }>();
     for (const l of dataset.railLines) {
       m.set(l.id, {
         ja: l.names.ja?.split('（')[0] ?? l.id,
+        zh: l.names.zh?.split('（')[0] ?? l.names.ja?.split('（')[0] ?? l.id,
         en: l.names.en?.split(' (')[0] ?? l.names.ja ?? l.id,
       });
     }
@@ -85,14 +86,18 @@ export const SimulationPanel: React.FC<SimulationPanelProps> = ({
     return (
       <div className="sim-dock sim-dock-collapsed" data-testid="simulation-control-bar">
         <span className="sim-badge" data-testid="sim-synthetic-badge">
-          {locale === 'ja' ? '模擬運行 · SYNTHETIC' : 'SIMULATED · SYNTHETIC'}
+          {pickLocale(locale, '模擬運行 · SYNTHETIC', '模拟运行 · 合成数据', 'SIMULATED · SYNTHETIC')}
         </span>
         <button
           type="button"
           className="sim-btn"
           data-testid="sim-play-pause"
           onClick={onTogglePlaying}
-          title={control.running ? 'Pause' : 'Play'}
+          title={
+            control.running
+              ? pickLocale(locale, 'Pause', '暂停', 'Pause')
+              : pickLocale(locale, 'Play', '播放', 'Play')
+          }
         >
           {control.running ? <Pause size={12} /> : <Play size={12} />}
         </button>
@@ -101,7 +106,7 @@ export const SimulationPanel: React.FC<SimulationPanelProps> = ({
           className="sim-btn"
           data-testid="sim-collapse-btn"
           onClick={() => setCollapsed(false)}
-          title={locale === 'ja' ? '操作バーを展開' : 'Expand Simulation Bar'}
+          title={pickLocale(locale, '操作バーを展開', '展开控制栏', 'Expand Simulation Bar')}
         >
           <ChevronUp size={12} />
         </button>
@@ -114,22 +119,24 @@ export const SimulationPanel: React.FC<SimulationPanelProps> = ({
       className="sim-dock"
       data-testid="simulation-control-bar"
       role="region"
-      aria-label={
-        locale === 'ja'
-          ? '仮想列車シミュレーション制御'
-          : 'Virtual Train Simulation Controls'
-      }
+      aria-label={pickLocale(
+        locale,
+        '仮想列車シミュレーション制御',
+        '虚拟列车仿真控制',
+        'Virtual Train Simulation Controls',
+      )}
     >
       <span
         className="sim-badge"
         data-testid="sim-synthetic-badge"
-        title={
-          locale === 'ja'
-            ? '決定論的仮想運行デモ（実時間・時刻表データではありません）'
-            : 'Deterministic virtual simulation — NOT real-time operations or official timetable'
-        }
+        title={pickLocale(
+          locale,
+          '決定論的仮想運行デモ（実時間・時刻表データではありません）',
+          '确定性虚拟运行演示（非实时运行状态或官方时刻表数据）',
+          'Deterministic virtual simulation — NOT real-time operations or official timetable',
+        )}
       >
-        {locale === 'ja' ? '模擬運行 · 非実時' : 'SIMULATED · SYNTHETIC'}
+        {pickLocale(locale, '模擬運行 · 非実時', '模拟运行 · 非实时', 'SIMULATED · SYNTHETIC')}
       </span>
 
       <button
@@ -137,22 +144,25 @@ export const SimulationPanel: React.FC<SimulationPanelProps> = ({
         className={`sim-btn ${control.running ? 'active' : ''}`}
         data-testid="sim-play-pause"
         onClick={onTogglePlaying}
-        aria-label={control.running ? 'Pause simulation' : 'Play simulation'}
+        aria-label={
+          control.running
+            ? pickLocale(locale, 'Pause simulation', '暂停仿真', 'Pause simulation')
+            : pickLocale(locale, 'Play simulation', '播放仿真', 'Play simulation')
+        }
       >
         {control.running ? <Pause size={12} /> : <Play size={12} />}
         <span>
           {control.running
-            ? locale === 'ja'
-              ? '一時停止'
-              : 'Pause'
-            : locale === 'ja'
-              ? '再生'
-              : 'Play'}
+            ? pickLocale(locale, '一時停止', '暂停', 'Pause')
+            : pickLocale(locale, '再生', '播放', 'Play')}
         </span>
       </button>
 
-      <label className="sim-field" title={locale === 'ja' ? '模擬速度' : 'Simulation Speed'}>
-        <span className="sim-label">{locale === 'ja' ? '倍速' : 'Speed'}</span>
+      <label
+        className="sim-field"
+        title={pickLocale(locale, '模擬速度', '模拟倍速', 'Simulation Speed')}
+      >
+        <span className="sim-label">{pickLocale(locale, '倍速', '倍速', 'Speed')}</span>
         <select
           className="sim-select"
           data-testid="sim-speed-select"
@@ -167,22 +177,28 @@ export const SimulationPanel: React.FC<SimulationPanelProps> = ({
         </select>
       </label>
 
-      <label className="sim-field" title={locale === 'ja' ? '運行密度' : 'Fleet Density'}>
-        <span className="sim-label">{locale === 'ja' ? '密度' : 'Fleet'}</span>
+      <label
+        className="sim-field"
+        title={pickLocale(locale, '運行密度', '发车密度', 'Fleet Density')}
+      >
+        <span className="sim-label">{pickLocale(locale, '密度', '密度', 'Fleet')}</span>
         <select
           className="sim-select"
           data-testid="sim-density-select"
           value={control.density}
           onChange={(e) => onChangeDensity(e.target.value as SimTrainDensity)}
         >
-          <option value="low">{locale === 'ja' ? '閑散' : 'Low'}</option>
-          <option value="normal">{locale === 'ja' ? '標準' : 'Normal'}</option>
-          <option value="rush">{locale === 'ja' ? '高密' : 'Rush'}</option>
+          <option value="low">{pickLocale(locale, '閑散', '低密', 'Low')}</option>
+          <option value="normal">{pickLocale(locale, '標準', '标准', 'Normal')}</option>
+          <option value="rush">{pickLocale(locale, '高密', '高峰', 'Rush')}</option>
         </select>
       </label>
 
-      <label className="sim-field" title={locale === 'ja' ? '表示本数' : 'Visible Train Limit'}>
-        <span className="sim-label">{locale === 'ja' ? '本数' : 'Shown'}</span>
+      <label
+        className="sim-field"
+        title={pickLocale(locale, '表示本数', '显示列车数', 'Visible Train Limit')}
+      >
+        <span className="sim-label">{pickLocale(locale, '本数', '数量', 'Shown')}</span>
         <select
           className="sim-select"
           data-testid="sim-count-select"
@@ -199,7 +215,7 @@ export const SimulationPanel: React.FC<SimulationPanelProps> = ({
               </option>
             ))}
           <option value="all">
-            {locale === 'ja' ? `全 ${trains.length}本` : `All ${trains.length}`}
+            {pickLocale(locale, `全 ${trains.length}本`, `全部 ${trains.length} 列`, `All ${trains.length}`)}
           </option>
         </select>
       </label>
@@ -207,7 +223,7 @@ export const SimulationPanel: React.FC<SimulationPanelProps> = ({
       <select
         className="sim-select sim-train-picker"
         data-testid="sim-train-select"
-        aria-label={locale === 'ja' ? '模擬列車を選択' : 'Select Simulated Train'}
+        aria-label={pickLocale(locale, '模擬列車を選択', '选择模拟列车', 'Select Simulated Train')}
         value={activeTrainId}
         onChange={(e) => {
           if (e.target.value) onSelectTrain(e.target.value);
@@ -215,7 +231,7 @@ export const SimulationPanel: React.FC<SimulationPanelProps> = ({
       >
         {trains.slice(0, shownCount).map((tr) => {
           const ln = lineNameMap.get(tr.lineId);
-          const lTxt = locale === 'ja' ? ln?.ja ?? tr.lineId : ln?.en ?? tr.lineId;
+          const lTxt = pickLocale(locale, ln?.ja ?? tr.lineId, ln?.zh ?? tr.lineId, ln?.en ?? tr.lineId);
           return (
             <option key={tr.trainId} value={tr.trainId}>
               {lTxt} {tr.runNumber} ({tr.tier} · {Math.round(tr.speedKmh)}km/h)
@@ -229,17 +245,13 @@ export const SimulationPanel: React.FC<SimulationPanelProps> = ({
         className={`sim-btn ${trainsVisible ? '' : 'muted-btn'}`}
         data-testid="sim-toggle-visible"
         onClick={onToggleTrainsVisible}
-        title={locale === 'ja' ? '模擬列車の表示/非表示' : 'Show / Hide Simulated Trains'}
+        title={pickLocale(locale, '模擬列車の表示/非表示', '显示/隐藏模拟列车', 'Show / Hide Simulated Trains')}
       >
         {trainsVisible ? <Eye size={12} /> : <EyeOff size={12} />}
         <span>
           {trainsVisible
-            ? locale === 'ja'
-              ? '表示'
-              : 'Show'
-            : locale === 'ja'
-              ? '非表示'
-              : 'Hide'}
+            ? pickLocale(locale, '表示', '显示', 'Show')
+            : pickLocale(locale, '非表示', '隐藏', 'Hide')}
         </span>
       </button>
 
@@ -251,7 +263,7 @@ export const SimulationPanel: React.FC<SimulationPanelProps> = ({
           onClick={() => onFollowTrain(activeTrainId)}
         >
           <Video size={12} />
-          <span>{locale === 'ja' ? '追従' : 'Follow'}</span>
+          <span>{pickLocale(locale, '追従', '跟随', 'Follow')}</span>
         </button>
       )}
 
@@ -260,7 +272,7 @@ export const SimulationPanel: React.FC<SimulationPanelProps> = ({
         className="sim-btn"
         data-testid="sim-reset-btn"
         onClick={onResetSimulation}
-        title={locale === 'ja' ? 'シミュレーションを初期化' : 'Reset Simulation'}
+        title={pickLocale(locale, 'シミュレーションを初期化', '重置仿真', 'Reset Simulation')}
       >
         <RotateCcw size={12} />
       </button>
@@ -273,7 +285,7 @@ export const SimulationPanel: React.FC<SimulationPanelProps> = ({
           onClick={onExitFollow}
         >
           <LogOut size={12} />
-          <span>{locale === 'ja' ? '終了' : 'Exit'}</span>
+          <span>{pickLocale(locale, '終了', '退出', 'Exit')}</span>
         </button>
       )}
 
@@ -282,7 +294,7 @@ export const SimulationPanel: React.FC<SimulationPanelProps> = ({
         className="sim-btn"
         data-testid="sim-collapse-btn"
         onClick={() => setCollapsed(true)}
-        aria-label={locale === 'ja' ? '操作バーを折りたたむ' : 'Collapse Simulation Bar'}
+        aria-label={pickLocale(locale, '操作バーを折りたたむ', '收起控制栏', 'Collapse Simulation Bar')}
       >
         <ChevronDown size={12} />
       </button>

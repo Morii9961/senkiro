@@ -710,15 +710,88 @@ export function samplePhysicalTrackPose(
   const rawY = p0.y + (p1.y - p0.y) * f;
   const centerZ = p0.z + (p1.z - p0.z) * f;
 
-  // Segment forward tangent in (+1) orientation
+  // Fallback raw segment vector in (+1) orientation
   const segDx = p1.x - p0.x;
   const segDy = (p1.y - p0.y) * clampedVExag;
   const segDz = p1.z - p0.z;
-  const segHLen = Math.hypot(segDx, segDz) || 1;
 
-  // Right-hand horizontal normal in (+1) orientation: (-dz/len, dx/len)
-  const segRightX = -segDz / segHLen;
-  const segRightZ = segDx / segHLen;
+  // Compute C1-smooth vertex tangents across [idx-1, idx, idx+1] so both the lateral
+  // left-hand running offset and forward travel tangent vary smoothly with zero vertex snaps.
+  const computeVertexTangent = (idx: number): [number, number, number] => {
+    const curr = pts[idx]!;
+    let sumX = 0;
+    let sumY = 0;
+    let sumZ = 0;
+
+    if (idx > 0) {
+      const prev = pts[idx - 1]!;
+      const dx = curr.x - prev.x;
+      const dy = (curr.y - prev.y) * clampedVExag;
+      const dz = curr.z - prev.z;
+      const len = Math.hypot(dx, dy, dz);
+      if (len > 1e-5) {
+        sumX += dx / len;
+        sumY += dy / len;
+        sumZ += dz / len;
+      }
+    }
+
+    if (idx < pts.length - 1) {
+      const next = pts[idx + 1]!;
+      const dx = next.x - curr.x;
+      const dy = (next.y - curr.y) * clampedVExag;
+      const dz = next.z - curr.z;
+      const len = Math.hypot(dx, dy, dz);
+      if (len > 1e-5) {
+        sumX += dx / len;
+        sumY += dy / len;
+        sumZ += dz / len;
+      }
+    }
+
+    const total = Math.hypot(sumX, sumY, sumZ);
+    if (total > 1e-4) {
+      return [sumX / total, sumY / total, sumZ / total];
+    }
+    const segLen = Math.hypot(segDx, segDy, segDz);
+    if (segLen > 1e-5) {
+      return [segDx / segLen, segDy / segLen, segDz / segLen];
+    }
+    return [0, 0, 1];
+  };
+
+  const idx0 = lo;
+  const idx1 = Math.min(pts.length - 1, lo + 1);
+  const [t0x, t0y, t0z] = computeVertexTangent(idx0);
+  const [t1x, t1y, t1z] = idx1 === idx0 ? [t0x, t0y, t0z] : computeVertexTangent(idx1);
+
+  let tanX = t0x + (t1x - t0x) * f;
+  let tanY = t0y + (t1y - t0y) * f;
+  let tanZ = t0z + (t1z - t0z) * f;
+  const tanLen = Math.hypot(tanX, tanY, tanZ);
+  if (tanLen > 1e-5) {
+    tanX /= tanLen;
+    tanY /= tanLen;
+    tanZ /= tanLen;
+  } else {
+    const segLen = Math.hypot(segDx, segDy, segDz) || 1;
+    tanX = segDx / segLen;
+    tanY = segDy / segLen;
+    tanZ = segDz / segLen;
+  }
+
+  // Smooth horizontal right-hand normal in (+1) orientation: (-tanZ / hLen, tanX / hLen)
+  const smoothHLen = Math.hypot(tanX, tanZ);
+  let segRightX: number;
+  let segRightZ: number;
+  if (smoothHLen > 1e-5) {
+    segRightX = -tanZ / smoothHLen;
+    segRightZ = tanX / smoothHLen;
+  } else {
+    const segHLen = Math.hypot(segDx, segDz) || 1;
+    segRightX = -segDz / segHLen;
+    segRightZ = segDx / segHLen;
+  }
 
   // Japanese Left-Hand Running:
   // +1 direction rides LEFT of +1 centerline (-trackHalfSpacingM)
@@ -736,14 +809,10 @@ export function samplePhysicalTrackPose(
   const centerY = rawY * clampedVExag;
   const y = centerY + railHeadOffset;
 
-  // Forward travel tangent
-  const rawDirX = segDx * direction;
-  const rawDirY = segDy * direction;
-  const rawDirZ = segDz * direction;
-  const dirLen = Math.hypot(rawDirX, rawDirY, rawDirZ) || 1;
-  const dirX = rawDirX / dirLen;
-  const dirY = rawDirY / dirLen;
-  const dirZ = rawDirZ / dirLen;
+  // Smooth forward travel tangent
+  const dirX = tanX * direction;
+  const dirY = tanY * direction;
+  const dirZ = tanZ * direction;
 
   // Right-hand normal in travel direction
   const rightX = segRightX * direction;

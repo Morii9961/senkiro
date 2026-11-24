@@ -1,0 +1,270 @@
+/**
+ * WebGPU-Ready High-Realism Renderer Factory & Subtle HDR Bloom Post-Processing Wrapper.
+ *
+ * Inspects hardware GPU capability (`navigator.gpu`), configures Three.js WebGL2 rendering
+ * at maximum architectural realism (logarithmic depth buffer, 2048x2048 PCFSoft shadows,
+ * max texture anisotropy, ACES Filmic HDR tone mapping, PMREM IBL), and wraps an optional
+ * multisampled HDR `EffectComposer` + `UnrealBloomPass` + `OutputPass` pipeline that keeps
+ * `preserveDrawingBuffer` and `readPixels` intact while giving sunset/night Tokyo windows,
+ * train headlights, and neon accents a subtle cinematic glow.
+ */
+
+import * as THREE from 'three';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+
+export type RendererBackendLabel = 'WebGPU' | 'WebGL2';
+
+export interface WebGpuCapabilityReport {
+  supported: boolean;
+  adapterName: string | null;
+}
+
+export interface OptimalRendererOptions {
+  /** Enable subtle HDR bloom post-processing (high threshold 0.88; day 0.10 / night 0.28). Defaults to true. */
+  enableBloom?: boolean;
+  /** Maximum device pixel ratio cap (defaults to 2). */
+  maxPixelRatio?: number;
+  /** Initial night factor [0..1] used to calibrate bloom strength. */
+  initialNightFactor?: number;
+}
+
+export interface OptimalRendererBundle {
+  readonly renderer: THREE.WebGLRenderer;
+  readonly backendLabel: RendererBackendLabel;
+  readonly webGpuSupported: boolean;
+  readonly maxAnisotropy: number;
+  render(scene: THREE.Scene, camera: THREE.Camera): void;
+  setSize(width: number, height: number): void;
+  setNightFactor(nightFactor: number): void;
+  setBloomEnabled(enabled: boolean): void;
+  isBloomEnabled(): boolean;
+  getSceneRenderStats(): { calls: number; triangles: number };
+  dispose(): void;
+}
+
+interface NavigatorWithGpu extends Navigator {
+  gpu?: {
+    requestAdapter: () => Promise<{
+      info?: {
+        description?: string;
+        architecture?: string;
+        vendor?: string;
+      };
+    } | null>;
+  };
+}
+
+/**
+ * Probes hardware WebGPU adapter availability asynchronously without failing on unsupported browsers.
+ */
+export async function probeWebGpuCapability(): Promise<WebGpuCapabilityReport> {
+  if (typeof navigator === 'undefined') {
+    return { supported: false, adapterName: null };
+  }
+  const gpu = (navigator as NavigatorWithGpu).gpu;
+  if (!gpu || typeof gpu.requestAdapter !== 'function') {
+    return { supported: false, adapterName: null };
+  }
+  try {
+    const adapter = await gpu.requestAdapter();
+    if (!adapter) return { supported: false, adapterName: null };
+    const info = adapter.info;
+    const adapterName =
+      info?.description?.trim() ||
+      [info?.vendor, info?.architecture].filter(Boolean).join(' ').trim() ||
+      'WebGPU Hardware Adapter';
+    return { supported: true, adapterName };
+  } catch {
+    return { supported: false, adapterName: null };
+  }
+}
+
+/**
+ * Upgrades a directional sun light to crisp 2048x2048 soft architectural shadows.
+ */
+export function configureHighQualitySunShadow(
+  light: THREE.DirectionalLight,
+  spanM = 1850,
+): void {
+  light.castShadow = true;
+  light.shadow.mapSize.set(2048, 2048);
+  light.shadow.camera.near = 200;
+  light.shadow.camera.far = 7600;
+  light.shadow.camera.left = -spanM;
+  light.shadow.camera.right = spanM;
+  light.shadow.camera.top = spanM;
+  light.shadow.camera.bottom = -spanM;
+  light.shadow.bias = -0.0003;
+  light.shadow.normalBias = 1.45;
+  light.shadow.camera.updateProjectionMatrix();
+}
+
+/**
+ * Creates a maximally configured Three.js renderer with optional multisampled HDR bloom
+ * post-processing and hardware WebGPU capability detection.
+ */
+export function createOptimalRenderer(
+  container: HTMLElement,
+  options: OptimalRendererOptions = {},
+): OptimalRendererBundle {
+  const width = Math.max(1, container.clientWidth || 960);
+  const height = Math.max(1, container.clientHeight || 640);
+  const maxDpr = options.maxPixelRatio ?? 2;
+  const pixelRatio =
+    typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, maxDpr) : 1;
+
+  const webGpuSupported =
+    typeof navigator !== 'undefined' &&
+    Boolean((navigator as NavigatorWithGpu).gpu && typeof (navigator as NavigatorWithGpu).gpu?.requestAdapter === 'function');
+
+  // Active rendering uses WebGL2 for full GLSL onBeforeCompile cutaway & ShaderMaterial compatibility
+  const renderer = new THREE.WebGLRenderer({
+    antialias: true,
+    powerPreference: 'high-performance',
+    preserveDrawingBuffer: true,
+    logarithmicDepthBuffer: true,
+  });
+
+  renderer.setPixelRatio(pixelRatio);
+  renderer.setSize(width, height);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.localClippingEnabled = true;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.04;
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+  renderer.domElement.style.display = 'block';
+  renderer.domElement.style.width = '100%';
+  renderer.domElement.style.height = '100%';
+  renderer.domElement.setAttribute('data-testid', 'three-3d-canvas');
+  container.appendChild(renderer.domElement);
+
+  const maxAnisotropy = Math.min(16, Math.max(1, renderer.capabilities.getMaxAnisotropy()));
+  const isWebGL2 = renderer.capabilities.isWebGL2;
+
+  let bloomEnabled = options.enableBloom ?? true;
+  let nightFactor = Math.max(0, Math.min(1, options.initialNightFactor ?? 0));
+  let curW = width;
+  let curH = height;
+
+  // Lazy-initialized multisampled HDR EffectComposer
+  let composer: EffectComposer | null = null;
+  let renderPass: RenderPass | null = null;
+  let bloomPass: UnrealBloomPass | null = null;
+  let outputPass: OutputPass | null = null;
+  let composerTarget: THREE.WebGLRenderTarget | null = null;
+  let composerFailed = false;
+  let lastSceneCalls = 0;
+  let lastSceneTriangles = 0;
+
+  const computeBloomStrength = (nf: number): number => 0.10 + nf * 0.18; // 0.10 day -> 0.28 night
+
+  const ensureComposer = (scene: THREE.Scene, camera: THREE.Camera): EffectComposer | null => {
+    if (composerFailed) return null;
+    if (composer && renderPass) {
+      renderPass.scene = scene;
+      renderPass.camera = camera;
+      return composer;
+    }
+    try {
+      const rtWidth = Math.max(1, Math.floor(curW * pixelRatio));
+      const rtHeight = Math.max(1, Math.floor(curH * pixelRatio));
+      composerTarget = new THREE.WebGLRenderTarget(rtWidth, rtHeight, {
+        type: isWebGL2 ? THREE.HalfFloatType : THREE.UnsignedByteType,
+        samples: isWebGL2 ? 4 : 0,
+      });
+
+      composer = new EffectComposer(renderer, composerTarget);
+      composer.setPixelRatio(pixelRatio);
+      composer.setSize(curW, curH);
+
+      renderPass = new RenderPass(scene, camera);
+      const origRenderPass = renderPass.render.bind(renderPass);
+      renderPass.render = (r, writeBuf, readBuf, dt, maskActive) => {
+        origRenderPass(r, writeBuf, readBuf, dt, maskActive);
+        lastSceneCalls = r.info.render.calls;
+        lastSceneTriangles = r.info.render.triangles;
+      };
+      bloomPass = new UnrealBloomPass(
+        new THREE.Vector2(curW, curH),
+        computeBloomStrength(nightFactor),
+        0.42, // subtle soft architectural glow radius
+        0.88, // high HDR threshold so crisp daylight stays completely clean
+      );
+      outputPass = new OutputPass();
+
+      composer.addPass(renderPass);
+      composer.addPass(bloomPass);
+      composer.addPass(outputPass);
+      return composer;
+    } catch {
+      composerFailed = true;
+      return null;
+    }
+  };
+
+  return {
+    renderer,
+    backendLabel: 'WebGL2',
+    webGpuSupported,
+    maxAnisotropy,
+
+    render(scene: THREE.Scene, camera: THREE.Camera): void {
+      if (bloomEnabled) {
+        const comp = ensureComposer(scene, camera);
+        if (comp) {
+          comp.render();
+          return;
+        }
+      }
+      renderer.render(scene, camera);
+      lastSceneCalls = renderer.info.render.calls;
+      lastSceneTriangles = renderer.info.render.triangles;
+    },
+
+    getSceneRenderStats(): { calls: number; triangles: number } {
+      return { calls: lastSceneCalls, triangles: lastSceneTriangles };
+    },
+
+    setSize(newW: number, newH: number): void {
+      curW = Math.max(1, Math.floor(newW));
+      curH = Math.max(1, Math.floor(newH));
+      renderer.setSize(curW, curH);
+      if (composer) {
+        composer.setSize(curW, curH);
+      }
+      if (bloomPass) {
+        bloomPass.setSize(curW, curH);
+      }
+    },
+
+    setNightFactor(nf: number): void {
+      nightFactor = Math.max(0, Math.min(1, nf));
+      if (bloomPass) {
+        bloomPass.strength = computeBloomStrength(nightFactor);
+        // Slightly lower threshold at night so subtle amber office windows catch soft bloom
+        bloomPass.threshold = 0.88 - nightFactor * 0.14;
+      }
+    },
+
+    setBloomEnabled(enabled: boolean): void {
+      bloomEnabled = enabled;
+    },
+
+    isBloomEnabled(): boolean {
+      return bloomEnabled && !composerFailed;
+    },
+
+    dispose(): void {
+      bloomPass?.dispose();
+      outputPass?.dispose();
+      composer?.dispose();
+      composerTarget?.dispose();
+      renderer.dispose();
+    },
+  };
+}

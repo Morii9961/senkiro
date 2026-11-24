@@ -444,8 +444,9 @@ export class SpatialCameraController
     const rig = this.modeState.followAngle;
     const firstSnap =
       this.followedTrainSnapId !== train.trainId || this.followedAngleSnap !== rig;
+    const isReversal = !firstSnap && this.smoothedTrainDir.dot(rawDir) < -0.5;
 
-    if (firstSnap) {
+    if (firstSnap || isReversal) {
       this.followedTrainSnapId = train.trainId;
       this.followedAngleSnap = rig;
       this.latestFollowedTrain = train;
@@ -453,10 +454,23 @@ export class SpatialCameraController
       this.smoothedTrainDir.copy(rawDir);
     } else {
       this.latestFollowedTrain = train;
-      const posAlpha = 1 - Math.exp(-11.0 * Math.max(0.004, dtSec));
-      const dirAlpha = 1 - Math.exp(-4.2 * Math.max(0.004, dtSec));
+      const dtClamped = Math.max(0.004, dtSec);
+      const posAlpha = 1 - Math.exp(-11.0 * dtClamped);
       this.smoothedTrainPos.lerp(rawPos, posAlpha);
-      this.smoothedTrainDir.lerp(rawDir, dirAlpha).normalize();
+      if (train.speedMps < 0.05) {
+        // Freeze / gently settle heading while dwelling at station for zero micro-twitch
+        if (this.smoothedTrainDir.angleTo(rawDir) > 0.02) {
+          const dwellDirAlpha = 1 - Math.exp(-1.8 * dtClamped);
+          this.smoothedTrainDir.lerp(rawDir, dwellDirAlpha);
+          if (this.smoothedTrainDir.lengthSq() < 1e-6) this.smoothedTrainDir.copy(rawDir);
+          else this.smoothedTrainDir.normalize();
+        }
+      } else {
+        const dirAlpha = 1 - Math.exp(-4.2 * dtClamped);
+        this.smoothedTrainDir.lerp(rawDir, dirAlpha);
+        if (this.smoothedTrainDir.lengthSq() < 1e-6) this.smoothedTrainDir.copy(rawDir);
+        else this.smoothedTrainDir.normalize();
+      }
     }
 
     const F = this.smoothedTrainDir.clone();
@@ -472,12 +486,13 @@ export class SpatialCameraController
     const desiredLook = new THREE.Vector3();
 
     if (rig === 'cab') {
-      // Mount driver POV strictly ahead of the un-lagged front nose tip (+0.75m) so speed-dependent
-      // exponential damping NEVER pulls the camera backwards into Car 0's opaque carbody!
-      desiredEye.copy(rawPos).addScaledVector(F, 0.75);
-      desiredEye.y = hp.y + 2.35;
-      desiredLook.copy(desiredEye).addScaledVector(F, 68);
-      desiredLook.y = desiredEye.y - 0.18 + F.y * 55;
+      // Mount driver POV strictly clear ahead of Car 0's front nose using instantaneous smooth
+      // rawDir (not lagging smoothedTrainDir) so curve lag never pulls the eye into the cab body!
+      const instDir = rawDir;
+      desiredEye.copy(rawPos).addScaledVector(instDir, 1.65);
+      desiredEye.y = hp.y + 2.45;
+      desiredLook.copy(desiredEye).addScaledVector(F, 72);
+      desiredLook.y = desiredEye.y - 0.15 + F.y * 55;
     } else if (rig === 'front') {
       const fwdDist = (isUg ? 24 : 38) * scale;
       const latDist = (isUg ? 2.2 : 13) * scale;
@@ -545,9 +560,9 @@ export class SpatialCameraController
       desiredEye.set(safe.x, safe.y, safe.z);
     }
 
-    if (firstSnap || rig === 'cab') {
+    if (firstSnap || isReversal || rig === 'cab') {
       this.camera.position.copy(desiredEye);
-      if (firstSnap) {
+      if (firstSnap || isReversal) {
         this.controls.target.copy(desiredLook);
       } else {
         const lookAlpha = 1 - Math.exp(-10.0 * Math.max(0.004, dtSec));

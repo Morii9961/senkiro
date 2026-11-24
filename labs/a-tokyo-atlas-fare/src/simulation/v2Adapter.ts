@@ -94,9 +94,61 @@ const DEPART_CLEAR_SEC = 1.0;
 const TURNAROUND_HOLD_SEC = 5.0;
 const MIN_SAFE_TRAIN_SEPARATION_M = 85.0;
 
+function smoothstep01(t: number): number {
+  const c = Math.max(0, Math.min(1, t));
+  return c * c * (3 - 2 * c);
+}
+
+function sampleRawLegPose(
+  leg: DirectedPhysicalTrackLeg,
+  localProgressM: number,
+  verticalExaggeration: number,
+): TrackPoseSample {
+  const clamped = Math.max(0, Math.min(leg.lengthM, localProgressM));
+  const distFromTrackStartM =
+    leg.direction === 1 ? clamped : Math.max(0, leg.lengthM - clamped);
+  return samplePhysicalTrackPose(
+    leg.track,
+    distFromTrackStartM,
+    leg.direction,
+    verticalExaggeration,
+  );
+}
+
+function extrapolateAlongTangent(
+  basePose: TrackPoseSample,
+  deltaDistM: number,
+): TrackPoseSample {
+  const hLen = Math.hypot(basePose.dirX, basePose.dirZ) || 1;
+  const hx = basePose.dirX / hLen;
+  const hz = basePose.dirZ / hLen;
+  const rightX = -hz;
+  const rightZ = hx;
+  return {
+    ...basePose,
+    x: basePose.x + hx * deltaDistM,
+    y: basePose.y,
+    z: basePose.z + hz * deltaDistM,
+    centerX: basePose.centerX + hx * deltaDistM,
+    centerY: basePose.centerY,
+    centerZ: basePose.centerZ + hz * deltaDistM,
+    dirX: hx,
+    dirY: 0,
+    dirZ: hz,
+    rightX,
+    rightZ,
+    yawRad: Math.atan2(hx, hz),
+    pitchRad: 0,
+  };
+}
+
 /**
  * Samples a 3D rail-head pose at cumulative distance `routeDistM` along a `StitchedPhysicalRoute`
  * using Session 0's canonical `samplePhysicalTrackPose()`.
+ *
+ * - For non-loop routes, smoothly extrapolates backward (`d < 0`) and forward (`d > L`) along
+ *   terminal tangents at constant elevation so trailing cars never pile up or clip into Car 0.
+ * - Applies C1-smooth lateral & tangent blending across consecutive leg boundaries at stations.
  */
 export function sampleStitchedRoutePose(
   route: StitchedPhysicalRoute,
@@ -115,8 +167,13 @@ export function sampleStitchedRoutePose(
   let d = rawRouteDistM;
   if (route.isLoop) {
     d = ((d % L) + L) % L;
-  } else {
-    d = Math.max(0, Math.min(L, d));
+  } else if (d < 0) {
+    const pose0 = sampleRawLegPose(firstLeg, 0, verticalExaggeration);
+    return { pose: extrapolateAlongTangent(pose0, d), leg: firstLeg };
+  } else if (d > L) {
+    const lastLeg = route.legs[route.legs.length - 1]!;
+    const poseEnd = sampleRawLegPose(lastLeg, lastLeg.lengthM, verticalExaggeration);
+    return { pose: extrapolateAlongTangent(poseEnd, d - L), leg: lastLeg };
   }
 
   // Binary search for enclosing leg
@@ -133,16 +190,95 @@ export function sampleStitchedRoutePose(
 
   const leg = route.legs[lo]!;
   const localProgressM = Math.max(0, Math.min(leg.lengthM, d - leg.startRouteM));
-  // Convert route travel progress into distance measured from `track.points[0]` (`fromStationId -> toStationId`)
-  const distFromTrackStartM =
-    leg.direction === 1 ? localProgressM : Math.max(0, leg.lengthM - localProgressM);
+  let pose = sampleRawLegPose(leg, localProgressM, verticalExaggeration);
 
-  const pose = samplePhysicalTrackPose(
-    leg.track,
-    distFromTrackStartM,
-    leg.direction,
-    verticalExaggeration,
-  );
+  // Smooth C1 transition across station leg boundaries so sharp polyline bends never cause
+  // lateral offset jumps or yaw snaps as bogies/cab cross from leg[i] to leg[i+1].
+  const legCount = route.legs.length;
+  const prevLeg = lo > 0 ? route.legs[lo - 1]! : route.isLoop && legCount > 1 ? route.legs[legCount - 1]! : null;
+  const nextLeg = lo < legCount - 1 ? route.legs[lo + 1]! : route.isLoop && legCount > 1 ? route.legs[0]! : null;
+
+  let adjX = pose.x;
+  let adjY = pose.y;
+  let adjZ = pose.z;
+  let adjDirX = pose.dirX;
+  let adjDirY = pose.dirY;
+  let adjDirZ = pose.dirZ;
+  let adjusted = false;
+
+  if (prevLeg) {
+    const blendR = Math.min(14, leg.lengthM * 0.25, prevLeg.lengthM * 0.25);
+    if (blendR > 0.5 && localProgressM < blendR) {
+      const endPrev = sampleRawLegPose(prevLeg, prevLeg.lengthM, verticalExaggeration);
+      const startCur = sampleRawLegPose(leg, 0, verticalExaggeration);
+      const dxJump = startCur.x - endPrev.x;
+      const dyJump = startCur.y - endPrev.y;
+      const dzJump = startCur.z - endPrev.z;
+      const dirDot =
+        endPrev.dirX * startCur.dirX +
+        endPrev.dirY * startCur.dirY +
+        endPrev.dirZ * startCur.dirZ;
+      if (Math.hypot(dxJump, dyJump, dzJump) < 12 && dirDot > -0.3) {
+        const w = (1 - smoothstep01(localProgressM / blendR)) * 0.5;
+        adjX -= dxJump * w;
+        adjY -= dyJump * w;
+        adjZ -= dzJump * w;
+        adjDirX = adjDirX * (1 - w) + endPrev.dirX * w;
+        adjDirY = adjDirY * (1 - w) + endPrev.dirY * w;
+        adjDirZ = adjDirZ * (1 - w) + endPrev.dirZ * w;
+        adjusted = true;
+      }
+    }
+  }
+
+  if (nextLeg) {
+    const distToEnd = leg.lengthM - localProgressM;
+    const blendR = Math.min(14, leg.lengthM * 0.25, nextLeg.lengthM * 0.25);
+    if (blendR > 0.5 && distToEnd < blendR) {
+      const endCur = sampleRawLegPose(leg, leg.lengthM, verticalExaggeration);
+      const startNext = sampleRawLegPose(nextLeg, 0, verticalExaggeration);
+      const dxJump = startNext.x - endCur.x;
+      const dyJump = startNext.y - endCur.y;
+      const dzJump = startNext.z - endCur.z;
+      const dirDot =
+        endCur.dirX * startNext.dirX +
+        endCur.dirY * startNext.dirY +
+        endCur.dirZ * startNext.dirZ;
+      if (Math.hypot(dxJump, dyJump, dzJump) < 12 && dirDot > -0.3) {
+        const w = (1 - smoothstep01(distToEnd / blendR)) * 0.5;
+        adjX += dxJump * w;
+        adjY += dyJump * w;
+        adjZ += dzJump * w;
+        adjDirX = adjDirX * (1 - w) + startNext.dirX * w;
+        adjDirY = adjDirY * (1 - w) + startNext.dirY * w;
+        adjDirZ = adjDirZ * (1 - w) + startNext.dirZ * w;
+        adjusted = true;
+      }
+    }
+  }
+
+  if (adjusted) {
+    const dLen = Math.hypot(adjDirX, adjDirY, adjDirZ) || 1;
+    const ndx = adjDirX / dLen;
+    const ndy = adjDirY / dLen;
+    const ndz = adjDirZ / dLen;
+    const hLen = Math.hypot(ndx, ndz) || 1;
+    const clampedDirY = Math.max(-0.98, Math.min(0.98, ndy));
+    pose = {
+      ...pose,
+      x: adjX,
+      y: adjY,
+      z: adjZ,
+      dirX: ndx,
+      dirY: ndy,
+      dirZ: ndz,
+      rightX: -ndz / hLen,
+      rightZ: ndx / hLen,
+      yawRad: Math.atan2(ndx, ndz),
+      pitchRad: -Math.asin(clampedDirY),
+    };
+  }
+
   return { pose, leg };
 }
 
@@ -180,7 +316,11 @@ export function solveV2ArticulatedCarPoses(
 
     let yawRad = centerHit.pose.yawRad;
     let pitchRad = centerHit.pose.pitchRad;
-    if (chordLen > 0.25) {
+    const forwardAlignment =
+      chordLen > 0.25
+        ? (dx * centerHit.pose.dirX + dz * centerHit.pose.dirZ) / chordLen
+        : -1;
+    if (chordLen > 0.25 && forwardAlignment > 0.1) {
       yawRad = Math.atan2(dx, dz);
       const clampedDirY = Math.max(-0.98, Math.min(0.98, dy / chordLen));
       pitchRad = -Math.asin(clampedDirY);
@@ -874,17 +1014,38 @@ export class VirtualTrainSimulationEngine implements TrainSimulationEngineAdapte
 
   private rebuildSnapshots(verticalExaggeration: number): void {
     const out: SimulatedTrainState[] = [];
+    // Sub-tick interpolation eliminates 20 Hz stepping stutter at 60–240 FPS while keeping
+    // deterministic physics ticks (`t.headRouteM`) untouched and preserving exact bit-equality
+    // when accumulatorSec is ~0 (e.g. exact multiples of FIXED_STEP_SEC in unit tests).
+    const interpDtSec =
+      this.running && this.accumulatorSec > 1e-5
+        ? Math.min(FIXED_STEP_SEC, this.accumulatorSec)
+        : 0;
 
     for (const t of this.activeTrains) {
+      const isMotionState =
+        t.state12 === 'DEPARTING_STATION' ||
+        t.state12 === 'ACCELERATING' ||
+        t.state12 === 'CRUISING' ||
+        t.state12 === 'DECELERATING' ||
+        t.state12 === 'APPROACHING_STATION' ||
+        t.state12 === 'STOPPING';
+      const targetStopM =
+        t.route.stopRouteArcLengthsM[t.targetStopIdx] ?? t.route.totalRouteLengthM;
+      const visualHeadRouteM =
+        interpDtSec > 0 && isMotionState && t.speedMps > 0.001
+          ? Math.min(targetStopM, t.headRouteM + t.speedMps * interpDtSec)
+          : t.headRouteM;
+
       const headHit = sampleStitchedRoutePose(
         t.route,
-        t.headRouteM,
+        visualHeadRouteM,
         verticalExaggeration,
       );
       const carPoses = solveV2ArticulatedCarPoses(
         t.route,
         t.consist,
-        t.headRouteM,
+        visualHeadRouteM,
         verticalExaggeration,
       );
       const { phase, doorState } = mapState12ToPhaseAndDoors(t.state12);
@@ -896,11 +1057,11 @@ export class VirtualTrainSimulationEngine implements TrainSimulationEngineAdapte
 
       const distanceAlongTrackM = Math.max(
         0,
-        Math.min(headHit.leg.lengthM, t.headRouteM - headHit.leg.startRouteM),
+        Math.min(headHit.leg.lengthM, visualHeadRouteM - headHit.leg.startRouteM),
       );
       const progressOnRoute =
         t.route.totalRouteLengthM > 0
-          ? Math.max(0, Math.min(1, t.headRouteM / t.route.totalRouteLengthM))
+          ? Math.max(0, Math.min(1, visualHeadRouteM / t.route.totalRouteLengthM))
           : 0;
 
       out.push({

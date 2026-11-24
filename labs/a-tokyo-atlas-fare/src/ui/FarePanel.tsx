@@ -7,7 +7,7 @@ import type {
   SurchargeType,
   TicketType,
 } from '../domain/types.js';
-import { UI_TEXT, type Locale } from './i18n.js';
+import { pickLocale, UI_TEXT, type Locale } from './i18n.js';
 
 interface FarePanelProps {
   dataset: AtlasDataset;
@@ -21,6 +21,7 @@ interface FarePanelProps {
 interface PresetScenario {
   id: string;
   labelJa: string;
+  labelZh: string;
   labelEn: string;
   req: FareQuoteRequest;
 }
@@ -29,6 +30,7 @@ const PRESETS: PresetScenario[] = [
   {
     id: 'suburban-detour',
     labelJa: '東京→上野（山手線大回り・近郊区間）',
+    labelZh: '东京→上野（山手线大绕行・近郊区间）',
     labelEn: 'Tokyo→Ueno (Suburban Detour)',
     req: {
       originStationId: 'sk:station:jr-east-tokyo',
@@ -43,6 +45,7 @@ const PRESETS: PresetScenario[] = [
   {
     id: 'art69-mishima',
     labelJa: '東京→三島（西大井経由・第69条＆近郊外）',
+    labelZh: '东京→三岛（经由西大井・第69条＆近郊外）',
     labelEn: 'Tokyo→Mishima (Art.69 Yokosuka)',
     req: {
       originStationId: 'sk:station:jr-east-tokyo',
@@ -57,6 +60,7 @@ const PRESETS: PresetScenario[] = [
   {
     id: 'shinkansen-2026-split',
     labelJa: '東京→熱海 新幹線（2026/3/14改定・別線化）',
+    labelZh: '东京→热海 新干线（2026/3/14改定・别线计费）',
     labelEn: 'Tokyo→Atami Shinkansen (2026 Separate)',
     req: {
       originStationId: 'sk:station:jr-east-tokyo',
@@ -72,6 +76,7 @@ const PRESETS: PresetScenario[] = [
   {
     id: 'shinkansen-2025-same',
     labelJa: '東京→熱海 新幹線（2026/3/13以前・同一視）',
+    labelZh: '东京→热海 新干线（2026/3/13以前・视同同一线）',
     labelEn: 'Tokyo→Atami Shinkansen (Pre-2026 Same)',
     req: {
       originStationId: 'sk:station:jr-east-tokyo',
@@ -87,6 +92,7 @@ const PRESETS: PresetScenario[] = [
   {
     id: 'local-line-reject',
     labelJa: '東京→拝島（八高線・地方交通線拒算）',
+    labelZh: '东京→拜岛（八高线・地方交通线拒算）',
     labelEn: 'Tokyo→Haijima (Local Line Reject)',
     req: {
       originStationId: 'sk:station:jr-east-tokyo',
@@ -101,6 +107,7 @@ const PRESETS: PresetScenario[] = [
   {
     id: 'non-jr-reject',
     labelJa: '非JR（大手町メトロ→新宿JR・対象外）',
+    labelZh: '非 JR（大手町地铁→新宿 JR・超出范围）',
     labelEn: 'Non-JR (Metro Otemachi → Shinjuku)',
     req: {
       originStationId: 'sk:station:tokyo-metro-otemachi',
@@ -154,7 +161,7 @@ export const FarePanel: React.FC<FarePanelProps> = ({
       {/* Quick Verification Presets */}
       <div>
         <div className="section-title" style={{ marginBottom: 4 }}>
-          {locale === 'ja' ? '規則検証プリセット' : 'Rule Verification Presets'}
+          {pickLocale(locale, '規則検証プリセット', '规则验证预设', 'Rule Verification Presets')}
         </div>
         <div className="preset-row">
           {PRESETS.map((p) => (
@@ -168,7 +175,7 @@ export const FarePanel: React.FC<FarePanelProps> = ({
                 onCalculate(p.req);
               }}
             >
-              {locale === 'ja' ? p.labelJa : p.labelEn}
+              {pickLocale(locale, p.labelJa, p.labelZh, p.labelEn)}
             </button>
           ))}
         </div>
@@ -193,7 +200,9 @@ export const FarePanel: React.FC<FarePanelProps> = ({
               <option key={s.id} value={s.id}>
                 [{operatorById.get(s.operatorId)?.names.ja}] {s.names.ja}
                 {s.names.en ? ` (${s.names.en})` : ''}
-                {!s.inFareSlice ? ' · スライス外' : ''}
+                {!s.inFareSlice
+                  ? pickLocale(locale, ' · スライス外', ' · 区间外', ' · スライス外')
+                  : ''}
               </option>
             ))}
           </select>
@@ -216,7 +225,9 @@ export const FarePanel: React.FC<FarePanelProps> = ({
               <option key={s.id} value={s.id}>
                 [{operatorById.get(s.operatorId)?.names.ja}] {s.names.ja}
                 {s.names.en ? ` (${s.names.en})` : ''}
-                {!s.inFareSlice ? ' · スライス外' : ''}
+                {!s.inFareSlice
+                  ? pickLocale(locale, ' · スライス外', ' · 区间外', ' · スライス外')
+                  : ''}
               </option>
             ))}
           </select>
@@ -235,7 +246,7 @@ export const FarePanel: React.FC<FarePanelProps> = ({
               })
             }
           >
-            <option value="">{locale === 'ja' ? '指定なし' : 'None'}</option>
+            <option value="">{pickLocale(locale, '指定なし', '不指定', 'None')}</option>
             {sortedStations
               .filter((s) => s.inFareSlice)
               .map((s) => (
@@ -293,12 +304,54 @@ export const FarePanel: React.FC<FarePanelProps> = ({
               });
             }}
           >
-            <option value="shortest">最短在来線 (Shortest Conventional)</option>
-            <option value="yokosuka_bypass">横須賀線・西大井経由 (Art.69-4 Bypass)</option>
-            <option value="oku_bypass">東北本線・尾久経由 (Art.69-2 Bypass)</option>
-            <option value="saikyo_bypass">埼京線・戸田公園経由 (Saikyo Bypass)</option>
-            <option value="yamanote_loop_detour">山手線大回り迂回 (Suburban Detour)</option>
-            <option value="shinkansen">新幹線優先 (Shinkansen · Art.16-2)</option>
+            <option value="shortest">
+              {pickLocale(
+                locale,
+                '最短在来線 (Shortest Conventional)',
+                '最短既有线 (Shortest Conventional)',
+                '最短在来線 (Shortest Conventional)',
+              )}
+            </option>
+            <option value="yokosuka_bypass">
+              {pickLocale(
+                locale,
+                '横須賀線・西大井経由 (Art.69-4 Bypass)',
+                '经由横须贺线・西大井 (第69条4项绕行)',
+                '横須賀線・西大井経由 (Art.69-4 Bypass)',
+              )}
+            </option>
+            <option value="oku_bypass">
+              {pickLocale(
+                locale,
+                '東北本線・尾久経由 (Art.69-2 Bypass)',
+                '经由东北本线・尾久 (第69条2项绕行)',
+                '東北本線・尾久経由 (Art.69-2 Bypass)',
+              )}
+            </option>
+            <option value="saikyo_bypass">
+              {pickLocale(
+                locale,
+                '埼京線・戸田公園経由 (Saikyo Bypass)',
+                '经由埼京线・户田公园 (埼京线绕行)',
+                '埼京線・戸田公園経由 (Saikyo Bypass)',
+              )}
+            </option>
+            <option value="yamanote_loop_detour">
+              {pickLocale(
+                locale,
+                '山手線大回り迂回 (Suburban Detour)',
+                '山手线大绕行 (近郊区间迂回)',
+                '山手線大回り迂回 (Suburban Detour)',
+              )}
+            </option>
+            <option value="shinkansen">
+              {pickLocale(
+                locale,
+                '新幹線優先 (Shinkansen · Art.16-2)',
+                '优先新干线 (Shinkansen · 第16条2项)',
+                '新幹線優先 (Shinkansen · Art.16-2)',
+              )}
+            </option>
           </select>
         </label>
 
@@ -315,11 +368,46 @@ export const FarePanel: React.FC<FarePanelProps> = ({
               })
             }
           >
-            <option value="none">なし（普通乗車券のみ）</option>
-            <option value="limited_express_non_reserved">特急料金・自由席（合成）</option>
-            <option value="limited_express_reserved">特急料金・指定席（合成）</option>
-            <option value="green_car">グリーン料金＋特急（合成）</option>
-            <option value="gran_class">グランクラス料金＋特急（合成・新幹線限定）</option>
+            <option value="none">
+              {pickLocale(
+                locale,
+                'なし（普通乗車券のみ）',
+                '无（仅普通乘车券）',
+                'なし（普通乗車券のみ）',
+              )}
+            </option>
+            <option value="limited_express_non_reserved">
+              {pickLocale(
+                locale,
+                '特急料金・自由席（合成）',
+                '特急费・自由席（合成）',
+                '特急料金・自由席（合成）',
+              )}
+            </option>
+            <option value="limited_express_reserved">
+              {pickLocale(
+                locale,
+                '特急料金・指定席（合成）',
+                '特急费・指定席（合成）',
+                '特急料金・指定席（合成）',
+              )}
+            </option>
+            <option value="green_car">
+              {pickLocale(
+                locale,
+                'グリーン料金＋特急（合成）',
+                '绿色车厢费＋特急（合成）',
+                'グリーン料金＋特急（合成）',
+              )}
+            </option>
+            <option value="gran_class">
+              {pickLocale(
+                locale,
+                'グランクラス料金＋特急（合成・新幹線限定）',
+                '特等车厢 (Gran Class)＋特急（合成・新干线限定）',
+                'グランクラス料金＋特急（合成・新幹線限定）',
+              )}
+            </option>
           </select>
         </label>
 
@@ -363,24 +451,37 @@ export const FarePanel: React.FC<FarePanelProps> = ({
                 <div>
                   <div className="muted" style={{ fontSize: 11 }}>
                     {quote.isSyntheticTariff
-                      ? '合成デモ合計（購入不可）'
-                      : '合計金額'}
+                      ? pickLocale(
+                          locale,
+                          '合成デモ合計（購入不可）',
+                          '合成演示合计（不可购票）',
+                          '合成デモ合計（購入不可）',
+                        )
+                      : pickLocale(locale, '合計金額', '合计金额', '合計金額')}
                   </div>
                   <div style={{ fontSize: 22, fontWeight: 800 }} className="mono" data-testid="fare-total-amount">
                     ¥{quote.totalAmountYen?.toLocaleString()}
                     {quote.isSyntheticTariff && (
                       <span className="badge badge-warn" style={{ marginLeft: 8, fontSize: 10 }}>
-                        SYNTHETIC
+                        {pickLocale(locale, 'SYNTHETIC', '合成费率', 'SYNTHETIC')}
                       </span>
                     )}
                   </div>
                 </div>
                 <div style={{ textAlign: 'right', fontSize: 12 }}>
                   <div>
-                    有効期間: <strong>{quote.validityDays} 日</strong>
+                    {pickLocale(locale, '有効期間:', '有效期:', '有効期間:')}{' '}
+                    <strong>
+                      {quote.validityDays} {pickLocale(locale, '日', '天', '日')}
+                    </strong>
                   </div>
                   <div>
-                    途中下車: <strong>{quote.stopoverAllowed ? '可 (Allowed)' : '不可 (No)'}</strong>
+                    {pickLocale(locale, '途中下車:', '中途下车:', '途中下車:')}{' '}
+                    <strong>
+                      {quote.stopoverAllowed
+                        ? pickLocale(locale, '可 (Allowed)', '允许', '可 (Allowed)')
+                        : pickLocale(locale, '不可 (No)', '不可', '不可 (No)')}
+                    </strong>
                   </div>
                 </div>
               </div>
@@ -395,7 +496,12 @@ export const FarePanel: React.FC<FarePanelProps> = ({
               {quote.candidateRoutes && quote.candidateRoutes.length > 0 && (
                 <div>
                   <div className="section-title" style={{ marginBottom: 4 }}>
-                    候補・比較経路（地図連動ハイライト）
+                    {pickLocale(
+                      locale,
+                      '候補・比較経路（地図連動ハイライト）',
+                      '候选与对比路径（地图联动高亮）',
+                      '候補・比較経路（地図連動ハイライト）',
+                    )}
                   </div>
                   {quote.candidateRoutes.map((cr) => (
                     <div
@@ -409,7 +515,8 @@ export const FarePanel: React.FC<FarePanelProps> = ({
                     >
                       <div style={{ fontWeight: 600, fontSize: 12 }}>{cr.label}</div>
                       <div className="mono muted" style={{ fontSize: 11 }}>
-                        {cr.path.segmentIds.length} segments · operators:{' '}
+                        {cr.path.segmentIds.length}{' '}
+                        {pickLocale(locale, 'segments · operators:', '个区间 · 运营商:', 'segments · operators:')}{' '}
                         {cr.path.operatorsInvolved.join(', ')}
                       </div>
                     </div>
@@ -420,7 +527,7 @@ export const FarePanel: React.FC<FarePanelProps> = ({
               {/* Fare Breakdown */}
               <div>
                 <div className="section-title" style={{ marginBottom: 4 }}>
-                  費用内訳 (Fare Breakdown)
+                  {pickLocale(locale, '費用内訳 (Fare Breakdown)', '费用明细 (Fare Breakdown)', '費用内訳 (Fare Breakdown)')}
                 </div>
                 {quote.breakdown.map((item, idx) => (
                   <div
@@ -447,7 +554,15 @@ export const FarePanel: React.FC<FarePanelProps> = ({
           ) : (
             <div className="banner banner-danger" data-testid="fare-rejected-reason">
               <div>
-                <strong>金額出力なし（{quote.status}）:</strong> {quote.statusReason}
+                <strong>
+                  {pickLocale(
+                    locale,
+                    `金額出力なし（${quote.status}）:`,
+                    `未输出金额（${quote.status}）:`,
+                    `金額出力なし（${quote.status}）:`,
+                  )}
+                </strong>{' '}
+                {quote.statusReason}
               </div>
             </div>
           )}
@@ -455,7 +570,12 @@ export const FarePanel: React.FC<FarePanelProps> = ({
           {/* Explainability Tree */}
           <div data-testid="fare-explanation-tree">
             <div className="section-title" style={{ marginBottom: 6 }}>
-              計算根拠ツリー (Rule Explanation Tree)
+              {pickLocale(
+                locale,
+                '計算根拠ツリー (Rule Explanation Tree)',
+                '计费规则依据树 (Rule Explanation Tree)',
+                '計算根拠ツリー (Rule Explanation Tree)',
+              )}
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {quote.explanation.map((step, i) => (
@@ -482,7 +602,8 @@ export const FarePanel: React.FC<FarePanelProps> = ({
                   <div style={{ fontWeight: 600, fontSize: 12 }}>{step.articleRef}</div>
                   <div style={{ fontSize: 12 }}>{step.reason}</div>
                   <a href={step.officialUrl} target="_blank" rel="noreferrer">
-                    公式根拠リンク: {step.officialUrl}
+                    {pickLocale(locale, '公式根拠リンク:', '官方依据链接:', '公式根拠リンク:')}{' '}
+                    {step.officialUrl}
                   </a>
                 </div>
               ))}

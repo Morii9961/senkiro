@@ -178,7 +178,7 @@ const LINE_BASE_ELEVATION: Record<string, { y: number; lateralM: number; priorit
   // JR Trunk & Urban Lines
   'sk:line:jr-east-chuo': { y: 10, lateralM: -7, priority: 8 },
   'sk:line:jr-east-sobu': { y: 8, lateralM: 7, priority: 7 },
-  'sk:line:jr-east-yamanote': { y: 4, lateralM: 0, priority: 9 },
+  'sk:line:jr-east-yamanote': { y: 7.5, lateralM: 0, priority: 9 },
   'sk:line:jr-east-tohoku': { y: 2, lateralM: 6, priority: 7 },
   'sk:line:jr-east-tohoku-oku': { y: 2, lateralM: -6, priority: 6 },
   'sk:line:jr-east-tohoku-saikyo': { y: 10, lateralM: -9, priority: 6 },
@@ -225,17 +225,34 @@ const LINE_BASE_ELEVATION: Record<string, { y: number; lateralM: number; priorit
  */
 const VERIFIED_STATION_LINE_OVERRIDES: Record<string, { y: number; basis: HeightBasis }> = {
   // === 5.1 SHIBUYA MULTI-LEVEL STACK (Flagship verification case!) ===
-  // Ginza Line sits on Elevated 3F above ground (+14), strictly above JR Yamanote & all subways!
+  // Ginza Line sits on Elevated 3F above ground (+14), strictly above Inokashira, JR Yamanote viaduct & all subways!
   'sk:line:metro-ginza::渋谷': { y: 14, basis: 'manual-verified-relative' },
   'sk:line:metro-ginza::表参道': { y: -10, basis: 'manual-verified-relative' },
-  'sk:line:jr-east-yamanote::渋谷': { y: 2, basis: 'manual-verified-relative' },
-  'sk:line:keio-inokashira::渋谷': { y: 7, basis: 'manual-verified-relative' },
+  'sk:line:jr-east-yamanote::渋谷': { y: 6.5, basis: 'manual-verified-relative' },
+  'sk:line:keio-inokashira::渋谷': { y: 10.5, basis: 'manual-verified-relative' },
   'sk:line:metro-hanzomon::渋谷': { y: -18, basis: 'manual-verified-relative' },
   'sk:line:tokyu-denentoshi::渋谷': { y: -18, basis: 'manual-verified-relative' },
   'sk:line:metro-fukutoshin::渋谷': { y: -30, basis: 'manual-verified-relative' },
   'sk:line:tokyu-toyoko::渋谷': { y: -30, basis: 'manual-verified-relative' },
   'sk:line:tokyu-toyoko::代官山': { y: -6, basis: 'manual-verified-relative' },
   'sk:line:tokyu-toyoko::中目黒': { y: 10, basis: 'manual-verified-relative' },
+
+  // === YAMANOTE LINE CENTRAL TOKYO ELEVATED VIADUCT CORRIDOR ===
+  'sk:line:jr-east-yamanote::東京': { y: 7.5, basis: 'manual-verified-relative' },
+  'sk:line:jr-east-yamanote::神田': { y: 8.5, basis: 'manual-verified-relative' },
+  'sk:line:jr-east-yamanote::秋葉原': { y: 8.5, basis: 'manual-verified-relative' },
+  'sk:line:jr-east-yamanote::御徒町': { y: 8, basis: 'manual-verified-relative' },
+  'sk:line:jr-east-yamanote::上野': { y: 7.5, basis: 'manual-verified-relative' },
+  'sk:line:jr-east-yamanote::有楽町': { y: 8.5, basis: 'manual-verified-relative' },
+  'sk:line:jr-east-yamanote::新橋': { y: 8.5, basis: 'manual-verified-relative' },
+  'sk:line:jr-east-yamanote::浜松町': { y: 8, basis: 'manual-verified-relative' },
+  'sk:line:jr-east-yamanote::田町': { y: 6.5, basis: 'manual-verified-relative' },
+  'sk:line:jr-east-yamanote::恵比寿': { y: 7, basis: 'manual-verified-relative' },
+  'sk:line:jr-east-yamanote::大崎': { y: 6.5, basis: 'manual-verified-relative' },
+  'sk:line:jr-east-yamanote::五反田': { y: 8, basis: 'manual-verified-relative' },
+  'sk:line:jr-east-yamanote::目黒': { y: 4, basis: 'manual-verified-relative' },
+  'sk:line:jr-east-yamanote::原宿': { y: 3.5, basis: 'manual-verified-relative' },
+  'sk:line:jr-east-yamanote::代々木': { y: 4.5, basis: 'manual-verified-relative' },
 
   // === 5.2 SHINJUKU MULTI-LEVEL STACK ===
   'sk:line:jr-east-yamanote::新宿': { y: 0, basis: 'manual-verified-relative' },
@@ -461,13 +478,22 @@ export function solveRailwayNetwork3D(
           stationLineElev.set(key, { y: lineCfg.y, basis: 'osm-derived-schematic' });
         }
       } else {
-        // Conventional JR & Private railways: respect OSM bridge/tunnel/at_grade tags where present
+        // Conventional JR & Private railways: respect OSM bridge/tunnel/at_grade tags where present,
+        // while keeping inherently elevated urban viaduct lines (lineCfg.y >= 6) elevated above ground
+        // unless an explicit verified station override sets y = 0.
         if (hasTunnel && !hasBridge) {
           stationLineElev.set(key, { y: -14, basis: 'osm-derived-schematic' });
         } else if (hasBridge && !hasTunnel) {
           stationLineElev.set(key, { y: Math.max(9, lineCfg.y), basis: 'osm-derived-schematic' });
         } else if (hasSurface) {
-          stationLineElev.set(key, { y: 0, basis: 'osm-derived-schematic' });
+          if (lineCfg.y >= 6) {
+            stationLineElev.set(key, {
+              y: Math.max(5.5, lineCfg.y - 1.5),
+              basis: 'osm-derived-schematic',
+            });
+          } else {
+            stationLineElev.set(key, { y: 0, basis: 'osm-derived-schematic' });
+          }
         } else {
           stationLineElev.set(key, { y: lineCfg.y, basis: 'inferred-schematic' });
         }

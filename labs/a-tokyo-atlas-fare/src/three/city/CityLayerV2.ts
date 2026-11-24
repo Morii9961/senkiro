@@ -16,7 +16,11 @@ import type {
   UndergroundCutawayState,
 } from '../../contracts/atlasV2.js';
 import type { CityLayerAdapter } from '../contracts/adapters.js';
-import { SkyEnvironmentSystem } from '../environment/skyEnvironment.js';
+import {
+  computeSolarLightingState,
+  SkyEnvironmentSystem,
+  type SolarLightingState,
+} from '../environment/skyEnvironment.js';
 import { CityChunkManager } from '../generators/buildingGenerator.js';
 import { CityTerrainLayer } from '../generators/cityTerrainGenerator.js';
 import { createCutawayUniforms, type CutawayUniforms } from '../materials/cutawayShader.js';
@@ -45,6 +49,7 @@ export class CityLayerV2 implements CityLayerAdapter {
   private readonly hostScene: THREE.Scene | null;
   private isDark: boolean;
   private activePreset: CityLightingPreset;
+  private elapsedSec = 0;
 
   constructor(options: CityLayerV2Options) {
     this.isDark = options.isDark;
@@ -81,9 +86,36 @@ export class CityLayerV2 implements CityLayerAdapter {
     landmarks?: UrbanLandmarkRecord[],
   ): void {
     this.terrainLayer.populateFromEnvironment(env);
+    this.buildingManager.setEnvironmentForInfill(env);
     if (manifest) {
       this.buildingManager.setManifest(manifest, landmarks ?? env.landmarks);
     }
+  }
+
+  setTimeOfDay(hour: number): SolarLightingState {
+    const state =
+      this.skyEnv && this.hostScene
+        ? this.skyEnv.applyTimeOfDay(this.hostScene, hour)
+        : computeSolarLightingState(hour);
+
+    this.isDark = state.isDark;
+    this.activePreset = state.preset;
+    this.terrainLayer.setTimeOfDay(state.hour, state.nightFactor);
+    this.buildingManager.setNightFactor(state.nightFactor);
+    return state;
+  }
+
+  setStationFocus(
+    active: boolean,
+    centerX = 0,
+    centerZ = 0,
+    radiusM = 220,
+    isUnderground = false,
+  ): void {
+    this.cutawayUniforms.uStationFocusActive.value = active ? 1.0 : 0.0;
+    this.cutawayUniforms.uStationFocusCenter.value.set(centerX, 0, centerZ);
+    this.cutawayUniforms.uStationFocusRadius.value = radiusM;
+    this.cutawayUniforms.uStationFocusUnderground.value = isUnderground ? 1.0 : 0.0;
   }
 
   setTheme(isDark: boolean, preset?: CityLightingPreset): void {
@@ -116,8 +148,10 @@ export class CityLayerV2 implements CityLayerAdapter {
   updateForCamera(
     camera: THREE.PerspectiveCamera,
     focusTarget: THREE.Vector3,
-    _dtSec: number,
+    dtSec: number,
   ): void {
+    this.elapsedSec += Math.max(0, dtSec);
+    this.terrainLayer.updateAnimation(this.elapsedSec);
     this.buildingManager.updateForCamera(camera, focusTarget);
     this.skyEnv?.updateForCamera(camera.position);
   }

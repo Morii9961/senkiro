@@ -58,10 +58,7 @@ export class ViaductLayer {
   readonly group = new THREE.Group();
   private readonly batches: ViaductBatch[] = [];
   private readonly piersMesh: THREE.InstancedMesh | null = null;
-  private readonly stationGroup = new THREE.Group();
   private readonly pierMaterial: THREE.MeshStandardMaterial;
-  private readonly stationPlatformMaterial: THREE.MeshStandardMaterial;
-  private readonly canopyMaterial: THREE.MeshStandardMaterial;
 
   private anyElevatedVisible = true;
   private showDecks = true;
@@ -73,34 +70,11 @@ export class ViaductLayer {
     clipPlanes: THREE.Plane[],
   ) {
     this.group.name = 'procedural-3d-viaducts';
-    this.stationGroup.name = 'elevated-station-structures';
-    this.group.add(this.stationGroup);
 
     this.pierMaterial = new THREE.MeshStandardMaterial({
       color: 0xa4abb4,
       roughness: 0.88,
       metalness: 0.06,
-      transparent: false,
-      opacity: 1.0,
-      depthWrite: true,
-      clippingPlanes: clipPlanes,
-    });
-
-    this.stationPlatformMaterial = new THREE.MeshStandardMaterial({
-      color: 0xcfd4da,
-      roughness: 0.8,
-      metalness: 0.06,
-      transparent: false,
-      opacity: 1.0,
-      depthWrite: true,
-      clippingPlanes: clipPlanes,
-    });
-
-    this.canopyMaterial = new THREE.MeshStandardMaterial({
-      color: 0x525e6d,
-      roughness: 0.42,
-      metalness: 0.36,
-      envMapIntensity: 0.8,
       transparent: false,
       opacity: 1.0,
       depthWrite: true,
@@ -187,9 +161,9 @@ export class ViaductLayer {
             const px = a.x + (b.x - a.x) * f;
             const py = a.y + (b.y - a.y) * f;
             const pz = a.z + (b.z - a.z) * f;
-            if (py >= 4.2 && !avoidCells.has(cellKey(px, pz)) && piers.length < 9_000) {
+            if (py >= 3.2 && !avoidCells.has(cellKey(px, pz)) && piers.length < 9_000) {
               // Extend bottom cleanly to y = -1.25 (metropolitan base plane) so zero piers float!
-              piers.push({ x: px, z: pz, h: py - 1.65 + 1.25, angle, width: hw * 1.65 });
+              piers.push({ x: px, z: pz, h: Math.max(1.2, py - 1.65 + 1.25), angle, width: hw * 1.65 });
             }
             accum += 54;
           }
@@ -255,56 +229,8 @@ export class ViaductLayer {
       this.group.add(inst);
     }
 
-    // Articulated Elevated Station Platforms + Canopy Support Columns + Overhanging Roofs
-    const platformGeoms: THREE.BufferGeometry[] = [];
-    const canopyGeoms: THREE.BufferGeometry[] = [];
-    for (const node of solved.stationNodes) {
-      if (node.structure !== 'viaduct' || node.y < 5) continue;
-      const angle = Math.atan2(node.dirZ, node.dirX);
-      const length = node.isMajorHub ? 115 : 74;
-      const width = node.isMajorHub ? 15.5 : 11.8;
-
-      const plat = new THREE.BoxGeometry(length, 2.0, width);
-      plat.rotateY(-angle);
-      plat.translate(node.x, node.y - 0.5, node.z);
-      platformGeoms.push(plat.toNonIndexed());
-
-      // Two slim structural canopy support columns along centerline
-      for (const offset of [-length * 0.28, length * 0.28]) {
-        const col = new THREE.BoxGeometry(1.4, 5.4, 1.4);
-        col.translate(offset, 2.7, 0);
-        col.rotateY(-angle);
-        col.translate(node.x, node.y + 0.5, node.z);
-        platformGeoms.push(col.toNonIndexed());
-      }
-
-      const roof = new THREE.BoxGeometry(length * 0.92, 0.95, width + 2.2);
-      roof.rotateY(-angle);
-      roof.translate(node.x, node.y + 5.7, node.z);
-      canopyGeoms.push(roof.toNonIndexed());
-    }
-
-    if (platformGeoms.length > 0) {
-      const m = mergeGeometries(platformGeoms, false);
-      platformGeoms.forEach((g) => g.dispose());
-      if (m) {
-        const mesh = new THREE.Mesh(m, this.stationPlatformMaterial);
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-        mesh.name = 'elevated-station-platforms';
-        this.stationGroup.add(mesh);
-      }
-    }
-    if (canopyGeoms.length > 0) {
-      const m = mergeGeometries(canopyGeoms, false);
-      canopyGeoms.forEach((g) => g.dispose());
-      if (m) {
-        const mesh = new THREE.Mesh(m, this.canopyMaterial);
-        mesh.castShadow = true;
-        mesh.name = 'elevated-station-canopies';
-        this.stationGroup.add(mesh);
-      }
-    }
+    // Elevated & surface dual-side-platform architectural stations are built cleanly without
+    // track overlap by `TunnelAndStationLayer` in `tunnelGenerator.ts`.
   }
 
   updateLod(camDist: number): void {
@@ -321,7 +247,6 @@ export class ViaductLayer {
     if (this.piersMesh) {
       this.piersMesh.visible = this.anyElevatedVisible && this.showPiers;
     }
-    this.stationGroup.visible = this.anyElevatedVisible && this.showDecks;
     for (const b of this.batches) {
       b.group.visible = b.filterVisible && this.showDecks;
     }
@@ -364,12 +289,7 @@ export class ViaductLayer {
       });
       b.deckMaterial.dispose();
     }
-    this.stationGroup.traverse((o) => {
-      if (o instanceof THREE.Mesh) o.geometry.dispose();
-    });
     if (this.piersMesh) this.piersMesh.geometry.dispose();
     this.pierMaterial.dispose();
-    this.stationPlatformMaterial.dispose();
-    this.canopyMaterial.dispose();
   }
 }

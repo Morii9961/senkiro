@@ -11,7 +11,7 @@ import type {
   TrackVerticalAttribute,
   VerticalClass,
 } from '../domain/types.js';
-import { UI_TEXT, type Locale } from './i18n.js';
+import { pickLocale, UI_TEXT, type Locale } from './i18n.js';
 
 export type MapViewMode = 'geo' | '3d';
 
@@ -134,7 +134,9 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
       const verticalOrder = vert?.verticalOrder ?? 0;
 
       const color = primaryLine?.color ?? '#64748b';
-      const opName = operatorById.get(seg.operatorId)?.names.ja ?? seg.operatorId;
+      const opObj = operatorById.get(seg.operatorId);
+      const opName = opObj?.names.ja ?? seg.operatorId;
+      const opNameZh = opObj?.names.zh ?? opName;
 
       lineFeatures.push({
         type: 'Feature',
@@ -142,8 +144,10 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
           segmentId: seg.id,
           lineId: primaryLine?.id ?? '',
           lineNameJa: primaryLine?.names.ja ?? '',
+          lineNameZh: primaryLine?.names.zh ?? primaryLine?.names.ja ?? '',
           lineNameEn: primaryLine?.names.en ?? '',
           operatorName: opName,
+          operatorNameZh: opNameZh,
           color,
           operatingKm: seg.operatingKm,
           isShinkansen: seg.isShinkansen ? 1 : 0,
@@ -199,9 +203,14 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
         properties: {
           stationId: st.id,
           nameJa: st.names.ja ?? '',
+          nameZh: st.names.zh ?? st.names.ja ?? '',
           nameEn: st.names.en ?? '',
           code: st.stationCode ?? '',
           operatorName: operatorById.get(st.operatorId)?.names.ja ?? '',
+          operatorNameZh:
+            operatorById.get(st.operatorId)?.names.zh ??
+            operatorById.get(st.operatorId)?.names.ja ??
+            '',
           color: primaryLine?.color ?? '#334155',
           inFareSlice: st.inFareSlice ? 1 : 0,
           isHub: st.railLineIds.length > 1 ? 1 : 0,
@@ -520,9 +529,11 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
       map.getCanvas().style.cursor = 'pointer';
       const p = e.features?.[0]?.properties;
       if (p) {
+        const namePrimary = locale === 'zh' ? p.nameZh || p.nameJa : p.nameJa;
+        const opLabel = locale === 'zh' ? p.operatorNameZh || p.operatorName : p.operatorName;
         setHoverInfo({
-          title: `${p.nameJa}${p.nameEn ? ` · ${p.nameEn}` : ''}`,
-          subtitle: `${p.operatorName}${p.code ? ` (${p.code})` : ''}`,
+          title: `${namePrimary}${p.nameEn ? ` · ${p.nameEn}` : ''}`,
+          subtitle: `${opLabel}${p.code ? ` (${p.code})` : ''}`,
         });
       }
     };
@@ -533,13 +544,30 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
       if (p) {
         const kmText =
           p.operatingKm !== null && p.operatingKm !== undefined && p.operatingKm !== 'null'
-            ? `営業キロ: ${p.operatingKm} km`
-            : '営業キロ: 未知';
+            ? pickLocale(
+                locale,
+                `営業キロ: ${p.operatingKm} km`,
+                `营业里程: ${p.operatingKm} km`,
+                `営業キロ: ${p.operatingKm} km`,
+              )
+            : pickLocale(locale, '営業キロ: 未知', '营业里程: 未知', '営業キロ: 未知');
         const vertText =
-          viewMode === '3d' ? ` · 縦断(模式): ${p.verticalClass}` : '';
+          viewMode === '3d'
+            ? pickLocale(
+                locale,
+                ` · 縦断(模式): ${p.verticalClass}`,
+                ` · 纵断(示意): ${p.verticalClass}`,
+                ` · 縦断(模式): ${p.verticalClass}`,
+              )
+            : '';
+        const titleLine =
+          locale === 'zh'
+            ? p.lineNameZh || p.lineNameJa || p.lineId
+            : p.lineNameJa || p.lineId;
+        const opLabel = locale === 'zh' ? p.operatorNameZh || p.operatorName : p.operatorName;
         setHoverInfo({
-          title: String(p.lineNameJa || p.lineId),
-          subtitle: String(p.operatorName || ''),
+          title: String(titleLine),
+          subtitle: String(opLabel || ''),
           extra: `${kmText}${vertText}`,
         });
       }
@@ -571,7 +599,7 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
       map.off('mouseleave', 'tracks-surface', handleLeave);
       map.off('mouseleave', 'tracks-underground', handleLeave);
     };
-  }, [mapReady, onSelectStation, onSelectLine, viewMode]);
+  }, [mapReady, onSelectStation, onSelectLine, viewMode, locale]);
 
   // Update GeoJSON sources when data/filters change
   useEffect(() => {
@@ -665,7 +693,12 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
       <div
         ref={containerRef}
         className="map-container"
-        aria-label={locale === 'ja' ? '東京鉄道路線図マップ' : 'Tokyo Railway Interactive Map'}
+        aria-label={pickLocale(
+          locale,
+          '東京鉄道路線図マップ',
+          '东京铁道路线图',
+          'Tokyo Railway Interactive Map',
+        )}
       />
 
       {/* Top Overlays: 3D schematic honesty banner & actual vs billed path diff banner */}
@@ -673,8 +706,23 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
         {viewMode === '3d' && (
           <div className="banner banner-warning" data-testid="vertical-3d-banner">
             <span>
-              <strong>3D 模式表示 / Schematic 3D:</strong> {t.vertical3dBanner}
-              {verticalLoading ? ' (loading osm-vertical.json...)' : ''}
+              <strong>
+                {pickLocale(
+                  locale,
+                  '3D 模式表示 / Schematic 3D:',
+                  '3D 示意展示:',
+                  '3D 模式表示 / Schematic 3D:',
+                )}
+              </strong>{' '}
+              {t.vertical3dBanner}
+              {verticalLoading
+                ? pickLocale(
+                    locale,
+                    ' (loading osm-vertical.json...)',
+                    ' (正在加载 osm-vertical.json...)',
+                    ' (loading osm-vertical.json...)',
+                  )
+                : ''}
             </span>
           </div>
         )}
@@ -688,7 +736,7 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
       </div>
 
       {/* Bottom-left legend */}
-      <div className="map-legend" aria-label="Map Legend">
+      <div className="map-legend" aria-label={pickLocale(locale, 'Map Legend', '地图图例', 'Map Legend')}>
         {fareQuote?.actualPath && (
           <>
             <div className="legend-row">
@@ -711,33 +759,59 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
           <>
             <div className="legend-row">
               <span className="swatch-line" style={{ background: '#f59e0b', height: 6 }} />
-              <span>高架 (elevated · 3D 立体押出)</span>
+              <span>
+                {pickLocale(
+                  locale,
+                  '高架 (elevated · 3D 立体押出)',
+                  '高架 (elevated · 3D 立体拉伸)',
+                  '高架 (elevated · 3D 立体押出)',
+                )}
+              </span>
             </div>
             <div className="legend-row">
               <span className="swatch-line" style={{ background: '#378640' }} />
-              <span>地上 (at_grade)</span>
+              <span>
+                {pickLocale(locale, '地上 (at_grade)', '地面 (at_grade)', '地上 (at_grade)')}
+              </span>
             </div>
             <div className="legend-row">
               <span
                 className="swatch-dashed"
                 style={{ borderTopColor: '#7c3aed' }}
               />
-              <span>地下 (underground · 破線模式)</span>
+              <span>
+                {pickLocale(
+                  locale,
+                  '地下 (underground · 破線模式)',
+                  '地下 (underground · 虚线示意)',
+                  '地下 (underground · 破線模式)',
+                )}
+              </span>
             </div>
             <div className="legend-row">
               <span
                 className="swatch-dashed"
                 style={{ borderTopColor: '#64748b' }}
               />
-              <span>未確認 (unknown · 推測なし)</span>
+              <span>
+                {pickLocale(
+                  locale,
+                  '未確認 (unknown · 推測なし)',
+                  '未确认 (unknown · 不作推测)',
+                  '未確認 (unknown · 推測なし)',
+                )}
+              </span>
             </div>
           </>
         )}
         {!fareQuote?.actualPath && viewMode === 'geo' && (
           <div className="muted">
-            {locale === 'ja'
-              ? '駅または路線をクリックして詳細表示・JR運賃計算へ入力'
-              : 'Click any station or line to inspect details or set JR fare origin/destination'}
+            {pickLocale(
+              locale,
+              '駅または路線をクリックして詳細表示・JR運賃計算へ入力',
+              '点击任意车站或线路以查看详情，或设为 JR 票价起终点',
+              'Click any station or line to inspect details or set JR fare origin/destination',
+            )}
           </div>
         )}
       </div>

@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import type { AtlasDataset, SkId } from '../domain/types.js';
-import { UI_TEXT, type Locale } from './i18n.js';
+import { pickLocale, UI_TEXT, type Locale } from './i18n.js';
 
 interface StripMapViewProps {
   dataset: AtlasDataset;
@@ -66,7 +66,14 @@ export const StripMapView: React.FC<StripMapViewProps> = ({
     <div className="strip-container" data-testid="strip-map-view">
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
         <label className="form-label" style={{ minWidth: 280 }}>
-          <span>{locale === 'ja' ? '表示路線を選択（Strip Map）' : 'Select Rail Line (Strip Map)'}</span>
+          <span>
+            {pickLocale(
+              locale,
+              '表示路線を選択（Strip Map）',
+              '选择显示线路 (Strip Map)',
+              'Select Rail Line (Strip Map)',
+            )}
+          </span>
           <select
             className="input-field"
             value={activeLine.id}
@@ -74,7 +81,15 @@ export const StripMapView: React.FC<StripMapViewProps> = ({
           >
             {dataset.railLines.map((l) => (
               <option key={l.id} value={l.id}>
-                {l.names.ja} ({operatorById.get(l.operatorId)?.names.ja})
+                {pickLocale(locale, l.names.ja, l.names.zh ?? l.names.ja, l.names.ja)} (
+                {pickLocale(
+                  locale,
+                  operatorById.get(l.operatorId)?.names.ja,
+                  operatorById.get(l.operatorId)?.names.zh ??
+                    operatorById.get(l.operatorId)?.names.ja,
+                  operatorById.get(l.operatorId)?.names.ja,
+                )}
+                )
               </option>
             ))}
           </select>
@@ -83,12 +98,20 @@ export const StripMapView: React.FC<StripMapViewProps> = ({
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span className="line-dot" style={{ background: activeLine.color, width: 14, height: 14 }} />
             <strong style={{ fontSize: 16 }}>
-              {locale === 'ja' ? activeLine.names.ja : activeLine.names.en ?? activeLine.names.ja}
+              {pickLocale(
+                locale,
+                activeLine.names.ja,
+                activeLine.names.zh ?? activeLine.names.ja,
+                activeLine.names.en ?? activeLine.names.ja,
+              )}
             </strong>
           </div>
           <div className="muted" style={{ fontSize: 12 }}>
-            {op?.names.ja} · {activeLine.lineClass} ·{' '}
-            {activeLine.inFareSlice ? 'JR 運賃スライス内' : '地図表示のみ'}
+            {pickLocale(locale, op?.names.ja, op?.names.zh ?? op?.names.ja, op?.names.ja)} ·{' '}
+            {activeLine.lineClass} ·{' '}
+            {activeLine.inFareSlice
+              ? pickLocale(locale, 'JR 運賃スライス内', 'JR 票价区间内', 'JR 運賃スライス内')
+              : pickLocale(locale, '地図表示のみ', '仅地图展示', '地図表示のみ')}
           </div>
         </div>
       </div>
@@ -96,13 +119,23 @@ export const StripMapView: React.FC<StripMapViewProps> = ({
       {throughServices.length > 0 && (
         <div className="card-subtle" style={{ marginTop: 12, maxWidth: 760 }}>
           <div className="section-title">
-            {locale === 'ja'
-              ? '直通運転（ThroughService · 路線所有とは別モデル）'
-              : 'Through Services (Modeled Separately from Track Ownership)'}
+            {pickLocale(
+              locale,
+              '直通運転（ThroughService · 路線所有とは別モデル）',
+              '直通运转（ThroughService · 独立于线路所有权建模）',
+              'Through Services (Modeled Separately from Track Ownership)',
+            )}
           </div>
           {throughServices.map((ts) => (
             <div key={ts.id} style={{ fontSize: 12 }}>
-              <strong>{locale === 'ja' ? ts.names.ja : ts.names.en ?? ts.names.ja}</strong>
+              <strong>
+                {pickLocale(
+                  locale,
+                  ts.names.ja,
+                  ts.names.zh ?? ts.names.ja,
+                  ts.names.en ?? ts.names.ja,
+                )}
+              </strong>
               <div className="muted">{ts.serviceDescription}</div>
             </div>
           ))}
@@ -161,7 +194,7 @@ export const StripMapView: React.FC<StripMapViewProps> = ({
                       fontSize: 14,
                     }}
                   >
-                    {st.names.ja}
+                    {pickLocale(locale, st.names.ja, st.names.zh ?? st.names.ja, st.names.ja)}
                     {st.names.en && (
                       <span className="muted" style={{ fontWeight: 400, marginLeft: 8, fontSize: 12 }}>
                         {st.names.en}
@@ -172,7 +205,12 @@ export const StripMapView: React.FC<StripMapViewProps> = ({
                     <div style={{ marginTop: 2 }}>
                       {tsHere.map((ts) => (
                         <span key={ts.id} className="badge badge-ok" style={{ marginRight: 4 }}>
-                          直通境界 / Through Boundary
+                          {pickLocale(
+                            locale,
+                            '直通境界 / Through Boundary',
+                            '直通边界',
+                            '直通境界 / Through Boundary',
+                          )}
                         </span>
                       ))}
                     </div>
@@ -205,7 +243,19 @@ export const StripMapView: React.FC<StripMapViewProps> = ({
                   }}
                   className="mono muted"
                 >
-                  {kmToNext !== null ? `営業キロ ${kmToNext} km` : '営業キロ: 未知 / Unverified'}
+                  {kmToNext !== null
+                    ? pickLocale(
+                        locale,
+                        `営業キロ ${kmToNext} km`,
+                        `营业里程 ${kmToNext} km`,
+                        `営業キロ ${kmToNext} km`,
+                      )
+                    : pickLocale(
+                        locale,
+                        '営業キロ: 未知 / Unverified',
+                        '营业里程: 未知 / 未核实',
+                        '営業キロ: 未知 / Unverified',
+                      )}
                 </div>
               )}
             </div>

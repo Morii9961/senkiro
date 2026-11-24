@@ -102,9 +102,19 @@ a:focus-visible {
 
 .brand-block {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 10px;
   min-width: 0;
+}
+
+.sidebar-toggle-btn {
+  padding: 4px 7px;
+  flex-shrink: 0;
+}
+
+.locale-switcher button {
+  padding: 4px 8px;
+  font-size: 12px;
 }
 
 .brand-title {
@@ -175,6 +185,7 @@ a:focus-visible {
 }
 
 .workspace {
+  position: relative;
   display: flex;
   flex: 1;
   min-height: 0;
@@ -183,21 +194,90 @@ a:focus-visible {
 
 .sidebar {
   width: 420px;
+  min-width: 0;
   max-width: 46vw;
+  flex-shrink: 0;
   background: var(--surface);
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   min-height: 0;
   z-index: 10;
+  opacity: 1;
+  transition: width 0.22s ease, opacity 0.18s ease;
 }
 
-.sidebar-tabs {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+.sidebar.collapsed {
+  width: 0;
+  min-width: 0;
+  max-width: 0;
+  border-right: none;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.sidebar-tabs-row {
+  display: flex;
+  align-items: stretch;
   border-bottom: 1px solid var(--border);
   background: var(--surface-subtle);
   flex-shrink: 0;
+}
+
+.sidebar-tabs {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.sidebar-close-btn {
+  border: none;
+  border-left: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  padding: 0 9px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.14s ease, color 0.14s ease;
+}
+
+.sidebar-close-btn:hover {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.sidebar-reopen-pill {
+  position: absolute;
+  left: 0;
+  top: 158px;
+  z-index: 25;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 11px 9px 9px;
+  border: 1px solid var(--border);
+  border-left: none;
+  border-radius: 0 10px 10px 0;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: blur(10px);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: background 0.15s ease, border-color 0.15s ease, padding-left 0.15s ease;
+}
+
+.sidebar-reopen-pill:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+  padding-left: 13px;
 }
 
 .sidebar-tab {
@@ -910,6 +990,140 @@ a:focus-visible {
   font-size: 11px;
 }
 
+/* Interactive Time-of-Day & Solar Lighting Controls */
+.tod-control-anchor {
+  position: relative;
+  display: inline-flex;
+}
+
+.tod-pill-btn {
+  gap: 5px;
+}
+
+.tod-live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #fde047;
+  box-shadow: 0 0 6px rgba(253, 224, 71, 0.85);
+}
+
+.tod-popover {
+  align-self: flex-end;
+  width: 340px;
+  max-width: calc(100vw - 32px);
+  background: color-mix(in srgb, var(--surface) 95%, transparent);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 10px 12px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  font-size: 11.5px;
+}
+
+.tod-popover-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.tod-title-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.tod-play-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.tod-play-btn.playing {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+}
+
+.tod-slider-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tod-slider {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  appearance: none;
+  background: linear-gradient(
+    90deg,
+    #0f172a 0%,
+    #1e3a5f 22%,
+    #f59e0b 30%,
+    #7dd3fc 52%,
+    #fb923c 72%,
+    #1e293b 82%,
+    #0f172a 100%
+  );
+  cursor: pointer;
+}
+
+.tod-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 2px solid var(--accent);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+
+.tod-scale-marks {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9.5px;
+  color: var(--text-muted);
+}
+
+.tod-presets {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 5px;
+}
+
+.tod-preset-chip {
+  border: 1px solid var(--border);
+  background: var(--surface-subtle);
+  color: var(--text);
+  border-radius: 5px;
+  padding: 4px 7px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.14s ease, background 0.14s ease;
+}
+
+.tod-preset-chip:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.tod-preset-chip.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
 .ux-help-title {
   font-weight: 700;
   margin-bottom: 6px;
@@ -1216,6 +1430,13 @@ a:focus-visible {
     height: 48vh;
     border-right: none;
     border-top: 1px solid var(--border);
+  }
+  .sidebar.collapsed {
+    width: 100%;
+    max-width: 100%;
+    height: 0;
+    min-height: 0;
+    border-top: none;
   }
   .canvas-pane {
     height: 52vh;

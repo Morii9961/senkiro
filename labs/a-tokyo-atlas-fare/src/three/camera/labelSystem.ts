@@ -10,6 +10,7 @@ import * as THREE from 'three';
 import type { SimulatedTrainState } from '../../contracts/atlasV2.js';
 import type { SolvedRailwayNetwork3D } from '../../domain/elevationSolver.js';
 import type { AtlasDataset, SkId } from '../../domain/types.js';
+import { pickLocale, type Locale } from '../../ui/i18n.js';
 import { lonLatToWorld } from '../geoProjection.js';
 import type { UrbanLandmarkRecord } from '../types.js';
 import type { CameraModeId } from './cameraModeStateMachine.js';
@@ -24,8 +25,10 @@ interface WorldLabelAnchor {
   id: string;
   kind: MapLabelKind;
   textPrimaryJa: string;
+  textPrimaryZh: string;
   textPrimaryEn: string;
   textSecondaryJa?: string;
+  textSecondaryZh?: string;
   textSecondaryEn?: string;
   badge?: string | null;
   color?: string | null;
@@ -45,27 +48,28 @@ interface WorldLabelAnchor {
 const TOKYO_DISTRICT_ANCHORS: {
   id: string;
   ja: string;
+  zh: string;
   en: string;
   lon: number;
   lat: number;
   priority: number;
 }[] = [
-  { id: 'dist-shinjuku', ja: '新宿エリア', en: 'Shinjuku', lon: 139.7004, lat: 35.6896, priority: 340 },
-  { id: 'dist-shibuya', ja: '渋谷エリア', en: 'Shibuya', lon: 139.7016, lat: 35.658, priority: 335 },
-  { id: 'dist-tokyo', ja: '東京・丸の内', en: 'Tokyo / Marunouchi', lon: 139.7662, lat: 35.6826, priority: 350 },
-  { id: 'dist-shinagawa', ja: '品川・高輪', en: 'Shinagawa', lon: 139.739, lat: 35.6285, priority: 320 },
-  { id: 'dist-ikebukuro', ja: '池袋エリア', en: 'Ikebukuro', lon: 139.7109, lat: 35.7295, priority: 318 },
-  { id: 'dist-ueno', ja: '上野・御徒町', en: 'Ueno', lon: 139.7772, lat: 35.7138, priority: 300 },
-  { id: 'dist-roppongi', ja: '六本木・赤坂', en: 'Roppongi', lon: 139.731, lat: 35.6628, priority: 280 },
-  { id: 'dist-ginza', ja: '銀座・日比谷', en: 'Ginza / Hibiya', lon: 139.765, lat: 35.6717, priority: 290 },
-  { id: 'dist-oshiage', ja: '押上・スカイツリー', en: 'Oshiage / Skytree', lon: 139.8107, lat: 35.7101, priority: 285 },
+  { id: 'dist-shinjuku', ja: '新宿エリア', zh: '新宿区域', en: 'Shinjuku', lon: 139.7004, lat: 35.6896, priority: 340 },
+  { id: 'dist-shibuya', ja: '渋谷エリア', zh: '涩谷区域', en: 'Shibuya', lon: 139.7016, lat: 35.658, priority: 335 },
+  { id: 'dist-tokyo', ja: '東京・丸の内', zh: '东京・丸之内', en: 'Tokyo / Marunouchi', lon: 139.7662, lat: 35.6826, priority: 350 },
+  { id: 'dist-shinagawa', ja: '品川・高輪', zh: '品川・高轮', en: 'Shinagawa', lon: 139.739, lat: 35.6285, priority: 320 },
+  { id: 'dist-ikebukuro', ja: '池袋エリア', zh: '池袋区域', en: 'Ikebukuro', lon: 139.7109, lat: 35.7295, priority: 318 },
+  { id: 'dist-ueno', ja: '上野・御徒町', zh: '上野・御徒町', en: 'Ueno', lon: 139.7772, lat: 35.7138, priority: 300 },
+  { id: 'dist-roppongi', ja: '六本木・赤坂', zh: '六本木・赤坂', en: 'Roppongi', lon: 139.731, lat: 35.6628, priority: 280 },
+  { id: 'dist-ginza', ja: '銀座・日比谷', zh: '银座・日比谷', en: 'Ginza / Hibiya', lon: 139.765, lat: 35.6717, priority: 290 },
+  { id: 'dist-oshiage', ja: '押上・スカイツリー', zh: '押上・晴空塔', en: 'Oshiage / Skytree', lon: 139.8107, lat: 35.7101, priority: 285 },
 ];
 
 export class SpatialLabelRegistry {
   private readonly staticAnchors: WorldLabelAnchor[] = [];
   private readonly landmarkAnchors: WorldLabelAnchor[] = [];
-  private readonly stationNamesById = new Map<SkId<'station'>, { ja: string; en: string }>();
-  private readonly lineNamesById = new Map<SkId<'line'>, { ja: string; en: string }>();
+  private readonly stationNamesById = new Map<SkId<'station'>, { ja: string; zh: string; en: string }>();
+  private readonly lineNamesById = new Map<SkId<'line'>, { ja: string; zh: string; en: string }>();
   private readonly tmpVec = new THREE.Vector3();
 
   constructor(dataset: AtlasDataset, solved: SolvedRailwayNetwork3D) {
@@ -75,12 +79,14 @@ export class SpatialLabelRegistry {
     for (const s of dataset.stations) {
       this.stationNamesById.set(s.id, {
         ja: s.names.ja ?? s.id,
+        zh: s.names.zh ?? s.names.ja ?? s.id,
         en: s.names.en ?? s.names.ja ?? s.id,
       });
     }
     for (const l of dataset.railLines) {
       this.lineNamesById.set(l.id, {
         ja: l.names.ja?.split('（')[0] ?? l.id,
+        zh: l.names.zh?.split('（')[0] ?? l.names.ja?.split('（')[0] ?? l.id,
         en: l.names.en?.split(' (')[0] ?? l.names.ja ?? l.id,
       });
     }
@@ -91,6 +97,7 @@ export class SpatialLabelRegistry {
         id: d.id,
         kind: 'district',
         textPrimaryJa: d.ja,
+        textPrimaryZh: d.zh,
         textPrimaryEn: d.en,
         isUnderground: false,
         isMajorHub: true,
@@ -108,14 +115,18 @@ export class SpatialLabelRegistry {
       const isUg = node.y < -2.2;
       const line = lineById.get(node.lineId);
       const lineShortJa = line?.names.ja?.split('（')[0] ?? '';
+      const lineShortZh = line?.names.zh?.split('（')[0] ?? lineShortJa;
       const lineShortEn = line?.names.en?.split(' (')[0] ?? lineShortJa;
+      const stationNameZh = this.stationNamesById.get(node.stationId)?.zh ?? node.nameJa;
 
       this.staticAnchors.push({
         id: `lbl-st-${node.stationId}-${node.lineId}`,
         kind: 'station',
         textPrimaryJa: node.nameJa,
+        textPrimaryZh: stationNameZh,
         textPrimaryEn: node.nameEn ?? node.nameJa,
         textSecondaryJa: isUg ? `${lineShortJa} · ${node.tier}` : lineShortJa || undefined,
+        textSecondaryZh: isUg ? `${lineShortZh} · ${node.tier}` : lineShortZh || undefined,
         textSecondaryEn: isUg ? `${lineShortEn} · ${node.tier}` : lineShortEn || undefined,
         badge: node.stationCode ?? (isUg ? node.tier : null),
         color: node.color,
@@ -140,6 +151,7 @@ export class SpatialLabelRegistry {
             id: `lbl-fac-${node.stationId}`,
             kind: 'facility',
             textPrimaryJa: `${node.nameJa} 地下鉄出入口`,
+            textPrimaryZh: `${stationNameZh} 地铁出入口`,
             textPrimaryEn: `${node.nameEn ?? node.nameJa} Subway Exit`,
             color: node.color,
             isUnderground: false,
@@ -173,6 +185,7 @@ export class SpatialLabelRegistry {
         ]),
       );
       const shortJa = line.names.ja?.split('（')[0] ?? line.id;
+      const shortZh = line.names.zh?.split('（')[0] ?? shortJa;
       const shortEn = line.names.en?.split(' (')[0] ?? shortJa;
 
       for (const idx of sampleIndices) {
@@ -184,6 +197,7 @@ export class SpatialLabelRegistry {
           id: `lbl-line-${lid}-${idx}`,
           kind: isUg ? 'tunnel' : 'line',
           textPrimaryJa: shortJa,
+          textPrimaryZh: shortZh,
           textPrimaryEn: shortEn,
           badge: isUg ? mid.tier : line.stationCodePrefix ?? null,
           color: line.color,
@@ -217,6 +231,12 @@ export class SpatialLabelRegistry {
           : conn.gateType === 'out_of_gate'
             ? '改札外乗換'
             : '地下連絡';
+      const gateZh =
+        conn.gateType === 'in_gate'
+          ? '站内换乘'
+          : conn.gateType === 'out_of_gate'
+            ? '出站换乘'
+            : '地下通道';
       const gateEn =
         conn.gateType === 'in_gate'
           ? 'In-Gate Transfer'
@@ -228,6 +248,7 @@ export class SpatialLabelRegistry {
         id: `lbl-xfer-${conn.complexId}`,
         kind: 'crossing',
         textPrimaryJa: `${comp?.names.ja?.replace('複合体', '') ?? '乗換'} · ${gateJa}`,
+        textPrimaryZh: `${comp?.names.zh?.replace('复合体', '') ?? comp?.names.ja?.replace('複合体', '') ?? '换乘'} · ${gateZh}`,
         textPrimaryEn: `${comp?.names.en?.replace(' Complex', '') ?? 'Hub'} · ${gateEn}`,
         isUnderground: true,
         isMajorHub: true,
@@ -248,6 +269,7 @@ export class SpatialLabelRegistry {
         id: `lbl-lm-${lm.id}`,
         kind: 'hub',
         textPrimaryJa: lm.nameJa,
+        textPrimaryZh: lm.nameJa,
         textPrimaryEn: lm.nameEn,
         isUnderground: false,
         isMajorHub: true,
@@ -264,7 +286,7 @@ export class SpatialLabelRegistry {
   computeVisibleLabels(params: {
     camera: THREE.PerspectiveCamera;
     mode: CameraModeId;
-    locale: 'ja' | 'en';
+    locale: Locale;
     viewportWidth: number;
     viewportHeight: number;
     cameraDistanceM: number;
@@ -338,9 +360,13 @@ export class SpatialLabelRegistry {
       candidates.push({
         id: a.id,
         kind: a.kind,
-        textPrimary: locale === 'ja' ? a.textPrimaryJa : a.textPrimaryEn,
-        textSecondary:
-          locale === 'ja' ? a.textSecondaryJa : a.textSecondaryEn ?? a.textSecondaryJa,
+        textPrimary: pickLocale(locale, a.textPrimaryJa, a.textPrimaryZh, a.textPrimaryEn),
+        textSecondary: pickLocale(
+          locale,
+          a.textSecondaryJa,
+          a.textSecondaryZh ?? a.textSecondaryJa,
+          a.textSecondaryEn ?? a.textSecondaryJa,
+        ),
         badge: a.badge ?? null,
         color: a.color ?? null,
         tier: a.tier ?? null,
@@ -368,19 +394,31 @@ export class SpatialLabelRegistry {
         const isSel = tr.trainId === selectedTrainId;
         const lineName = this.lineNamesById.get(tr.lineId);
         const nextSt = this.stationNamesById.get(tr.nextStationId);
-        const lineText = locale === 'ja' ? lineName?.ja ?? tr.lineId : lineName?.en ?? tr.lineId;
+        const lineText = pickLocale(
+          locale,
+          lineName?.ja ?? tr.lineId,
+          lineName?.zh ?? tr.lineId,
+          lineName?.en ?? tr.lineId,
+        );
         const nextText = nextSt
-          ? locale === 'ja'
-            ? `次: ${nextSt.ja}`
-            : `Next: ${nextSt.en}`
+          ? pickLocale(
+              locale,
+              `次: ${nextSt.ja}`,
+              `下一站: ${nextSt.zh}`,
+              `Next: ${nextSt.en}`,
+            )
           : '';
+        const speedText =
+          locale === 'zh' && tr.phase === 'dwelling'
+            ? '停站'
+            : `${Math.round(tr.speedKmh)} km/h`;
 
         candidates.push({
           id: `lbl-tr-${tr.trainId}`,
           kind: 'train',
           textPrimary: `${lineText} ${tr.runNumber}`,
-          textSecondary: `${nextText} · ${Math.round(tr.speedKmh)} km/h`,
-          badge: locale === 'ja' ? `模擬 ${tr.tier}` : `SIM ${tr.tier}`,
+          textSecondary: `${nextText} · ${speedText}`,
+          badge: pickLocale(locale, `模擬 ${tr.tier}`, `模拟 ${tr.tier}`, `SIM ${tr.tier}`),
           color: tr.lineColor,
           tier: tr.tier,
           isUnderground: tr.isUnderground,

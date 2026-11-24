@@ -5,7 +5,7 @@ import type {
   SourceRecord,
   TrackVerticalAttribute,
 } from '../domain/types.js';
-import { UI_TEXT, type Locale } from './i18n.js';
+import { pickLocale, UI_TEXT, type Locale } from './i18n.js';
 
 interface DetailPanelProps {
   dataset: AtlasDataset;
@@ -65,12 +65,20 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({
     return (
       <div className="card-subtle" data-testid="detail-empty">
         <div style={{ fontWeight: 600 }}>
-          {locale === 'ja' ? '駅または路線を選択してください' : 'Select a Station or Rail Line'}
+          {pickLocale(
+            locale,
+            '駅または路線を選択してください',
+            '请选择车站或线路',
+            'Select a Station or Rail Line',
+          )}
         </div>
         <div className="muted">
-          {locale === 'ja'
-            ? '地図上の駅・路線をクリックするか、探索タブから検索すると詳細（複合体・改札内外乗換・直通運転・出典）が表示されます。'
-            : 'Click any station or line on the map, or pick one from Explore search, to view complex membership, interchanges, through-services, and provenance.'}
+          {pickLocale(
+            locale,
+            '地図上の駅・路線をクリックするか、探索タブから検索すると詳細（複合体・改札内外乗換・直通運転・出典）が表示されます。',
+            '点击地图上的车站或线路，或在“探索・搜索”标签页中搜索，即可查看详情（换乘复合体、站内/出站换乘、直通运转与数据来源）。',
+            'Click any station or line on the map, or pick one from Explore search, to view complex membership, interchanges, through-services, and provenance.',
+          )}
         </div>
       </div>
     );
@@ -98,7 +106,12 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
               <div>
                 <div style={{ fontSize: 17, fontWeight: 700 }}>
-                  {station.names.ja ?? t.unknown}
+                  {pickLocale(
+                    locale,
+                    station.names.ja,
+                    station.names.zh ?? station.names.ja,
+                    station.names.ja,
+                  ) ?? t.unknown}
                   {station.stationCode && (
                     <span className="badge" style={{ marginLeft: 8 }}>
                       {station.stationCode}
@@ -110,7 +123,14 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({
                   {station.names.ja_kana ? ` · ${station.names.ja_kana}` : ''}
                 </div>
               </div>
-              <span className="badge">{op?.names.ja ?? station.operatorId}</span>
+              <span className="badge">
+                {pickLocale(
+                  locale,
+                  op?.names.ja,
+                  op?.names.zh ?? op?.names.ja,
+                  op?.names.ja,
+                ) ?? station.operatorId}
+              </span>
             </div>
 
             <div className="mono muted" style={{ fontSize: 11 }}>
@@ -150,16 +170,20 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({
 
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               <span className={`badge ${station.inFareSlice ? 'badge-ok' : 'badge-warn'}`}>
-                {station.inFareSlice ? 'JR 運賃スライス内' : 'JR 運賃スライス外'}
+                {station.inFareSlice
+                  ? pickLocale(locale, 'JR 運賃スライス内', 'JR 票价区间内', 'JR 運賃スライス内')
+                  : pickLocale(locale, 'JR 運賃スライス外', 'JR 票价区间外', 'JR 運賃スライス外')}
               </span>
               <span className="badge">
-                {station.inTokyoSuburbanArea ? '東京近郊区間内' : '近郊区間外 / 非JR'}
+                {station.inTokyoSuburbanArea
+                  ? pickLocale(locale, '東京近郊区間内', '东京近郊区间内', '東京近郊区間内')
+                  : pickLocale(locale, '近郊区間外 / 非JR', '近郊区间外 / 非 JR', '近郊区間外 / 非JR')}
               </span>
             </div>
 
             <div>
               <div className="section-title" style={{ marginBottom: 4 }}>
-                {locale === 'ja' ? '所属路線 (RailLines)' : 'Belonging Rail Lines'}
+                {pickLocale(locale, '所属路線 (RailLines)', '所属线路 (RailLines)', 'Belonging Rail Lines')}
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                 {station.railLineIds.map((lid) => {
@@ -173,7 +197,14 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({
                       onClick={() => onSelectLine(lid)}
                     >
                       <span className="line-dot" style={{ background: l.color }} />
-                      <span>{locale === 'ja' ? l.names.ja : l.names.en ?? l.names.ja}</span>
+                      <span>
+                        {pickLocale(
+                          locale,
+                          l.names.ja,
+                          l.names.zh ?? l.names.ja,
+                          l.names.en ?? l.names.ja,
+                        )}
+                      </span>
                     </button>
                   );
                 })}
@@ -183,13 +214,19 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({
             {complex && (
               <div className="card-subtle">
                 <div className="section-title">
-                  {locale === 'ja' ? '所属 StationComplex' : 'Station Complex'}
+                  {pickLocale(locale, '所属 StationComplex', '所属枢纽复合体 (StationComplex)', 'Station Complex')}
                 </div>
                 <div style={{ fontWeight: 600 }}>
-                  {locale === 'ja' ? complex.names.ja : complex.names.en ?? complex.names.ja}
+                  {pickLocale(
+                    locale,
+                    complex.names.ja,
+                    complex.names.zh ?? complex.names.ja,
+                    complex.names.en ?? complex.names.ja,
+                  )}
                 </div>
                 <div className="mono muted" style={{ fontSize: 11 }}>
-                  {complex.id} ({complexSiblings.length} stations)
+                  {complex.id} ({complexSiblings.length}{' '}
+                  {pickLocale(locale, 'stations', '座车站', 'stations')})
                 </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                   {complexSiblings.map((sib) => (
@@ -199,7 +236,14 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({
                       className="btn-secondary"
                       onClick={() => onSelectStation(sib.id)}
                     >
-                      {operatorById.get(sib.operatorId)?.names.ja} {sib.names.ja}
+                      {pickLocale(
+                        locale,
+                        operatorById.get(sib.operatorId)?.names.ja,
+                        operatorById.get(sib.operatorId)?.names.zh ??
+                          operatorById.get(sib.operatorId)?.names.ja,
+                        operatorById.get(sib.operatorId)?.names.ja,
+                      )}{' '}
+                      {pickLocale(locale, sib.names.ja, sib.names.zh ?? sib.names.ja, sib.names.ja)}
                     </button>
                   ))}
                 </div>
@@ -208,11 +252,16 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({
 
             <div>
               <div className="section-title" style={{ marginBottom: 4 }}>
-                {locale === 'ja' ? '乗換関係 (Interchanges)' : 'Interchanges'}
+                {pickLocale(locale, '乗換関係 (Interchanges)', '换乘关系 (Interchanges)', 'Interchanges')}
               </div>
               {interchanges.length === 0 ? (
                 <div className="muted" style={{ fontSize: 12 }}>
-                  {locale === 'ja' ? '登録済み他社乗換なし' : 'No cross-station interchanges recorded'}
+                  {pickLocale(
+                    locale,
+                    '登録済み他社乗換なし',
+                    '暂无已登记的跨站换乘记录',
+                    'No cross-station interchanges recorded',
+                  )}
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -232,12 +281,23 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({
                         : ic.gateType === 'out_of_gate'
                           ? 'badge-warn'
                           : '';
+                    const otherOp = operatorById.get(other?.operatorId ?? 'sk:operator:jr-east');
                     return (
                       <div key={ic.id} className="card-subtle" style={{ padding: '6px 8px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <strong>
-                            {operatorById.get(other?.operatorId ?? 'sk:operator:jr-east')?.names.ja}{' '}
-                            {other?.names.ja ?? otherId}
+                            {pickLocale(
+                              locale,
+                              otherOp?.names.ja,
+                              otherOp?.names.zh ?? otherOp?.names.ja,
+                              otherOp?.names.ja,
+                            )}{' '}
+                            {pickLocale(
+                              locale,
+                              other?.names.ja,
+                              other?.names.zh ?? other?.names.ja,
+                              other?.names.ja,
+                            ) ?? otherId}
                           </strong>
                           <span className={`badge ${gateClass}`}>{gateLabel}</span>
                         </div>
@@ -252,11 +312,23 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({
             {throughHere.length > 0 && (
               <div className="card-subtle">
                 <div className="section-title">
-                  {locale === 'ja' ? '直通運転境界 (ThroughService)' : 'Through Service Boundary'}
+                  {pickLocale(
+                    locale,
+                    '直通運転境界 (ThroughService)',
+                    '直通运转边界 (ThroughService)',
+                    'Through Service Boundary',
+                  )}
                 </div>
                 {throughHere.map((ts) => (
                   <div key={ts.id} style={{ fontSize: 12 }}>
-                    <strong>{locale === 'ja' ? ts.names.ja : ts.names.en ?? ts.names.ja}</strong>
+                    <strong>
+                      {pickLocale(
+                        locale,
+                        ts.names.ja,
+                        ts.names.zh ?? ts.names.ja,
+                        ts.names.en ?? ts.names.ja,
+                      )}
+                    </strong>
                     <div className="muted">{ts.serviceDescription}</div>
                   </div>
                 ))}
@@ -264,10 +336,19 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({
             )}
 
             <div className="card-subtle" style={{ fontSize: 11 }}>
-              <div className="section-title">Provenance / 出典・核実</div>
+              <div className="section-title">
+                {pickLocale(
+                  locale,
+                  'Provenance / 出典・核実',
+                  '数据来源与核验 (Provenance)',
+                  'Provenance / 出典・核実',
+                )}
+              </div>
               <div>
-                DataNature: <span className="mono">{station.provenance.dataNature}</span> ·
-                Last verified: <span className="mono">{station.provenance.lastVerifiedAt}</span>
+                {pickLocale(locale, 'DataNature', '数据性质', 'DataNature')}:{' '}
+                <span className="mono">{station.provenance.dataNature}</span> ·{' '}
+                {pickLocale(locale, 'Last verified', '最近核验', 'Last verified')}:{' '}
+                <span className="mono">{station.provenance.lastVerifiedAt}</span>
               </div>
               {station.provenance.sourceIds.map((sid) => {
                 const src = sourceById.get(sid);
@@ -304,34 +385,56 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span className="line-dot" style={{ background: line.color, width: 12, height: 12 }} />
-                <strong>{locale === 'ja' ? line.names.ja : line.names.en ?? line.names.ja}</strong>
+                <strong>
+                  {pickLocale(
+                    locale,
+                    line.names.ja,
+                    line.names.zh ?? line.names.ja,
+                    line.names.en ?? line.names.ja,
+                  )}
+                </strong>
               </div>
               <button
                 type="button"
                 className="btn-secondary"
                 onClick={() => onOpenStripMap(line.id)}
               >
-                Strip Map
+                {pickLocale(locale, 'Strip Map', '线路图', 'Strip Map')}
               </button>
             </div>
             <div className="muted" style={{ fontSize: 12 }}>
-              {op?.names.ja} · {line.lineClass} · {line.stationIds.length} stations ·{' '}
-              {lineSegs.length} segments
+              {pickLocale(locale, op?.names.ja, op?.names.zh ?? op?.names.ja, op?.names.ja)} ·{' '}
+              {line.lineClass} · {line.stationIds.length}{' '}
+              {pickLocale(locale, 'stations', '座车站', 'stations')} · {lineSegs.length}{' '}
+              {pickLocale(locale, 'segments', '个区间', 'segments')}
             </div>
 
             {verticalMap.size > 0 && (
               <div className="mono" style={{ fontSize: 11 }}>
-                OSM 縦断(模式): 高架 {vertCounts.elevated} / 地上 {vertCounts.at_grade} / 地下{' '}
-                {vertCounts.underground} / 未知 {vertCounts.unknown}
+                {pickLocale(
+                  locale,
+                  `OSM 縦断(模式): 高架 ${vertCounts.elevated} / 地上 ${vertCounts.at_grade} / 地下 ${vertCounts.underground} / 未知 ${vertCounts.unknown}`,
+                  `OSM 纵断(示意): 高架 ${vertCounts.elevated} / 地面 ${vertCounts.at_grade} / 地下 ${vertCounts.underground} / 未知 ${vertCounts.unknown}`,
+                  `OSM 縦断(模式): 高架 ${vertCounts.elevated} / 地上 ${vertCounts.at_grade} / 地下 ${vertCounts.underground} / 未知 ${vertCounts.unknown}`,
+                )}
               </div>
             )}
 
             {lineThrough.length > 0 && (
               <div className="card-subtle">
-                <div className="section-title">直通運転（ThroughService）</div>
+                <div className="section-title">
+                  {pickLocale(
+                    locale,
+                    '直通運転（ThroughService）',
+                    '直通运转（ThroughService）',
+                    '直通運転（ThroughService）',
+                  )}
+                </div>
                 {lineThrough.map((ts) => (
                   <div key={ts.id} style={{ fontSize: 12 }}>
-                    <strong>{ts.names.ja}</strong>
+                    <strong>
+                      {pickLocale(locale, ts.names.ja, ts.names.zh ?? ts.names.ja, ts.names.ja)}
+                    </strong>
                     <div className="muted">{ts.serviceDescription}</div>
                   </div>
                 ))}
@@ -340,10 +443,20 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({
 
             {lineServices.length > 0 && (
               <div className="card-subtle">
-                <div className="section-title">運行系統（ServicePattern · 軌道所有とは別グラフ）</div>
+                <div className="section-title">
+                  {pickLocale(
+                    locale,
+                    '運行系統（ServicePattern · 軌道所有とは別グラフ）',
+                    '运行系统（ServicePattern · 独立于轨道所有权图谱）',
+                    '運行系統（ServicePattern · 軌道所有とは別グラフ）',
+                  )}
+                </div>
                 {lineServices.map((sp) => (
                   <div key={sp.id} style={{ fontSize: 12 }}>
-                    <strong>{sp.names.ja}</strong> ({sp.serviceCategory})
+                    <strong>
+                      {pickLocale(locale, sp.names.ja, sp.names.zh ?? sp.names.ja, sp.names.ja)}
+                    </strong>{' '}
+                    ({sp.serviceCategory})
                   </div>
                 ))}
               </div>
@@ -351,7 +464,12 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({
 
             <div>
               <div className="section-title" style={{ marginBottom: 4 }}>
-                駅順・区間営業キロ
+                {pickLocale(
+                  locale,
+                  '駅順・区間営業キロ',
+                  '车站顺序・区间营业里程',
+                  '駅順・区間営業キロ',
+                )}
               </div>
               <div style={{ maxHeight: 190, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {line.stationIds.map((sid, idx) => {
@@ -378,12 +496,16 @@ export const DetailPanel: React.FC<DetailPanelProps> = ({
                           fontWeight: 600,
                         }}
                       >
-                        {idx + 1}. {st.names.ja}
+                        {idx + 1}.{' '}
+                        {pickLocale(locale, st.names.ja, st.names.zh ?? st.names.ja, st.names.ja)}
                         {st.stationCode ? ` (${st.stationCode})` : ''}
                       </button>
                       {seg && (
                         <span className="mono muted" style={{ marginLeft: 8, fontSize: 11 }}>
-                          → {seg.operatingKm !== null ? `${seg.operatingKm} km` : '未知'}
+                          →{' '}
+                          {seg.operatingKm !== null
+                            ? `${seg.operatingKm} km`
+                            : pickLocale(locale, '未知', '未知', '未知')}
                         </span>
                       )}
                     </div>

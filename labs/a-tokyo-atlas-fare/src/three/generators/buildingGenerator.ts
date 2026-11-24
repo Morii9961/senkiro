@@ -16,6 +16,11 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import {
+  getEffectiveRiverWidth,
+  isSurfaceRiverVisible,
+  pointInPoly,
+} from '../city/cityGeometryHelpers.js';
+import {
   SHIBUYA_SHOWCASE_ZONE,
   getStreetscapeForCutaway,
 } from '../city/streetscapeRegistry.js';
@@ -27,6 +32,7 @@ import {
   type BuildingFacadeVariant,
 } from '../materials/facadeLibrary.js';
 import type {
+  UrbanBaseEnvironment,
   UrbanBuildingRecord,
   UrbanChunkData,
   UrbanChunkMeta,
@@ -752,6 +758,268 @@ function buildProceduralLandmark(
   return g;
 }
 
+const TOKYO_BAY_POLYGON: [number, number][] = [
+  [1500, 4200],
+  [18000, 2200],
+  [25000, 24000],
+  [-6000, 24000],
+  [-2000, 11500],
+];
+
+function hashInfill(a: number, b: number, salt: number): number {
+  let h = Math.imul(a | 0, 374761393) ^ Math.imul(b | 0, 668265263) ^ Math.imul(salt | 0, 1442695041);
+  h = Math.imul(h ^ (h >>> 13), 1274126177);
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+}
+
+/**
+ * Lightweight 10m-resolution Uint8Array spatial exclusion mask & 80m street-orientation field
+ * covering inner Tokyo ([-10500..10500] x [-10000..10000]). Prevents runtime procedural infill
+ * buildings from ever overlapping roads, rivers, Tokyo Bay, parks, rail corridors, plazas,
+ * landmarks, or the Imperial Palace protected green enclosure.
+ */
+class UrbanInfillExclusionMask {
+  private readonly cellSize = 10;
+  private readonly minX = -10500;
+  private readonly maxX = 10500;
+  private readonly minZ = -10000;
+  private readonly maxZ = 10000;
+  private readonly cols: number;
+  private readonly rows: number;
+  private readonly blocked: Uint8Array;
+
+  private readonly angleCellSize = 80;
+  private readonly angleCols: number;
+  private readonly angleRows: number;
+  private readonly roadAngleQ: Int16Array;
+
+  constructor(env: UrbanBaseEnvironment) {
+    this.cols = Math.ceil((this.maxX - this.minX) / this.cellSize);
+    this.rows = Math.ceil((this.maxZ - this.minZ) / this.cellSize);
+    this.blocked = new Uint8Array(this.cols * this.rows);
+
+    this.angleCols = Math.ceil((this.maxX - this.minX) / this.angleCellSize);
+    this.angleRows = Math.ceil((this.maxZ - this.minZ) / this.angleCellSize);
+    this.roadAngleQ = new Int16Array(this.angleCols * this.angleRows);
+
+    // 1. Surface roads with generous sidewalk/curb clearance + street orientation field
+    for (const r of env.roads) {
+      if (r.el === 1 || r.pts.length < 2) continue;
+      const clearance = r.w * 0.5 + 5.5;
+      this.markPolyline(r.pts, clearance, true);
+    }
+
+    // 2. Road intersections
+    for (const [ix, iz, rad] of env.intersections) {
+      this.markDisc(ix, iz, rad + 5.0);
+    }
+
+    // 3. Surface rivers & canals
+    for (const rv of env.riverLines) {
+      if (!isSurfaceRiverVisible(rv.name) || rv.pts.length < 2) continue;
+      const halfW = getEffectiveRiverWidth(rv.name, rv.width) * 0.5 + 8.0;
+      this.markPolyline(rv.pts, halfW, false);
+    }
+
+    // 4. Railway ballast corridors
+    if (env.railCorridors) {
+      for (const c of env.railCorridors) {
+        if (c.pts.length < 2) continue;
+        this.markPolyline(c.pts, c.width * 0.5 + 6.5, false);
+      }
+    }
+
+    // 5. Station forecourt plazas & hero landmarks
+    if (env.stationPlazas) {
+      for (const sp of env.stationPlazas) {
+        this.markDisc(sp.x, sp.z, Math.max(sp.rx, sp.rz) + 5.0);
+      }
+    }
+    for (const lm of env.landmarks) {
+      const footprintR = Math.max(lm.width ?? 56, lm.depth ?? 56) * 0.65 + 14.0;
+      this.markDisc(lm.x, lm.z, footprintR);
+    }
+
+    // 6. Water bodies, parks, pedestrian plazas & railway yards
+    for (const wp of env.waterPolygons) this.markPolygon(wp.pts, 10);
+    for (const pk of env.parkPolygons) this.markPolygon(pk.pts, 8);
+    if (env.plazaPolygons) {
+      for (const pl of env.plazaPolygons) this.markPolygon(pl.pts, 6);
+    }
+    if (env.landuseBlocks) {
+      for (const blk of env.landuseBlocks) {
+        if (blk.kind === 'railway') this.markPolygon(blk.pts, 6);
+      }
+    }
+  }
+
+  private markDisc(x: number, z: number, radiusM: number): void {
+    if (
+      x + radiusM < this.minX ||
+      x - radiusM > this.maxX ||
+      z + radiusM < this.minZ ||
+      z - radiusM > this.maxZ
+    ) {
+      return;
+    }
+    const cMin = Math.max(0, Math.floor((x - radiusM - this.minX) / this.cellSize));
+    const cMax = Math.min(this.cols - 1, Math.floor((x + radiusM - this.minX) / this.cellSize));
+    const rMin = Math.max(0, Math.floor((z - radiusM - this.minZ) / this.cellSize));
+    const rMax = Math.min(this.rows - 1, Math.floor((z + radiusM - this.minZ) / this.cellSize));
+    const rSq = radiusM * radiusM;
+
+    for (let r = rMin; r <= rMax; r++) {
+      const cz = this.minZ + (r + 0.5) * this.cellSize;
+      const dz = cz - z;
+      const dzSq = dz * dz;
+      const rowOff = r * this.cols;
+      for (let c = cMin; c <= cMax; c++) {
+        const cx = this.minX + (c + 0.5) * this.cellSize;
+        const dx = cx - x;
+        if (dx * dx + dzSq <= rSq) {
+          this.blocked[rowOff + c] = 1;
+        }
+      }
+    }
+  }
+
+  private recordAngle(x: number, z: number, angleRad: number): void {
+    if (x < this.minX || x >= this.maxX || z < this.minZ || z >= this.maxZ) return;
+    const ac = Math.floor((x - this.minX) / this.angleCellSize);
+    const ar = Math.floor((z - this.minZ) / this.angleCellSize);
+    if (ac < 0 || ac >= this.angleCols || ar < 0 || ar >= this.angleRows) return;
+    const idx = ar * this.angleCols + ac;
+    if (this.roadAngleQ[idx] !== 0) return;
+    // Normalize into [-PI/2, PI/2) so building alignment is clean
+    let a = angleRad % Math.PI;
+    if (a > Math.PI * 0.5) a -= Math.PI;
+    if (a < -Math.PI * 0.5) a += Math.PI;
+    this.roadAngleQ[idx] = Math.round(a * 1000) + 1;
+  }
+
+  private markPolyline(pts: [number, number][], halfWidthM: number, recordRoadAngle: boolean): void {
+    const stepM = 8.0;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const [ax, az] = pts[i]!;
+      const [bx, bz] = pts[i + 1]!;
+      if (
+        Math.max(ax, bx) + halfWidthM < this.minX ||
+        Math.min(ax, bx) - halfWidthM > this.maxX ||
+        Math.max(az, bz) + halfWidthM < this.minZ ||
+        Math.min(az, bz) - halfWidthM > this.maxZ
+      ) {
+        continue;
+      }
+      const dx = bx - ax;
+      const dz = bz - az;
+      const len = Math.hypot(dx, dz);
+      const angle = recordRoadAngle && len > 4 ? Math.atan2(dz, dx) : 0;
+      const steps = Math.max(1, Math.ceil(len / stepM));
+      for (let s = 0; s <= steps; s++) {
+        const t = s / steps;
+        const px = ax + dx * t;
+        const pz = az + dz * t;
+        this.markDisc(px, pz, halfWidthM);
+        if (recordRoadAngle && s % 2 === 0) {
+          this.recordAngle(px, pz, angle);
+        }
+      }
+    }
+  }
+
+  private markPolygon(pts: [number, number][], padM: number): void {
+    if (pts.length < 3) return;
+    let minX = Infinity;
+    let maxX = -Infinity;
+    let minZ = Infinity;
+    let maxZ = -Infinity;
+    for (const [x, z] of pts) {
+      if (x < minX) minX = x;
+      if (x > maxX) maxX = x;
+      if (z < minZ) minZ = z;
+      if (z > maxZ) maxZ = z;
+    }
+    if (
+      maxX + padM < this.minX ||
+      minX - padM > this.maxX ||
+      maxZ + padM < this.minZ ||
+      minZ - padM > this.maxZ
+    ) {
+      return;
+    }
+
+    const cMin = Math.max(0, Math.floor((minX - this.minX) / this.cellSize));
+    const cMax = Math.min(this.cols - 1, Math.floor((maxX - this.minX) / this.cellSize));
+    const rMin = Math.max(0, Math.floor((minZ - this.minZ) / this.cellSize));
+    const rMax = Math.min(this.rows - 1, Math.floor((maxZ - this.minZ) / this.cellSize));
+
+    for (let r = rMin; r <= rMax; r++) {
+      const cz = this.minZ + (r + 0.5) * this.cellSize;
+      const rowOff = r * this.cols;
+      for (let c = cMin; c <= cMax; c++) {
+        if (this.blocked[rowOff + c] !== 0) continue;
+        const cx = this.minX + (c + 0.5) * this.cellSize;
+        if (pointInPoly(cx, cz, pts)) {
+          this.blocked[rowOff + c] = 1;
+        }
+      }
+    }
+    if (padM > 0) {
+      this.markPolyline([...pts, pts[0]!], padM, false);
+    }
+  }
+
+  isPointClear(x: number, z: number): boolean {
+    // Imperial Palace protected green enclosure
+    if (x >= -1950 && x <= -300 && z >= -1400 && z <= 200) return false;
+    // Tokyo Bay ocean polygon
+    if (z > 2200 && pointInPoly(x, z, TOKYO_BAY_POLYGON)) return false;
+
+    if (x < this.minX || x >= this.maxX || z < this.minZ || z >= this.maxZ) return false;
+    const c = Math.floor((x - this.minX) / this.cellSize);
+    const r = Math.floor((z - this.minZ) / this.cellSize);
+    return this.blocked[r * this.cols + c] === 0;
+  }
+
+  isFootprintClear(cx: number, cz: number, w: number, d: number, angle: number): boolean {
+    if (!this.isPointClear(cx, cz)) return false;
+    const hw = w * 0.5 + 2.0;
+    const hd = d * 0.5 + 2.0;
+    const cosA = Math.cos(angle);
+    const sinA = Math.sin(angle);
+    const corners: [number, number][] = [
+      [-hw, -hd],
+      [hw, -hd],
+      [hw, hd],
+      [-hw, hd],
+    ];
+    for (const [lx, lz] of corners) {
+      const wx = cx + lx * cosA - lz * sinA;
+      const wz = cz + lx * sinA + lz * cosA;
+      if (!this.isPointClear(wx, wz)) return false;
+    }
+    return true;
+  }
+
+  sampleRoadAngle(x: number, z: number): number {
+    if (x < this.minX || x >= this.maxX || z < this.minZ || z >= this.maxZ) return 0;
+    const ac = Math.floor((x - this.minX) / this.angleCellSize);
+    const ar = Math.floor((z - this.minZ) / this.angleCellSize);
+    for (let rad = 0; rad <= 2; rad++) {
+      for (let dr = -rad; dr <= rad; dr++) {
+        for (let dc = -rad; dc <= rad; dc++) {
+          const r = ar + dr;
+          const c = ac + dc;
+          if (r < 0 || r >= this.angleRows || c < 0 || c >= this.angleCols) continue;
+          const v = this.roadAngleQ[r * this.angleCols + c]!;
+          if (v !== 0) return (v - 1) / 1000;
+        }
+      }
+    }
+    return 0;
+  }
+}
+
 interface LoadedChunk {
   meta: UrbanChunkMeta;
   buildings: UrbanBuildingRecord[];
@@ -764,6 +1032,7 @@ export class CityChunkManager {
   readonly group = new THREE.Group();
   readonly landmarksGroup = new THREE.Group();
   private manifest: UrbanManifest | null = null;
+  private infillMask: UrbanInfillExclusionMask | null = null;
   private readonly loaded = new Map<string, LoadedChunk>();
   private readonly loadingKeys = new Set<string>();
   private readonly unitBoxGeom = new THREE.BoxGeometry(1, 1, 1);
@@ -793,6 +1062,9 @@ export class CityChunkManager {
       for (const mat of this.getGenericCityMaterials()) {
         injectRadialCutaway(mat, cutawayUniforms, 'building');
       }
+      for (const mat of this.getLandmarkMaterials()) {
+        injectRadialCutaway(mat, cutawayUniforms, 'building');
+      }
     }
   }
 
@@ -820,6 +1092,14 @@ export class CityChunkManager {
   private getLandmarkMaterials(): THREE.MeshStandardMaterial[] {
     const m = this.facadeLib.materials;
     return [m.landmarkGlass, m.brick, m.towerOrange, m.towerWhite];
+  }
+
+  setEnvironmentForInfill(env: UrbanBaseEnvironment): void {
+    this.infillMask = new UrbanInfillExclusionMask(env);
+  }
+
+  setNightFactor(nightFactor: number): void {
+    this.facadeLib.setNightFactor(nightFactor);
   }
 
   setManifest(manifest: UrbanManifest, landmarks: UrbanLandmarkRecord[]): void {
@@ -863,10 +1143,10 @@ export class CityChunkManager {
 
     const camPos = camera.position;
     const camDist = camPos.distanceTo(target);
-    const allowLod0 = camDist < 2400;
-    const loadRadius = Math.min(14_000, Math.max(5_400, camDist * 2.2));
-    const lod0EnterRadius = 1550;
-    const lod0ExitRadius = 2000;
+    const allowLod0 = camDist < 5500;
+    const loadRadius = Math.min(22_000, Math.max(9_500, camDist * 3.0));
+    const lod0EnterRadius = 3200;
+    const lod0ExitRadius = 4000;
 
     const candidates: { meta: UrbanChunkMeta; distToTarget: number }[] = [];
     for (const meta of this.manifest.chunks) {
@@ -880,14 +1160,14 @@ export class CityChunkManager {
     let triggered = 0;
     for (const c of candidates) {
       if (this.loaded.has(c.meta.key) || this.loadingKeys.has(c.meta.key)) continue;
-      if (this.loadingKeys.size + triggered >= 6) break;
+      if (this.loadingKeys.size + triggered >= 10) break;
       triggered++;
       void this.loadChunk(c.meta);
     }
 
     const box = new THREE.Box3();
     let lazyBuiltThisTick = 0;
-    const lod0EvictRadius = 5800;
+    const lod0EvictRadius = 9000;
 
     for (const chunk of this.loaded.values()) {
       const half = (this.manifest.chunkSizeMeters ?? 2000) * 0.65;
@@ -902,7 +1182,7 @@ export class CityChunkManager {
         this.disposeLod0(chunk);
       }
 
-      if (!this.buildingsVisible || !inFrustum || distToTarget > loadRadius + 2800) {
+      if (!this.buildingsVisible || !inFrustum || distToTarget > loadRadius + 3600) {
         if (chunk.lod0Group) chunk.lod0Group.visible = false;
         chunk.lod1Mesh.visible = false;
         chunk.activeLod = -1;
@@ -910,10 +1190,10 @@ export class CityChunkManager {
         const wantLod0 =
           allowLod0 &&
           (chunk.activeLod === 0
-            ? distToCam < lod0ExitRadius || (chunk.meta.hub && distToTarget < 1800)
-            : distToCam < lod0EnterRadius || (chunk.meta.hub && distToTarget < 1400));
+            ? distToCam < lod0ExitRadius || (chunk.meta.hub && distToTarget < 3600)
+            : distToCam < lod0EnterRadius || (chunk.meta.hub && distToTarget < 2800));
         if (wantLod0) {
-          if (!chunk.lod0Group && lazyBuiltThisTick < 2) {
+          if (!chunk.lod0Group && lazyBuiltThisTick < 4) {
             chunk.lod0Group = this.buildLod0Group(chunk.meta, chunk.buildings);
             this.group.add(chunk.lod0Group);
             lazyBuiltThisTick++;
@@ -944,13 +1224,153 @@ export class CityChunkManager {
     chunk.lod0Group = null;
   }
 
+  /**
+   * Deterministically fills sparse inner-Tokyo urban chunks (< 720 buildings) with road-aligned
+   * low-rise & mid-rise Japanese infill buildings (`hb: 'p'`, `h = 7..22m`) strictly clear of
+   * roads, rivers, Tokyo Bay, parks, rail corridors, landmarks, Imperial Palace, and existing OSM buildings.
+   */
+  private synthesizeChunkInfill(
+    meta: UrbanChunkMeta,
+    sourceBuildings: UrbanBuildingRecord[],
+  ): { meta: UrbanChunkMeta; buildings: UrbanBuildingRecord[] } {
+    if (
+      !this.infillMask ||
+      sourceBuildings.length >= 720 ||
+      Math.abs(meta.centerX) >= 9000 ||
+      Math.abs(meta.centerZ) >= 8500
+    ) {
+      return { meta, buildings: sourceBuildings };
+    }
+
+    const chunkSize = this.manifest?.chunkSizeMeters ?? 2000;
+    const half = chunkSize * 0.5;
+    const minX = meta.centerX - half + 18;
+    const maxX = meta.centerX + half - 18;
+    const minZ = meta.centerZ - half + 18;
+    const maxZ = meta.centerZ + half - 18;
+
+    // Fast 8m local occupancy grid for existing OSM buildings in this chunk
+    const occCell = 8;
+    const occCols = Math.ceil((chunkSize + 64) / occCell);
+    const occRows = Math.ceil((chunkSize + 64) / occCell);
+    const occOriginX = meta.centerX - half - 32;
+    const occOriginZ = meta.centerZ - half - 32;
+    const occupied = new Uint8Array(occCols * occRows);
+
+    const markOcc = (cx: number, cz: number, radM: number) => {
+      const c0 = Math.max(0, Math.floor((cx - radM - occOriginX) / occCell));
+      const c1 = Math.min(occCols - 1, Math.floor((cx + radM - occOriginX) / occCell));
+      const r0 = Math.max(0, Math.floor((cz - radM - occOriginZ) / occCell));
+      const r1 = Math.min(occRows - 1, Math.floor((cz + radM - occOriginZ) / occCell));
+      for (let r = r0; r <= r1; r++) {
+        const off = r * occCols;
+        for (let c = c0; c <= c1; c++) {
+          occupied[off + c] = 1;
+        }
+      }
+    };
+
+    const isOccFree = (cx: number, cz: number, radM: number): boolean => {
+      const c0 = Math.max(0, Math.floor((cx - radM - occOriginX) / occCell));
+      const c1 = Math.min(occCols - 1, Math.floor((cx + radM - occOriginX) / occCell));
+      const r0 = Math.max(0, Math.floor((cz - radM - occOriginZ) / occCell));
+      const r1 = Math.min(occRows - 1, Math.floor((cz + radM - occOriginZ) / occCell));
+      for (let r = r0; r <= r1; r++) {
+        const off = r * occCols;
+        for (let c = c0; c <= c1; c++) {
+          if (occupied[off + c] !== 0) return false;
+        }
+      }
+      return true;
+    };
+
+    for (const b of sourceBuildings) {
+      markOcc(b.cx, b.cz, Math.hypot(b.w * 0.5, b.d * 0.5) + 3.0);
+    }
+
+    const combined = sourceBuildings.slice();
+    const targetCount = 780;
+    const step = 28;
+    const chunkSalt = Math.imul(meta.cx + 512, 73856093) ^ Math.imul(meta.cz + 512, 19349663);
+    let nextId = 900_000_000 + Math.abs(chunkSalt % 80_000_000);
+    let added = 0;
+
+    // Interleaved stride keeps coverage uniform even if targetCount is reached early
+    const cols = Math.floor((maxX - minX) / step);
+    const rows = Math.floor((maxZ - minZ) / step);
+    const totalSlots = Math.max(1, cols * rows);
+    const primeStride = 37;
+
+    for (let s = 0; s < totalSlots && combined.length < targetCount; s++) {
+      const slot = (s * primeStride) % totalSlots;
+      const gx = slot % Math.max(1, cols);
+      const gz = Math.floor(slot / Math.max(1, cols));
+
+      const r1 = hashInfill(gx, gz, chunkSalt ^ 11);
+      // Leave ~14% natural courtyards / alleyways for authentic urban breathing room
+      if (r1 < 0.14) continue;
+
+      const r2 = hashInfill(gx, gz, chunkSalt ^ 29);
+      const r3 = hashInfill(gx, gz, chunkSalt ^ 53);
+      const r4 = hashInfill(gx, gz, chunkSalt ^ 97);
+      const r5 = hashInfill(gx, gz, chunkSalt ^ 149);
+
+      const cx = minX + (gx + 0.5) * step + (r2 - 0.5) * 10;
+      const cz = minZ + (gz + 0.5) * step + (r3 - 0.5) * 10;
+      const angle = this.infillMask.sampleRoadAngle(cx, cz);
+
+      const w = 10 + r4 * 10; // 10..20m
+      const d = 9 + r5 * 9; // 9..18m
+      const radius = Math.hypot(w * 0.5, d * 0.5) + 2.5;
+
+      if (!isOccFree(cx, cz, radius)) continue;
+      if (!this.infillMask.isFootprintClear(cx, cz, w, d, angle)) continue;
+
+      // Realistic Tokyo mid/low-rise height (7..22m), slightly taller in central wards
+      const distFromCore = Math.hypot(cx, cz);
+      const coreFactor = Math.max(0, 1 - distFromCore / 9500);
+      const h = Math.round((7 + Math.pow(r1, 1.35) * (10 + coreFactor * 5)) * 10) / 10;
+      const typology: 'c' | 'r' =
+        h >= 15.5 || (coreFactor > 0.45 && r4 > 0.55) ? 'c' : 'r';
+
+      combined.push({
+        id: nextId++,
+        cx: Math.round(cx * 10) / 10,
+        cz: Math.round(cz * 10) / 10,
+        w: Math.round(w * 10) / 10,
+        d: Math.round(d * 10) / 10,
+        a: Math.round(angle * 1000) / 1000,
+        h: Math.min(22, Math.max(7, h)),
+        hb: 'p',
+        t: typology,
+      });
+      markOcc(cx, cz, radius);
+      added++;
+    }
+
+    if (added === 0) return { meta, buildings: sourceBuildings };
+
+    const realCount = meta.realCount ?? sourceBuildings.filter((b) => b.hb !== 'p').length;
+    const prevInfill = meta.infillCount ?? sourceBuildings.filter((b) => b.hb === 'p').length;
+    return {
+      meta: {
+        ...meta,
+        count: combined.length,
+        realCount,
+        infillCount: prevInfill + added,
+      },
+      buildings: combined,
+    };
+  }
+
   private async loadChunk(meta: UrbanChunkMeta): Promise<void> {
     this.loadingKeys.add(meta.key);
     try {
       const res = await fetch(`./data/urban-chunks/${meta.file}`);
       if (!res.ok) return;
       const data = (await res.json()) as UrbanChunkData;
-      const built = this.buildChunkLod1(meta, data.buildings);
+      const enriched = this.synthesizeChunkInfill(meta, data.buildings);
+      const built = this.buildChunkLod1(enriched.meta, enriched.buildings);
       this.loaded.set(meta.key, built);
       this.group.add(built.lod1Mesh);
       if (
@@ -966,7 +1386,7 @@ export class CityChunkManager {
           ),
         );
       }
-      this.onChunkLoadedCb?.(meta, data.buildings);
+      this.onChunkLoadedCb?.(enriched.meta, enriched.buildings);
     } catch {
       // Graceful degradation if chunk fetch fails offline
     } finally {

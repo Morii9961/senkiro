@@ -1,9 +1,16 @@
 /**
- * GPU World-Space Radial Cutaway Shader Injection (P5: True 3D Cutaway / Underground Explorer).
+ * GPU World-Space Architectural Cutaway, Station-Focus Frosted Glass & Instanced World-UV Shader Injection.
  *
- * Injects clean circular radial excavation discard into MeshStandardMaterial via onBeforeCompile
- * so both standard Meshes and InstancedMeshes open a razor-sharp architectural cutaway aperture
- * into Tokyo's underground railway network without whole-city transparent ghost building soup!
+ * Injects:
+ *  1. Feathered architectural X-ray cutaway (`uCutawayActive`) — replaces harsh dark pits with
+ *     high-frequency 4x4 Bayer screen-space dissolve, 50m coordinate blueprint grid lines, soft
+ *     sky-cyan rim highlights, and frosted glass ghost building silhouettes.
+ *  2. Selected station-focus semi-transparency (`uStationFocusActive`) — works EVEN when cutaway
+ *     is OFF, turning surrounding buildings into crisp frosted architectural glass so selected
+ *     platforms & trains remain unobstructed, and opening a clean terrain X-ray window over
+ *     selected underground stations (`uStationFocusUnderground`).
+ *  3. World-meter UV scaling + concrete rooftop shading + ground-contact AO for LOD1 instanced
+ *     buildings (`injectInstancedFacadeUv`), eliminating stretched white box artifacts.
  */
 
 import * as THREE from 'three';
@@ -12,6 +19,10 @@ export interface CutawayUniforms {
   uCutawayActive: { value: number };
   uCutawayCenter: { value: THREE.Vector3 };
   uCutawayRadius: { value: number };
+  uStationFocusActive: { value: number };
+  uStationFocusCenter: { value: THREE.Vector3 };
+  uStationFocusRadius: { value: number };
+  uStationFocusUnderground: { value: number };
 }
 
 export function createCutawayUniforms(): CutawayUniforms {
@@ -19,15 +30,148 @@ export function createCutawayUniforms(): CutawayUniforms {
     uCutawayActive: { value: 0.0 },
     uCutawayCenter: { value: new THREE.Vector3(0, 0, 0) },
     uCutawayRadius: { value: 850.0 },
+    uStationFocusActive: { value: 0.0 },
+    uStationFocusCenter: { value: new THREE.Vector3(0, 0, 0) },
+    uStationFocusRadius: { value: 220.0 },
+    uStationFocusUnderground: { value: 0.0 },
   };
+}
+
+export interface RadialCutawayOptions {
+  applyInstancedWorldUv?: boolean;
+}
+
+const BAYER_GLSL = /* glsl */ `
+float senkiroBayer2(vec2 p) {
+  return 2.0 * mod(p.x + p.y, 2.0) + mod(p.y, 2.0);
+}
+float senkiroBayer4x4(vec2 fragCoord) {
+  vec2 f = mod(floor(fragCoord), 4.0);
+  float hi = senkiroBayer2(mod(f, 2.0));
+  float lo = senkiroBayer2(floor(f * 0.5));
+  return (4.0 * hi + lo + 0.5) / 16.0;
+}
+`;
+
+/**
+ * Injects per-instance world-meter wall UVs, architectural concrete rooftop shading (no windows
+ * on rooftops!), vertical ground-contact AO darkening, and roof emissive suppression into an
+ * instanced LOD1 building MeshStandardMaterial rendered on BoxGeometry(1, 1, 1).
+ */
+export function injectInstancedFacadeUv(material: THREE.MeshStandardMaterial): void {
+  const userData = material.userData as { __senkiroInstancedUv?: boolean };
+  if (userData.__senkiroInstancedUv) return;
+  userData.__senkiroInstancedUv = true;
+
+  const cacheTag = 'senkiro-instanced-world-uv-v2';
+  const prevKey = material.customProgramCacheKey?.bind(material);
+  material.customProgramCacheKey = () => `${prevKey ? prevKey() : ''}:${cacheTag}`;
+
+  const prevCompile = material.onBeforeCompile;
+  material.onBeforeCompile = (shader, renderer) => {
+    if (prevCompile) prevCompile(shader, renderer);
+
+    shader.vertexShader = shader.vertexShader
+      .replace(
+        '#include <common>',
+        `#include <common>
+varying float vInstRoofMask;
+varying float vInstWallShade;
+varying vec2 vInstRoofWorldXz;`,
+      )
+      .replace(
+        '#include <uv_vertex>',
+        `#include <uv_vertex>
+vInstRoofMask = 0.0;
+vInstWallShade = 1.0;
+vInstRoofWorldXz = vec2(0.0);
+#ifdef USE_INSTANCING
+  {
+    float instSx = length(instanceMatrix[0].xyz);
+    float instSy = length(instanceMatrix[1].xyz);
+    float instSz = length(instanceMatrix[2].xyz);
+    float isRoof = step(0.5, normal.y);
+    vInstRoofMask = isRoof;
+    float wallW = abs(normal.x) > 0.5 ? instSz : instSx;
+    float instPhase = fract(sin(dot(instanceMatrix[3].xz, vec2(12.9898, 78.233))) * 43758.5453) * 2.0;
+    vec2 worldWallUv = isRoof > 0.5
+      ? vec2(uv.x * instSx * 0.04, uv.y * instSz * 0.04)
+      : vec2(uv.x * wallW * 0.042 + instPhase, uv.y * instSy * 0.042);
+    vInstRoofWorldXz = vec2(uv.x * instSx, uv.y * instSz);
+
+    // Ground-contact AO darkening near base + subtle cardinal facet shading
+    float heightM = clamp(position.y + 0.5, 0.0, 1.0) * instSy;
+    float baseAo = mix(0.70, 1.0, smoothstep(0.0, 6.5, heightM));
+    float facetShade = normal.x > 0.5 ? 1.0 : normal.z > 0.5 ? 0.96 : normal.x < -0.5 ? 0.92 : 0.90;
+    vInstWallShade = isRoof > 0.5 ? 0.96 : baseAo * facetShade;
+
+    #ifdef USE_MAP
+      vMapUv = worldWallUv;
+    #endif
+    #ifdef USE_ROUGHNESSMAP
+      vRoughnessMapUv = worldWallUv;
+    #endif
+    #ifdef USE_BUMPMAP
+      vBumpMapUv = worldWallUv;
+    #endif
+    #ifdef USE_EMISSIVEMAP
+      vEmissiveMapUv = worldWallUv;
+    #endif
+  }
+#endif`,
+      );
+
+    shader.fragmentShader = shader.fragmentShader
+      .replace(
+        '#include <common>',
+        `#include <common>
+varying float vInstRoofMask;
+varying float vInstWallShade;
+varying vec2 vInstRoofWorldXz;`,
+      )
+      .replace(
+        '#include <map_fragment>',
+        `#include <map_fragment>
+if (vInstRoofMask > 0.5) {
+  #if defined( USE_COLOR ) || defined( USE_INSTANCING_COLOR )
+    vec3 instTint = vColor.rgb;
+  #else
+    vec3 instTint = vec3(1.0);
+  #endif
+  // Clean architectural concrete parapet roof (zero window texture on rooftops)
+  vec2 roofTile = abs(fract(vInstRoofWorldXz * 0.125) - 0.5);
+  float seam = smoothstep(0.46, 0.5, max(roofTile.x, roofTile.y));
+  vec3 concreteRoof = vec3(0.67, 0.69, 0.72) * (1.0 - seam * 0.08);
+  diffuseColor.rgb = concreteRoof * instTint;
+} else {
+  diffuseColor.rgb *= vInstWallShade;
+}`,
+      )
+      .replace(
+        '#include <roughnessmap_fragment>',
+        `#include <roughnessmap_fragment>
+roughnessFactor = mix(roughnessFactor, 0.92, vInstRoofMask);`,
+      )
+      .replace(
+        '#include <emissivemap_fragment>',
+        `#include <emissivemap_fragment>
+totalEmissiveRadiance *= (1.0 - vInstRoofMask);`,
+      );
+  };
+  material.needsUpdate = true;
 }
 
 export function injectRadialCutaway(
   material: THREE.MeshStandardMaterial,
   uniforms: CutawayUniforms,
   mode: 'terrain' | 'building',
+  options?: RadialCutawayOptions,
 ): void {
-  const cacheTag = `senkiro-cutaway-${mode}-v1`;
+  if (options?.applyInstancedWorldUv) {
+    injectInstancedFacadeUv(material);
+  }
+
+  const cacheTag = `senkiro-cutaway-${mode}-v2`;
   const prevKey = material.customProgramCacheKey?.bind(material);
   material.customProgramCacheKey = () => `${prevKey ? prevKey() : ''}:${cacheTag}`;
 
@@ -38,8 +182,12 @@ export function injectRadialCutaway(
     shader.uniforms.uCutawayActive = uniforms.uCutawayActive;
     shader.uniforms.uCutawayCenter = uniforms.uCutawayCenter;
     shader.uniforms.uCutawayRadius = uniforms.uCutawayRadius;
+    shader.uniforms.uStationFocusActive = uniforms.uStationFocusActive;
+    shader.uniforms.uStationFocusCenter = uniforms.uStationFocusCenter;
+    shader.uniforms.uStationFocusRadius = uniforms.uStationFocusRadius;
+    shader.uniforms.uStationFocusUnderground = uniforms.uStationFocusUnderground;
 
-    // 1. Vertex shader: unconditionally compute world position for both Mesh & InstancedMesh!
+    // 1. Vertex shader: unconditionally compute world position for both Mesh & InstancedMesh
     shader.vertexShader = shader.vertexShader
       .replace(
         '#include <common>',
@@ -57,16 +205,110 @@ cutWp = modelMatrix * cutWp;
 vCutWorldPos = cutWp.xyz;`,
       );
 
-    // 2. Fragment shader: clean circular radial excavation + crisp architectural edge bevel!
-    const discardMargin = mode === 'building' ? '22.0' : '0.0';
-    const rimHighlight =
+    // 2. Fragment shader: architectural X-ray dissolve & frosted glass station focus
+    const fragmentClipChunk =
       mode === 'terrain'
         ? `
-    if (cutDist < uCutawayRadius + 14.0) {
-      float rimF = 1.0 - smoothstep(uCutawayRadius, uCutawayRadius + 14.0, cutDist);
-      gl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(0.46, 0.54, 0.62), rimF * 0.42);
-    }`
-        : '';
+float senkiroGridMask = 0.0;
+float senkiroRimGlow = 0.0;
+{
+  float keepProb = 1.0;
+
+  if (uCutawayActive > 0.5) {
+    float cutDist = length(vCutWorldPos.xz - uCutawayCenter.xz);
+    float innerR = uCutawayRadius * 0.82;
+    float outerR = uCutawayRadius;
+
+    if (cutDist < outerR + 18.0) {
+      vec2 gridUv = vCutWorldPos.xz / 50.0;
+      vec2 gridDeriv = max(fwidth(gridUv), vec2(0.002));
+      vec2 gridDist = abs(fract(gridUv - 0.5) - 0.5) / gridDeriv;
+      float gLine = 1.0 - min(min(gridDist.x, gridDist.y), 1.0);
+
+      if (cutDist < outerR) {
+        float feather = smoothstep(innerR, outerR, cutDist);
+        float cutKeep = mix(0.04, 1.0, feather);
+        float gridKeep = gLine * mix(0.24, 0.55, feather);
+        keepProb = min(keepProb, max(cutKeep, gridKeep));
+        senkiroGridMask = max(senkiroGridMask, gLine * (1.0 - feather * 0.5));
+        // Soft architectural rim glow inside perimeter band
+        float rimBand = smoothstep(innerR, outerR * 0.96, cutDist);
+        senkiroRimGlow = max(senkiroRimGlow, rimBand * 0.45);
+      } else {
+        float outerRim = 1.0 - smoothstep(outerR, outerR + 18.0, cutDist);
+        senkiroRimGlow = max(senkiroRimGlow, outerRim * 0.52);
+      }
+    }
+  }
+
+  if (uStationFocusActive > 0.5 && uStationFocusUnderground > 0.5) {
+    float stDist = length(vCutWorldPos.xz - uStationFocusCenter.xz);
+    float stR = uStationFocusRadius * 0.78;
+    float stInner = stR * 0.54;
+    if (stDist < stR + 14.0) {
+      vec2 stGridUv = vCutWorldPos.xz / 25.0;
+      vec2 stDeriv = max(fwidth(stGridUv), vec2(0.002));
+      vec2 stGridDist = abs(fract(stGridUv - 0.5) - 0.5) / stDeriv;
+      float stGLine = 1.0 - min(min(stGridDist.x, stGridDist.y), 1.0);
+      if (stDist < stR) {
+        float stFeather = smoothstep(stInner, stR, stDist);
+        float stKeep = mix(0.08, 1.0, stFeather);
+        keepProb = min(keepProb, max(stKeep, stGLine * 0.24));
+        senkiroGridMask = max(senkiroGridMask, stGLine * (1.0 - stFeather * 0.4));
+        senkiroRimGlow = max(senkiroRimGlow, smoothstep(stInner, stR * 0.96, stDist) * 0.36);
+      } else {
+        float stOuterRim = 1.0 - smoothstep(stR, stR + 14.0, stDist);
+        senkiroRimGlow = max(senkiroRimGlow, stOuterRim * 0.42);
+      }
+    }
+  }
+
+  if (keepProb < 0.999) {
+    if (senkiroBayer4x4(gl_FragCoord.xy) > keepProb) discard;
+  }
+}`
+        : `
+float senkiroGhostMix = 0.0;
+{
+  float keepProb = 1.0;
+
+  if (uCutawayActive > 0.5) {
+    float cutDist = length(vCutWorldPos.xz - uCutawayCenter.xz);
+    float cutOuter = uCutawayRadius + 24.0;
+    float cutInner = uCutawayRadius * 0.84;
+    if (cutDist < cutOuter) {
+      float cutT = smoothstep(cutInner, cutOuter, cutDist);
+      keepProb = min(keepProb, mix(0.18, 1.0, cutT));
+      senkiroGhostMix = max(senkiroGhostMix, 1.0 - cutT);
+    }
+  }
+
+  if (uStationFocusActive > 0.5) {
+    float stDist = length(vCutWorldPos.xz - uStationFocusCenter.xz);
+    if (stDist < uStationFocusRadius) {
+      float stT = smoothstep(uStationFocusRadius * 0.68, uStationFocusRadius, stDist);
+      keepProb = min(keepProb, mix(0.20, 1.0, stT));
+      senkiroGhostMix = max(senkiroGhostMix, 1.0 - stT);
+    }
+  }
+
+  if (keepProb < 0.999) {
+    if (senkiroBayer4x4(gl_FragCoord.xy) > keepProb) discard;
+  }
+}`;
+
+    const fragmentTintChunk =
+      mode === 'terrain'
+        ? `
+if (senkiroGridMask > 0.01 || senkiroRimGlow > 0.01) {
+  vec3 archCyan = vec3(0.52, 0.80, 0.96);
+  float blend = clamp(senkiroRimGlow * 0.65 + senkiroGridMask * 0.55, 0.0, 0.82);
+  gl_FragColor.rgb = mix(gl_FragColor.rgb, archCyan, blend);
+}`
+        : `
+if (senkiroGhostMix > 0.01) {
+  gl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(0.75, 0.85, 0.95), senkiroGhostMix * 0.35);
+}`;
 
     shader.fragmentShader = shader.fragmentShader
       .replace(
@@ -75,21 +317,21 @@ vCutWorldPos = cutWp.xyz;`,
 uniform float uCutawayActive;
 uniform vec3 uCutawayCenter;
 uniform float uCutawayRadius;
-varying vec3 vCutWorldPos;`,
+uniform float uStationFocusActive;
+uniform vec3 uStationFocusCenter;
+uniform float uStationFocusRadius;
+uniform float uStationFocusUnderground;
+varying vec3 vCutWorldPos;
+${BAYER_GLSL}`,
       )
       .replace(
         '#include <clipping_planes_fragment>',
         `#include <clipping_planes_fragment>
-if (uCutawayActive > 0.5) {
-  float cutDist = length(vCutWorldPos.xz - uCutawayCenter.xz);
-  if (cutDist < uCutawayRadius + ${discardMargin}) discard;
-}`,
+${fragmentClipChunk}`,
       )
       .replace(
         '#include <dithering_fragment>',
-        `if (uCutawayActive > 0.5) {
-  float cutDist = length(vCutWorldPos.xz - uCutawayCenter.xz);${rimHighlight}
-}
+        `${fragmentTintChunk}
 #include <dithering_fragment>`,
       );
   };

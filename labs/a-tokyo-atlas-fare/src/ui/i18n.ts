@@ -1,4 +1,24 @@
-export type Locale = 'ja' | 'en';
+export type Locale = 'ja' | 'zh' | 'en';
+
+export function pickLocale<T>(locale: Locale, ja: T, zh: T, en: T): T {
+  return locale === 'ja' ? ja : locale === 'zh' ? zh : en;
+}
+
+const ELEVATION_TIER_LABELS: Record<string, { ja: string; zh: string; en: string }> = {
+  'L+2': { ja: '高架2層 (+20)', zh: '高架2层 (+20)', en: 'Elevated L+2 (+20)' },
+  'L+1': { ja: '高架1層 (+10)', zh: '高架1层 (+10)', en: 'Elevated L+1 (+10)' },
+  L0: { ja: '地上 (0)', zh: '地面 (0)', en: 'Surface L0 (0)' },
+  'L-1': { ja: '地下1層 (-10)', zh: '地下1层 (-10)', en: 'Underground L-1 (-10)' },
+  'L-2': { ja: '地下2層 (-20)', zh: '地下2层 (-20)', en: 'Underground L-2 (-20)' },
+  'L-3': { ja: '地下3層 (-30)', zh: '地下3层 (-30)', en: 'Underground L-3 (-30)' },
+  'L-4': { ja: '地下4層 (-40)', zh: '地下4层 (-40)', en: 'Underground L-4 (-40)' },
+};
+
+export function localizeElevationTier(id: string, locale: Locale): string {
+  const entry = ELEVATION_TIER_LABELS[id];
+  if (!entry) return id;
+  return pickLocale(locale, entry.ja, entry.zh, entry.en);
+}
 
 export const UI_TEXT = {
   ja: {
@@ -47,6 +67,53 @@ export const UI_TEXT = {
     pathsDifferBadge: '実乗車経路 ≠ 運賃計算経路',
     darkMode: 'ダーク',
     lightMode: 'ライト',
+  },
+  zh: {
+    appTitle: 'SENKIRO Lab · Tokyo Atlas & Fare',
+    subtitle: '东京铁道路线图 × 规则驱动 JR 票价引擎',
+    viewGeo: '2D 地理地图',
+    view3d: '3D 城市图集',
+    viewStrip: '线路图 (Strip)',
+    tabExplore: '探索・搜索',
+    tabDetail: '车站・线路详情',
+    tabFare: 'JR 票价计算',
+    tabCoverage: '覆盖范围・数据来源',
+    searchPlaceholder: '搜索车站（日语 / 中文 / English / 假名 / 编号）...',
+    fareSliceOnly: '仅显示 JR 票价区间',
+    operators: '运营商筛选',
+    selectAll: '全选',
+    clearAll: '清空',
+    realtimeTitle: '运行信息（实时扩展位）',
+    origin: '出发站',
+    destination: '到达站',
+    via: '经由站（可选）',
+    travelDate: '乘车日期',
+    ticketType: '车票类型',
+    paperTicket: '普通纸质车票',
+    icCard: 'IC 卡（Suica 等・暂不支持验证）',
+    routePref: '实际乘车路径',
+    requireStopover: '需要中途下车（验证可否中途下车）',
+    surcharge: '附加费用层（FareProduct）',
+    calculate: '计算票价并在地图高亮',
+    syntheticBanner:
+      '示例数据，不可作为实际购票金额（规则验证演示模式・合成费率）',
+    vertical3dBanner:
+      '纵断位置为示意展示，非真实高度或埋深（基于独立 OSM ODbL 1.0 文件 osm-vertical.json 叠加）',
+    setOrigin: '设为出发站',
+    setDest: '设为到达站',
+    setVia: '设为经由',
+    unknown: '未知 / 未核实',
+    inGate: '站内换乘',
+    outOfGate: '出站换乘',
+    gateUnknown: '换乘方式：未知',
+    coverageFull: '完整',
+    coveragePartial: '部分',
+    coverageNone: '未收录',
+    actualPathLabel: '实际乘车路径',
+    billedPathLabel: '计费规则路径',
+    pathsDifferBadge: '实际乘车路径 ≠ 计费规则路径',
+    darkMode: '深色',
+    lightMode: '浅色',
   },
   en: {
     appTitle: 'SENKIRO Lab · Tokyo Atlas & Fare',

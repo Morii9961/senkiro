@@ -23,6 +23,7 @@ import {
   detectSurfaceIntersections,
   getEffectiveRiverWidth,
   isSurfaceRiverVisible,
+  pointInPoly,
   showcaseZoneBounds,
   TERRAIN_ELEVATION_LEVELS,
 } from '../city/cityGeometryHelpers.js';
@@ -181,6 +182,78 @@ function buildRibbonGeometryXZ(
   return normalizeFlatGeometry(geom, uvMode === 'road' ? 'preserve' : uvMode);
 }
 
+const TREE_CANOPY_DAY_PALETTE = [
+  0x4f7c47,
+  0x5d8b51,
+  0x406c3c,
+  0x6a9659,
+  0x4a7545,
+  0x739c5f,
+  0x57834c,
+  0x7b9855,
+];
+
+const TREE_CANOPY_NIGHT_PALETTE = [
+  0x1d3525,
+  0x233e2b,
+  0x182d20,
+  0x294631,
+  0x1f3827,
+  0x2c4b34,
+  0x213a29,
+  0x2a442d,
+];
+
+function hashTree(a: number, b: number, salt: number): number {
+  let h = Math.imul(a | 0, 374761393) ^ Math.imul(b | 0, 668265263) ^ Math.imul(salt | 0, 1274126177);
+  h = Math.imul(h ^ (h >>> 13), 668265263);
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+}
+
+/**
+ * Builds an organic multi-lobe 3D foliage canopy geometry (3 merged low-poly lobes = 60 tris)
+ * for ultra-fast instanced urban park & boulevard trees.
+ */
+function createOrganicCanopyGeometry(): THREE.BufferGeometry {
+  const lobeMain = new THREE.IcosahedronGeometry(2.35, 0);
+  lobeMain.scale(1.05, 0.92, 1.0);
+  lobeMain.translate(0, 4.9, 0);
+
+  const lobeSideA = new THREE.IcosahedronGeometry(1.75, 0);
+  lobeSideA.scale(1.05, 0.85, 0.95);
+  lobeSideA.translate(1.25, 4.25, 0.65);
+
+  const lobeSideB = new THREE.IcosahedronGeometry(1.65, 0);
+  lobeSideB.scale(0.98, 0.88, 1.05);
+  lobeSideB.translate(-1.15, 4.4, -0.7);
+
+  const parts = [lobeMain, lobeSideA, lobeSideB].map((g) => {
+    const ni = g.index ? g.toNonIndexed() : g;
+    if (ni.getAttribute('uv')) ni.deleteAttribute('uv');
+    ni.computeVertexNormals();
+    if (ni !== g) g.dispose();
+    return ni;
+  });
+
+  const merged = mergeGeometries(parts, false);
+  for (const p of parts) p.dispose();
+  if (!merged) {
+    const fallback = new THREE.IcosahedronGeometry(2.3, 0);
+    fallback.translate(0, 4.8, 0);
+    return fallback;
+  }
+  return merged;
+}
+
+interface TreeInstanceRecord {
+  x: number;
+  z: number;
+  scaleXZ: number;
+  scaleY: number;
+  rotY: number;
+  paletteIdx: number;
+}
+
 interface TerrainTextureBundle {
   parcel: SurfaceTextureSet;
   sidewalk: SurfaceTextureSet;
@@ -217,9 +290,14 @@ export class CityTerrainLayer {
   private readonly tertiaryRoadMaterial: THREE.MeshStandardMaterial;
   private readonly intersectionRoadMaterial: THREE.MeshStandardMaterial;
   private readonly elevatedRoadMaterial: THREE.MeshStandardMaterial;
+  private readonly treeTrunkMaterial: THREE.MeshStandardMaterial;
+  private readonly treeCanopyMaterial: THREE.MeshStandardMaterial;
 
   private readonly surfaceMaterials: THREE.MeshStandardMaterial[];
   private readonly undergroundReferenceGrid: THREE.GridHelper;
+  private treeTrunkMesh: THREE.InstancedMesh | null = null;
+  private treeCanopyMesh: THREE.InstancedMesh | null = null;
+  private treePaletteIndices: Uint8Array | null = null;
   private textures: TerrainTextureBundle;
   private isDark: boolean;
 
@@ -263,13 +341,13 @@ export class CityTerrainLayer {
 
     this.bayMaterial = mkSurfaceMat(
       {
-        color: isDark ? 0x10283f : 0x5c8fb6,
+        color: isDark ? 0x10283f : 0x4f84ad,
         roughnessMap: this.textures.water.roughnessMap,
         bumpMap: this.textures.water.bumpMap,
-        bumpScale: 0.24,
-        roughness: 0.22,
-        metalness: 0.24,
-        envMapIntensity: 1.35,
+        bumpScale: 0.28,
+        roughness: 0.14,
+        metalness: 0.34,
+        envMapIntensity: 1.75,
       },
       levelPo('tokyoBay'),
     );
@@ -281,13 +359,13 @@ export class CityTerrainLayer {
 
     this.waterMaterial = mkSurfaceMat(
       {
-        color: isDark ? 0x153654 : 0x679bc2,
+        color: isDark ? 0x153654 : 0x5990b8,
         roughnessMap: this.textures.water.roughnessMap,
         bumpMap: this.textures.water.bumpMap,
-        bumpScale: 0.2,
-        roughness: 0.24,
-        metalness: 0.22,
-        envMapIntensity: 1.25,
+        bumpScale: 0.24,
+        roughness: 0.14,
+        metalness: 0.34,
+        envMapIntensity: 1.75,
       },
       levelPo('inlandWater'),
     );
@@ -426,6 +504,27 @@ export class CityTerrainLayer {
       clippingPlanes: clipPlanes,
     });
 
+    this.treeTrunkMaterial = new THREE.MeshStandardMaterial({
+      color: isDark ? 0x2a231e : 0x5c4b3c,
+      roughness: 0.94,
+      metalness: 0.02,
+      transparent: false,
+      opacity: 1.0,
+      depthWrite: true,
+      clippingPlanes: clipPlanes,
+    });
+
+    this.treeCanopyMaterial = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      roughness: 0.86,
+      metalness: 0.02,
+      envMapIntensity: 0.45,
+      transparent: false,
+      opacity: 1.0,
+      depthWrite: true,
+      clippingPlanes: clipPlanes,
+    });
+
     this.surfaceMaterials = [
       this.groundMaterial,
       this.bayMaterial,
@@ -449,6 +548,8 @@ export class CityTerrainLayer {
         injectRadialCutaway(mat, cutawayUniforms, 'terrain');
       }
       injectRadialCutaway(this.elevatedRoadMaterial, cutawayUniforms, 'terrain');
+      injectRadialCutaway(this.treeTrunkMaterial, cutawayUniforms, 'building');
+      injectRadialCutaway(this.treeCanopyMaterial, cutawayUniforms, 'building');
     }
 
     // Base metropolitan ground plane at y = -1.25 with world-meter UVs
@@ -621,8 +722,23 @@ export class CityTerrainLayer {
     this.addMergedLayer(quayGeoms, this.quayMaterial, 'osm-river-quays', 2);
     this.addMergedLayer(waterGeoms, this.waterMaterial, 'osm-water-layer', 3);
 
-    // 4. Real OSM Parks & Botanical Forests
+    // 4. Real OSM Parks & Botanical Forests (+ Imperial Palace Inner Forest Sanctuary)
+    const imperialPalaceInnerPts: [number, number][] = [
+      [-1720, -1040],
+      [-1260, -1160],
+      [-760, -1020],
+      [-580, -480],
+      [-660, 40],
+      [-1280, 90],
+      [-1740, -260],
+    ];
     const parkGeoms: THREE.BufferGeometry[] = [];
+    const palaceGeom = buildPolygonGeometryXZ(
+      imperialPalaceInnerPts,
+      levelY('parks') - 0.008,
+      'world',
+    );
+    if (palaceGeom) parkGeoms.push(palaceGeom);
     for (let i = 0; i < env.parkPolygons.length; i++) {
       const pk = env.parkPolygons[i]!;
       const y = Math.min(SURFACE_ELEVATION_LAYERS.parkMaxY, levelY('parks') + (i % 6) * 0.014);
@@ -804,7 +920,318 @@ export class CityTerrainLayer {
       9,
     );
     this.addMergedLayer(elevatedRoadGeoms, this.elevatedRoadMaterial, 'osm-elevated-roads', 10, false);
+    this.populateInstancedTrees(env);
     this.streetscapeLayer.populate(env);
+  }
+
+  /**
+   * Populates 3D instanced park groves & primary/trunk boulevard street trees across Tokyo
+   * in strictly 2 InstancedMesh draw calls (trunks + multi-lobe canopies) with natural green variation.
+   */
+  private populateInstancedTrees(env: UrbanBaseEnvironment): void {
+    const maxTrees = 8500;
+    const parkBudget = 5200;
+    const trees: TreeInstanceRecord[] = [];
+    const seenCells = new Set<number>();
+
+    const cellKey = (x: number, z: number) =>
+      (Math.floor(x / 10) + 4096) * 8192 + (Math.floor(z / 10) + 4096);
+
+    // Quick AABB-filtered water polygon check so park/boulevard trees stay on dry land
+    const waterBounds = env.waterPolygons.map((wp) => {
+      let minX = Infinity;
+      let maxX = -Infinity;
+      let minZ = Infinity;
+      let maxZ = -Infinity;
+      for (const [x, z] of wp.pts) {
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (z < minZ) minZ = z;
+        if (z > maxZ) maxZ = z;
+      }
+      return { minX, maxX, minZ, maxZ, pts: wp.pts };
+    });
+
+    const isInWater = (x: number, z: number): boolean => {
+      for (let i = 0; i < waterBounds.length; i++) {
+        const wb = waterBounds[i]!;
+        if (x < wb.minX || x > wb.maxX || z < wb.minZ || z > wb.maxZ) continue;
+        if (pointInPoly(x, z, wb.pts)) return true;
+      }
+      return false;
+    };
+
+    // Quick spatial grid for intersections & rail corridors (avoid placing boulevard trees in junctions/tracks)
+    const blockedRoadSide = new Set<number>();
+    const markBlockedDisc = (x: number, z: number, radM: number) => {
+      const rCells = Math.ceil(radM / 12);
+      const gx0 = Math.floor(x / 12);
+      const gz0 = Math.floor(z / 12);
+      for (let dx = -rCells; dx <= rCells; dx++) {
+        for (let dz = -rCells; dz <= rCells; dz++) {
+          blockedRoadSide.add((gx0 + dx + 4096) * 8192 + (gz0 + dz + 4096));
+        }
+      }
+    };
+    const isRoadSideBlocked = (x: number, z: number) =>
+      blockedRoadSide.has((Math.floor(x / 12) + 4096) * 8192 + (Math.floor(z / 12) + 4096));
+
+    for (const [ix, iz, rad] of env.intersections) {
+      markBlockedDisc(ix, iz, rad + 4);
+    }
+    if (env.railCorridors) {
+      for (const c of env.railCorridors) {
+        for (let i = 0; i < c.pts.length - 1; i++) {
+          const [ax, az] = c.pts[i]!;
+          const [bx, bz] = c.pts[i + 1]!;
+          const len = Math.hypot(bx - ax, bz - az);
+          const steps = Math.max(1, Math.ceil(len / 14));
+          for (let s = 0; s <= steps; s++) {
+            const t = s / steps;
+            markBlockedDisc(ax + (bx - ax) * t, az + (bz - az) * t, c.width * 0.5 + 3);
+          }
+        }
+      }
+    }
+    for (const rv of env.riverLines) {
+      if (!isSurfaceRiverVisible(rv.name)) continue;
+      const rw = getEffectiveRiverWidth(rv.name, rv.width) * 0.5 + 4;
+      for (let i = 0; i < rv.pts.length - 1; i++) {
+        const [ax, az] = rv.pts[i]!;
+        const [bx, bz] = rv.pts[i + 1]!;
+        const len = Math.hypot(bx - ax, bz - az);
+        const steps = Math.max(1, Math.ceil(len / 16));
+        for (let s = 0; s <= steps; s++) {
+          const t = s / steps;
+          markBlockedDisc(ax + (bx - ax) * t, az + (bz - az) * t, rw);
+        }
+      }
+    }
+
+    // 1. OSM Park groves (natural dense canopies inside Tokyo's parks & Imperial Palace gardens)
+    for (let pi = 0; pi < env.parkPolygons.length && trees.length < parkBudget; pi++) {
+      const pts = env.parkPolygons[pi]!.pts;
+      if (pts.length < 3) continue;
+      let minX = Infinity;
+      let maxX = -Infinity;
+      let minZ = Infinity;
+      let maxZ = -Infinity;
+      for (const [x, z] of pts) {
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (z < minZ) minZ = z;
+        if (z > maxZ) maxZ = z;
+      }
+      const spanX = maxX - minX;
+      const spanZ = maxZ - minZ;
+      if (spanX < 14 || spanZ < 14) continue;
+      if (Math.abs((minX + maxX) * 0.5) > 16500 || Math.abs((minZ + maxZ) * 0.5) > 16500) continue;
+
+      const approxArea = spanX * spanZ;
+      const spacing = approxArea > 280_000 ? 28 : approxArea > 60_000 ? 22 : 17;
+      let parkAdded = 0;
+      const parkCap = approxArea > 300_000 ? 340 : 120;
+
+      for (let gx = minX + spacing * 0.4; gx < maxX && parkAdded < parkCap && trees.length < parkBudget; gx += spacing) {
+        for (let gz = minZ + spacing * 0.4; gz < maxZ && parkAdded < parkCap && trees.length < parkBudget; gz += spacing) {
+          const ix = Math.round(gx);
+          const iz = Math.round(gz);
+          const r0 = hashTree(ix, iz, pi * 17 + 3);
+          if (r0 < 0.24) continue; // Natural park clearings & lawns
+
+          const jx = gx + (hashTree(ix, iz, 31) - 0.5) * spacing * 0.68;
+          const jz = gz + (hashTree(ix, iz, 57) - 0.5) * spacing * 0.68;
+          if (!pointInPoly(jx, jz, pts)) continue;
+          if (isInWater(jx, jz) || isRoadSideBlocked(jx, jz)) continue;
+
+          const ck = cellKey(jx, jz);
+          if (seenCells.has(ck)) continue;
+          seenCells.add(ck);
+
+          const scaleXZ = 0.85 + hashTree(ix, iz, 83) * 0.72;
+          const scaleY = 0.85 + hashTree(ix, iz, 107) * 0.65;
+          trees.push({
+            x: jx,
+            z: jz,
+            scaleXZ,
+            scaleY,
+            rotY: hashTree(ix, iz, 131) * Math.PI * 2,
+            paletteIdx: Math.floor(hashTree(ix, iz, 163) * TREE_CANOPY_DAY_PALETTE.length),
+          });
+          parkAdded++;
+        }
+      }
+    }
+
+    // 2. Boulevard street trees along primary & trunk avenues (strictly outside road asphalt width)
+    const shibuya = showcaseZoneBounds();
+    const streetSpacing = 34;
+    for (let ri = 0; ri < env.roads.length && trees.length < maxTrees; ri++) {
+      const r = env.roads[ri]!;
+      if (r.el === 1 || (r.hw !== 'primary' && r.hw !== 'trunk') || r.pts.length < 2) continue;
+
+      // Sidewalk tree line offset strictly outside road asphalt width
+      const lateralOffset = r.w * 0.5 + 2.3;
+      let carry = 12;
+
+      for (let si = 0; si < r.pts.length - 1 && trees.length < maxTrees; si++) {
+        const [ax, az] = r.pts[si]!;
+        const [bx, bz] = r.pts[si + 1]!;
+        if (Math.abs(ax) > 13500 || Math.abs(az) > 13500) continue;
+
+        const dx = bx - ax;
+        const dz = bz - az;
+        const segLen = Math.hypot(dx, dz);
+        if (segLen < 8) continue;
+
+        const nx = -dz / segLen;
+        const nz = dx / segLen;
+
+        let dist = carry;
+        while (dist < segLen - 6 && trees.length < maxTrees) {
+          const t = dist / segLen;
+          const cx = ax + dx * t;
+          const cz = az + dz * t;
+
+          // Skip Shibuya showcase core where ShibuyaStreetscapeLayer renders dedicated hero street trees
+          const inShibuyaCore =
+            cx >= shibuya.minX &&
+            cx <= shibuya.maxX &&
+            cz >= shibuya.minZ &&
+            cz <= shibuya.maxZ;
+
+          if (!inShibuyaCore) {
+            for (const side of [-1, 1] as const) {
+              if (trees.length >= maxTrees) break;
+              const tx = cx + nx * lateralOffset * side;
+              const tz = cz + nz * lateralOffset * side;
+              if (isRoadSideBlocked(tx, tz) || isInWater(tx, tz)) continue;
+              const ck = cellKey(tx, tz);
+              if (seenCells.has(ck)) continue;
+              seenCells.add(ck);
+
+              const rScale = hashTree(Math.round(tx), Math.round(tz), ri * 13 + side);
+              trees.push({
+                x: tx,
+                z: tz,
+                scaleXZ: 0.72 + rScale * 0.34,
+                scaleY: 0.76 + hashTree(Math.round(tx), Math.round(tz), 211) * 0.34,
+                rotY: rScale * Math.PI * 2,
+                paletteIdx: Math.floor(
+                  hashTree(Math.round(tx), Math.round(tz), 257) * TREE_CANOPY_DAY_PALETTE.length,
+                ),
+              });
+            }
+          }
+
+          dist += streetSpacing;
+        }
+        carry = Math.max(4, dist - segLen);
+      }
+    }
+
+    if (trees.length === 0) return;
+
+    const trunkGeom = new THREE.CylinderGeometry(0.22, 0.36, 3.3, 5);
+    trunkGeom.translate(0, 1.35, 0); // bottom extends to -0.3m for watertight grounding
+    const canopyGeom = createOrganicCanopyGeometry();
+
+    const trunkMesh = new THREE.InstancedMesh(trunkGeom, this.treeTrunkMaterial, trees.length);
+    trunkMesh.name = 'urban-trees-trunks';
+    trunkMesh.castShadow = false;
+    trunkMesh.receiveShadow = true;
+    trunkMesh.renderOrder = 11;
+
+    const canopyMesh = new THREE.InstancedMesh(canopyGeom, this.treeCanopyMaterial, trees.length);
+    canopyMesh.name = 'urban-trees-canopies';
+    canopyMesh.castShadow = false;
+    canopyMesh.receiveShadow = true;
+    canopyMesh.renderOrder = 11;
+
+    const dummy = new THREE.Object3D();
+    const color = new THREE.Color();
+    const palette = this.isDark ? TREE_CANOPY_NIGHT_PALETTE : TREE_CANOPY_DAY_PALETTE;
+    const indices = new Uint8Array(trees.length);
+
+    for (let i = 0; i < trees.length; i++) {
+      const tr = trees[i]!;
+      dummy.position.set(tr.x, 0, tr.z);
+      dummy.rotation.set(0, tr.rotY, 0);
+      dummy.scale.set(tr.scaleXZ, tr.scaleY, tr.scaleXZ);
+      dummy.updateMatrix();
+      trunkMesh.setMatrixAt(i, dummy.matrix);
+      canopyMesh.setMatrixAt(i, dummy.matrix);
+
+      indices[i] = tr.paletteIdx;
+      color.setHex(palette[tr.paletteIdx]!);
+      canopyMesh.setColorAt(i, color);
+    }
+
+    trunkMesh.instanceMatrix.needsUpdate = true;
+    canopyMesh.instanceMatrix.needsUpdate = true;
+    if (canopyMesh.instanceColor) canopyMesh.instanceColor.needsUpdate = true;
+    trunkMesh.computeBoundingSphere();
+    canopyMesh.computeBoundingSphere();
+
+    this.treeTrunkMesh = trunkMesh;
+    this.treeCanopyMesh = canopyMesh;
+    this.treePaletteIndices = indices;
+    this.group.add(trunkMesh, canopyMesh);
+  }
+
+  /**
+   * Gently animates Tokyo Bay & inland river water bump/roughness UV offsets for shimmering reflections.
+   */
+  updateAnimation(elapsedSec: number): void {
+    const w = this.textures.water;
+    w.bumpMap.offset.set((elapsedSec * 0.012) % 1, (elapsedSec * 0.008) % 1);
+    w.roughnessMap.offset.set((-elapsedSec * 0.007) % 1, (elapsedSec * 0.011) % 1);
+  }
+
+  /**
+   * Smoothly tints Tokyo Bay, rivers, foliage canopies, and terrain ambiance across
+   * dawn, noon, golden hour sunset, blue hour twilight, and night.
+   */
+  setTimeOfDay(hour: number, rawNightFactor: number): void {
+    const h = ((hour % 24) + 24) % 24;
+    const nf = Math.max(0, Math.min(1, rawNightFactor));
+
+    // Golden-hour / dawn warmth peaks around 6.0h and 17.3h
+    const sunsetWarm = Math.exp(-Math.pow((h - 17.3) / 1.15, 2));
+    const dawnWarm = Math.exp(-Math.pow((h - 6.0) / 1.1, 2));
+    const goldenWarmth = Math.min(1, Math.max(sunsetWarm, dawnWarm * 0.85));
+
+    const bayDay = new THREE.Color(0x4f84ad);
+    const bayGolden = new THREE.Color(0x886c68);
+    const bayNight = new THREE.Color(0x10283f);
+    this.bayMaterial.color
+      .copy(bayDay)
+      .lerp(bayNight, nf)
+      .lerp(bayGolden, goldenWarmth * 0.45);
+    this.bayMaterial.envMapIntensity = 1.75 + goldenWarmth * 0.35 - nf * 0.25;
+
+    const riverDay = new THREE.Color(0x5990b8);
+    const riverGolden = new THREE.Color(0x96776e);
+    const riverNight = new THREE.Color(0x153654);
+    this.waterMaterial.color
+      .copy(riverDay)
+      .lerp(riverNight, nf)
+      .lerp(riverGolden, goldenWarmth * 0.45);
+    this.waterMaterial.envMapIntensity = 1.75 + goldenWarmth * 0.35 - nf * 0.25;
+
+    // Subtle atmospheric canopy & park lighting tint
+    const canopyDay = new THREE.Color(0xffffff);
+    const canopyGolden = new THREE.Color(0xffdfbf);
+    const canopyNight = new THREE.Color(0x88a4c2);
+    this.treeCanopyMaterial.color
+      .copy(canopyDay)
+      .lerp(canopyNight, nf * 0.45)
+      .lerp(canopyGolden, goldenWarmth * 0.22);
+
+    this.parkMaterial.color
+      .copy(canopyDay)
+      .lerp(canopyNight, nf * 0.25)
+      .lerp(canopyGolden, goldenWarmth * 0.16);
   }
 
   setSurfaceOpacity(opacity: number, undergroundActive: boolean): void {
@@ -824,6 +1251,15 @@ export class CityTerrainLayer {
     this.elevatedRoadMaterial.opacity = elevTranslucent ? Math.min(1, clamped + 0.18) : 1.0;
     this.elevatedRoadMaterial.depthWrite = !elevTranslucent;
     if (elevNeed) this.elevatedRoadMaterial.needsUpdate = true;
+
+    for (const treeMat of [this.treeTrunkMaterial, this.treeCanopyMaterial]) {
+      const needTreeRecompile = treeMat.transparent !== isTranslucent;
+      treeMat.transparent = isTranslucent;
+      treeMat.opacity = clamped;
+      treeMat.depthWrite = !isTranslucent;
+      if (needTreeRecompile) treeMat.needsUpdate = true;
+    }
+
     this.undergroundReferenceGrid.visible = undergroundActive || clamped < 0.7;
     this.streetscapeLayer.setVisibilityAndOpacity(true, clamped, undergroundActive);
   }
@@ -869,20 +1305,33 @@ export class CityTerrainLayer {
 
     this.bayMaterial.roughnessMap = this.textures.water.roughnessMap;
     this.bayMaterial.bumpMap = this.textures.water.bumpMap;
-    this.bayMaterial.color.setHex(isDark ? 0x10283f : 0x5c8fb6);
+    this.bayMaterial.color.setHex(isDark ? 0x10283f : 0x4f84ad);
     this.bayMaterial.needsUpdate = true;
 
     this.waterMaterial.roughnessMap = this.textures.water.roughnessMap;
     this.waterMaterial.bumpMap = this.textures.water.bumpMap;
-    this.waterMaterial.color.setHex(isDark ? 0x153654 : 0x679bc2);
+    this.waterMaterial.color.setHex(isDark ? 0x153654 : 0x5990b8);
     this.waterMaterial.needsUpdate = true;
 
     this.parkMaterial.map = this.textures.parkMap;
+    this.parkMaterial.color.setHex(0xffffff);
     this.parkMaterial.needsUpdate = true;
 
     this.quayMaterial.color.setHex(isDark ? 0x2b333f : 0xb3afa7);
     this.railYardMaterial.color.setHex(isDark ? 0x242a33 : 0x8c877e);
     this.elevatedRoadMaterial.color.setHex(isDark ? 0x394557 : 0x9ca2aa);
+
+    this.treeTrunkMaterial.color.setHex(isDark ? 0x2a231e : 0x5c4b3c);
+    this.treeCanopyMaterial.color.setHex(0xffffff);
+    if (this.treeCanopyMesh && this.treePaletteIndices) {
+      const palette = isDark ? TREE_CANOPY_NIGHT_PALETTE : TREE_CANOPY_DAY_PALETTE;
+      const color = new THREE.Color();
+      for (let i = 0; i < this.treePaletteIndices.length; i++) {
+        color.setHex(palette[this.treePaletteIndices[i]!]!);
+        this.treeCanopyMesh.setColorAt(i, color);
+      }
+      if (this.treeCanopyMesh.instanceColor) this.treeCanopyMesh.instanceColor.needsUpdate = true;
+    }
 
     this.streetscapeLayer.setTheme(isDark);
     this.disposeTextures(oldTextures);
@@ -896,8 +1345,12 @@ export class CityTerrainLayer {
         obj.geometry.dispose();
       }
     });
+    this.treeTrunkMesh?.dispose();
+    this.treeCanopyMesh?.dispose();
     this.disposeTextures(this.textures);
     for (const mat of this.surfaceMaterials) mat.dispose();
     this.elevatedRoadMaterial.dispose();
+    this.treeTrunkMaterial.dispose();
+    this.treeCanopyMaterial.dispose();
   }
 }

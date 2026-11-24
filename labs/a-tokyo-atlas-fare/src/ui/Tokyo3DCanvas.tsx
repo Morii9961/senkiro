@@ -35,7 +35,7 @@ import type { PlacedMapLabel } from '../three/camera/labelLayout.js';
 import { SpatialLabelRegistry } from '../three/camera/labelSystem.js';
 import type { RollingStockRendererAdapter } from '../three/contracts/adapters.js';
 import { TOKYO_HUB_PRESETS } from '../three/geoProjection.js';
-import { Metropolitan3DScene } from '../three/Metropolitan3DScene.js';
+import { Metropolitan3DScene, type SceneCallbacks } from '../three/Metropolitan3DScene.js';
 import { createRollingStockRenderer } from '../three/rollingstock/index.js';
 import type {
   LineTraceStatus,
@@ -61,6 +61,22 @@ interface Tokyo3DCanvasProps {
   onViewportChange: (lon: number, lat: number, zoom: number) => void;
   onSelectStation: (stationId: SkId<'station'>) => void;
   onSelectLine: (lineId: SkId<'line'>) => void;
+  onClearSelection?: () => void;
+  onClearStation?: () => void;
+  onClearLine?: () => void;
+}
+
+type SceneWithTimeOfDay = Metropolitan3DScene & {
+  setTimeOfDay?: (hour: number) => void;
+};
+
+type SceneCallbacksWithClear = SceneCallbacks & {
+  onClearSelection?: () => void;
+};
+
+function isNightHour(hour: number): boolean {
+  const h = ((hour % 24) + 24) % 24;
+  return h < 6.0 || h >= 18.2;
 }
 
 const DEFAULT_CONTROL_STATE: SimulationControlState = {
@@ -93,6 +109,9 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
   onViewportChange,
   onSelectStation,
   onSelectLine,
+  onClearSelection,
+  onClearStation,
+  onClearLine,
 }) => {
   const mountRef = useRef<HTMLDivElement | null>(null);
   const sceneRef = useRef<Metropolitan3DScene | null>(null);
@@ -107,7 +126,13 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
     undefined,
     createInitialCameraModeState,
   );
-  const [sceneNight, setSceneNight] = useState(theme === 'dark');
+  const [timeOfDayHour, setTimeOfDayHour] = useState<number>(() =>
+    theme === 'dark' ? 21.0 : 13.5,
+  );
+  const [autoTimePlay, setAutoTimePlay] = useState(false);
+  const timeOfDayRef = useRef(timeOfDayHour);
+  timeOfDayRef.current = timeOfDayHour;
+  const sceneNight = isNightHour(timeOfDayHour);
   const [telemetry, setTelemetry] = useState<SceneTelemetry | null>(null);
   const [traceStatus, setTraceStatus] = useState<LineTraceStatus>({
     active: false,
@@ -129,8 +154,22 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
   const [orientation, setOrientation] = useState<CameraOrientationInfo | null>(null);
   const [explorerLoc, setExplorerLoc] = useState<UndergroundExplorerLocation | null>(null);
 
-  const cbRef = useRef({ onSelectStation, onSelectLine, onViewportChange });
-  cbRef.current = { onSelectStation, onSelectLine, onViewportChange };
+  const cbRef = useRef({
+    onSelectStation,
+    onSelectLine,
+    onViewportChange,
+    onClearSelection,
+    onClearStation,
+    onClearLine,
+  });
+  cbRef.current = {
+    onSelectStation,
+    onSelectLine,
+    onViewportChange,
+    onClearSelection,
+    onClearStation,
+    onClearLine,
+  };
 
   const selectedLine = useMemo(
     () => dataset.railLines.find((l) => l.id === selectedLineId) ?? null,
@@ -162,6 +201,10 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
     (action: CameraModeAction) => {
       if (action.type === 'RESET_OVERVIEW') {
         const overview = TOKYO_HUB_PRESETS.find((h) => h.id === 'tokyo23') ?? TOKYO_HUB_PRESETS[0]!;
+        sceneRef.current?.selectTrain(null);
+        sceneRef.current?.stopLineTrace();
+        setSelectedTrainId(null);
+        cbRef.current.onClearSelection?.();
         sceneRef.current?.flyToHubPreset(overview);
       }
       dispatchRaw(action);
@@ -169,8 +212,16 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
     [],
   );
 
+  // Sync top-level app light/dark theme toggle to sensible default solar hour
+  const prevThemeRef = useRef(theme);
   useEffect(() => {
-    setSceneNight(theme === 'dark');
+    if (prevThemeRef.current !== theme) {
+      prevThemeRef.current = theme;
+      const targetHour = theme === 'dark' ? 21.0 : 13.5;
+      timeOfDayRef.current = targetHour;
+      setTimeOfDayHour(targetHour);
+      setAutoTimePlay(false);
+    }
   }, [theme]);
 
   // Mount Three.js scene WITH real v2 Train Simulation Engine & Rolling Stock Renderer plugins
@@ -182,23 +233,29 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
     simEngineRef.current = simEngine;
     rollingStockRef.current = rollingStock;
 
+    const callbacks: SceneCallbacksWithClear = {
+      onSelectStation: (sid) => cbRef.current.onSelectStation(sid),
+      onSelectLine: (lid) => cbRef.current.onSelectLine(lid),
+      onSelectTrain: (tid) => setSelectedTrainId(tid),
+      onClearSelection: () => {
+        setSelectedTrainId(null);
+        cbRef.current.onClearSelection?.();
+      },
+      onTelemetry: (stats) => setTelemetry(stats),
+      onTraceUpdate: (st) => setTraceStatus(st),
+      onSimulationUpdate: (controlState, trainList) => {
+        setSimControl(controlState);
+        setTrains(trainList);
+      },
+      onCameraMoved: (lon, lat, zoom) => cbRef.current.onViewportChange(lon, lat, zoom),
+    };
+
     const ctrl = new Metropolitan3DScene(
       mountRef.current,
       dataset,
       osmVertical,
-      sceneNight,
-      {
-        onSelectStation: (sid) => cbRef.current.onSelectStation(sid),
-        onSelectLine: (lid) => cbRef.current.onSelectLine(lid),
-        onSelectTrain: (tid) => setSelectedTrainId(tid),
-        onTelemetry: (stats) => setTelemetry(stats),
-        onTraceUpdate: (st) => setTraceStatus(st),
-        onSimulationUpdate: (controlState, trainList) => {
-          setSimControl(controlState);
-          setTrains(trainList);
-        },
-        onCameraMoved: (lon, lat, zoom) => cbRef.current.onViewportChange(lon, lat, zoom),
-      },
+      isNightHour(timeOfDayRef.current),
+      callbacks,
       initialViewport ?? undefined,
       {
         simulationEngine: simEngine,
@@ -206,6 +263,7 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
       },
     );
     sceneRef.current = ctrl;
+    (ctrl as SceneWithTimeOfDay).setTimeOfDay?.(timeOfDayRef.current);
 
     // Initialize simulation snapshots immediately so SimulationPanel renders frame 1
     setSimControl(ctrl.getSimulationControlState());
@@ -240,10 +298,36 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
     };
   }, [dataset, osmVertical]);
 
-  // Day/Night theme sync
+  // Day/Night theme & continuous solar lighting sync
   useEffect(() => {
     sceneRef.current?.setTheme(sceneNight);
   }, [sceneNight]);
+
+  useEffect(() => {
+    (sceneRef.current as SceneWithTimeOfDay | null)?.setTimeOfDay?.(timeOfDayHour);
+  }, [timeOfDayHour]);
+
+  // Smooth continuous time-lapse playback (~0.8 simulated hours/sec)
+  useEffect(() => {
+    if (!autoTimePlay) return;
+    let rafId = 0;
+    let lastTs = performance.now();
+    let lastUiSync = lastTs;
+    const step = (now: number) => {
+      const dtSec = Math.min(0.1, (now - lastTs) / 1000);
+      lastTs = now;
+      const nextHour = (timeOfDayRef.current + dtSec * 0.8) % 24;
+      timeOfDayRef.current = nextHour;
+      (sceneRef.current as SceneWithTimeOfDay | null)?.setTimeOfDay?.(nextHour);
+      if (now - lastUiSync >= 66) {
+        lastUiSync = now;
+        setTimeOfDayHour(nextHour);
+      }
+      rafId = window.requestAnimationFrame(step);
+    };
+    rafId = window.requestAnimationFrame(step);
+    return () => window.cancelAnimationFrame(rafId);
+  }, [autoTimePlay]);
 
   // Show/hide 3D train meshes and enforce visible train limit via plugin group
   useEffect(() => {
@@ -417,7 +501,7 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
     simControl.undergroundTrainCount,
   ]);
 
-  // Global desktop shortcuts (F: Free Look, R: Reset Overview, Esc: Exit Follow / Return to Surface)
+  // Global desktop shortcuts (R: Reset Overview, Esc: Exit Follow / Return to Surface / Clear Selection)
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
@@ -430,9 +514,7 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
       ) {
         return;
       }
-      if (e.key === 'f' || e.key === 'F') {
-        dispatchMode({ type: 'TOGGLE_FREE_LOOK' });
-      } else if (e.key === 'r' || e.key === 'R') {
+      if (e.key === 'r' || e.key === 'R') {
         dispatchMode({ type: 'RESET_OVERVIEW' });
       } else if (e.key === 'Escape') {
         if (modeState.mode === 'train_follow') {
@@ -442,6 +524,11 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
           modeState.mode === 'underground_explorer'
         ) {
           dispatchMode({ type: 'RETURN_TO_SURFACE' });
+        } else {
+          sceneRef.current?.selectTrain(null);
+          sceneRef.current?.stopLineTrace();
+          setSelectedTrainId(null);
+          cbRef.current.onClearSelection?.();
         }
       }
     };
@@ -452,11 +539,33 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
   const handleHubClick = useCallback((hubId: string) => {
     const preset = TOKYO_HUB_PRESETS.find((p) => p.id === hubId);
     if (!preset) return;
+    sceneRef.current?.selectTrain(null);
+    sceneRef.current?.stopLineTrace();
+    setSelectedTrainId(null);
+    cbRef.current.onClearSelection?.();
     sceneRef.current?.flyToHubPreset(preset);
     if (preset.recommendUnderground) {
       dispatchMode({ type: 'SELECT_MODE', mode: 'underground_cutaway' });
     }
   }, [dispatchMode]);
+
+  const handleChangeTimeOfDay = useCallback((hour: number) => {
+    const normalized = ((hour % 24) + 24) % 24;
+    timeOfDayRef.current = normalized;
+    setTimeOfDayHour(normalized);
+  }, []);
+
+  const handleToggleDayNight = useCallback(() => {
+    setAutoTimePlay(false);
+    const nextHour = isNightHour(timeOfDayRef.current) ? 13.5 : 21.0;
+    timeOfDayRef.current = nextHour;
+    setTimeOfDayHour(nextHour);
+  }, []);
+
+  const handleCloseLine = useCallback(() => {
+    sceneRef.current?.stopLineTrace();
+    cbRef.current.onClearLine?.();
+  }, []);
 
   const handleStartOrToggleTrace = useCallback(() => {
     if (!selectedLineId || !sceneRef.current) return;
@@ -507,19 +616,23 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
         aria-label={
           locale === 'ja'
             ? '東京大都市3D鉄道・地下トンネルインタラクティブ空間'
-            : 'Tokyo Metropolitan 3D Railway & Underground Tunnel Scene'
+            : locale === 'zh'
+              ? '东京大都市 3D 铁路与地下隧道交互空间'
+              : 'Tokyo Metropolitan 3D Railway & Underground Tunnel Scene'
         }
       />
 
       {/* Hierarchical Screen-Space Deconflicted Map Labels */}
       <MapLabelsOverlay labels={labels} onLabelClick={handleLabelClick} />
 
-      {/* Top Mode Bar, Mode Context Drawer, Line Trace, Telemetry */}
+      {/* Top Mode Bar, Mode Context Drawer, Line Trace, Time-of-Day, Telemetry */}
       <CameraHud
         dataset={dataset}
         locale={locale}
         modeState={modeState}
         sceneNight={sceneNight}
+        timeOfDayHour={timeOfDayHour}
+        autoTimePlay={autoTimePlay}
         fareQuote={fareQuote}
         selectedLineId={selectedLineId}
         orientation={orientation}
@@ -531,11 +644,14 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
         onDispatch={dispatchMode}
         onSelectHub={handleHubClick}
         onJumpExplorerLine={(lid) => camBridgeRef.current?.jumpToTunnelLine(lid)}
-        onToggleNight={() => setSceneNight((n) => !n)}
+        onToggleNight={handleToggleDayNight}
+        onChangeTimeOfDay={handleChangeTimeOfDay}
+        onToggleAutoTimePlay={() => setAutoTimePlay((p) => !p)}
         onStartOrToggleTrace={handleStartOrToggleTrace}
         onStopTrace={() => sceneRef.current?.stopLineTrace()}
         onTraceProgress={(p) => sceneRef.current?.setLineTraceProgress(p)}
         onFitLine={(lid) => sceneRef.current?.flyToLine(lid)}
+        onCloseLine={handleCloseLine}
       />
 
       {/* Contextual 3D Train / Station / Line Inspector */}
@@ -554,6 +670,8 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
           sceneRef.current?.selectTrain(null);
           setSelectedTrainId(null);
         }}
+        onCloseStation={onClearStation}
+        onCloseLine={handleCloseLine}
         onFocusLine={(lid) => sceneRef.current?.flyToLine(lid)}
         onEnterUndergroundExplorer={() =>
           dispatchMode({ type: 'SELECT_MODE', mode: 'underground_explorer' })
