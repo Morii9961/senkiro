@@ -13,7 +13,9 @@ import * as THREE from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader.js';
 
 export type RendererBackendLabel = 'WebGPU' | 'WebGL2';
 
@@ -113,8 +115,9 @@ export function createOptimalRenderer(
   const width = Math.max(1, container.clientWidth || 960);
   const height = Math.max(1, container.clientHeight || 640);
   const maxDpr = options.maxPixelRatio ?? 2;
-  const pixelRatio =
+  const getClampedPixelRatio = (): number =>
     typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, maxDpr) : 1;
+  let pixelRatio = getClampedPixelRatio();
 
   const webGpuSupported =
     typeof navigator !== 'undefined' &&
@@ -129,9 +132,9 @@ export function createOptimalRenderer(
   });
 
   renderer.setPixelRatio(pixelRatio);
-  renderer.setSize(width, height);
+  renderer.setSize(width, height, false);
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.shadowMap.type = THREE.PCFShadowMap;
   renderer.localClippingEnabled = true;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.04;
@@ -151,17 +154,29 @@ export function createOptimalRenderer(
   let curW = width;
   let curH = height;
 
-  // Lazy-initialized multisampled HDR EffectComposer
+  // Lazy-initialized non-MSAA HDR EffectComposer + FXAA pass (avoids Windows ANGLE D3D11
+  // WebGL2 MSAA+HalfFloat+UnrealBloomPass write-back tile/white-screen corruption on resize)
   let composer: EffectComposer | null = null;
   let renderPass: RenderPass | null = null;
   let bloomPass: UnrealBloomPass | null = null;
   let outputPass: OutputPass | null = null;
+  let fxaaPass: ShaderPass | null = null;
   let composerTarget: THREE.WebGLRenderTarget | null = null;
   let composerFailed = false;
   let lastSceneCalls = 0;
   let lastSceneTriangles = 0;
 
   const computeBloomStrength = (nf: number): number => 0.10 + nf * 0.18; // 0.10 day -> 0.28 night
+
+  const syncFxaaResolution = (): void => {
+    if (!fxaaPass) return;
+    const effW = Math.max(1, Math.floor(curW * pixelRatio));
+    const effH = Math.max(1, Math.floor(curH * pixelRatio));
+    const resUniform = fxaaPass.material.uniforms['resolution'];
+    if (resUniform && resUniform.value instanceof THREE.Vector2) {
+      resUniform.value.set(1 / effW, 1 / effH);
+    }
+  };
 
   const ensureComposer = (scene: THREE.Scene, camera: THREE.Camera): EffectComposer | null => {
     if (composerFailed) return null;
@@ -175,13 +190,10 @@ export function createOptimalRenderer(
       const rtHeight = Math.max(1, Math.floor(curH * pixelRatio));
       composerTarget = new THREE.WebGLRenderTarget(rtWidth, rtHeight, {
         type: isWebGL2 ? THREE.HalfFloatType : THREE.UnsignedByteType,
-        samples: isWebGL2 ? 4 : 0,
+        samples: 0,
       });
 
       composer = new EffectComposer(renderer, composerTarget);
-      composer.setPixelRatio(pixelRatio);
-      composer.setSize(curW, curH);
-
       renderPass = new RenderPass(scene, camera);
       const origRenderPass = renderPass.render.bind(renderPass);
       renderPass.render = (r, writeBuf, readBuf, dt, maskActive) => {
@@ -190,16 +202,21 @@ export function createOptimalRenderer(
         lastSceneTriangles = r.info.render.triangles;
       };
       bloomPass = new UnrealBloomPass(
-        new THREE.Vector2(curW, curH),
+        new THREE.Vector2(rtWidth, rtHeight),
         computeBloomStrength(nightFactor),
         0.42, // subtle soft architectural glow radius
-        0.88, // high HDR threshold so crisp daylight stays completely clean
+        0.88 - nightFactor * 0.14,
       );
       outputPass = new OutputPass();
+      fxaaPass = new ShaderPass(FXAAShader);
 
       composer.addPass(renderPass);
       composer.addPass(bloomPass);
       composer.addPass(outputPass);
+      composer.addPass(fxaaPass);
+      composer.setPixelRatio(pixelRatio);
+      composer.setSize(curW, curH);
+      syncFxaaResolution();
       return composer;
     } catch {
       composerFailed = true;
@@ -214,7 +231,14 @@ export function createOptimalRenderer(
     maxAnisotropy,
 
     render(scene: THREE.Scene, camera: THREE.Camera): void {
-      if (bloomEnabled) {
+      // Guarantee clean default framebuffer / viewport / scissor state before every frame
+      renderer.setRenderTarget(null);
+      renderer.setScissorTest(false);
+      renderer.setViewport(0, 0, curW, curH);
+
+      // Use HDR Bloom + FXAA during golden hour / dusk / night where emissive glow matters;
+      // use crisp native hardware MSAA direct rendering during bright midday!
+      if (bloomEnabled && nightFactor >= 0.08) {
         const comp = ensureComposer(scene, camera);
         if (comp) {
           comp.render();
@@ -233,12 +257,15 @@ export function createOptimalRenderer(
     setSize(newW: number, newH: number): void {
       curW = Math.max(1, Math.floor(newW));
       curH = Math.max(1, Math.floor(newH));
-      renderer.setSize(curW, curH);
+      pixelRatio = getClampedPixelRatio();
+      renderer.setPixelRatio(pixelRatio);
+      renderer.setSize(curW, curH, false);
+      renderer.setScissorTest(false);
+      renderer.setViewport(0, 0, curW, curH);
       if (composer) {
+        composer.setPixelRatio(pixelRatio);
         composer.setSize(curW, curH);
-      }
-      if (bloomPass) {
-        bloomPass.setSize(curW, curH);
+        syncFxaaResolution();
       }
     },
 
@@ -260,6 +287,7 @@ export function createOptimalRenderer(
     },
 
     dispose(): void {
+      fxaaPass?.dispose();
       bloomPass?.dispose();
       outputPass?.dispose();
       composer?.dispose();

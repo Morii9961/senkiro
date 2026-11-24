@@ -31,13 +31,20 @@ import { ShibuyaStreetscapeLayer } from '../city/streetscapeGenerator.js';
 import { registerStreetscapeForCutaway } from '../city/streetscapeRegistry.js';
 import {
   createAsphaltRoadTextureSet,
+  createIndustrialPortTextureSet,
   createIntersectionAsphaltTextureSet,
+  createRailYardTextureSet,
   createSidewalkPaverTextureSet,
   createUrbanParcelTextureSet,
   createWaterTextureSet,
   type SurfaceTextureSet,
   type WaterTextureSet,
 } from '../city/surfaceTextures.js';
+import {
+  buildTokyoBayWaterfront,
+  TOKYO_BAY_OCEAN_POLYGON,
+  type BayfrontDetailHandle,
+} from '../city/tokyoBayWaterfront.js';
 import { injectRadialCutaway, type CutawayUniforms } from '../materials/cutawayShader.js';
 import { createParkCanopyTexture } from '../materials/facadeLibrary.js';
 import type { UrbanBaseEnvironment } from '../types.js';
@@ -256,6 +263,8 @@ interface TreeInstanceRecord {
 
 interface TerrainTextureBundle {
   parcel: SurfaceTextureSet;
+  industrialPort: SurfaceTextureSet;
+  railYard: SurfaceTextureSet;
   sidewalk: SurfaceTextureSet;
   intersection: SurfaceTextureSet;
   roadTrunk: SurfaceTextureSet;
@@ -294,7 +303,10 @@ export class CityTerrainLayer {
   private readonly treeCanopyMaterial: THREE.MeshStandardMaterial;
 
   private readonly surfaceMaterials: THREE.MeshStandardMaterial[];
+  private readonly clipPlanes: THREE.Plane[];
+  private readonly cutawayUniforms?: CutawayUniforms;
   private readonly undergroundReferenceGrid: THREE.GridHelper;
+  private bayfrontDetails: BayfrontDetailHandle | null = null;
   private treeTrunkMesh: THREE.InstancedMesh | null = null;
   private treeCanopyMesh: THREE.InstancedMesh | null = null;
   private treePaletteIndices: Uint8Array | null = null;
@@ -303,6 +315,8 @@ export class CityTerrainLayer {
 
   constructor(isDark: boolean, clipPlanes: THREE.Plane[], cutawayUniforms?: CutawayUniforms) {
     this.isDark = isDark;
+    this.clipPlanes = clipPlanes;
+    this.cutawayUniforms = cutawayUniforms;
     this.group.name = 'city-terrain-layer';
 
     this.streetscapeLayer = new ShibuyaStreetscapeLayer(isDark, clipPlanes, cutawayUniforms);
@@ -385,11 +399,13 @@ export class CityTerrainLayer {
 
     this.landuseIndustrialMat = mkSurfaceMat(
       {
-        map: this.textures.parcel.map,
-        roughnessMap: this.textures.parcel.roughnessMap,
-        color: isDark ? 0xb8c2cc : 0xe0e2e5,
-        roughness: 0.94,
-        metalness: 0.03,
+        map: this.textures.industrialPort.map,
+        roughnessMap: this.textures.industrialPort.roughnessMap,
+        bumpMap: this.textures.industrialPort.bumpMap,
+        bumpScale: 0.14,
+        color: 0xffffff,
+        roughness: 0.9,
+        metalness: 0.04,
       },
       levelPo('landuseIndustrial'),
     );
@@ -418,7 +434,15 @@ export class CityTerrainLayer {
     );
 
     this.railYardMaterial = mkSurfaceMat(
-      { color: isDark ? 0x242a33 : 0x8c877e, roughness: 0.96, metalness: 0.04 },
+      {
+        map: this.textures.railYard.map,
+        roughnessMap: this.textures.railYard.roughnessMap,
+        bumpMap: this.textures.railYard.bumpMap,
+        bumpScale: 0.22,
+        color: 0xffffff,
+        roughness: 0.92,
+        metalness: 0.12,
+      },
       levelPo('railCorridors'),
     );
 
@@ -575,6 +599,8 @@ export class CityTerrainLayer {
   private createTextures(isDark: boolean): TerrainTextureBundle {
     return {
       parcel: createUrbanParcelTextureSet(isDark),
+      industrialPort: createIndustrialPortTextureSet(isDark),
+      railYard: createRailYardTextureSet(isDark),
       sidewalk: createSidewalkPaverTextureSet(isDark),
       intersection: createIntersectionAsphaltTextureSet(isDark),
       roadTrunk: createAsphaltRoadTextureSet('trunk', isDark),
@@ -589,6 +615,8 @@ export class CityTerrainLayer {
   private disposeTextures(bundle: TerrainTextureBundle): void {
     const sets = [
       bundle.parcel,
+      bundle.industrialPort,
+      bundle.railYard,
       bundle.sidewalk,
       bundle.intersection,
       bundle.roadTrunk,
@@ -626,15 +654,12 @@ export class CityTerrainLayer {
   }
 
   populateFromEnvironment(env: UrbanBaseEnvironment): void {
-    // 1. Tokyo Bay ocean backdrop at y = -0.82
-    const bayPts: [number, number][] = [
-      [1500, 4200],
-      [18000, 2200],
-      [25000, 24000],
-      [-6000, 24000],
-      [-2000, 11500],
-    ];
-    const bayGeom = buildPolygonGeometryXZ(bayPts, levelY('tokyoBay'), 'world');
+    // 1. Accurate Tokyo Bay ocean coastline backdrop at y = -0.82
+    const bayGeom = buildPolygonGeometryXZ(
+      TOKYO_BAY_OCEAN_POLYGON as [number, number][],
+      levelY('tokyoBay'),
+      'world',
+    );
     if (bayGeom) {
       const bayMesh = new THREE.Mesh(bayGeom, this.bayMaterial);
       bayMesh.receiveShadow = true;
@@ -642,6 +667,22 @@ export class CityTerrainLayer {
       bayMesh.name = 'tokyo-bay-ocean';
       this.group.add(bayMesh);
     }
+
+    // 1b. Reclaimed Tokyo Bay artificial islands, seawall quays, port container stacks,
+    //     gantry cranes, Oi Shinkansen rail-yard depots & Haneda Airport (HND) runways/terminals
+    if (this.bayfrontDetails) {
+      this.group.remove(this.bayfrontDetails.group);
+      this.bayfrontDetails.dispose();
+    }
+    this.bayfrontDetails = buildTokyoBayWaterfront(
+      env,
+      this.isDark,
+      this.clipPlanes,
+      this.groundMaterial,
+      this.quayMaterial,
+      this.cutawayUniforms,
+    );
+    this.group.add(this.bayfrontDetails.group);
 
     // 2. Real OSM Urban Landuse Districts & Railway Yards
     if (env.landuseBlocks && env.landuseBlocks.length > 0) {
@@ -653,7 +694,11 @@ export class CityTerrainLayer {
       for (let i = 0; i < env.landuseBlocks.length; i++) {
         const blk = env.landuseBlocks[i]!;
         if (blk.kind === 'railway') {
-          const g = buildPolygonGeometryXZ(blk.pts, levelY('railCorridors') - 0.02 + (i % 3) * 0.004);
+          const g = buildPolygonGeometryXZ(
+            blk.pts,
+            levelY('railCorridors') - 0.02 + (i % 3) * 0.004,
+            'world',
+          );
           if (g) railYardGeoms.push(g);
         } else if (blk.kind === 'commercial') {
           const g = buildPolygonGeometryXZ(
@@ -756,7 +801,7 @@ export class CityTerrainLayer {
           c.pts,
           c.width,
           levelY('railCorridors') + (i % 4) * 0.004,
-          'none',
+          'world',
         );
         if (g) corrGeoms.push(g);
       }
@@ -1260,6 +1305,7 @@ export class CityTerrainLayer {
       if (needTreeRecompile) treeMat.needsUpdate = true;
     }
 
+    this.bayfrontDetails?.setOpacity(clamped, isTranslucent);
     this.undergroundReferenceGrid.visible = undergroundActive || clamped < 0.7;
     this.streetscapeLayer.setVisibilityAndOpacity(true, clamped, undergroundActive);
   }
@@ -1292,9 +1338,10 @@ export class CityTerrainLayer {
     this.landuseResidentialMat.color.setHex(isDark ? 0xd9e2ec : 0xf6f3ec);
     this.landuseResidentialMat.needsUpdate = true;
 
-    this.landuseIndustrialMat.map = this.textures.parcel.map;
-    this.landuseIndustrialMat.roughnessMap = this.textures.parcel.roughnessMap;
-    this.landuseIndustrialMat.color.setHex(isDark ? 0xb8c2cc : 0xe0e2e5);
+    this.landuseIndustrialMat.map = this.textures.industrialPort.map;
+    this.landuseIndustrialMat.roughnessMap = this.textures.industrialPort.roughnessMap;
+    this.landuseIndustrialMat.bumpMap = this.textures.industrialPort.bumpMap;
+    this.landuseIndustrialMat.color.setHex(0xffffff);
     this.landuseIndustrialMat.needsUpdate = true;
 
     this.landuseCommercialMat.map = this.textures.parcel.map;
@@ -1318,8 +1365,13 @@ export class CityTerrainLayer {
     this.parkMaterial.needsUpdate = true;
 
     this.quayMaterial.color.setHex(isDark ? 0x2b333f : 0xb3afa7);
-    this.railYardMaterial.color.setHex(isDark ? 0x242a33 : 0x8c877e);
+    this.railYardMaterial.map = this.textures.railYard.map;
+    this.railYardMaterial.roughnessMap = this.textures.railYard.roughnessMap;
+    this.railYardMaterial.bumpMap = this.textures.railYard.bumpMap;
+    this.railYardMaterial.color.setHex(0xffffff);
+    this.railYardMaterial.needsUpdate = true;
     this.elevatedRoadMaterial.color.setHex(isDark ? 0x394557 : 0x9ca2aa);
+    this.bayfrontDetails?.setTheme(isDark);
 
     this.treeTrunkMaterial.color.setHex(isDark ? 0x2a231e : 0x5c4b3c);
     this.treeCanopyMaterial.color.setHex(0xffffff);
@@ -1340,6 +1392,11 @@ export class CityTerrainLayer {
   dispose(): void {
     this.group.remove(this.streetscapeLayer.group);
     this.streetscapeLayer.dispose();
+    if (this.bayfrontDetails) {
+      this.group.remove(this.bayfrontDetails.group);
+      this.bayfrontDetails.dispose();
+      this.bayfrontDetails = null;
+    }
     this.group.traverse((obj) => {
       if (obj instanceof THREE.Mesh) {
         obj.geometry.dispose();

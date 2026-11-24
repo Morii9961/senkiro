@@ -23,6 +23,22 @@ export type MapLabelKind =
 
 export type LabelZoomTier = 'overview' | 'mid' | 'close' | 'underground';
 
+export interface StationLineBadge {
+  lineId: string;
+  /** Short authentic Tokyo line emblem code, e.g. 'JY', 'JC', 'M', 'S', 'E', 'KO', 'OH' */
+  code: string;
+  /** Localized short line name for tooltip */
+  label: string;
+  /** Official railway line hex color */
+  color: string;
+  /** True for subways (Tokyo Metro / Toei / underground rail) — styled as circular ring badge */
+  isSubway: boolean;
+  /** Optional depth tier (e.g. 'L-1', 'L-4') */
+  tier?: SchematicTierId | null;
+  /** Associated station ID for selection */
+  stationId: string;
+}
+
 export interface LabelCandidateInput {
   id: string;
   kind: MapLabelKind;
@@ -30,6 +46,8 @@ export interface LabelCandidateInput {
   textSecondary?: string | null;
   badge?: string | null;
   color?: string | null;
+  /** Aggregated line badges for multi-line stations (surface JR/private + subway lines) */
+  lineBadges?: StationLineBadge[];
   tier?: SchematicTierId | null;
   isUnderground: boolean;
   isMajorHub?: boolean;
@@ -105,6 +123,32 @@ export function estimateLabelDimensions(candidate: LabelCandidateInput): {
   const secondaryW = candidate.textSecondary
     ? estimateCharsPx(candidate.textSecondary, 6.4)
     : 0;
+
+  const lineBadges = candidate.lineBadges;
+  if (lineBadges && lineBadges.length > 0) {
+    // Tightly match actual rendered badge width (16px single-char / 21px two-char + 3px gap)
+    let badgesRowW = 0;
+    for (const lb of lineBadges) {
+      badgesRowW += (lb.code.length <= 1 ? 16 : lb.code.length === 2 ? 21 : 26) + 3;
+    }
+    const maxPillW = 228;
+    const inlineTotalW = primaryW + 8 + badgesRowW + 14;
+    if (lineBadges.length <= 3 && inlineTotalW <= maxPillW && !candidate.textSecondary) {
+      return {
+        width: Math.max(58, Math.min(maxPillW, Math.round(inlineTotalW))),
+        height: 25,
+      };
+    }
+    // Wrap line icons into 1–2 tidy rows beneath the station name
+    const innerMaxW = maxPillW - 14;
+    const rows = Math.max(1, Math.min(3, Math.ceil(badgesRowW / innerMaxW)));
+    const width = Math.max(
+      68,
+      Math.min(maxPillW, Math.round(Math.max(primaryW + badgeW, Math.min(badgesRowW, innerMaxW), secondaryW) + 16)),
+    );
+    const height = 22 + rows * 19 + (candidate.textSecondary ? 13 : 0);
+    return { width, height };
+  }
 
   const topRowW = primaryW + badgeW + (candidate.color ? 10 : 0);
   const contentW = Math.max(topRowW, secondaryW);
@@ -276,6 +320,7 @@ export function resolveLabelLayout(
 
   const placed: PlacedMapLabel[] = [];
   const placedLineIds = new Set<string>();
+  const placedStationNames: { name: string; x: number; y: number }[] = [];
   const cellCounts = new Map<string, number>();
 
   const minX = margins.left;
@@ -290,6 +335,18 @@ export function resolveLabelLayout(
 
     if ((item.kind === 'line' || item.kind === 'tunnel') && item.lineId && !highlighted) {
       if (placedLineIds.has(item.lineId)) continue;
+    }
+
+    // Never show duplicate station labels with the exact same station name nearby
+    if (item.kind === 'station' && !highlighted) {
+      const normName = item.textPrimary.trim().toLowerCase();
+      if (
+        placedStationNames.some(
+          (ps) => ps.name === normName && Math.hypot(ps.x - item.screenX, ps.y - item.screenY) < 220,
+        )
+      ) {
+        continue;
+      }
     }
 
     const offsets: [number, number][] = [
@@ -335,6 +392,13 @@ export function resolveLabelLayout(
 
     if ((item.kind === 'line' || item.kind === 'tunnel') && item.lineId) {
       placedLineIds.add(item.lineId);
+    }
+    if (item.kind === 'station') {
+      placedStationNames.push({
+        name: item.textPrimary.trim().toLowerCase(),
+        x: item.screenX,
+        y: item.screenY,
+      });
     }
 
     const fadeStart = zoomTier === 'overview' ? 14_000 : zoomTier === 'mid' ? 4_200 : 1_500;

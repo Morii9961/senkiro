@@ -437,3 +437,146 @@ export function createWaterTextureSet(isDark: boolean): WaterTextureSet {
     ),
   };
 }
+
+/**
+ * Multi-track railway yard ballast, sleeper rhythm & parallel steel rails texture
+ * (eliminates flat grey untextured slabs on Oi / Shinagawa / Tabata railway yards).
+ */
+export function createRailYardTextureSet(isDark: boolean): SurfaceTextureSet {
+  const size = 256;
+  const [cAlb, a] = makeCanvas(size, size);
+  const [cRgh, r] = makeCanvas(size, size);
+  const [cBmp, b] = makeCanvas(size, size);
+
+  // Crushed dark gravel ballast bed
+  a.fillStyle = isDark ? '#212730' : '#7b7770';
+  a.fillRect(0, 0, size, size);
+  r.fillStyle = '#ececec';
+  r.fillRect(0, 0, size, size);
+  b.fillStyle = '#787878';
+  b.fillRect(0, 0, size, size);
+
+  // Fine stone ballast speckle
+  for (let i = 0; i < 1800; i++) {
+    const px = Math.floor(hash2(i, 1, 701) * size);
+    const py = Math.floor(hash2(i, 2, 701) * size);
+    const v = hash2(i, 3, 701);
+    a.fillStyle = v > 0.55
+      ? isDark
+        ? 'rgba(148,163,184,0.12)'
+        : 'rgba(235,230,222,0.18)'
+      : isDark
+        ? 'rgba(5,8,14,0.28)'
+        : 'rgba(42,38,34,0.22)';
+    a.fillRect(px, py, 2, 2);
+    b.fillStyle = v > 0.5 ? '#9c9c9c' : '#585858';
+    b.fillRect(px, py, 2, 2);
+  }
+
+  // 4 parallel yard tracks along V with concrete sleepers + twin steel rails
+  const tracks = 4;
+  const laneW = size / tracks;
+  for (let t = 0; t < tracks; t++) {
+    const cx = Math.round((t + 0.5) * laneW);
+    // Darker track trough
+    a.fillStyle = isDark ? 'rgba(10,14,20,0.34)' : 'rgba(52,48,44,0.22)';
+    a.fillRect(cx - 14, 0, 28, size);
+
+    // Concrete sleepers every 8px
+    a.fillStyle = isDark ? 'rgba(90,98,108,0.45)' : 'rgba(195,190,182,0.55)';
+    b.fillStyle = '#b4b4b4';
+    for (let y = 2; y < size; y += 8) {
+      a.fillRect(cx - 11, y, 22, 3);
+      b.fillRect(cx - 11, y, 22, 3);
+    }
+
+    // Twin gleaming steel rails
+    a.fillStyle = isDark ? '#708090' : '#cfd6de';
+    r.fillStyle = '#484848';
+    b.fillStyle = '#e0e0e0';
+    a.fillRect(cx - 6, 0, 2, size);
+    a.fillRect(cx + 4, 0, 2, size);
+    r.fillRect(cx - 6, 0, 2, size);
+    r.fillRect(cx + 4, 0, 2, size);
+    b.fillRect(cx - 6, 0, 2, size);
+    b.fillRect(cx + 4, 0, 2, size);
+  }
+
+  return {
+    map: finalizeSurfaceTexture(cAlb, true, THREE.RepeatWrapping, THREE.RepeatWrapping, 0.045, 0.045),
+    roughnessMap: finalizeSurfaceTexture(cRgh, false, THREE.RepeatWrapping, THREE.RepeatWrapping, 0.045, 0.045),
+    bumpMap: finalizeSurfaceTexture(cBmp, false, THREE.RepeatWrapping, THREE.RepeatWrapping, 0.045, 0.045),
+  };
+}
+
+/**
+ * Port terminal & industrial logistics concrete apron texture with expansion joints
+ * and container-bay yellow/white lane markings.
+ */
+export function createIndustrialPortTextureSet(isDark: boolean): SurfaceTextureSet {
+  const size = 256;
+  const [cAlb, a] = makeCanvas(size, size);
+  const [cRgh, r] = makeCanvas(size, size);
+  const [cBmp, b] = makeCanvas(size, size);
+
+  a.fillStyle = isDark ? '#252c36' : '#c6c9cd';
+  a.fillRect(0, 0, size, size);
+  r.fillStyle = '#dcdcdc';
+  r.fillRect(0, 0, size, size);
+  b.fillStyle = '#848484';
+  b.fillRect(0, 0, size, size);
+
+  // Concrete apron slab grid + subtle tone variance
+  const slab = 32;
+  for (let y = 0; y < size; y += slab) {
+    for (let x = 0; x < size; x += slab) {
+      const v = hash2(x, y, 811);
+      a.fillStyle = v > 0.5
+        ? isDark
+          ? 'rgba(255,255,255,0.03)'
+          : 'rgba(255,255,255,0.12)'
+        : isDark
+          ? 'rgba(0,0,0,0.10)'
+          : 'rgba(40,48,58,0.08)';
+      a.fillRect(x + 1, y + 1, slab - 2, slab - 2);
+    }
+  }
+
+  a.strokeStyle = isDark ? 'rgba(12,16,24,0.45)' : 'rgba(92,98,106,0.28)';
+  a.lineWidth = 1;
+  b.strokeStyle = '#626262';
+  for (let i = 0; i <= size; i += slab) {
+    a.beginPath();
+    a.moveTo(i, 0);
+    a.lineTo(i, size);
+    a.stroke();
+    a.beginPath();
+    a.moveTo(0, i);
+    a.lineTo(size, i);
+    a.stroke();
+
+    b.beginPath();
+    b.moveTo(i, 0);
+    b.lineTo(i, size);
+    b.stroke();
+    b.beginPath();
+    b.moveTo(0, i);
+    b.lineTo(size, i);
+    b.stroke();
+  }
+
+  // Subtle yellow/white port logistics lane markings every 128px
+  a.fillStyle = isDark ? 'rgba(217,160,52,0.34)' : 'rgba(202,148,38,0.42)';
+  a.fillRect(0, 62, size, 3);
+  a.fillRect(0, 190, size, 3);
+  a.fillStyle = isDark ? 'rgba(203,213,225,0.22)' : 'rgba(248,250,252,0.48)';
+  for (let x = 8; x < size; x += 24) {
+    a.fillRect(x, 126, 12, 2);
+  }
+
+  return {
+    map: finalizeSurfaceTexture(cAlb, true, THREE.RepeatWrapping, THREE.RepeatWrapping, 0.025, 0.025),
+    roughnessMap: finalizeSurfaceTexture(cRgh, false, THREE.RepeatWrapping, THREE.RepeatWrapping, 0.025, 0.025),
+    bumpMap: finalizeSurfaceTexture(cBmp, false, THREE.RepeatWrapping, THREE.RepeatWrapping, 0.025, 0.025),
+  };
+}

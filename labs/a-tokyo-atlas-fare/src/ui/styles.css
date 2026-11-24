@@ -1248,15 +1248,69 @@ a:focus-visible {
   transition: border-color 120ms ease, box-shadow 120ms ease;
 }
 
+.map-label-pill.non-clickable,
 .map-label-pill:disabled {
   cursor: default;
 }
 
-.map-label-pill:hover:not(:disabled),
+.map-label-pill:hover:not(.non-clickable):not(:disabled),
 .map-label-pill.highlighted {
   border-color: var(--accent);
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent), var(--shadow);
   z-index: 8;
+}
+
+.map-label-pill.has-line-badges {
+  padding: 3px 7px 4px;
+  gap: 3px;
+}
+
+.map-line-badge-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 3px;
+  max-width: 100%;
+}
+
+.map-line-badge-strip.inline {
+  margin-left: 3px;
+  flex-wrap: nowrap;
+}
+
+.map-line-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 15px;
+  min-width: 15px;
+  padding: 0 3px;
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  flex-shrink: 0;
+  transition: transform 0.1s ease;
+}
+
+.map-line-icon:hover {
+  transform: scale(1.14);
+}
+
+.map-line-icon.surface {
+  border-radius: 3px;
+  color: #ffffff;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.32);
+}
+
+.map-line-icon.subway {
+  border-radius: 999px;
+  border: 2px solid currentColor;
+  background: var(--surface);
+  height: 16px;
+  min-width: 16px;
+  padding: 0 2.5px;
 }
 
 .map-label-pill.kind-district {

@@ -298,11 +298,7 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
     };
   }, [dataset, osmVertical]);
 
-  // Day/Night theme & continuous solar lighting sync
-  useEffect(() => {
-    sceneRef.current?.setTheme(sceneNight);
-  }, [sceneNight]);
-
+  // Continuous solar lighting & day/night sync (setTimeOfDay handles light/dark theme switching smoothly)
   useEffect(() => {
     (sceneRef.current as SceneWithTimeOfDay | null)?.setTimeOfDay?.(timeOfDayHour);
   }, [timeOfDayHour]);
@@ -623,7 +619,13 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
       />
 
       {/* Hierarchical Screen-Space Deconflicted Map Labels */}
-      <MapLabelsOverlay labels={labels} onLabelClick={handleLabelClick} />
+      <MapLabelsOverlay
+        labels={labels}
+        onLabelClick={handleLabelClick}
+        onLineBadgeClick={(lid) => {
+          onSelectLine(lid as SkId<'line'>);
+        }}
+      />
 
       {/* Top Mode Bar, Mode Context Drawer, Line Trace, Time-of-Day, Telemetry */}
       <CameraHud

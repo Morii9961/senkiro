@@ -239,6 +239,47 @@ describe('Hierarchical Screen-Space Label Layout & Deconfliction', () => {
     expect(selectedTrainLabel).toBeTruthy();
     expect(selectedTrainLabel!.badge).toContain('SIM');
   });
+
+  it('merges multi-line stations like Shinjuku into a single pill with surface and subway line badges', async () => {
+    const provider = new StaticAtlasProvider();
+    const dataset = provider.getAtlasDataset();
+    const osm = await provider.loadOsmVerticalOverlay();
+    const solved = solveRailwayNetwork3D(dataset, osm);
+    const reg = new SpatialLabelRegistry(dataset, solved);
+
+    const shinjukuNode = solved.stationNodes.find((n) => n.nameJa === '新宿')!;
+    const camera = new THREE.PerspectiveCamera(46, 1440 / 860, 4, 40_000);
+    camera.position.set(shinjukuNode.x + 260, 420, shinjukuNode.z + 320);
+    camera.lookAt(shinjukuNode.x, 0, shinjukuNode.z);
+    camera.updateMatrixWorld();
+
+    const visibleOps = new Set(dataset.operators.map((o) => o.id));
+    const labels = reg.computeVisibleLabels({
+      camera,
+      mode: 'city_overview',
+      locale: 'zh',
+      viewportWidth: 1440,
+      viewportHeight: 860,
+      cameraDistanceM: 520,
+      verticalExaggeration: 1.0,
+      cutawayCenterX: shinjukuNode.x,
+      cutawayCenterZ: shinjukuNode.z,
+      cutawayRadiusM: 850,
+      visibleOperatorIds: visibleOps,
+      selectedStationId: null,
+      selectedLineId: null,
+      selectedTrainId: null,
+      trains: [],
+      trainsVisible: false,
+    });
+
+    const shinjukuLabels = labels.filter((l) => l.kind === 'station' && l.textPrimary === '新宿');
+    expect(shinjukuLabels.length).toBe(1);
+    const badges = shinjukuLabels[0]!.lineBadges ?? [];
+    expect(badges.length).toBeGreaterThanOrEqual(5);
+    expect(badges.some((b) => !b.isSubway)).toBe(true);
+    expect(badges.some((b) => b.isSubway)).toBe(true);
+  });
 });
 
 describe('StreetCollisionGuard Surface & Building Clearance', () => {

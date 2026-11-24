@@ -530,6 +530,7 @@ export class SkyEnvironmentSystem {
   readonly sunDirection = new THREE.Vector3(0.62, 0.56, 0.54).normalize();
 
   private readonly skyMaterial: THREE.ShaderMaterial;
+  private readonly renderer: THREE.WebGLRenderer;
   private readonly pmremGenerator: THREE.PMREMGenerator;
   private envRenderTarget: THREE.WebGLRenderTarget | null = null;
   private isDark: boolean;
@@ -547,6 +548,7 @@ export class SkyEnvironmentSystem {
     this.isDark = isDark;
     this.preset = preset ?? (isDark ? 'night' : 'day');
     this.currentHour = presetToDefaultHour(this.preset);
+    this.renderer = renderer;
     this.pmremGenerator = new THREE.PMREMGenerator(renderer);
     this.pmremGenerator.compileEquirectangularShader();
 
@@ -617,7 +619,10 @@ export class SkyEnvironmentSystem {
     sunCard.lookAt(0, 0, 0);
     envScene.add(sunCard);
 
+    const prevRenderTarget = this.renderer.getRenderTarget();
     const rt = this.pmremGenerator.fromScene(envScene, 0.04);
+    this.renderer.setRenderTarget(prevRenderTarget);
+    this.renderer.setScissorTest(false);
 
     sphere.geometry.dispose();
     envMat.dispose();
@@ -667,7 +672,7 @@ export class SkyEnvironmentSystem {
     const shouldRebuildPmrem =
       options?.forcePmrem ||
       this.envRenderTarget === null ||
-      (wrappedHourDiff >= 0.45 && nowMs - this.lastPmremMs >= 120);
+      (wrappedHourDiff >= 1.1 && nowMs - this.lastPmremMs >= 450);
 
     if (shouldRebuildPmrem) {
       const prevRt = this.envRenderTarget;

@@ -132,11 +132,13 @@ const TIME_PRESETS: {
 interface MapLabelsOverlayProps {
   labels: PlacedMapLabel[];
   onLabelClick: (label: PlacedMapLabel) => void;
+  onLineBadgeClick?: (lineId: string) => void;
 }
 
 export const MapLabelsOverlay: React.FC<MapLabelsOverlayProps> = ({
   labels,
   onLabelClick,
+  onLineBadgeClick,
 }) => {
   if (labels.length === 0) return null;
 
@@ -152,38 +154,95 @@ export const MapLabelsOverlay: React.FC<MapLabelsOverlayProps> = ({
             lbl.entityKind === 'line' ||
             lbl.entityKind === 'train',
         );
+        const hasLineBadges = Boolean(lbl.lineBadges && lbl.lineBadges.length > 0);
+        const tooltipLines = hasLineBadges
+          ? lbl.lineBadges!
+              .map((b) => (b.isSubway && b.tier ? `${b.label} (${b.tier})` : b.label))
+              .join(' · ')
+          : lbl.textSecondary ?? '';
         return (
-          <button
+          <div
             key={lbl.id}
-            type="button"
+            role={clickable ? 'button' : undefined}
+            tabIndex={clickable ? 0 : undefined}
             data-testid={`map-label-${lbl.id}`}
             data-label-kind={lbl.kind}
-            disabled={!clickable}
             onClick={() => clickable && onLabelClick(lbl)}
-            className={`map-label-pill kind-${lbl.kind} ${lbl.highlighted ? 'highlighted' : ''}`}
+            onKeyDown={(e) => {
+              if (clickable && (e.key === 'Enter' || e.key === ' ')) {
+                e.preventDefault();
+                onLabelClick(lbl);
+              }
+            }}
+            className={`map-label-pill kind-${lbl.kind} ${hasLineBadges ? 'has-line-badges' : ''} ${lbl.highlighted ? 'highlighted' : ''} ${!clickable ? 'non-clickable' : ''}`}
             style={{
               transform: `translate3d(${lbl.boxX}px, ${lbl.boxY}px, 0)`,
-              width: lbl.width,
+              width: hasLineBadges ? undefined : lbl.width,
+              maxWidth: lbl.width,
               opacity: lbl.opacity,
               borderLeftColor: lbl.color ?? undefined,
             }}
             title={
-              lbl.textSecondary
-                ? `${lbl.textPrimary} (${lbl.textSecondary})`
-                : lbl.textPrimary
+              tooltipLines ? `${lbl.textPrimary} — ${tooltipLines}` : lbl.textPrimary
             }
           >
             <div className="map-label-row">
-              {lbl.color && (
+              {lbl.color && !hasLineBadges && (
                 <span className="map-label-dot" style={{ background: lbl.color }} />
               )}
               <span className="map-label-primary">{lbl.textPrimary}</span>
               {lbl.badge && <span className="map-label-badge">{lbl.badge}</span>}
+              {hasLineBadges && lbl.lineBadges!.length <= 3 && !lbl.textSecondary && (
+                <span className="map-line-badge-strip inline">
+                  {lbl.lineBadges!.map((lb) => (
+                    <span
+                      key={lb.lineId}
+                      className={`map-line-icon ${lb.isSubway ? 'subway' : 'surface'}`}
+                      style={
+                        lb.isSubway
+                          ? { borderColor: lb.color, color: lb.color }
+                          : { backgroundColor: lb.color }
+                      }
+                      title={`${lb.label}${lb.tier && lb.isSubway ? ` (${lb.tier})` : ''}`}
+                      onClick={(e) => {
+                        if (!onLineBadgeClick) return;
+                        e.stopPropagation();
+                        onLineBadgeClick(lb.lineId);
+                      }}
+                    >
+                      {lb.code}
+                    </span>
+                  ))}
+                </span>
+              )}
             </div>
+            {hasLineBadges && (lbl.lineBadges!.length > 3 || Boolean(lbl.textSecondary)) && (
+              <div className="map-line-badge-strip">
+                {lbl.lineBadges!.map((lb) => (
+                  <span
+                    key={lb.lineId}
+                    className={`map-line-icon ${lb.isSubway ? 'subway' : 'surface'}`}
+                    style={
+                      lb.isSubway
+                        ? { borderColor: lb.color, color: lb.color }
+                        : { backgroundColor: lb.color }
+                    }
+                    title={`${lb.label}${lb.tier && lb.isSubway ? ` (${lb.tier})` : ''}`}
+                    onClick={(e) => {
+                      if (!onLineBadgeClick) return;
+                      e.stopPropagation();
+                      onLineBadgeClick(lb.lineId);
+                    }}
+                  >
+                    {lb.code}
+                  </span>
+                ))}
+              </div>
+            )}
             {lbl.textSecondary && (
               <div className="map-label-secondary">{lbl.textSecondary}</div>
             )}
-          </button>
+          </div>
         );
       })}
     </div>

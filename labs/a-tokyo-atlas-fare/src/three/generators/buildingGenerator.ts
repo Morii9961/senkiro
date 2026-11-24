@@ -21,6 +21,10 @@ import {
   pointInPoly,
 } from '../city/cityGeometryHelpers.js';
 import {
+  isPointInTokyoBayWater,
+  isPointOnHanedaAirport,
+} from '../city/tokyoBayWaterfront.js';
+import {
   SHIBUYA_SHOWCASE_ZONE,
   getStreetscapeForCutaway,
 } from '../city/streetscapeRegistry.js';
@@ -758,14 +762,6 @@ function buildProceduralLandmark(
   return g;
 }
 
-const TOKYO_BAY_POLYGON: [number, number][] = [
-  [1500, 4200],
-  [18000, 2200],
-  [25000, 24000],
-  [-6000, 24000],
-  [-2000, 11500],
-];
-
 function hashInfill(a: number, b: number, salt: number): number {
   let h = Math.imul(a | 0, 374761393) ^ Math.imul(b | 0, 668265263) ^ Math.imul(salt | 0, 1442695041);
   h = Math.imul(h ^ (h >>> 13), 1274126177);
@@ -972,8 +968,9 @@ class UrbanInfillExclusionMask {
   isPointClear(x: number, z: number): boolean {
     // Imperial Palace protected green enclosure
     if (x >= -1950 && x <= -300 && z >= -1400 && z <= 200) return false;
-    // Tokyo Bay ocean polygon
-    if (z > 2200 && pointInPoly(x, z, TOKYO_BAY_POLYGON)) return false;
+    // Accurate Tokyo Bay open water & Haneda Airport runways exclusion
+    if (isPointInTokyoBayWater(x, z)) return false;
+    if (isPointOnHanedaAirport(x, z)) return false;
 
     if (x < this.minX || x >= this.maxX || z < this.minZ || z >= this.maxZ) return false;
     const c = Math.floor((x - this.minX) / this.cellSize);
