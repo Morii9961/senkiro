@@ -305,17 +305,16 @@ test.describe('SENKIRO Lab · Tokyo Atlas & Fare Interactive E2E', () => {
     await page.getByTestId('view-mode-3d').click();
     await page.waitForSelector('canvas[data-testid="three-3d-canvas"]');
 
-    // Focus Shibuya hub -> activates GPU Radial Cutaway Explorer
+    // Focus Shibuya hub -> activates Global Ghost-Surface Underground View
     await page.getByTestId('hub-btn-shibuya').click();
     await expect(page.getByTestId('toggle-underground-view')).toContainText('ON');
-    await expect(page.getByTestId('cutaway-radius-slider')).toBeVisible();
+    await expect(page.getByTestId('ground-opacity-slider')).toBeVisible();
     await expect(page.getByTestId('vertical-exaggeration-slider')).toBeVisible();
     await expect(page.getByTestId('return-to-surface-btn')).toBeVisible();
 
-    // Adjust cutaway radius, vertical exaggeration & pin cutaway location
-    await page.getByTestId('cutaway-radius-slider').fill('1100');
+    // Adjust surface ghost opacity & vertical exaggeration
+    await page.getByTestId('ground-opacity-slider').fill('0.24');
     await page.getByTestId('vertical-exaggeration-slider').fill('1.8');
-    await page.getByTestId('pin-cutaway-checkbox').check();
 
     // One-click Return to Surface View restores surface state cleanly
     await page.getByTestId('return-to-surface-btn').click();

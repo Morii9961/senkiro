@@ -370,9 +370,14 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
       Boolean(followedTrain?.isUnderground) &&
       modeState.followAngle !== 'cab';
 
+    const ghostOpacity =
+      followCutawayNeeded && modeState.cutaway.groundOpacity >= 0.85
+        ? 0.16
+        : modeState.cutaway.groundOpacity;
+
     const undergroundSettings: UndergroundViewSettings = {
       enabled: modeState.mode === 'underground_cutaway' || followCutawayNeeded,
-      groundOpacity: modeState.cutaway.groundOpacity,
+      groundOpacity: ghostOpacity,
       cutawayRadius: modeState.cutaway.cutawayRadius,
       verticalExaggeration:
         modeState.mode === 'underground_cutaway' ? modeState.cutaway.verticalExaggeration : 1.0,

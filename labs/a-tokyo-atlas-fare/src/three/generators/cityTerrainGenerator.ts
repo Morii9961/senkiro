@@ -1290,10 +1290,10 @@ export class CityTerrainLayer {
       mat.depthWrite = !isTranslucent;
       if (needRecompile) mat.needsUpdate = true;
     }
-    const elevTranslucent = isTranslucent && clamped < 0.85;
+    const elevTranslucent = isTranslucent;
     const elevNeed = this.elevatedRoadMaterial.transparent !== elevTranslucent;
     this.elevatedRoadMaterial.transparent = elevTranslucent;
-    this.elevatedRoadMaterial.opacity = elevTranslucent ? Math.min(1, clamped + 0.18) : 1.0;
+    this.elevatedRoadMaterial.opacity = elevTranslucent ? Math.min(1, clamped + 0.08) : 1.0;
     this.elevatedRoadMaterial.depthWrite = !elevTranslucent;
     if (elevNeed) this.elevatedRoadMaterial.needsUpdate = true;
 
@@ -1306,7 +1306,8 @@ export class CityTerrainLayer {
     }
 
     this.bayfrontDetails?.setOpacity(clamped, isTranslucent);
-    this.undergroundReferenceGrid.visible = undergroundActive || clamped < 0.7;
+    // Keep ghost-surface view spotless without legacy cyan grid clutter
+    this.undergroundReferenceGrid.visible = false;
     this.streetscapeLayer.setVisibilityAndOpacity(true, clamped, undergroundActive);
   }
 

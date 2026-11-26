@@ -776,8 +776,8 @@ export const CameraHud: React.FC<CameraHudProps> = ({
             <Layers size={14} />
             <span>
               {modeState.mode === 'underground_cutaway'
-                ? tr(locale, '地下カットアウェイ ON', '地下剖切 ON', 'Underground Cutaway ON')
-                : tr(locale, '地下カットアウェイ', '地下剖切', 'Underground Cutaway')}
+                ? tr(locale, '地下透過ビュー ON', '地下透视 ON', 'Underground View ON')
+                : tr(locale, '地下透過ビュー', '地下透视', 'Underground View')}
             </span>
           </button>
           <button
@@ -827,25 +827,25 @@ export const CameraHud: React.FC<CameraHudProps> = ({
               </>
             )}
 
-            {/* Underground Cutaway Controls */}
+            {/* Underground Global Ghost-Surface Controls (Scheme A) */}
             {modeState.mode === 'underground_cutaway' && (
               <>
                 <label className="hud-slider-row">
                   <span>
-                    {tr(locale, '開削半径', '剖切半径', 'Cutaway Radius')}:{' '}
-                    <strong className="mono">{modeState.cutaway.cutawayRadius}m</strong>
+                    {tr(locale, '地表ゴースト不透明度', '地表淡化不透明度', 'Surface Ghost Opacity')}:{' '}
+                    <strong className="mono">{Math.round(modeState.cutaway.groundOpacity * 100)}%</strong>
                   </span>
                   <input
                     type="range"
-                    min={350}
-                    max={2400}
-                    step={50}
-                    data-testid="cutaway-radius-slider"
-                    value={modeState.cutaway.cutawayRadius}
+                    min={0.06}
+                    max={0.84}
+                    step={0.02}
+                    data-testid="ground-opacity-slider"
+                    value={Math.min(0.84, Math.max(0.06, modeState.cutaway.groundOpacity))}
                     onChange={(e) =>
                       onDispatch({
                         type: 'UPDATE_CUTAWAY',
-                        patch: { cutawayRadius: Number(e.target.value) },
+                        patch: { groundOpacity: Number(e.target.value) },
                       })
                     }
                   />
@@ -873,27 +873,6 @@ export const CameraHud: React.FC<CameraHudProps> = ({
                 </label>
 
                 <label className="hud-slider-row">
-                  <span>
-                    {tr(locale, '外周地表不透明度', '外围地表不透明度', 'Outer Ground Opacity')}:{' '}
-                    <strong className="mono">{Math.round(modeState.cutaway.groundOpacity * 100)}%</strong>
-                  </span>
-                  <input
-                    type="range"
-                    min={0.12}
-                    max={1}
-                    step={0.04}
-                    data-testid="ground-opacity-slider"
-                    value={modeState.cutaway.groundOpacity}
-                    onChange={(e) =>
-                      onDispatch({
-                        type: 'UPDATE_CUTAWAY',
-                        patch: { groundOpacity: Number(e.target.value) },
-                      })
-                    }
-                  />
-                </label>
-
-                <label className="hud-slider-row">
                   <span>{tr(locale, 'トンネル表示様式', '隧道显示样式', 'Tunnel Style')}</span>
                   <select
                     className="input-field"
@@ -911,7 +890,7 @@ export const CameraHud: React.FC<CameraHudProps> = ({
                       {tr(locale, '半透明コンクリート', '半透明混凝土', 'Translucent Concrete')}
                     </option>
                     <option value="section_cutaway">
-                      {tr(locale, '断面カットアウェイ', '剖面开挖', 'Section Cutaway')}
+                      {tr(locale, '天井オープン', '顶板剖开', 'Open Roof')}
                     </option>
                     <option value="solid_shell">
                       {tr(locale, 'ソリッドコンクリート', '实体混凝土', 'Solid Concrete')}
@@ -920,21 +899,6 @@ export const CameraHud: React.FC<CameraHudProps> = ({
                       {tr(locale, 'トンネル内壁', '隧道内壁视角', 'Interior Bore')}
                     </option>
                   </select>
-                </label>
-
-                <label className="hud-check-row">
-                  <input
-                    type="checkbox"
-                    data-testid="pin-cutaway-checkbox"
-                    checked={modeState.cutaway.pinCutaway}
-                    onChange={(e) =>
-                      onDispatch({
-                        type: 'UPDATE_CUTAWAY',
-                        patch: { pinCutaway: e.target.checked },
-                      })
-                    }
-                  />
-                  <span>{tr(locale, '開削位置を固定', '锁定剖切位置', 'Pin Cutaway Location')}</span>
                 </label>
               </>
             )}

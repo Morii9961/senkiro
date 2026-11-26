@@ -162,7 +162,7 @@ export function isCandidateEligibleForTier(
   c: LabelCandidateInput,
   zoomTier: LabelZoomTier,
   mode: CameraModeId,
-  cutawayRadiusM = 850,
+  _cutawayRadiusM = 850,
 ): boolean {
   if (c.isSelected || c.isHovered) {
     return c.distanceM <= 24_000;
@@ -171,10 +171,7 @@ export function isCandidateEligibleForTier(
   if (c.kind === 'train') {
     if (mode === 'underground_explorer') return c.isUnderground && c.distanceM < 1800;
     if (mode === 'underground_cutaway') {
-      return (
-        c.distanceM < 3200 &&
-        (!c.isUnderground || (c.cutawayDistM ?? 0) <= cutawayRadiusM + 160)
-      );
+      return c.distanceM < 3800;
     }
     return !c.isUnderground && c.distanceM < 6500;
   }
@@ -214,20 +211,19 @@ export function isCandidateEligibleForTier(
         if (c.kind === 'hub') return c.distanceM < 1500;
         return false;
       }
-      const inPit =
-        c.cutawayDistM === undefined || c.cutawayDistM <= cutawayRadiusM + 180;
+      // Scheme A Global Ghost-Surface reveals the entire underground network without circular radius limits
       if (c.kind === 'tunnel' || c.kind === 'crossing') {
-        return inPit && c.distanceM < 4200;
+        return c.distanceM < 4400;
       }
       if (c.kind === 'station') {
-        if (c.isUnderground) return inPit && c.distanceM < 4200;
-        return Boolean(c.isMajorHub) && inPit && c.distanceM < 3200;
+        if (c.isUnderground) return c.distanceM < 4800;
+        return Boolean(c.isMajorHub) && c.distanceM < 3600;
       }
       if (c.kind === 'hub') {
         return c.distanceM < 6500;
       }
       if (c.kind === 'line' && c.isUnderground) {
-        return inPit && c.distanceM < 3600;
+        return c.distanceM < 3800;
       }
       return false;
     }

@@ -72,7 +72,7 @@ export function createInitialCameraModeState(): CameraModeState {
     followAngle: 'side',
     followedTrainId: null,
     cutaway: {
-      groundOpacity: 0.94,
+      groundOpacity: 0.16,
       cutawayRadius: 850,
       verticalExaggeration: 1.4,
       pinCutaway: false,
@@ -147,8 +147,8 @@ export function transitionCameraMode(
                   ...state.cutaway,
                   hideBuildings: false,
                   groundOpacity:
-                    state.cutaway.groundOpacity >= 0.99 ? 0.94 : state.cutaway.groundOpacity,
-                  verticalExaggeration: Math.max(1.3, state.cutaway.verticalExaggeration),
+                    state.cutaway.groundOpacity >= 0.65 ? 0.16 : state.cutaway.groundOpacity,
+                  verticalExaggeration: Math.max(1.4, state.cutaway.verticalExaggeration),
                 }
               : state.cutaway;
 
@@ -493,15 +493,15 @@ export const CAMERA_MODE_METADATA: Record<CameraModeId, CameraModeLabelInfo> = {
   },
   underground_cutaway: {
     id: 'underground_cutaway',
-    labelJa: '地下剖切',
+    labelJa: '地下透過ビュー',
     labelZh: '地下透视',
-    labelEn: 'Underground Cutaway',
-    shortJa: '地下剖切',
+    labelEn: 'Underground View',
+    shortJa: '地下透過',
     shortZh: '地下透视',
-    shortEn: 'Cutaway',
-    descriptionJa: '局所開削分析：階層フィルタ・単路線強調・深度関係可視化',
-    descriptionZh: '局部透视剖切：层级筛选・单线高亮・地下深度关系可视化',
-    descriptionEn: 'Local radial cutaway: tier filters, single-line focus & depth visualization',
+    shortEn: 'Underground',
+    descriptionJa: '全都市ゴースト透過：地表を淡く透過し地下鉄網・階層・乗換通路を明瞭表示',
+    descriptionZh: '全城淡化透视：地表与建筑轻柔淡化，高清呈现全城地铁网、层级与换乘通道',
+    descriptionEn: 'Global ghost-surface view: gently fades surface city to reveal full subway strata',
   },
   underground_explorer: {
     id: 'underground_explorer',

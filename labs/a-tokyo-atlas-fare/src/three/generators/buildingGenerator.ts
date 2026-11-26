@@ -1506,14 +1506,12 @@ export class CityChunkManager {
 
   setVisibilityAndOpacity(visible: boolean, opacity: number, cutawayActive = false): void {
     this.buildingsVisible = visible;
-    this.currentOpacity = Math.max(0.08, Math.min(1.0, opacity));
-    const outerTranslucent = !cutawayActive && this.currentOpacity < 0.99;
+    this.currentOpacity = Math.max(0.05, Math.min(1.0, opacity));
     this.landmarksGroup.visible = visible;
 
+    // Scheme A Global Ghost-Surface: smoothly honor ghost opacity across all buildings & landmarks
     const genericOpacity = cutawayActive
-      ? this.currentOpacity < 0.55
-        ? 0.65
-        : 1.0
+      ? Math.max(0.05, Math.min(0.85, this.currentOpacity))
       : this.currentOpacity;
     const genericTranslucent = genericOpacity < 0.99;
 
@@ -1525,7 +1523,9 @@ export class CityChunkManager {
       if (needRecompile) mat.needsUpdate = true;
     }
 
-    const lmOpacity = cutawayActive ? 0.34 : outerTranslucent ? this.currentOpacity : 1.0;
+    const lmOpacity = cutawayActive
+      ? Math.max(0.14, Math.min(0.85, this.currentOpacity + 0.08))
+      : this.currentOpacity;
     const lmTranslucent = lmOpacity < 0.99;
     for (const mat of this.getLandmarkMaterials()) {
       const needRecompile = mat.transparent !== lmTranslucent;

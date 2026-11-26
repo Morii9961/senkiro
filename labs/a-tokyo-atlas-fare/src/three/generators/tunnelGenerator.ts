@@ -797,6 +797,12 @@ export class TunnelAndStationLayer implements UndergroundLayerAdapter {
     this.undergroundSystem.setCutawayStyle(state.tunnelCutawayStyle);
     const isInterior = state.tunnelCutawayStyle === 'interior_view';
     this.setInteriorMode(isInterior);
+    // In Scheme A Global Ghost-Surface underground view, show crisp official Tokyo line-color crown strips
+    this.undergroundSystem.setSectionCutState({
+      mode: state.tunnelCutawayStyle === 'section_cutaway' ? 'tunnel_roof_open' : 'none',
+      revealAllRoofs: state.tunnelCutawayStyle === 'section_cutaway',
+      lineOverlayVisible: state.enabled && !isInterior,
+    });
   }
 
   setNightFactor(nightFactor: number): void {

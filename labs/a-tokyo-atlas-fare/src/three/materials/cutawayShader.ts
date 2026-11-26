@@ -205,7 +205,7 @@ cutWp = modelMatrix * cutWp;
 vCutWorldPos = cutWp.xyz;`,
       );
 
-    // 2. Fragment shader: architectural X-ray dissolve & frosted glass station focus
+    // 2. Fragment shader: selected-station frosted glass focus (zero circular pit or glowing disc!)
     const fragmentClipChunk =
       mode === 'terrain'
         ? `
@@ -214,52 +214,14 @@ float senkiroRimGlow = 0.0;
 {
   float keepProb = 1.0;
 
-  if (uCutawayActive > 0.5) {
-    float cutDist = length(vCutWorldPos.xz - uCutawayCenter.xz);
-    float innerR = uCutawayRadius * 0.82;
-    float outerR = uCutawayRadius;
-
-    if (cutDist < outerR + 18.0) {
-      vec2 gridUv = vCutWorldPos.xz / 50.0;
-      vec2 gridDeriv = max(fwidth(gridUv), vec2(0.002));
-      vec2 gridDist = abs(fract(gridUv - 0.5) - 0.5) / gridDeriv;
-      float gLine = 1.0 - min(min(gridDist.x, gridDist.y), 1.0);
-
-      if (cutDist < outerR) {
-        float feather = smoothstep(innerR, outerR, cutDist);
-        float cutKeep = mix(0.04, 1.0, feather);
-        float gridKeep = gLine * mix(0.24, 0.55, feather);
-        keepProb = min(keepProb, max(cutKeep, gridKeep));
-        senkiroGridMask = max(senkiroGridMask, gLine * (1.0 - feather * 0.5));
-        // Soft architectural rim glow inside perimeter band
-        float rimBand = smoothstep(innerR, outerR * 0.96, cutDist);
-        senkiroRimGlow = max(senkiroRimGlow, rimBand * 0.45);
-      } else {
-        float outerRim = 1.0 - smoothstep(outerR, outerR + 18.0, cutDist);
-        senkiroRimGlow = max(senkiroRimGlow, outerRim * 0.52);
-      }
-    }
-  }
-
-  if (uStationFocusActive > 0.5 && uStationFocusUnderground > 0.5) {
+  // Gentle local terrain reveal ONLY when user selects an underground station while in surface mode
+  if (uCutawayActive < 0.5 && uStationFocusActive > 0.5 && uStationFocusUnderground > 0.5) {
     float stDist = length(vCutWorldPos.xz - uStationFocusCenter.xz);
     float stR = uStationFocusRadius * 0.78;
-    float stInner = stR * 0.54;
-    if (stDist < stR + 14.0) {
-      vec2 stGridUv = vCutWorldPos.xz / 25.0;
-      vec2 stDeriv = max(fwidth(stGridUv), vec2(0.002));
-      vec2 stGridDist = abs(fract(stGridUv - 0.5) - 0.5) / stDeriv;
-      float stGLine = 1.0 - min(min(stGridDist.x, stGridDist.y), 1.0);
-      if (stDist < stR) {
-        float stFeather = smoothstep(stInner, stR, stDist);
-        float stKeep = mix(0.08, 1.0, stFeather);
-        keepProb = min(keepProb, max(stKeep, stGLine * 0.24));
-        senkiroGridMask = max(senkiroGridMask, stGLine * (1.0 - stFeather * 0.4));
-        senkiroRimGlow = max(senkiroRimGlow, smoothstep(stInner, stR * 0.96, stDist) * 0.36);
-      } else {
-        float stOuterRim = 1.0 - smoothstep(stR, stR + 14.0, stDist);
-        senkiroRimGlow = max(senkiroRimGlow, stOuterRim * 0.42);
-      }
+    float stInner = stR * 0.50;
+    if (stDist < stR) {
+      float stFeather = smoothstep(stInner, stR, stDist);
+      keepProb = min(keepProb, mix(0.14, 1.0, stFeather));
     }
   }
 
@@ -272,18 +234,8 @@ float senkiroGhostMix = 0.0;
 {
   float keepProb = 1.0;
 
-  if (uCutawayActive > 0.5) {
-    float cutDist = length(vCutWorldPos.xz - uCutawayCenter.xz);
-    float cutOuter = uCutawayRadius + 24.0;
-    float cutInner = uCutawayRadius * 0.84;
-    if (cutDist < cutOuter) {
-      float cutT = smoothstep(cutInner, cutOuter, cutDist);
-      keepProb = min(keepProb, mix(0.18, 1.0, cutT));
-      senkiroGhostMix = max(senkiroGhostMix, 1.0 - cutT);
-    }
-  }
-
-  if (uStationFocusActive > 0.5) {
+  // Selected-station frosted glass focus while browsing on surface (Global Ghost-Surface handles full underground mode)
+  if (uCutawayActive < 0.5 && uStationFocusActive > 0.5) {
     float stDist = length(vCutWorldPos.xz - uStationFocusCenter.xz);
     if (stDist < uStationFocusRadius) {
       float stT = smoothstep(uStationFocusRadius * 0.68, uStationFocusRadius, stDist);

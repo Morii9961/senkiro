@@ -243,9 +243,9 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
     this.clipPlane = new THREE.Plane(new THREE.Vector3(0, -1, 0), 10_000);
     this.clipPlanes = [this.clipPlane];
 
-    // 7. Instantiate Procedural Layers + GPU Radial Cutaway System (P5)
+    // 7. Instantiate Procedural Layers + Global Ghost-Surface Underground Alignment Guides (Scheme A)
     this.cutawayUniforms = createCutawayUniforms();
-    this.cutawayVisuals = new CutawayPitVisuals(isDark);
+    this.cutawayVisuals = new CutawayPitVisuals(isDark, this.solved.stationNodes);
     this.terrainLayer = new CityTerrainLayer(isDark, this.clipPlanes, this.cutawayUniforms);
     this.buildingManager = new CityChunkManager(isDark, this.clipPlanes, this.cutawayUniforms);
     this.railLayer = new RailTrackLayer(this.solved, this.clipPlanes);
@@ -648,7 +648,7 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
         ? 0.48
         : 0.34;
 
-    // Outer ground stays crisp around cutaway pit unless user dials down Outer Surface Opacity!
+    // Global Ghost-Surface opacity: when underground mode is active, smoothly fade entire surface city
     const effectiveGroundOpacity = underground.enabled ? underground.groundOpacity : 1.0;
     this.terrainLayer.setSurfaceOpacity(effectiveGroundOpacity, underground.enabled);
 

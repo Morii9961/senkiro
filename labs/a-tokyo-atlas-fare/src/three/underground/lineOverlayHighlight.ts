@@ -79,11 +79,11 @@ export class LineOverlayHighlightLayer {
         mat = new THREE.MeshStandardMaterial({
           color: col,
           emissive: col,
-          emissiveIntensity: 0.72,
-          roughness: 0.35,
-          metalness: 0.1,
+          emissiveIntensity: 0.85,
+          roughness: 0.32,
+          metalness: 0.08,
           transparent: true,
-          opacity: 0.85,
+          opacity: 0.92,
           side: THREE.DoubleSide,
           depthWrite: false,
           clippingPlanes: clipPlanes,
@@ -91,13 +91,13 @@ export class LineOverlayHighlightLayer {
         this.materialsByLine.set(chunk.primaryLineId, mat);
       }
 
-      // Sleek hovering info guide strip along tunnel outer crown & subtle interior guide edge
+      // Crisp operating line-color crown strip along tunnel roof so underground routes pop in Ghost-Surface view
       const bore =
         chunk.subSpans.find((s) => s.structureType !== 'transition_collar') ?? chunk.subSpans[0];
       const topY = bore
         ? bore.startSpec.slabTopOffsetM + bore.startSpec.innerHeightM + bore.startSpec.wallThicknessM + 0.35
         : 6.2;
-      const halfW = 0.85;
+      const halfW = 1.65;
 
       const geoms: THREE.BufferGeometry[] = [];
       const outerCrownBand = sweepOverlayRibbon(chunk.centerline, [
