@@ -3,6 +3,7 @@
 | 文件 | 用途 | 版本 |
 | --- | --- | --- |
 | [00-shared-contract.md](00-shared-contract.md) | SENKIRO Lab 原型阶段的共享领域契约：诚实性规则、数据性质标签、来源与许可、实体、工程约定、交付物格式 | v0.1 |
+| [plan-v1.0.md](plan-v1.0.md) | **SENKIRO 主线开发总规划、Alpha-SQLite 全栈架构与多智能体并行路线图（当前正式基准）** | v1.0 |
 | [plan-v0.1.md](plan-v0.1.md) | 产品愿景、功能规格草案与分阶段开发计划（历史代号 Japan Railway Atlas，概念讨论稿） | v0.1 |
 | [brand-v1.0.md](brand-v1.0.md) | SENKIRO 品牌命名与名称规范 | v1.0 |
 | [lab-reports/](lab-reports/README.md) | 原型完成后的人工评审记录 | — |
