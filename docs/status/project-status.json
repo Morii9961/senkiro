@@ -2,96 +2,31 @@
   "schema_version": "1.1",
   "project_id": "senkiro.main",
   "project_name": "SENKIRO",
-  "snapshot_at": "2026-11-28T12:54:00+08:00",
+  "snapshot_at": "2026-11-28T16:18:00+08:00",
   "source": {
     "branch": "integration/phase-0",
     "base_main_sha": "e3cba601be157bd0a2a1295e1e36d579c3369923",
-    "tests_rerun": true,
+    "tests_rerun": false,
     "basis": [
-      "2026-11-28 Wave 0 合入验证：在 integration/phase-0 绕过 Turbo 缓存实跑 pnpm install --frozen-lockfile && pnpm check && pnpm build && pnpm test，@senkiro/contracts 8 文件 75/75 通过",
-      "main@e3cba60（Master Plan v1.0 与多智能体路线图已合入）",
-      "lab/a-tokyo-atlas-fare@9244196、lab/b-umeda-3d@b2ed773、lab/c-shinjuku-3d@19b2daa（三座原型只读归档，未重跑原型测试）",
-      "docs/01-domain-contract-v1.0.md、docs/dispatch/reports/p0-w0-contracts.md、docs/dispatch/phase-0/*"
+      "2026-11-28 Wave 1 配额交接快照：核对三个子工作树交接报告与 git 状态，未重跑各子工作树测试",
+      "Wave 0 (P0-W0) 已于 integration/phase-0 验收通过 (75/75 Vitest)",
+      "P0-S1@da56d34 (M1 47/47 自报告通过，PAUSED_QUOTA -> 转 Codex 接力 M2/M3)",
+      "P0-S2@df77a7e (M1 31/31 自报告通过，实查 7 条 Biome lint 待清，PAUSED_QUOTA -> 转 Codex 接力)",
+      "P0-S3@e79424a (M1 ui-kit 27/27 自报告通过，PAUSED_QUOTA -> 保留等待 Claude 续跑)",
+      "官方 MLIT KSJ N02-24 (N02-24_Station.geojson) 梅田 7 站 + 新宿 10 站坐标实测提取"
     ]
   },
   "reporter": {
     "agent": "gemini",
-    "note": "Chief Coordinator (Phase 0 Wave 1 Release)"
+    "note": "Chief Coordinator (Phase 0 Wave 1 Codex Relay)"
   },
-  "stage": "phase_0_wave1_ready",
-  "summary": "Wave 0（P0-W0 Monorepo 根骨架与 @senkiro/contracts）已通过主控验证并合入 integration/phase-0（75/75 测试通过）。契约文档与三份 Wave 1 派单书已同步对齐，正式放行 P0-S1 / P0-S2 / P0-S3 三路并行。",
+  "stage": "phase_0_wave1_relay",
+  "summary": "Wave 0 已合入并验证。Wave 1 三路均完成 M1 核心进度后因 Claude 配额耗尽进入 PAUSED_QUOTA；主控已审定 Contract Requests、提取官方 KSJ N02-24 17 站坐标并发布 P0-S1 / P0-S2 的 Codex 接力派单书。",
   "overall_progress": null,
   "milestones": [
     {
-      "id": "project_setup",
-      "title": "立项与 Master Plan v1.0（Gate 0 五大决策锁定）",
-      "status": "done",
-      "evidence_level": "repository",
-      "evidence_refs": [
-        "docs/plan-v1.0.md",
-        "docs/brand-v1.0.md",
-        "docs/00-shared-contract.md"
-      ],
-      "human_acceptance": "not_required"
-    },
-    {
-      "id": "lab_a_archive",
-      "title": "Lab A 归档：东京 40 线地图 + JR 运价 + 3D 都市地下网",
-      "status": "done",
-      "evidence_level": "existing_test",
-      "evidence_refs": [
-        "lab/a-tokyo-atlas-fare@9244196",
-        "docs/lab-reports/scores.md"
-      ],
-      "human_acceptance": "done"
-    },
-    {
-      "id": "lab_b_archive",
-      "title": "Lab B 归档：大阪・梅田 7 站 3D/2D + 9 款关西车型",
-      "status": "done",
-      "evidence_level": "existing_test",
-      "evidence_refs": [
-        "lab/b-umeda-3d@b2ed773",
-        "docs/lab-reports/scores.md"
-      ],
-      "human_acceptance": "done"
-    },
-    {
-      "id": "lab_c_archive",
-      "title": "Lab C 归档：新宿 10 层 3D/2D + 大新宿时刻表管线合入",
-      "status": "done",
-      "evidence_level": "existing_test",
-      "evidence_refs": [
-        "lab/c-shinjuku-3d@19b2daa",
-        "docs/lab-reports/scores.md"
-      ],
-      "human_acceptance": "done"
-    },
-    {
-      "id": "lab_scores",
-      "title": "三原型归档评审与资产迁移映射（docs/lab-reports/scores.md）",
-      "status": "done",
-      "evidence_level": "repository",
-      "evidence_refs": [
-        "docs/lab-reports/scores.md"
-      ],
-      "human_acceptance": "not_required"
-    },
-    {
-      "id": "phase0_contract_and_dispatch",
-      "title": "全域领域契约 v1.0、交接规程与 Phase 0 四路派单体系",
-      "status": "done",
-      "evidence_level": "repository",
-      "evidence_refs": [
-        "docs/01-domain-contract-v1.0.md",
-        "docs/dispatch/HANDOFF_PROTOCOL.md",
-        "docs/dispatch/phase-0/README.md"
-      ],
-      "human_acceptance": "not_required"
-    },
-    {
       "id": "p0_w0_contracts",
-      "title": "Wave 0：Monorepo 根骨架（TS 7.0.2/Biome/Turbo）与 @senkiro/contracts（75/75 单测）",
+      "title": "Wave 0：Monorepo 根骨架与 @senkiro/contracts（75/75 单测）",
       "status": "done",
       "evidence_level": "verified_test",
       "evidence_refs": [
@@ -101,13 +36,34 @@
       "human_acceptance": "done"
     },
     {
-      "id": "p0_wave1_parallel",
-      "title": "Wave 1 三路并行：P0-S1 / P0-S2 / P0-S3",
-      "status": "not_started",
-      "evidence_level": "repository",
+      "id": "p0_s1_domain_sqlite",
+      "title": "Wave 1 (P0-S1)：domain-core (M1 完成) + fare-engine / local-db (转 Codex 接力)",
+      "status": "in_progress",
+      "evidence_level": "existing_test",
       "evidence_refs": [
-        "docs/dispatch/phase-0/p0-s1-domain-sqlite-brief.md",
-        "docs/dispatch/phase-0/p0-s2-station-3d-brief.md",
+        "feat/p0-domain-sqlite@da56d34",
+        "docs/dispatch/phase-0/p0-s1-codex-relay.md"
+      ],
+      "human_acceptance": "pending"
+    },
+    {
+      "id": "p0_s2_station_3d",
+      "title": "Wave 1 (P0-S2)：station-3d (M1 31/31 待清 7 lint) + data-stations (转 Codex 接力)",
+      "status": "in_progress",
+      "evidence_level": "existing_test",
+      "evidence_refs": [
+        "feat/p0-station-3d@df77a7e",
+        "docs/dispatch/phase-0/p0-s2-codex-relay.md"
+      ],
+      "human_acceptance": "pending"
+    },
+    {
+      "id": "p0_s3_ui_web_shell",
+      "title": "Wave 1 (P0-S3)：ui-kit (M1 27/27) + apps/web (等待 Claude 续跑)",
+      "status": "in_progress",
+      "evidence_level": "existing_test",
+      "evidence_refs": [
+        "feat/p0-ui-web-shell@e79424a",
         "docs/dispatch/phase-0/p0-s3-ui-web-shell-brief.md"
       ],
       "human_acceptance": "pending"
@@ -116,22 +72,22 @@
   "blockers": [],
   "next_actions": [
     {
-      "id": "launch_wave1_parallel",
-      "title": "基于 integration/phase-0 同时新建并派发 P0-S1 / P0-S2 / P0-S3",
+      "id": "codex_relay_p0_s1",
+      "title": "Codex 在 E:/Workteree/SENKIRO/p0-domain-sqlite 接力 P0-S1 M2/M3",
       "priority": "P0",
-      "result": "三路并行完成三图+运价+OPFS SQLite、命令式 3D 车站引擎与三语全屏 Web 壳。"
+      "result": "完成 @senkiro/fare-engine (26+ 黄金测试) 与 @senkiro/local-db (Drizzle + sqlite-wasm OPFS Worker) 并达 READY_FOR_MERGE。"
     },
     {
-      "id": "exit_gate_0",
-      "title": "三路依次合入 integration/phase-0 并执行 Exit Gate 0 全仓联调与验收",
+      "id": "codex_relay_p0_s2",
+      "title": "Codex 在 E:/Workteree/SENKIRO/p0-station-3d 接力 P0-S2 M1 收尾 + M2/M3",
       "priority": "P0",
-      "result": "apps/web 接入 <StationExplorer /> 与 local-db 探针，全仓 check/build/test 与 E2E 通过。"
+      "result": "清零 7 条 Biome lint、完成命令式 Three.js 场景与 @senkiro/data-stations（含 KSJ N02-24 17 站坐标）并达 READY_FOR_MERGE。"
     }
   ],
   "needs_morii": [
     {
-      "id": "launch_p0_wave1_worktrees",
-      "decision": "按 docs/dispatch/phase-0/README.md 同时新建 feat/p0-domain-sqlite、feat/p0-station-3d、feat/p0-ui-web-shell 三个工作树并粘贴对应提示词启动并行执行。"
+      "id": "paste_codex_relay_prompts",
+      "decision": "在 Codex 打开既有工作树 p0-domain-sqlite 与 p0-station-3d，分别粘贴 p0-s1-codex-relay.md 与 p0-s2-codex-relay.md 提示词启动接力。"
     }
   ]
 }

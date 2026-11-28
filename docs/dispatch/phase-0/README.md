@@ -28,23 +28,20 @@ flowchart LR
 
 ## 2. Phase 0 四张派单书索引与当前状态
 
-| 顺序 | Session | 当前状态 | 推荐模型 | 新建分支（基于 `integration/phase-0`） | 独占路径 `ownedPaths` | 派单书 |
+| 顺序 | Session | 当前状态 | 推荐 / 接力模型 | 工作树与分支（基于 `integration/phase-0`） | 独占路径 `ownedPaths` | 派单书 / 接力书 |
 | --- | --- | --- | --- | --- | --- | --- |
-| **第 1 步（Wave 0）** | **P0-W0** | **✅ 已合并验收**（`75/75` 通过） | Claude / GPT | `feat/p0-w0-contracts` | 根工程配置 + `packages/contracts/**` + 报告 | [p0-w0-contracts-brief.md](./p0-w0-contracts-brief.md) |
-| **第 2 步（Wave 1 并行）** | **P0-S1** | **🚀 可立即启动** | **GPT / Codex** | `feat/p0-domain-sqlite` | `packages/{domain-core,fare-engine,local-db}/**` + `pnpm-lock.yaml` + 报告 | [p0-s1-domain-sqlite-brief.md](./p0-s1-domain-sqlite-brief.md) |
-| **第 2 步（Wave 1 并行）** | **P0-S2** | **🚀 可立即启动** | **GPT / Codex** 或 **Gemini** | `feat/p0-station-3d` | `packages/{station-3d,data-stations}/**` + `pnpm-lock.yaml` + 报告 | [p0-s2-station-3d-brief.md](./p0-s2-station-3d-brief.md) |
-| **第 2 步（Wave 1 并行）** | **P0-S3** | **🚀 可立即启动** | **Claude** | `feat/p0-ui-web-shell` | `packages/ui-kit/**` + `apps/web/**` + `pnpm-lock.yaml` + 报告 | [p0-s3-ui-web-shell-brief.md](./p0-s3-ui-web-shell-brief.md) |
+| **第 1 步（Wave 0）** | **P0-W0** | **✅ 已合并验收**（`75/75` 通过） | Claude | `feat/p0-w0-contracts` | 根工程配置 + `packages/contracts/**` + 报告 | [p0-w0-contracts-brief.md](./p0-w0-contracts-brief.md) |
+| **第 2 步（Wave 1 并行）** | **P0-S1** | **⏸ M1 完成 · 转 Codex 接力 M2/M3** | Claude → **Codex** | `E:\Workteree\SENKIRO\p0-domain-sqlite`<br>`feat/p0-domain-sqlite@da56d34` | `packages/{domain-core,fare-engine,local-db}/**` + `pnpm-lock.yaml` + 报告 | [p0-s1-codex-relay.md](./p0-s1-codex-relay.md)（原：[p0-s1-domain-sqlite-brief.md](./p0-s1-domain-sqlite-brief.md)） |
+| **第 2 步（Wave 1 并行）** | **P0-S2** | **⏸ M1 待清 7 条 lint · 转 Codex 接力** | Claude → **Codex** | `E:\Workteree\SENKIRO\p0-station-3d`<br>`feat/p0-station-3d@df77a7e` | `packages/{station-3d,data-stations}/**` + `pnpm-lock.yaml` + 报告 | [p0-s2-codex-relay.md](./p0-s2-codex-relay.md)（原：[p0-s2-station-3d-brief.md](./p0-s2-station-3d-brief.md)） |
+| **第 2 步（Wave 1 并行）** | **P0-S3** | **⏸ M1 (`ui-kit` 27/27) 完成 · 等 Claude 续跑** | **Claude** | `E:\Workteree\SENKIRO\p0-ui-web-shell`<br>`feat/p0-ui-web-shell@e79424a` | `packages/ui-kit/**` + `apps/web/**` + `pnpm-lock.yaml` + 报告 | [p0-s3-ui-web-shell-brief.md](./p0-s3-ui-web-shell-brief.md) |
 
 ---
 
-## 3. 当前执行步骤（Wave 1 三路并行启动）
+## 3. 当前接力操作指南（无需重新建 worktree！）
 
-`P0-W0` 已合入 `integration/phase-0` 并通过主控验证。请立即基于最新 `integration/phase-0` 同时创建以下 3 个独立工作树：
+`P0-S1` 与 `P0-S2` 的工作树和 M1 绿灯/检查点均已留在本地磁盘上，**不要执行 `git worktree add`**：
 
-```powershell
-git -C "E:\SENKIRO" worktree add -b feat/p0-domain-sqlite "E:\Workteree\SENKIRO\p0-domain-sqlite" integration/phase-0
-git -C "E:\SENKIRO" worktree add -b feat/p0-station-3d "E:\Workteree\SENKIRO\p0-station-3d" integration/phase-0
-git -C "E:\SENKIRO" worktree add -b feat/p0-ui-web-shell "E:\Workteree\SENKIRO\p0-ui-web-shell" integration/phase-0
-```
-
-分别复制对应派单书顶部的「📋 一键复制启动提示词」并发分发；三路全部完成后依次回主控合入并执行 `Exit Gate 0` 全仓联调验收！
+1. 在 Codex 打开已有目录 `E:\Workteree\SENKIRO\p0-domain-sqlite`，粘贴 [p0-s1-codex-relay.md](./p0-s1-codex-relay.md) 顶部的接力提示词续跑 M2 + M3；
+2. 在 Codex 打开已有目录 `E:\Workteree\SENKIRO\p0-station-3d`，粘贴 [p0-s2-codex-relay.md](./p0-s2-codex-relay.md) 顶部的接力提示词完成 M1 收尾 + M2 + M3；
+3. `P0-S3`（`E:\Workteree\SENKIRO\p0-ui-web-shell`）保留现状，待 Claude 配额恢复后按其报告 §6 续跑 M2 + M3；
+4. 三路均达 `READY_FOR_MERGE` 后回主控合入 `integration/phase-0` 并执行 `Exit Gate 0` 全仓联调验收！
