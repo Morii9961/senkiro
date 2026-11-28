@@ -288,7 +288,55 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
       }
     });
 
+    (
+      window as unknown as {
+        __SENKIRO_3D_CTRL__?: {
+          setCameraView: (
+            lon: number,
+            lat: number,
+            distance: number,
+            polarDeg: number,
+            azimuthDeg: number,
+            targetY?: number,
+          ) => void;
+          setTimeOfDay: (hour: number) => void;
+          setVisualMode: (mode: 'atlas' | 'cinematic') => void;
+          getMetrics: () => unknown;
+          setUnderground: (enabled: boolean) => void;
+          startTrainFollow: () => string | null;
+        };
+      }
+    ).__SENKIRO_3D_CTRL__ = {
+      setCameraView: (lon, lat, distance, polarDeg, azimuthDeg, targetY = 0) => {
+        ctrl.setCameraView(lon, lat, distance, polarDeg, azimuthDeg, targetY);
+      },
+      setTimeOfDay: (hour) => {
+        setAutoTimePlay(false);
+        const normalized = ((hour % 24) + 24) % 24;
+        timeOfDayRef.current = normalized;
+        setTimeOfDayHour(normalized);
+        (ctrl as SceneWithTimeOfDay).setTimeOfDay?.(normalized);
+      },
+      setVisualMode: (mode) => {
+        (
+          ctrl as Metropolitan3DScene & {
+            setVisualMode?: (m: 'atlas' | 'cinematic') => void;
+          }
+        ).setVisualMode?.(mode);
+      },
+      getMetrics: () =>
+        (window as unknown as { __SENKIRO_3D_METRICS__?: unknown }).__SENKIRO_3D_METRICS__ ?? null,
+      setUnderground: (enabled) => {
+        dispatchMode({
+          type: 'SELECT_MODE',
+          mode: enabled ? 'underground_cutaway' : 'city_overview',
+        });
+      },
+      startTrainFollow: () => ctrl.startUndergroundTrainDemo('chase'),
+    };
+
     return () => {
+      delete (window as unknown as { __SENKIRO_3D_CTRL__?: unknown }).__SENKIRO_3D_CTRL__;
       ctrl.dispose();
       sceneRef.current = null;
       simEngineRef.current = null;

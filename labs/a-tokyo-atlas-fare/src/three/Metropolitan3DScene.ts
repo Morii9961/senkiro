@@ -761,6 +761,24 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
     );
   }
 
+  setCameraView(
+    lon: number,
+    lat: number,
+    distance: number,
+    polarDeg: number,
+    azimuthDeg: number,
+    targetY = 0,
+  ): void {
+    this.tracePlaying = false;
+    const { x, z } = lonLatToWorld(lon, lat);
+    if (!this.cutawayPinned) {
+      this.cutawayUniforms.uCutawayCenter.value.set(x, 0, z);
+    }
+    this.camCtrl.jumpTo(new THREE.Vector3(x, targetY, z), distance, polarDeg, azimuthDeg);
+    this.buildingManager.updateForCamera(this.camera, this.camCtrl.getFocusTarget());
+    this.emitTelemetry();
+  }
+
   flyToStation(stationId: SkId<'station'>): void {
     const node = this.solved.stationNodes.find((n) => n.stationId === stationId);
     if (!node) return;
