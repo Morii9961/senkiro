@@ -125,10 +125,25 @@ vec3 senkiroWaterNormal(vec2 xz, float t, float distFade, float isBayFlag) {
   float sunVis = (1.0 - uWatNight * 0.72) * (0.50 + 0.50 * uWatVisualMode);
   vec3 glint = uWatSunColor * (specTight * 1.75 + specBroad * 0.28) * sunVis;
 
-  // Gentle shoreline / urban night bridge light shimmer on inland rivers
-  float riverNightGlow = mix(0.055, 0.015, uWatIsBay) * clamp(uWatBlueHour * 0.7 + uWatNight, 0.0, 1.0);
+  // Broken vertical waterfront & bridge city-light shimmer reflections at Blue Hour / Night
+  float nightWaterFactor = clamp(uWatBlueHour * 0.78 + uWatNight, 0.0, 1.0);
   vec3 finalWater = mix(waterBodyCol + outgoingLight * 0.16, skyRefl * (0.76 + 0.24 * uWatVisualMode), clamp(fresnel * 0.90, 0.0, 0.92));
-  finalWater += glint + vec3(0.20, 0.26, 0.36) * riverNightGlow;
+  finalWater += glint;
+  if (nightWaterFactor > 0.02) {
+    float ripplePerturb = wNorm.x * 26.0 + wNorm.z * 18.0;
+    float colCoord = vWaterWorldPos.x * 0.032 + ripplePerturb * 0.38;
+    float bandHash = fract(sin(floor(colCoord) * 127.1 + floor(vWaterWorldPos.z * 0.008) * 311.7) * 43758.5453);
+    float colMask = smoothstep(0.56, 0.92, bandHash);
+    float streakBreak = 0.5 + 0.5 * sin(vWaterWorldPos.z * 0.11 + wNorm.z * 42.0 + uWatTime * 1.4);
+    float streakWave = pow(clamp(0.5 + 0.5 * cos(fract(colCoord) * 6.283185), 0.0001, 1.0), 3.2);
+    float riverMask = mix(1.0, 0.28, uWatIsBay);
+    vec3 streakColor = bandHash > 0.76
+      ? vec3(1.0, 0.80, 0.48)
+      : vec3(0.76, 0.88, 1.0);
+    float grazingBoost = 0.35 + 0.65 * (1.0 - ndotv);
+    finalWater += streakColor * colMask * streakWave * streakBreak * riverMask * grazingBoost * nightWaterFactor * 0.42;
+    finalWater += vec3(0.14, 0.19, 0.27) * mix(0.16, 0.055, uWatIsBay) * nightWaterFactor;
+  }
   outgoingLight = finalWater;
 }
 #include <opaque_fragment>`,

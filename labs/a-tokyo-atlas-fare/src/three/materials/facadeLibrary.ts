@@ -1485,7 +1485,7 @@ export class FacadeMaterialLibrary {
         bumpScale: 0.54,
         emissiveMap: this.sets.groundStorefront.emissiveMap,
         emissive: new THREE.Color(isDark ? 0xffffff : 0xfff0d6),
-        emissiveIntensity: isDark ? 1.10 : 0.06,
+        emissiveIntensity: isDark ? 1.38 : 0.06,
         roughness: 1.0,
         metalness: 0.24,
         envMapIntensity: 1.1,
@@ -1498,7 +1498,7 @@ export class FacadeMaterialLibrary {
         bumpScale: 0.48,
         emissiveMap: this.sets.stationCivic.emissiveMap,
         emissive: new THREE.Color(isDark ? 0xe6f0ff : 0x000000),
-        emissiveIntensity: isDark ? 0.78 : 0.0,
+        emissiveIntensity: isDark ? 0.92 : 0.0,
         roughness: 1.0,
         metalness: 0.18,
         envMapIntensity: 1.0,
@@ -1510,8 +1510,8 @@ export class FacadeMaterialLibrary {
         bumpMap: this.sets.heritageBrick.bumpMap,
         bumpScale: 0.64,
         emissiveMap: this.sets.heritageBrick.emissiveMap,
-        emissive: new THREE.Color(isDark ? 0xffffff : 0x000000),
-        emissiveIntensity: isDark ? 0.82 : 0.0,
+        emissive: new THREE.Color(isDark ? 0xffd9a8 : 0x000000),
+        emissiveIntensity: isDark ? 1.05 : 0.0,
         roughness: 1.0,
         metalness: 0.05,
       }),
@@ -1694,9 +1694,9 @@ export class FacadeMaterialLibrary {
     setEmissive(m.concreteModern, 0xffffff, 0.68);
     setEmissive(m.residentialBalcony, 0xffffff, 0.54);
     setEmissive(m.residentialPlaster, 0xffffff, 0.50);
-    setEmissive(m.groundStorefront, 0xffffff, 1.10, 0.06, 0xfff0d6);
-    setEmissive(m.stationCivic, 0xe6f0ff, 0.78);
-    setEmissive(m.brick, 0xffffff, 0.82);
+    setEmissive(m.groundStorefront, 0xffffff, 1.38, 0.06, 0xfff0d6);
+    setEmissive(m.stationCivic, 0xe6f0ff, 0.92);
+    setEmissive(m.brick, 0xffd9a8, 1.05);
     setEmissive(m.instanced, 0xffffff, 0.92);
     setEmissive(m.landmarkGlass, 0xf0f6ff, 1.10);
     setEmissive(m.towerOrange, 0xf97316, 0.62);

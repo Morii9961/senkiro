@@ -141,30 +141,41 @@ if (uBldgFadeEnabled > 0.5) {
     float roomSeed = senkiroBldgHash(floor(vBldgWorldPos.xz / 4.2) + vec2(floorBand * 2.1, 7.3));
 
     // Distance anti-aliasing: smooth out sub-pixel 1px confetti dots on 5km..25km horizon towers
+    // while keeping distant illuminated skyline legible in urban panoramas
     float bCamDist = length(cameraPosition - vBldgWorldPos);
     float winMicroKeep = 1.0 - smoothstep(1600.0, 6200.0, bCamDist);
-    float farEmissiveAtten = mix(1.0, 0.26, smoothstep(4200.0, 17500.0, bCamDist));
-    float roomFactor = mix(0.86, mix(0.65, 1.20, roomSeed), winMicroKeep);
-    float floorFactor = mix(0.82, mix(0.28, 1.32, step(0.26, floorSeed)), mix(0.35, 1.0, winMicroKeep));
+    float farEmissiveAtten = mix(1.0, 0.48, smoothstep(4200.0, 17500.0, bCamDist));
+    float roomFactor = mix(0.88, mix(0.65, 1.22, roomSeed), winMicroKeep);
+    float floorFactor = mix(0.84, mix(0.28, 1.32, step(0.26, floorSeed)), mix(0.42, 1.0, winMicroKeep));
 
     // Time-of-day activity curve: late-evening lights taper gently after 23:00
-    float lateNightFade = 1.0 - smoothstep(22.5, 24.0, uBldgHour) * 0.25 - (1.0 - smoothstep(4.5, 6.2, uBldgHour)) * 0.35 * step(uBldgHour, 6.5);
-    float winMod = floorFactor * mix(0.58, 1.22, bSeed) * roomFactor * clamp(lateNightFade, 0.45, 1.15) * farEmissiveAtten;
+    float lateNightFade = 1.0 - smoothstep(22.5, 24.0, uBldgHour) * 0.22 - (1.0 - smoothstep(4.5, 6.2, uBldgHour)) * 0.35 * step(uBldgHour, 6.5);
+    float winMod = floorFactor * mix(0.60, 1.24, bSeed) * roomFactor * clamp(lateNightFade, 0.48, 1.15) * farEmissiveAtten;
 
     // Warm vs cool interior color temperature variation per building
     vec3 tintTemp = mix(vec3(1.06, 0.96, 0.84), vec3(0.88, 0.95, 1.08), bSeed);
     totalEmissiveRadiance *= winMod * tintTemp;
+
+    // Selective architectural crown uplighting on ~35% of tall high-rises (> 62m)
+    if (vBldgWorldPos.y > 62.0 && bSeed > 0.64) {
+      float crownMask = smoothstep(62.0, 122.0, vBldgWorldPos.y);
+      vec3 crownTint = bSeed > 0.84 ? vec3(0.24, 0.31, 0.44) : vec3(0.32, 0.25, 0.17);
+      float crownStrength = clamp(uBldgBlueHour * 0.82 + uBldgNight, 0.0, 1.0);
+      totalEmissiveRadiance += crownTint * crownMask * crownStrength * (0.48 + 0.52 * uBldgVisualMode) * farEmissiveAtten;
+    }
   }
 
-  // Subtle nocturnal street-level warm bounce + cool twilight/night sky ambient lift
-  // so unlit buildings & rooftops remain legible 3D silhouettes instead of black cutouts
+  // Nocturnal street-canyon warm streetlight bounce + cool sky ambient rim
+  // so lower plinths, storefronts & rooftop silhouettes stay legible at street zoom and panorama scale
   float twilightOrNight = clamp(uBldgBlueHour * 0.85 + uBldgNight, 0.0, 1.0);
   if (twilightOrNight > 0.02) {
-    float streetBounce = exp(-max(0.0, vBldgWorldPos.y) / 26.0);
-    vec3 bounceCol = vec3(0.11, 0.082, 0.056) * streetBounce * twilightOrNight;
-    float roofOrUpper = vBldgWorldNormal.y > 0.45 ? 0.045 : 0.028;
+    float wallWeight = vBldgWorldNormal.y > 0.55 ? 0.22 : 1.0;
+    float streetBounceClose = exp(-max(0.0, vBldgWorldPos.y) / 14.0);
+    float streetBounceMid = exp(-max(0.0, vBldgWorldPos.y) / 32.0);
+    vec3 bounceCol = (vec3(0.24, 0.165, 0.095) * streetBounceClose + vec3(0.085, 0.068, 0.052) * streetBounceMid) * wallWeight * twilightOrNight;
+    float roofOrUpper = vBldgWorldNormal.y > 0.45 ? 0.055 : 0.036;
     vec3 skyRim = uBldgSkyHorizon * roofOrUpper * (0.45 + 0.55 * clamp(vBldgWorldPos.y / 65.0, 0.0, 1.0)) * twilightOrNight;
-    totalEmissiveRadiance += (bounceCol + skyRim) * (0.65 + 0.35 * uBldgVisualMode);
+    totalEmissiveRadiance += (bounceCol + skyRim) * (0.68 + 0.32 * uBldgVisualMode);
   }
 }`,
       )

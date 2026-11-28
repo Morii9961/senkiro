@@ -75,6 +75,7 @@ uniform vec3 uCloudColor;
 uniform float uCloudOpacity;
 uniform float uStarVisibility;
 uniform float uMoonGlow;
+uniform float uNightSkyglow;
 uniform float uTimeSec;
 
 varying vec3 vWorldDir;
@@ -180,6 +181,12 @@ void main() {
         vec3 starCol = mix(vec3(0.78, 0.88, 1.0), vec3(1.0, 0.95, 0.85), fract(r * 97.3));
         col += starCol * starBright * uStarVisibility * 0.78;
       }
+    }
+
+    // Subtle nocturnal metropolitan urban light-pollution skyglow just above horizon
+    if (uNightSkyglow > 0.01) {
+      float urbanGlowBand = exp(-h * 11.5) * smoothstep(-0.02, 0.03, h);
+      col += vec3(0.085, 0.095, 0.125) * urbanGlowBand * uNightSkyglow;
     }
   } else {
     float downMix = smoothstep(0.0, -0.32, h);
@@ -676,8 +683,8 @@ const TIME_KEYFRAMES: readonly TimeKeyframe[] = [
     sunLight: 0x82aee3,
     sunLightIntensity: 0.58,
     hemiSky: 0x355686,
-    hemiGround: 0x1b202a,
-    hemiIntensity: 0.56,
+    hemiGround: 0x242a36,
+    hemiIntensity: 0.58,
     subFill: 0x2c5698,
     subFillIntensity: 0.30,
     fogColor: 0x0f1c30,
@@ -685,8 +692,8 @@ const TIME_KEYFRAMES: readonly TimeKeyframe[] = [
     fogFar: 52000,
     aerialScatter: 0x122238,
     envIntensity: 0.85,
-    bloomStrength: 0.24,
-    bloomThreshold: 0.82,
+    bloomStrength: 0.28,
+    bloomThreshold: 0.80,
     exposure: 1.06,
   },
   {
@@ -709,8 +716,8 @@ const TIME_KEYFRAMES: readonly TimeKeyframe[] = [
     sunLight: 0x82aee3,
     sunLightIntensity: 0.58,
     hemiSky: 0x355686,
-    hemiGround: 0x1b202a,
-    hemiIntensity: 0.56,
+    hemiGround: 0x242a36,
+    hemiIntensity: 0.58,
     subFill: 0x2c5698,
     subFillIntensity: 0.30,
     fogColor: 0x0f1c30,
@@ -718,8 +725,8 @@ const TIME_KEYFRAMES: readonly TimeKeyframe[] = [
     fogFar: 52000,
     aerialScatter: 0x122238,
     envIntensity: 0.85,
-    bloomStrength: 0.24,
-    bloomThreshold: 0.82,
+    bloomStrength: 0.28,
+    bloomThreshold: 0.80,
     exposure: 1.06,
   },
 ];
@@ -915,6 +922,7 @@ export class SkyEnvironmentSystem {
         uCloudOpacity: { value: initialState.cloudOpacity },
         uStarVisibility: { value: initialState.starVisibility },
         uMoonGlow: { value: initialState.moonGlow },
+        uNightSkyglow: { value: initialState.nightFactor },
         uTimeSec: { value: 0 },
       },
     });
@@ -951,6 +959,7 @@ export class SkyEnvironmentSystem {
         uCloudOpacity: { value: state.cloudOpacity * 0.45 },
         uStarVisibility: { value: 0.0 },
         uMoonGlow: { value: state.moonGlow },
+        uNightSkyglow: { value: state.nightFactor * 0.45 },
         uTimeSec: { value: 0.0 },
       },
     });
@@ -1008,6 +1017,7 @@ export class SkyEnvironmentSystem {
     this.skyMaterial.uniforms.uCloudOpacity!.value = state.cloudOpacity;
     this.skyMaterial.uniforms.uStarVisibility!.value = state.starVisibility;
     this.skyMaterial.uniforms.uMoonGlow!.value = state.moonGlow;
+    this.skyMaterial.uniforms.uNightSkyglow!.value = state.nightFactor;
 
     scene.background = state.fogColor.clone();
     if (scene.fog instanceof THREE.Fog) {
