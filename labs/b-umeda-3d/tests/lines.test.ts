@@ -34,11 +34,18 @@ it('AT-LINE-03: chooses readable foreground for sourced colors and contrast boun
   }
 })
 
-it('AT-HON-01: covers current lines and keeps their unverified fields null under G3', () => {
+it('AT-HON-01: covers every line with a sourced mark or a neutral service label', () => {
   expect(lineStyles.map((entry) => entry.lineId).sort()).toEqual(
     station.lines.map((line) => line.id).sort(),
   )
-  expect(lineStyles.every((entry) =>
-    entry.color === null && entry.stationNumberPrefix === null && entry.shortName === null,
-  )).toBe(true)
+  for (const style of lineStyles) {
+    if (style.kind === 'other') {
+      expect(style.color).toBeNull()
+      expect(style.stationNumberPrefix).toBeNull()
+      expect(style.shortName).not.toBeNull()
+    } else {
+      expect(style.color?.dataNature).toBe('derived')
+      expect(style.stationNumberPrefix).toMatch(/^[A-Z]{1,2}$/)
+    }
+  }
 })

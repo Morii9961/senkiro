@@ -6,7 +6,8 @@ export type DataNature =
   | 'synthetic'
   | 'unknown'
 export type GeometryConfidence = 'verified' | 'schematic' | 'unknown'
-export type Language = 'ja' | 'en'
+export type Language = 'ja' | 'en' | 'zh'
+export type LocalName = { ja: string; en: string | null; zh?: string | null }
 export interface Entity {
   id: string
   names: { ja: string; en: string; ja_kana: string | null; zh: string | null }

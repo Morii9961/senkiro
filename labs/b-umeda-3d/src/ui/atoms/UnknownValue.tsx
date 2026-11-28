@@ -1,12 +1,13 @@
+import { textIn } from '../../domain/language'
 import type { Language } from '../../domain/types'
 
 export function UnknownValue({ lang }: { lang: Language }) {
   return (
     <span
       className="unknown-value"
-      title={lang === 'ja' ? '確認できる資料がありません' : 'No verified source for this field'}
+      title={textIn(lang, '確認できる資料がありません', 'No verified source for this field', '暂无可核实的资料')}
     >
-      {lang === 'ja' ? '未確認' : 'Unverified'}
+      {textIn(lang, '未確認', 'Unverified', '未核实')}
     </span>
   )
 }

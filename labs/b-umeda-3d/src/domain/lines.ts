@@ -1,3 +1,4 @@
+import { textIn } from './language.ts'
 import type { LineStyle } from '../../data/manual/lines.ts'
 import type { Language, Model } from './types.ts'
 
@@ -37,5 +38,5 @@ export function lineBadgeTextColor(background: string) {
 }
 
 export function unverifiedLineColor(lang: Language) {
-  return lang === 'ja' ? '線色未確認' : 'Line color unverified'
+  return textIn(lang, '線色未確認', 'Line color unverified', '线路色未核实')
 }

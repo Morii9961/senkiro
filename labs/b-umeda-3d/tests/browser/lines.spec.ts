@@ -1,4 +1,3 @@
-import { readFileSync } from 'node:fs'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { expect, test, type Page } from '@playwright/test'
@@ -14,17 +13,16 @@ test.beforeEach(async ({ page }) => {
 })
 test.afterEach(async ({ page }) => expect(errors.get(page)).toEqual([]))
 
-test('AT-LINE-02: unverified platform and facility badges use neutral styling', async ({ page }) => {
-  await page.goto('/?sel=platform:sk:platform:jr-3-4')
-  const pin = page.locator('.platform-pin[data-owner="sk:platform:jr-3-4"]')
-  await expect(pin).toHaveAttribute('data-line-color', 'unknown')
-  await expect(pin).toHaveAttribute('title', /線色未確認/)
-  await expect(pin).toHaveCSS('background-color', 'rgb(239, 239, 239)')
-  const badge = page.getByTestId('detail-sheet').locator('.line-badge')
-  await expect(badge).toHaveAttribute('title', '線色未確認')
-  await expect(badge).toContainText('JR神戸線')
-  const source = readFileSync('src/Scene.tsx', 'utf8')
-  expect(source).not.toMatch(/#(b44041|b95436|537986)/i)
+test('AT-LINE-02: Osaka platforms show the operator codes for each serving line', async ({ page }) => {
+  await page.goto('/?sel=platform:sk:platform:jr-5-6')
+  const pin = page.locator('.platform-pin[data-owner="sk:platform:jr-5-6"]')
+  await expect(pin.locator('.line-mark')).toHaveText(['A', 'G'])
+  const detail = page.getByTestId('detail-sheet')
+  await expect(detail.locator('.line-badge')).toHaveText(['AJR神戸線', 'GJR宝塚線'])
+  await expect(detail.locator('[data-field="boarding"]')).toContainText('5・6')
+  await expect(detail.locator('[data-field="neighbors"]')).toContainText('塚本')
+  await detail.getByText('公式時刻表', { exact: true }).click()
+  await expect(detail.getByRole('link', { name: /JR神戸線/ })).toHaveAttribute('href', /2796012001$/)
 })
 
 test('AT-LINE-02: a synthetic badge fixture renders the supplied color and foreground', async ({ page }) => {
@@ -49,8 +47,8 @@ test('AT-LINE-02: a synthetic badge fixture renders the supplied color and foreg
     style.color = original
   }
   await page.setContent(markup)
-  const badge = page.getByText(synthetic)
+  const badge = page.locator('.line-badge').filter({ hasText: synthetic })
   await expect(badge).toHaveAttribute('data-line-color', 'known')
-  await expect(badge).toHaveCSS('background-color', 'rgb(27, 54, 93)')
-  await expect(badge).toHaveCSS('color', 'rgb(255, 255, 255)')
+  await expect(badge.locator('.line-mark')).toHaveCSS('background-color', 'rgb(27, 54, 93)')
+  await expect(badge.locator('.line-mark')).toHaveCSS('color', 'rgb(255, 255, 255)')
 })

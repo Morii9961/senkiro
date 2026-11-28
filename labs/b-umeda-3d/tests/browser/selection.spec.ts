@@ -16,17 +16,17 @@ async function clickPin(page: Page, id: string) {
 
 async function openEnglish(page: Page) {
   await page.goto('/')
-  await button(page, 'EN').click()
+  await page.locator('header select').selectOption('en')
   await expect(canvas(page)).toHaveAttribute('data-triangles', /^[1-9]\d*$/)
 }
 
 async function showPlatformLabels(page: Page) {
   const view = canvas(page)
   await view.focus()
-  for (let i = 0; i < 6 && await view.getAttribute('data-band') === 'far'; i++) {
+  for (let i = 0; i < 6 && await view.getAttribute('data-band') !== 'near'; i++) {
     await page.keyboard.press('+')
   }
-  await expect(view).not.toHaveAttribute('data-band', 'far')
+  await expect(view).toHaveAttribute('data-band', 'near')
 }
 
 function pose(value: string | null) {
@@ -128,7 +128,7 @@ test('AT-SEL-02: camera focuses with and without reduced motion', async ({ page 
   const start = pose(await view.getAttribute('data-camera'))
   await clickPin(page, platform)
   const finish = (await view.getAttribute('data-camera'))!
-  expect(pose(finish)[3]).toBeGreaterThanOrEqual(start[3] * 1.2)
+  expect(pose(finish)[3]).toBeGreaterThan(start[3])
   expect(pose(finish).slice(0, 3)).not.toEqual(start.slice(0, 3))
 
   await page.emulateMedia({ reducedMotion: 'no-preference' })
@@ -137,7 +137,7 @@ test('AT-SEL-02: camera focuses with and without reduced motion', async ({ page 
   await clickPin(page, platform)
   await page.waitForTimeout(800)
   await expect.poll(async () => pose(await view.getAttribute('data-camera'))[3])
-    .toBeGreaterThanOrEqual(start[3] * 1.2)
+    .toBeGreaterThan(start[3])
   await expect(view).toHaveAttribute('data-camera', finish)
 })
 

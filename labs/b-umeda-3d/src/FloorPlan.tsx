@@ -1,3 +1,5 @@
+import { nameIn, textIn } from './domain/language'
+import { lineBadgeTextColor } from './domain/lines'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type MouseEvent, type RefObject } from 'react'
 import { floors, lineStyleById, linesById, nodes, station, inSite } from './model'
 import { vertical, type Step } from './domain/graph'
@@ -112,7 +114,7 @@ function Sheet({
     const maximum = Math.min(196, viewport.width * 0.7)
     let text = ''
     let textWidth = 0
-    for (const char of place.names[lang]) {
+    for (const char of nameIn(place.names, lang)) {
       const glyphWidth = char.charCodeAt(0) < 128 ? 7 : 12
       if (textWidth + glyphWidth + 23 > maximum) {
         text += '…'
@@ -133,7 +135,7 @@ function Sheet({
     <section className="sheet" data-plan-has-selection={keys.some(({ id }) => selected.has(id)) || undefined}>
       <div className="plan-panel-heading">
         <h3 title={title}>{title}</h3>
-        <span aria-hidden="true">{rotate ? '←' : '↑'} {lang === 'ja' ? '北' : 'N'}</span>
+        <span aria-hidden="true">{rotate ? '←' : '↑'} {textIn(lang, '北', 'N', '北')}</span>
       </div>
       <svg
         ref={drawing}
@@ -141,7 +143,7 @@ function Sheet({
         data-plan-scale={baseScale.toFixed(4)}
         role="img"
         aria-label={
-          (lang === 'ja' ? '模式平面図' : 'Schematic floor plan') +
+          (textIn(lang, '模式平面図', 'Schematic floor plan', '示意平面图')) +
           ' · ' +
           title
         }
@@ -167,7 +169,7 @@ function Sheet({
         }}
         onDoubleClick={() => setView(initialView)}
       >
-        <title>{keys.map((n) => n.names[lang]).join(' · ')}</title>
+        <title>{keys.map((n) => nameIn(n.names, lang)).join(' · ')}</title>
         <g data-plan-transform="" transform={`translate(${originX} ${originY}) scale(${scale})`}>
         {keys.map((n) => {
           const [x, y] = xy(n),
@@ -179,7 +181,7 @@ function Sheet({
               data-plan-selected={selected.has(n.id)}
               data-plan-route-place={routePlaces.has(n.id) || undefined}
               onClick={(event) => select(event, n.id)}>
-              <title>{n.names[lang]}</title>
+              <title>{nameIn(n.names, lang)}</title>
               <rect
                 x={x - w / 2}
                 y={y - h / 2}
@@ -224,7 +226,7 @@ function Sheet({
           if (vertical(e))
             return (
               <g key={e.id} {...linkProps}>
-                <title>{e.names[lang]}</title>
+                <title>{nameIn(e.names, lang)}</title>
                 <rect
                   x={x - 0.51}
                   y={y - 0.51}
@@ -241,13 +243,13 @@ function Sheet({
             )
           if (!here || !there) return routeIds.has(e.id) || selected.has(e.id) ? (
             <g key={e.id} {...linkProps}>
-              <title>{e.names[lang]}</title>
+              <title>{nameIn(e.names, lang)}</title>
               <circle cx={x} cy={y} r="1.22" fill="none" stroke={col} strokeWidth=".26" />
             </g>
           ) : null
           return (
             <g key={e.id} {...linkProps}>
-              <title>{e.names[lang]}</title>
+              <title>{nameIn(e.names, lang)}</title>
               <line
                 x1={ax}
                 y1={ay}
@@ -275,12 +277,32 @@ function Sheet({
           const namedNumber = n.names.en.match(/\b\d+(?:\s*[·/]\s*\d+)?\b/)?.[0].replace(/\s*[·/]\s*/g, '·')
           const text = n.kind === 'Platform' ? n.boarding?.label ?? namedNumber ?? '•' : '↗'
           const wide = Math.max(19, 10 + text.length * 6)
+          let markerWidth = wide
+          const marks = (n.serviceLineIds ?? []).flatMap((id) => {
+            const style = lineStyleById.get(id)
+            const code = style?.stationNumberPrefix ?? style?.shortName?.[lang]
+            if (!code) return []
+            const width = Math.max(14, [...code].reduce((sum, char) => sum + (char.charCodeAt(0) > 127 ? 8 : 5), 4))
+            const mark = { id, code, color: style?.color?.hex, width, offset: markerWidth }
+            markerWidth += width + 2
+            return [mark]
+          })
           return (
             <g key={n.id} data-plan-marker={n.id} transform={`translate(${x} ${y}) scale(${1 / scale})`}
               onClick={(event) => select(event, n.id)}>
               <rect className="plan-track-badge" data-active={selected.has(n.id) || routePlaces.has(n.id)}
-                x={-wide / 2} y="-9" width={wide} height="18" rx="3" />
-              <text className="plan-track-number" y="4">{text}</text>
+                x={-markerWidth / 2} y="-9" width={markerWidth} height="18" rx="3" />
+              <text className="plan-track-number" x={-markerWidth / 2 + wide / 2} y="4">{text}</text>
+              {marks.map(({ id, code, color, width, offset }) => {
+                const left = -markerWidth / 2 + offset
+                const line = linesById.get(id)
+                return <g key={id} data-plan-line={id}>
+                  {line && <title>{nameIn(line.names, lang)}</title>}
+                  <rect x={left} y="-6" width={width} height="12" rx="2" fill={color ?? 'var(--line)'} />
+                  <text x={left + width / 2} y="3" textAnchor="middle" fontSize="8" fontWeight="700"
+                    fill={color ? lineBadgeTextColor(color) : 'var(--ink)'}>{code}</text>
+                </g>
+              })}
             </g>
           )
         })}
@@ -297,7 +319,7 @@ function Sheet({
         })}
       </svg>
       <details className="plan-places" onClick={(event) => event.stopPropagation()}>
-      <summary>{lang === 'ja' ? 'この図の施設' : 'Places on this plan'}</summary>
+      <summary>{textIn(lang, 'この図の施設', 'Places on this plan', '图中设施')}</summary>
       {lines.length > 0 && <div className="plan-lines">
         {lines.map((line) => <LineBadge key={line.id} line={line} lang={lang} size="xs" />)}
       </div>}
@@ -305,11 +327,11 @@ function Sheet({
         {keys.map((n) => (
           <li key={n.id}>
             <button aria-pressed={selected.has(n.id)} onClick={(event) => select(event, n.id)}>
-              {n.names[lang]}
+              {nameIn(n.names, lang)}
             </button>
             {example && n.id === sample.platformId
               ? ' · ' +
-                (lang === 'ja' ? 'サンプル' : 'EXAMPLE') +
+                (textIn(lang, 'サンプル', 'EXAMPLE', '示例')) +
                 ' +' +
                 sample.delayMinutes +
                 ' min'
@@ -331,10 +353,9 @@ export function FloorPlan(p: Props) {
     width: Math.max(120, viewport.width - 20), height: Math.max(135, viewport.height - 34),
   })
   const selected = p.selection ? ownersOf(station, p.selection) : new Set<string>()
-  const ja = p.lang === 'ja'
-  const names = new Map(station.stations.map((entry) => [entry.id, entry.names[p.lang]]))
-  names.set('sk:station:jr-osaka', ja ? 'JR 大阪駅' : 'JR Osaka')
-  names.set('sk:station:metro-umeda', ja ? '地下鉄 梅田駅' : 'Metro Umeda')
+  const names = new Map(station.stations.map((entry) => [entry.id, nameIn(entry.names, p.lang)]))
+  names.set('sk:station:jr-osaka', textIn(p.lang, 'JR 大阪駅', 'JR Osaka', 'JR 大阪站'))
+  names.set('sk:station:metro-umeda', textIn(p.lang, '地下鉄 梅田駅', 'Metro Umeda', '地铁梅田站'))
   return (
     <div className="sheets" ref={stage} data-plan-north={rotate ? 'left' : 'up'} onClick={p.onClear}>
       <div className="plan-columns">
@@ -342,21 +363,21 @@ export function FloorPlan(p: Props) {
           <div className="plan-column" key={column[0].block.id} style={{ width: column[0].width }}>
             {column.map((panel) => {
               const stations = panel.block.places.flatMap(({ stationId }) => stationId ? names.get(stationId) ?? [] : [])
-              const title = [...new Set(stations)].join(' · ') || (ja ? '公共通路・地下街' : 'Public passages and arcades')
+              const title = [...new Set(stations)].join(' · ') || (textIn(p.lang, '公共通路・地下街', 'Public passages and arcades', '公共通道与地下街'))
               return <Sheet key={panel.block.id + ':' + p.reset} {...p} {...{ panel, title, rotate, selected }} baseScale={scale} />
             })}
           </div>
         ))}
       </div>
       <div className="plan-orientation">
-        <span className="plan-compass" role="img" aria-label={ja
-          ? (rotate ? '模式方位、左が北' : '模式方位、上が北')
-          : (rotate ? 'Schematic orientation, north to the left' : 'Schematic orientation, north up')}>
-          {rotate ? '←' : '↑'} {ja ? '北' : 'N'}
+        <span className="plan-compass" role="img" aria-label={rotate
+          ? textIn(p.lang, '模式方位、左が北', 'Schematic orientation, north to the left', '示意方向，左为北')
+          : textIn(p.lang, '模式方位、上が北', 'Schematic orientation, north up', '示意方向，上为北')}>
+          {rotate ? '←' : '↑'} {textIn(p.lang, '北', 'N', '北')}
         </span>
-        {blocks.length > 1 && <span className="plan-block-note">{ja
-          ? '図の間の位置・距離は縮尺外'
-          : 'Spacing and positions between plans are not to scale'}</span>}
+        {blocks.length > 1 && <span className="plan-block-note">{textIn(p.lang,
+          '図の間の位置・距離は縮尺外', 'Spacing and positions between plans are not to scale',
+          '分图之间的位置和距离为示意')}</span>}
       </div>
     </div>
   )

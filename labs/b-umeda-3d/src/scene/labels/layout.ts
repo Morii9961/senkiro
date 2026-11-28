@@ -14,11 +14,11 @@ export interface LabelCandidate extends Rect {
   priority: number
   rank?: number
   previous?: boolean
-  preferred?: Rect
   occluded?: boolean
   meaning?: string
   clusterKey?: string
   clusterOnly?: boolean
+  clusterMarks?: { id: string; width: number }[]
   number?: number
   members?: string[]
   text?: string
@@ -103,6 +103,9 @@ function cluster(candidates: LabelCandidate[]): LabelCandidate[] {
       ? Math.min(...numbers) + '–' + Math.max(...numbers)
       : '+' + group.length
     const members = group.map((label) => label.key).sort()
+    const marks = new Map(group.flatMap((label) =>
+      (label.clusterMarks ?? []).map(({ id, width }) => [id, width] as const),
+    ))
     result.push({
       ...first,
       key: 'cluster:' + members.join(','),
@@ -110,7 +113,7 @@ function cluster(candidates: LabelCandidate[]): LabelCandidate[] {
       text,
       x: group.reduce((sum, label) => sum + label.x, 0) / group.length,
       y: group.reduce((sum, label) => sum + label.y, 0) / group.length,
-      width: Math.max(34, text.length * 8 + 10),
+      width: Math.max(34, text.length * 8 + 10) + [...marks.values()].reduce((sum, width) => sum + width, 0),
       meaning: undefined,
     })
   }
@@ -141,10 +144,7 @@ export function layoutLabels(
     )) continue
     let fallback: PlacedLabel | undefined
     let chosen: PlacedLabel | undefined
-    const preferred = label.preferred
-    const candidates = positions(label)
-    if (preferred) candidates.unshift({ ...preferred, width: label.width, height: label.height })
-    for (const position of candidates) {
+    for (const position of positions(label)) {
       const rect = {
         ...position,
         x: bound(position.x, MARGIN, width - MARGIN - position.width),

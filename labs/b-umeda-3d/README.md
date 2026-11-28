@@ -41,6 +41,18 @@ npm test
 
 构建会校验图的付费边界、停层与来源，并检查提交的生成物是否过期。加工输入是版本化的人工对照记录，构建过程不抓取运营商网站。按需查阅某一原件可用 `node scripts/fetch-reference.mjs sk:source:jr-map`，输出只写入忽略的 `data/raw/`。该目录不会被打包。
 
+### 本地官方时刻归档
+
+用 Python 3 导入含 `data/raw/private-saved/` 的采集包，再用专用模式打开 127.0.0.1 预览。导入产物写入 `data/raw/official-timetable.json`，普通构建和默认预览均不提供这些数据。
+
+```sh
+python scripts/import-official-timetable.py "<采集包根目录>"
+npm run build
+npm run preview -- --mode local-timetable --host 127.0.0.1 --port 27313
+```
+
+在「列车 → 官方时刻表」按车站、运行日和时段查询。JR 大阪站已匹配的番线也可从站台详情查阅。表中日期表示归档日期，跨午夜发车以运行日的 24 时制显示。
+
 `src/domain/` 提供无 React 依赖的模型、校验与路径函数。`src/providers/service.ts` 提供运行叠加接口、实时源不可用状态和独立示例。`node scripts/measure.mjs` 在生产构建上运行软件渲染交互测量。
 
 [完整验收报告](REPORT.md) · [资料与元素来源核对表](SOURCES.md) · [建模决定](DECISIONS.md)

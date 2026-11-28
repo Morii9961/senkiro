@@ -63,7 +63,9 @@ test('AT-2D-02: labelled layers preserve route ink, and label boxes on a sheet d
         Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 0.25))
     }))
     expect(conflicts, floor).toHaveLength(0)
-    expect(await page.locator('.sheets [data-line-color="known"]').count(), floor).toBe(0)
+    if (floor === '3F' || floor === '2F' || floor === 'B2F') {
+      await expect(page.locator('.sheets [data-plan-line]').first(), floor).toBeAttached()
+    }
     if (floor === 'B2F') {
       await expect(page.locator('[data-plan-owner="sk:platform:metro-1"][data-plan-route-place="true"] > rect')).toHaveCSS(
         'stroke-width', '0.24px',

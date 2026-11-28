@@ -4,8 +4,9 @@ export type VehicleAssignmentStatus = 'verified' | 'representative' | 'unknown'
 export interface TimetableRecord {
   station_id: string
   operator_id: string
-  line_id: string
+  line_id: string | null
   platform_id: string | null
+  platform_number?: string | null
   direction_id: string | null
   service_date_type: string
   trip_id: string
@@ -18,6 +19,8 @@ export interface TimetableRecord {
   formation_length: number | null
   vehicle_assignment_status: VehicleAssignmentStatus
   source_id: string
+  related_source_ids?: readonly string[]
+  source_date?: string | null
   valid_from: string | null
   valid_until: string | null
   remarks: string | null

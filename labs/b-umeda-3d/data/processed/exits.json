@@ -3,12 +3,17 @@
     "placeId": "sk:entrance:midosuji-south",
     "exitLabel": {
       "ja": "御堂筋南口",
-      "en": "Midosuji South Exit"
+      "en": "Midosuji South Exit",
+      "zh": "御堂筋南口"
     },
-    "surfaceNote": null,
+    "surfaceNote": {
+      "ja": "1階、御堂筋コンコースの南側、イーストコートミドー付近",
+      "en": "Street level, south side of the Midosuji concourse near East Court Mido",
+      "zh": "1 层御堂筋站厅南侧，靠近 East Court Mido"
+    },
     "provenance": {
       "dataNature": "manual-verified",
-      "lastVerifiedAt": "2026-11-23",
+      "lastVerifiedAt": "2026-11-24",
       "sourceIds": [
         "sk:source:jr-map"
       ]
@@ -18,12 +23,17 @@
     "placeId": "sk:entrance:jr-midosuji-north",
     "exitLabel": {
       "ja": "御堂筋北口",
-      "en": "Midosuji North Exit"
+      "en": "Midosuji North Exit",
+      "zh": "御堂筋北口"
     },
-    "surfaceNote": null,
+    "surfaceNote": {
+      "ja": "1階、御堂筋コンコースの北側、ヨドバシ梅田・阪急大阪梅田駅方面",
+      "en": "Street level, north side of the Midosuji concourse toward Yodobashi Umeda and Hankyu Osaka-Umeda",
+      "zh": "1 层御堂筋站厅北侧，往友都八喜梅田和阪急大阪梅田站"
+    },
     "provenance": {
       "dataNature": "manual-verified",
-      "lastVerifiedAt": "2026-11-23",
+      "lastVerifiedAt": "2026-11-24",
       "sourceIds": [
         "sk:source:jr-map"
       ]
@@ -33,12 +43,17 @@
     "placeId": "sk:entrance:jr-central-south",
     "exitLabel": {
       "ja": "中央南口",
-      "en": "Central South Exit"
+      "en": "Central South Exit",
+      "zh": "中央南口"
     },
-    "surfaceNote": null,
+    "surfaceNote": {
+      "ja": "1階、中央コンコースの南側、大丸梅田店・南ゲート広場付近",
+      "en": "Street level, south side of the central concourse near Daimaru Umeda and South Gate Plaza",
+      "zh": "1 层中央站厅南侧，靠近大丸梅田店及南门广场"
+    },
     "provenance": {
       "dataNature": "manual-verified",
-      "lastVerifiedAt": "2026-11-23",
+      "lastVerifiedAt": "2026-11-24",
       "sourceIds": [
         "sk:source:jr-map"
       ]
@@ -49,7 +64,8 @@
     "exitLabel": null,
     "surfaceNote": {
       "ja": "JR大阪駅の御堂筋口付近からバスターミナルへ向かう途中の地上横断歩道",
-      "en": "Street-level crossing between the Midosuji gate area of JR Osaka Station and the bus terminal"
+      "en": "Street-level crossing between the Midosuji gate area of JR Osaka Station and the bus terminal",
+      "zh": "JR 大阪站御堂筋闸机至巴士总站之间的地面人行横道"
     },
     "provenance": {
       "dataNature": "manual-verified",

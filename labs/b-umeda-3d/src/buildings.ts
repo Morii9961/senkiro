@@ -1,5 +1,4 @@
 import { Quaternion, Vector3 } from 'three'
-import type { ShopWindow } from './shopWindows'
 import { Finish } from './surfaces'
 import type { Place } from './domain/types'
 export type DrawBlock = (
@@ -119,7 +118,6 @@ export function concourseWalls(
   at: Vector3,
   openings: Vector3[],
   block: DrawBlock,
-  panes: ShopWindow[],
   interior = false,
 ) {
   const retail = n.id.includes('whity-') || n.id.includes('diamor')
@@ -195,18 +193,6 @@ export function concourseWalls(
         if (retail) {
           part(s, 1.6, t, bay - 0.16, 0.055, 0.19, brass)
           part(s, 2.19, t, bay - 0.35, 0.13, 0.23, 0xffdf9b)
-          const across = alongX ? V(side * -1, 0, 0) : V(0, 0, side)
-          const center = world
-            .clone()
-            .add(V(alongX ? 0 : -side * 0.08, 1.38, alongX ? -side * 0.08 : 0))
-          panes.push({
-            center,
-            across,
-            width: bay - 0.22,
-            height: 1.82,
-            design:
-              (i + (side === 1 ? 2 : 0) + (n.id.includes('east') ? 1 : 0)) % 4,
-          })
           part(s, 0.49, t - 0.17 * side, bay * 0.93, 0.11, 0.3, 0x80634b)
           part(s, 2.69, t - 0.22 * side, bay, 0.085, 0.7, brass)
           part(

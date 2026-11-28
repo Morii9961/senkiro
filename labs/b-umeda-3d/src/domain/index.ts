@@ -1,13 +1,13 @@
 import type { SelectionTarget } from '../state/selection'
 import { cost, nextPlaceId, route, vertical } from './graph'
-import type { Entity, Level, Link, Model, Operator, Place, RailLine, Station } from './types'
+import type { Entity, Level, Link, LocalName, Model, Operator, Place, RailLine, Station } from './types'
 
 export interface PlatformDirection {
   id: string
-  towards: { ja: string; en: string | null } | null
+  towards: LocalName | null
   bound: 'up' | 'down' | 'inner' | 'outer' | 'other' | null
-  terminusStationName: { ja: string; en: string | null } | null
-  neighborStationName: { ja: string; en: string | null } | null
+  terminusStationName: LocalName | null
+  neighborStationName: LocalName | null
   sourceIds: string[]
 }
 
@@ -21,8 +21,8 @@ export interface PlatformService {
 
 export interface ExitInfo {
   placeId: string
-  exitLabel: { ja: string; en: string | null } | null
-  surfaceNote: { ja: string; en: string | null } | null
+  exitLabel: LocalName | null
+  surfaceNote: LocalName | null
   provenance: Entity['provenance']
 }
 

@@ -7,36 +7,30 @@ interface Props {
   siteFloors: [number, string][]
   selectionFloors: ReadonlySet<number>
   routeFloors: ReadonlySet<number>
-  eye: string | null
-  shell: boolean
-  spread: boolean
-  interior: () => void
   onFloor: (floor: number | null) => void
-  onShell: () => void
-  onSpread: () => void
 }
 
 export function FloorControls({
-  lang, plan, floor, siteFloors, selectionFloors, routeFloors, eye, shell, spread, interior, onFloor, onShell, onSpread,
+  lang, plan, floor, siteFloors, selectionFloors, routeFloors, onFloor,
 }: Props) {
-  const t = (ja: string, en: string) => (lang === 'ja' ? ja : en)
+  const t = (ja: string, en: string, zh: string) => lang === 'zh' ? zh : lang === 'ja' ? ja : en
   return (
-    <div className="floors" role="group" aria-label={t('階層', 'Floor')}>
-      <span className="floor-label" aria-hidden="true">{t('階層', 'Floor')}</span>
+    <div className="floors" role="group" aria-label={t('階層', 'Floor', '楼层')}>
+      <span className="floor-label" aria-hidden="true">{t('階層', 'Floor', '楼层')}</span>
       {!plan && (
         <button
           aria-pressed={floor === null}
           onClick={() => onFloor(null)}
         >
-          {t('全階', 'All')}
+          {t('全階', 'All', '全部')}
         </button>
       )}
       {siteFloors.map(([n, label]) => {
         const selected = selectionFloors.has(n)
         const routed = routeFloors.has(n)
         const status = [
-          selected ? t('選択対象がある階', 'Selected place on this floor') : null,
-          routed ? t('経路が通る階', 'On the route') : null,
+          selected ? t('選択対象がある階', 'Selected place on this floor', '选中设施所在楼层') : null,
+          routed ? t('経路が通る階', 'On the route', '路线经过此层') : null,
         ].filter(Boolean).join(' · ')
         return (
           <button
@@ -52,25 +46,6 @@ export function FloorControls({
           </button>
         )
       })}
-      {!plan && (
-        <button onClick={interior} aria-pressed={!!eye}>
-          {t('乗客目線', 'Passenger view')}
-        </button>
-      )}
-      {!plan && (
-        <button aria-pressed={shell} onClick={onShell}>
-          {t('建築断面', 'Architecture')}
-        </button>
-      )}
-      {!plan && (
-        <button
-          className="spread"
-          aria-pressed={spread}
-          onClick={onSpread}
-        >
-          {t('階層分解', 'Explode')}
-        </button>
-      )}
     </div>
   )
 }

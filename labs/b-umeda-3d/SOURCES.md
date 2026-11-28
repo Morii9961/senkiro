@@ -2,6 +2,90 @@
 
 AI 对照运营商和大阪市公开资料录入；无实地或人工复核。资料日期、读取日期和业务有效期分别保存。手绘坐标与尺寸仅用于示意；原图未随项目分发。所有 UI 字体使用本机字体，无底图。
 
+### sk:source:jr-network-symbols
+
+近畿エリア路線図・駅ナンバー · JR西日本
+
+[原文](https://www.jr-odekake.net/eki/pdf/stationnumber.pdf)
+
+资料日期 未知，读取日期 2026-11-24。线路字母、线路色及相邻站。项目界面色值为近似，标记为自绘。
+
+运营商网站条款，原作保留权利。商业使用 unknown，原件再分发 no，相同方式共享 unknown。 [条款](https://www.jr-odekake.net/use/about.html)
+
+署名 JR西日本 · 近畿エリア路線図・駅ナンバー
+
+### sk:source:metro-network-colors
+
+Osaka Metro 全線路線図 · Osaka Metro
+
+[原文](https://subway.osakametro.co.jp/img/osakametro_rosenzu_20250404.pdf)
+
+资料日期 2025-04-04，读取日期 2026-11-24。御堂筋线 M、谷町线 T、四桥线 Y 的线路色、字母及相邻站。
+
+运营商网站条款，原作保留权利。商业使用 unknown，原件再分发 no，相同方式共享 unknown。 [条款](https://www.osakametro.co.jp/site_info.php)
+
+署名 Osaka Metro · Osaka Metro 全線路線図
+
+### sk:source:hankyu-sign-colors
+
+駅サインシステム・十三駅構内図 · 阪急電鉄
+
+[原文](https://develop.hankyu.co.jp/station/pdf/map/juso.pdf)
+
+资料日期 未知，读取日期 2026-11-24。阪急京都线绿色、宝塚线橙色、神户线蓝色。HK 是阪急车站编号前缀，三线共用。
+
+运营商网站条款，原作保留权利。商业使用 unknown，原件再分发 no，相同方式共享 unknown。 [条款](https://www.hankyu.co.jp/sitepolicy/index.html)
+
+署名 阪急電鉄 · 駅サインシステム・十三駅構内図
+
+### sk:source:hanshin-line-colors
+
+阪神電車 Route Map · 阪神電気鉄道
+
+[原文](https://www.hanshin.co.jp/global/en/pdf/map.pdf)
+
+资料日期 未知，读取日期 2026-11-24。阪神本线蓝色及 HS 编号前缀。
+
+运营商网站条款，原作保留权利。商业使用 unknown，原件再分发 no，相同方式共享 unknown。 [条款](https://hanshin.co.jp/terms/)
+
+署名 阪神電気鉄道 · 阪神電車 Route Map
+
+### sk:source:jr-kobe-schedule
+
+大阪駅 JR神戸線 駅時刻表 · JR西日本
+
+[原文](https://timetable.jr-odekake.net/station-timetable/2796012001)
+
+资料日期 2026-11-24，读取日期 2026-11-24。核对 JR 神户线 5、6 番的发车站台和主要目的地。资料由 JR 官网指向的时刻表服务提供。
+
+运营商网站条款，原作保留权利。商业使用 unknown，原件再分发 no，相同方式共享 unknown。 [条款](https://www.jr-odekake.net/use/about.html)
+
+署名 JR西日本 · 大阪駅 JR神戸線 駅時刻表
+
+### sk:source:jr-vehicle-service
+
+通勤・近郊列車の対象車種 · JR西日本
+
+[原文](https://www.jr-odekake.net/railroad/service/train-woman.html)
+
+资料日期 未知，读取日期 2026-11-24。JR 西日本列出 323 系在大阪环状线、梦咲线，以及 207／321 系在 JR 东西线等的服务范围。
+
+运营商网站条款，原作保留权利。商业使用 unknown，原件再分发 no，相同方式共享 unknown。 [条款](https://www.jr-odekake.net/use/about.html)
+
+署名 JR西日本 · 通勤・近郊列車の対象車種
+
+### sk:source:jr-vehicle-321-design
+
+321系電車・外観参考 · JR西日本
+
+[原文](https://www.westjr.co.jp/fan/paper/local/)
+
+资料日期 未知，读取日期 2026-11-24。用官方外观资料参考自绘车体。尺寸、涂装色值和布置为示意。
+
+运营商网站条款，原作保留权利。商业使用 unknown，原件再分发 no，相同方式共享 unknown。 [条款](https://www.jr-odekake.net/use/about.html)
+
+署名 JR西日本 · 321系電車・外観参考
+
 ### sk:source:timetable-catalog-odpt
 
 ODPT 开放数据目录 · 公共交通オープンデータ協議会
@@ -782,18 +866,6 @@ Repository license。商业使用 yes，原件再分发 yes，相同方式共享
 
 署名 SENKIRO Lab · Synthetic platform service fixture
 
-### sk:source:shop-windows
-
-Commercial window materials · synthetic · SENKIRO Lab
-
-本项目自制。
-
-资料日期 2026-11-22，读取日期 2026-11-22。本项目生成的四幅匿名橱窗材质，烘焙、花艺、书架、陶器。未使用现场照片、店名或运营商图件。
-
-Repository license。商业使用 yes，原件再分发 yes，相同方式共享 unknown。
-
-署名 SENKIRO Lab · Commercial window materials · synthetic
-
 ### sk:source:terms-0
 
 网站使用条款 · JR西日本
@@ -867,6 +939,13 @@ Repository license。商业使用 yes，原件再分发 yes，相同方式共享
 | sk:line:yotsubashi | 四つ橋線 | sk:source:nishi (未知)<br>sk:source:district-south (2026-06) | schematic |
 | sk:line:loop | 大阪環状線 | sk:source:jr-index (2026-01-14) | schematic |
 | sk:line:kobe | JR神戸線 | sk:source:jr-index (2026-01-14) | schematic |
+| sk:line:takarazuka | JR宝塚線 | sk:source:jr-index (2026-01-14) | schematic |
+| sk:line:yumesaki | JRゆめ咲線 | sk:source:jr-index (2026-01-14) | schematic |
+| sk:line:kansai-airport | 関西空港線 | sk:source:jr-index (2026-01-14) | schematic |
+| sk:line:hanwa | 阪和線 | sk:source:jr-index (2026-01-14) | schematic |
+| sk:line:yamatoji | 大和路線 | sk:source:jr-index (2026-01-14) | schematic |
+| sk:line:bantan | 播但線 | sk:source:jr-index (2026-01-14) | schematic |
+| sk:line:tokaido-express | 東海道線 | sk:source:jr-index (2026-01-14) | schematic |
 | sk:line:kyoto | JR京都線 | sk:source:jr-index (2026-01-14) | schematic |
 | sk:line:east | おおさか東線 | sk:source:jr-index (2026-01-14) | schematic |
 | sk:complex:osaka-umeda | 大阪・梅田 | sk:source:city-b (2026-06)<br>sk:source:district-def (2026-06)<br>sk:source:district-ghi (2026-06)<br>sk:source:district-def (2026-06)<br>sk:source:district-ghi (2026-06) | schematic |
@@ -893,7 +972,7 @@ Repository license。商业使用 yes，原件再分发 yes，相同方式共享
 | sk:level:nishi-b2 | B2F | sk:source:nishi (未知)<br>sk:source:district-south (2026-06) | schematic |
 | sk:concourse:jr-west-inside | 西口 改札内 | sk:source:jr-map (2026-01-14) | schematic |
 | sk:concourse:jr-west-outside | 西口 改札外 | sk:source:jr-map (2026-01-14) | schematic |
-| sk:platform:jr-3-4 | 大阪 3・4番のりば | sk:source:jr-map (2026-01-14)<br>sk:source:jr-index (2026-01-14) | schematic |
+| sk:platform:jr-3-4 | 大阪 3・4番のりば | sk:source:jr-map (2026-01-14)<br>sk:source:jr-index (2026-01-14)<br>sk:source:jr-index (2026-01-14)<br>sk:source:jr-index (2026-01-14) | schematic |
 | sk:landing:jr-west-w | 西口側 乗降場 | sk:source:jr-map (2026-01-14) | schematic |
 | sk:landing:jr-upper-w | ホーム側 乗降場 | sk:source:jr-map (2026-01-14) | schematic |
 | sk:concourse:jr-bridge | 連絡橋口 改札内 | sk:source:jr-map (2026-01-14) | schematic |
@@ -901,10 +980,10 @@ Repository license。商业使用 yes，原件再分发 yes，相同方式共享
 | sk:concourse:jr-midosuji-in | 御堂筋口 改札内 | sk:source:jr-map (2026-01-14) | schematic |
 | sk:concourse:jr-midosuji-out | 御堂筋コンコース | sk:source:jr-map (2026-01-14) | schematic |
 | sk:entrance:midosuji-south | 御堂筋南口 | sk:source:jr-map (2026-01-14) | schematic |
-| sk:platform:jr-1-2 | 大阪 1・2番のりば | sk:source:jr-map (2026-01-14)<br>sk:source:jr-index (2026-01-14) | schematic |
+| sk:platform:jr-1-2 | 大阪 1・2番のりば | sk:source:jr-map (2026-01-14)<br>sk:source:jr-index (2026-01-14)<br>sk:source:jr-index (2026-01-14)<br>sk:source:jr-index (2026-01-14)<br>sk:source:jr-index (2026-01-14)<br>sk:source:jr-index (2026-01-14) | schematic |
 | sk:landing:jr-west-v | 西口側 乗降場 | sk:source:jr-map (2026-01-14) | schematic |
 | sk:landing:jr-upper-v | ホーム側 乗降場 | sk:source:jr-map (2026-01-14) | schematic |
-| sk:platform:jr-5-6 | 大阪 5・6番のりば | sk:source:jr-map (2026-01-14)<br>sk:source:jr-index (2026-01-14) | schematic |
+| sk:platform:jr-5-6 | 大阪 5・6番のりば | sk:source:jr-map (2026-01-14)<br>sk:source:jr-index (2026-01-14)<br>sk:source:jr-index (2026-01-14) | schematic |
 | sk:landing:jr-west-x | 西口側 乗降場 | sk:source:jr-map (2026-01-14) | schematic |
 | sk:landing:jr-upper-x | ホーム側 乗降場 | sk:source:jr-map (2026-01-14) | schematic |
 | sk:platform:jr-7-8 | 大阪 7・8番のりば | sk:source:jr-map (2026-01-14)<br>sk:source:jr-index (2026-01-14) | schematic |
@@ -913,7 +992,7 @@ Repository license。商业使用 yes，原件再分发 yes，相同方式共享
 | sk:platform:jr-9-10 | 大阪 9・10番のりば | sk:source:jr-map (2026-01-14)<br>sk:source:jr-index (2026-01-14) | schematic |
 | sk:landing:jr-west-z | 西口側 乗降場 | sk:source:jr-map (2026-01-14) | schematic |
 | sk:landing:jr-upper-z | ホーム側 乗降場 | sk:source:jr-map (2026-01-14) | schematic |
-| sk:platform:jr-11 | 大阪 11番のりば | sk:source:jr-map (2026-01-14) | schematic |
+| sk:platform:jr-11 | 大阪 11番のりば | sk:source:jr-map (2026-01-14)<br>sk:source:jr-index (2026-01-14) | schematic |
 | sk:landing:jr-west-aa | 西口側 乗降場 | sk:source:jr-map (2026-01-14) | schematic |
 | sk:landing:jr-upper-aa | ホーム側 乗降場 | sk:source:jr-map (2026-01-14) | schematic |
 | sk:landing:hall-h | 乗降場 H | sk:source:jr-map (2026-01-14) | schematic |
@@ -986,9 +1065,9 @@ Repository license。商业使用 yes，原件再分发 yes，相同方式共享
 | sk:landing:ab-b2 | 連絡通路 西口側 | sk:source:jr-map (2026-01-14) | schematic |
 | sk:concourse:ac-b2 | 改札内連絡通路 | sk:source:jr-map (2026-01-14) | schematic |
 | sk:landing:ac-b1 | 地下口側 EV | sk:source:jr-map (2026-01-14) | schematic |
-| sk:platform:jr-21-22 | うめきた 21・22番 | sk:source:jr-map (2026-01-14)<br>sk:source:jr-index (2026-01-14) | schematic |
+| sk:platform:jr-21-22 | うめきた 21・22番 | sk:source:jr-map (2026-01-14)<br>sk:source:jr-index (2026-01-14)<br>sk:source:jr-index (2026-01-14)<br>sk:source:jr-index (2026-01-14) | schematic |
 | sk:landing:uk-ad | 地下ホーム行 EV AD | sk:source:jr-map (2026-01-14) | schematic |
-| sk:platform:jr-23-24 | うめきた 23・24番 | sk:source:jr-map (2026-01-14)<br>sk:source:jr-index (2026-01-14) | schematic |
+| sk:platform:jr-23-24 | うめきた 23・24番 | sk:source:jr-map (2026-01-14)<br>sk:source:jr-index (2026-01-14)<br>sk:source:jr-index (2026-01-14) | schematic |
 | sk:landing:uk-ae | 地下ホーム行 EV AE | sk:source:jr-map (2026-01-14) | schematic |
 | sk:entrance:surface-crossing | バスターミナル側 横断歩道 | sk:source:city-b (2026-06) | schematic |
 | sk:landing:civic-lift-1f | 地上エレベーター | sk:source:city-b (2026-06) | schematic |

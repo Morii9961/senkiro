@@ -24,7 +24,7 @@ it('AT-URL-01: round trips the shareable state and leaves defaults out of a link
 it('ignores unknown parameters and falls back for invalid IDs, enums and indices', () => {
   expect(parseUrl(new URLSearchParams(
     'site=unknown&floor=900&mode=4d&detail=more&sel=gate:sk:platform:hk-3' +
-    '&from=unknown&to=unknown&sf=2&step=1e1&lang=zh&theme=sepia&feed=other&other=42',
+    '&from=unknown&to=unknown&sf=2&step=1e1&lang=xx&theme=sepia&feed=other&other=42',
   ))).toEqual(defaultUrlState)
   expect(parseUrl(new URLSearchParams('floor=0')).floor).toBe(0)
   expect(parseUrl(new URLSearchParams('step=0')).step).toBe(0)

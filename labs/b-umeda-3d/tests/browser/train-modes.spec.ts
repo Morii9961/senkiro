@@ -10,7 +10,7 @@ test('AT-TT-02: off by default, with a separate unavailable timetable choice', a
   await page.getByRole('button', { name: '経路・施設' }).click()
   await page.getByRole('button', { name: '列車', exact: true }).click()
   await expect(page.getByRole('button', { name: 'オフ', exact: true })).toHaveAttribute('aria-pressed', 'true')
-  await expect(page.getByRole('button', { name: '時刻表シミュレーション', exact: true })).toBeDisabled()
+  await expect(page.getByRole('button', { name: '公式時刻表', exact: true })).toBeDisabled()
   await expect(page.getByText('利用できる時刻表データがありません。')).toBeVisible()
 })
 

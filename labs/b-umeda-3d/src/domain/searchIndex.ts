@@ -2,7 +2,7 @@ import { linkTarget, placeTarget } from './index'
 import type { Entity, Model, Place, RailLine } from './types'
 import type { SelectionTarget } from '../state/selection'
 
-type Names = Pick<Entity['names'], 'ja' | 'en'>
+type Names = Pick<Entity['names'], 'ja' | 'en'> & { zh?: string | null }
 
 export type SearchGroup = 'station' | 'platform' | 'line' | 'access' | 'facility'
 
@@ -27,7 +27,7 @@ function normalize(text: string) {
 }
 
 function terms(names: Partial<Entity['names']> | null | undefined) {
-  return [names?.ja, names?.en, names?.ja_kana].filter((word): word is string => !!word)
+  return [names?.ja, names?.en, names?.zh, names?.ja_kana].filter((word): word is string => !!word)
 }
 
 export function createSearchIndex(model: Model, sites: Site[] = model.context) {

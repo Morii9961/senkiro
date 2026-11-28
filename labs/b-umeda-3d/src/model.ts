@@ -11,13 +11,13 @@ export const floorLabels = [
 export const sites = [
   {
     id: 'sk:station:jr-osaka',
-    names: { ja: 'JR 大阪駅', en: 'JR Osaka' },
+    names: { ja: 'JR 大阪駅', en: 'JR Osaka', zh: 'JR 大阪站' },
     stationId: 'sk:station:jr-osaka',
     anchorId: 'sk:concourse:jr-bridge',
   },
   {
     id: 'sk:station:metro-umeda',
-    names: { ja: '御堂筋線 梅田', en: 'Midosuji Umeda' },
+    names: { ja: '御堂筋線 梅田', en: 'Midosuji Umeda', zh: '御堂筋线 梅田' },
     stationId: 'sk:station:metro-umeda',
     anchorId: 'sk:platform:metro-1',
   },

@@ -6,7 +6,7 @@
       "ja": "323系",
       "en": "323 series",
       "ja_kana": null,
-      "zh": null
+      "zh": "323 系"
     },
     "category": "commuter",
     "livery": {
@@ -43,7 +43,7 @@
       "ja": "225系",
       "en": "225 series",
       "ja_kana": null,
-      "zh": null
+      "zh": "225 系"
     },
     "category": "rapid",
     "livery": {
@@ -81,7 +81,7 @@
       "ja": "221系",
       "en": "221 series",
       "ja_kana": null,
-      "zh": null
+      "zh": "221 系"
     },
     "category": "commuter",
     "livery": {
@@ -105,13 +105,43 @@
     }
   },
   {
+    "id": "sk:vehicle:jr-321",
+    "operatorId": "sk:operator:jr-west",
+    "names": {
+      "ja": "321系",
+      "en": "321 series",
+      "ja_kana": null,
+      "zh": "321 系"
+    },
+    "category": "commuter",
+    "livery": {
+      "body": "#c0c2c4",
+      "accent": "#727778",
+      "stripe": "#003c73",
+      "nature": "schematic"
+    },
+    "proportions": {
+      "carLengthToWidth": 6.25,
+      "carCountDefault": null
+    },
+    "formations": [],
+    "provenance": {
+      "sourceIds": [
+        "sk:source:jr-vehicle-service",
+        "sk:source:jr-vehicle-321-design"
+      ],
+      "dataNature": "manual-verified",
+      "lastVerifiedAt": "2026-11-23"
+    }
+  },
+  {
     "id": "sk:vehicle:metro-30000",
     "operatorId": "sk:operator:osaka-metro",
     "names": {
       "ja": "30000系",
       "en": "30000 series",
       "ja_kana": null,
-      "zh": null
+      "zh": "30000 系"
     },
     "category": "subway",
     "livery": {
@@ -142,7 +172,7 @@
       "ja": "32系",
       "en": "32 series",
       "ja_kana": null,
-      "zh": null
+      "zh": "32 系"
     },
     "category": "subway",
     "livery": {
@@ -172,7 +202,7 @@
       "ja": "23系",
       "en": "23 series",
       "ja_kana": null,
-      "zh": null
+      "zh": "23 系"
     },
     "category": "subway",
     "livery": {
@@ -202,7 +232,7 @@
       "ja": "9300系",
       "en": "9300 series",
       "ja_kana": null,
-      "zh": null
+      "zh": "9300 系"
     },
     "category": "limited-express",
     "livery": {
@@ -240,7 +270,7 @@
       "ja": "1000系",
       "en": "1000 series",
       "ja_kana": null,
-      "zh": null
+      "zh": "1000 系"
     },
     "category": "commuter",
     "livery": {
@@ -269,7 +299,7 @@
       "ja": "5700系",
       "en": "5700 series",
       "ja_kana": null,
-      "zh": null
+      "zh": "5700 系"
     },
     "category": "commuter",
     "livery": {

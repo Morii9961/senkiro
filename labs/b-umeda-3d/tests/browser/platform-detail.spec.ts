@@ -46,6 +46,7 @@ test('AT-DET-03: a marked derived transfer selects the related platform', async 
 test('AT-DET-10: selecting a platform opens a half-height mobile sheet', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/?lang=en&floor=1')
+  for (let i = 0; i < 4; i++) await page.getByRole('button', { name: 'Zoom in', exact: true }).click()
   const pin = page.locator('.platform-pin[data-owner="sk:platform:jr-3-4"]:visible')
   await expect(pin).toBeVisible()
   const label = (await pin.boundingBox())!

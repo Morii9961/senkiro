@@ -7,35 +7,172 @@
         "id": "sk:direction:jr-1-loop-inner",
         "towards": {
           "ja": "西九条・弁天町方面",
-          "en": "Toward Nishikujo and Bentencho"
+          "en": "Toward Nishikujo and Bentencho",
+          "zh": "往西九条、弁天町"
         },
-        "neighborStationName": null,
+        "neighborStationName": {
+          "ja": "福島",
+          "en": "Fukushima",
+          "zh": "福岛"
+        },
         "bound": "inner",
         "terminusStationName": null,
         "sourceIds": [
-          "sk:source:jr-index"
+          "sk:source:jr-index",
+          "sk:source:jr-network-symbols"
         ]
       },
       {
         "id": "sk:direction:jr-2-loop-outer",
         "towards": {
           "ja": "京橋・鶴橋方面",
-          "en": "Toward Kyobashi and Tsuruhashi"
+          "en": "Toward Kyobashi and Tsuruhashi",
+          "zh": "往京桥、鹤桥"
         },
-        "neighborStationName": null,
+        "neighborStationName": {
+          "ja": "天満",
+          "en": "Temma",
+          "zh": "天满"
+        },
         "bound": "outer",
         "terminusStationName": null,
         "sourceIds": [
-          "sk:source:jr-index"
+          "sk:source:jr-index",
+          "sk:source:jr-network-symbols"
         ]
       }
     ],
     "track": null,
     "provenance": {
       "dataNature": "manual-verified",
-      "lastVerifiedAt": "2026-11-23",
+      "lastVerifiedAt": "2026-11-24",
       "sourceIds": [
-        "sk:source:jr-index"
+        "sk:source:jr-index",
+        "sk:source:jr-network-symbols"
+      ]
+    }
+  },
+  {
+    "platformId": "sk:platform:jr-1-2",
+    "lineId": "sk:line:yumesaki",
+    "directions": [
+      {
+        "id": "sk:direction:jr-1-yumesaki",
+        "towards": {
+          "ja": "ユニバーサルシティ方面",
+          "en": "Toward Universal City",
+          "zh": "往环球城"
+        },
+        "neighborStationName": null,
+        "bound": null,
+        "terminusStationName": null,
+        "sourceIds": [
+          "sk:source:jr-index",
+          "sk:source:jr-network-symbols"
+        ]
+      }
+    ],
+    "track": null,
+    "provenance": {
+      "dataNature": "manual-verified",
+      "lastVerifiedAt": "2026-11-24",
+      "sourceIds": [
+        "sk:source:jr-index",
+        "sk:source:jr-network-symbols"
+      ]
+    }
+  },
+  {
+    "platformId": "sk:platform:jr-1-2",
+    "lineId": "sk:line:kansai-airport",
+    "directions": [
+      {
+        "id": "sk:direction:jr-1-airport",
+        "towards": {
+          "ja": "関西空港方面",
+          "en": "Toward Kansai-airport",
+          "zh": "往关西机场"
+        },
+        "neighborStationName": null,
+        "bound": null,
+        "terminusStationName": {
+          "ja": "関西空港",
+          "en": "Kansai-airport",
+          "zh": "关西机场"
+        },
+        "sourceIds": [
+          "sk:source:jr-index",
+          "sk:source:jr-network-symbols"
+        ]
+      }
+    ],
+    "track": null,
+    "provenance": {
+      "dataNature": "manual-verified",
+      "lastVerifiedAt": "2026-11-24",
+      "sourceIds": [
+        "sk:source:jr-index",
+        "sk:source:jr-network-symbols"
+      ]
+    }
+  },
+  {
+    "platformId": "sk:platform:jr-1-2",
+    "lineId": "sk:line:hanwa",
+    "directions": [
+      {
+        "id": "sk:direction:jr-1-hanwa",
+        "towards": {
+          "ja": "鳳・和歌山方面",
+          "en": "Toward Otori and Wakayama",
+          "zh": "往凤、和歌山"
+        },
+        "neighborStationName": null,
+        "bound": null,
+        "terminusStationName": null,
+        "sourceIds": [
+          "sk:source:jr-index",
+          "sk:source:jr-network-symbols"
+        ]
+      }
+    ],
+    "track": null,
+    "provenance": {
+      "dataNature": "manual-verified",
+      "lastVerifiedAt": "2026-11-24",
+      "sourceIds": [
+        "sk:source:jr-index",
+        "sk:source:jr-network-symbols"
+      ]
+    }
+  },
+  {
+    "platformId": "sk:platform:jr-1-2",
+    "lineId": "sk:line:yamatoji",
+    "directions": [
+      {
+        "id": "sk:direction:jr-1-yamatoji",
+        "towards": {
+          "ja": "王寺・奈良方面",
+          "en": "Toward Oji and Nara",
+          "zh": "往王寺、奈良"
+        },
+        "neighborStationName": null,
+        "bound": null,
+        "terminusStationName": null,
+        "sourceIds": [
+          "sk:source:jr-index",
+          "sk:source:jr-network-symbols"
+        ]
+      }
+    ],
+    "track": null,
+    "provenance": {
+      "dataNature": "manual-verified",
+      "lastVerifiedAt": "2026-11-24",
+      "sourceIds": [
+        "sk:source:jr-index",
+        "sk:source:jr-network-symbols"
       ]
     }
   },
@@ -47,7 +184,76 @@
         "id": "sk:direction:jr-3-4-kobe",
         "towards": {
           "ja": "三ノ宮・姫路方面",
-          "en": "Toward Sannomiya and Himeji"
+          "en": "Toward Sannomiya and Himeji",
+          "zh": "往三宫、姬路"
+        },
+        "neighborStationName": {
+          "ja": "塚本",
+          "en": "Tsukamoto",
+          "zh": "塚本"
+        },
+        "bound": null,
+        "terminusStationName": null,
+        "sourceIds": [
+          "sk:source:jr-index",
+          "sk:source:jr-network-symbols"
+        ]
+      }
+    ],
+    "track": null,
+    "provenance": {
+      "dataNature": "manual-verified",
+      "lastVerifiedAt": "2026-11-24",
+      "sourceIds": [
+        "sk:source:jr-index",
+        "sk:source:jr-network-symbols"
+      ]
+    }
+  },
+  {
+    "platformId": "sk:platform:jr-3-4",
+    "lineId": "sk:line:takarazuka",
+    "directions": [
+      {
+        "id": "sk:direction:jr-3-4-takarazuka",
+        "towards": {
+          "ja": "篠山口・福知山方面",
+          "en": "Toward Sasayamaguchi and Fukuchiyama",
+          "zh": "往篠山口、福知山"
+        },
+        "neighborStationName": {
+          "ja": "塚本",
+          "en": "Tsukamoto",
+          "zh": "塚本"
+        },
+        "bound": null,
+        "terminusStationName": null,
+        "sourceIds": [
+          "sk:source:jr-index",
+          "sk:source:jr-network-symbols"
+        ]
+      }
+    ],
+    "track": null,
+    "provenance": {
+      "dataNature": "manual-verified",
+      "lastVerifiedAt": "2026-11-24",
+      "sourceIds": [
+        "sk:source:jr-index",
+        "sk:source:jr-network-symbols"
+      ]
+    }
+  },
+  {
+    "platformId": "sk:platform:jr-3-4",
+    "lineId": "sk:line:bantan",
+    "directions": [
+      {
+        "id": "sk:direction:jr-4-bantan",
+        "towards": {
+          "ja": "城崎温泉・香住方面",
+          "en": "Toward Kinosaki Onsen and Kasumi",
+          "zh": "往城崎温泉、香住"
         },
         "neighborStationName": null,
         "bound": null,
@@ -60,7 +266,7 @@
     "track": null,
     "provenance": {
       "dataNature": "manual-verified",
-      "lastVerifiedAt": "2026-11-23",
+      "lastVerifiedAt": "2026-11-24",
       "sourceIds": [
         "sk:source:jr-index"
       ]
@@ -74,22 +280,75 @@
         "id": "sk:direction:jr-5-6-kobe",
         "towards": {
           "ja": "三ノ宮・姫路方面",
-          "en": "Toward Sannomiya and Himeji"
+          "en": "Toward Sannomiya and Himeji",
+          "zh": "往三宫、姬路"
         },
-        "neighborStationName": null,
+        "neighborStationName": {
+          "ja": "塚本",
+          "en": "Tsukamoto",
+          "zh": "塚本"
+        },
         "bound": null,
-        "terminusStationName": null,
+        "terminusStationName": {
+          "ja": "姫路・網干・西明石など",
+          "en": "Himeji, Aboshi, Nishi-Akashi and others",
+          "zh": "姬路、网干、西明石等"
+        },
         "sourceIds": [
-          "sk:source:jr-index"
+          "sk:source:jr-index",
+          "sk:source:jr-network-symbols",
+          "sk:source:jr-kobe-schedule"
         ]
       }
     ],
     "track": null,
     "provenance": {
       "dataNature": "manual-verified",
-      "lastVerifiedAt": "2026-11-23",
+      "lastVerifiedAt": "2026-11-24",
       "sourceIds": [
-        "sk:source:jr-index"
+        "sk:source:jr-index",
+        "sk:source:jr-network-symbols",
+        "sk:source:jr-kobe-schedule"
+      ]
+    }
+  },
+  {
+    "platformId": "sk:platform:jr-5-6",
+    "lineId": "sk:line:takarazuka",
+    "directions": [
+      {
+        "id": "sk:direction:jr-6-takarazuka",
+        "towards": {
+          "ja": "宝塚・三田方面",
+          "en": "Toward Takarazuka and Sanda",
+          "zh": "往宝塚、三田"
+        },
+        "neighborStationName": {
+          "ja": "塚本",
+          "en": "Tsukamoto",
+          "zh": "塚本"
+        },
+        "bound": null,
+        "terminusStationName": {
+          "ja": "新三田など",
+          "en": "Shin-Sanda and others",
+          "zh": "新三田等"
+        },
+        "sourceIds": [
+          "sk:source:jr-index",
+          "sk:source:jr-network-symbols",
+          "sk:source:jr-kobe-schedule"
+        ]
+      }
+    ],
+    "track": null,
+    "provenance": {
+      "dataNature": "manual-verified",
+      "lastVerifiedAt": "2026-11-24",
+      "sourceIds": [
+        "sk:source:jr-index",
+        "sk:source:jr-network-symbols",
+        "sk:source:jr-kobe-schedule"
       ]
     }
   },
@@ -101,22 +360,29 @@
         "id": "sk:direction:jr-7-8-kyoto",
         "towards": {
           "ja": "新大阪・高槻・京都方面",
-          "en": "Toward Shin-Osaka, Takatsuki and Kyoto"
+          "en": "Toward Shin-Osaka, Takatsuki and Kyoto",
+          "zh": "往新大阪、高槻、京都"
         },
-        "neighborStationName": null,
+        "neighborStationName": {
+          "ja": "新大阪",
+          "en": "Shin-Osaka",
+          "zh": "新大阪"
+        },
         "bound": null,
         "terminusStationName": null,
         "sourceIds": [
-          "sk:source:jr-index"
+          "sk:source:jr-index",
+          "sk:source:jr-network-symbols"
         ]
       }
     ],
     "track": null,
     "provenance": {
       "dataNature": "manual-verified",
-      "lastVerifiedAt": "2026-11-23",
+      "lastVerifiedAt": "2026-11-24",
       "sourceIds": [
-        "sk:source:jr-index"
+        "sk:source:jr-index",
+        "sk:source:jr-network-symbols"
       ]
     }
   },
@@ -128,11 +394,50 @@
         "id": "sk:direction:jr-9-10-kyoto",
         "towards": {
           "ja": "新大阪・高槻・京都方面",
-          "en": "Toward Shin-Osaka, Takatsuki and Kyoto"
+          "en": "Toward Shin-Osaka, Takatsuki and Kyoto",
+          "zh": "往新大阪、高槻、京都"
+        },
+        "neighborStationName": {
+          "ja": "新大阪",
+          "en": "Shin-Osaka",
+          "zh": "新大阪"
+        },
+        "bound": null,
+        "terminusStationName": null,
+        "sourceIds": [
+          "sk:source:jr-index",
+          "sk:source:jr-network-symbols"
+        ]
+      }
+    ],
+    "track": null,
+    "provenance": {
+      "dataNature": "manual-verified",
+      "lastVerifiedAt": "2026-11-24",
+      "sourceIds": [
+        "sk:source:jr-index",
+        "sk:source:jr-network-symbols"
+      ]
+    }
+  },
+  {
+    "platformId": "sk:platform:jr-11",
+    "lineId": "sk:line:tokaido-express",
+    "directions": [
+      {
+        "id": "sk:direction:jr-11-tokaido",
+        "towards": {
+          "ja": "京都・北陸・東海方面",
+          "en": "Toward Kyoto, Hokuriku and Tokai",
+          "zh": "往京都、北陆、东海"
         },
         "neighborStationName": null,
         "bound": null,
-        "terminusStationName": null,
+        "terminusStationName": {
+          "ja": "東京など",
+          "en": "Tokyo and others",
+          "zh": "东京等"
+        },
         "sourceIds": [
           "sk:source:jr-index"
         ]
@@ -141,7 +446,7 @@
     "track": null,
     "provenance": {
       "dataNature": "manual-verified",
-      "lastVerifiedAt": "2026-11-23",
+      "lastVerifiedAt": "2026-11-24",
       "sourceIds": [
         "sk:source:jr-index"
       ]
@@ -155,7 +460,74 @@
         "id": "sk:direction:jr-22-east",
         "towards": {
           "ja": "新大阪・放出・久宝寺方面",
-          "en": "Toward Shin-Osaka, Hanaten and Kyuhoji"
+          "en": "Toward Shin-Osaka, Hanaten and Kyuhoji",
+          "zh": "往新大阪、放出、久宝寺"
+        },
+        "neighborStationName": {
+          "ja": "新大阪",
+          "en": "Shin-Osaka",
+          "zh": "新大阪"
+        },
+        "bound": null,
+        "terminusStationName": null,
+        "sourceIds": [
+          "sk:source:jr-index",
+          "sk:source:jr-network-symbols"
+        ]
+      }
+    ],
+    "track": null,
+    "provenance": {
+      "dataNature": "manual-verified",
+      "lastVerifiedAt": "2026-11-24",
+      "sourceIds": [
+        "sk:source:jr-index",
+        "sk:source:jr-network-symbols"
+      ]
+    }
+  },
+  {
+    "platformId": "sk:platform:jr-21-22",
+    "lineId": "sk:line:kansai-airport",
+    "directions": [
+      {
+        "id": "sk:direction:jr-21-airport",
+        "towards": {
+          "ja": "関西空港方面",
+          "en": "Toward Kansai-airport",
+          "zh": "往关西机场"
+        },
+        "neighborStationName": null,
+        "bound": null,
+        "terminusStationName": {
+          "ja": "関西空港",
+          "en": "Kansai-airport",
+          "zh": "关西机场"
+        },
+        "sourceIds": [
+          "sk:source:jr-index"
+        ]
+      }
+    ],
+    "track": null,
+    "provenance": {
+      "dataNature": "manual-verified",
+      "lastVerifiedAt": "2026-11-24",
+      "sourceIds": [
+        "sk:source:jr-index"
+      ]
+    }
+  },
+  {
+    "platformId": "sk:platform:jr-21-22",
+    "lineId": "sk:line:hanwa",
+    "directions": [
+      {
+        "id": "sk:direction:jr-21-hanwa",
+        "towards": {
+          "ja": "和歌山方面（特急）",
+          "en": "Toward Wakayama · limited express",
+          "zh": "往和歌山（特急）"
         },
         "neighborStationName": null,
         "bound": null,
@@ -168,7 +540,7 @@
     "track": null,
     "provenance": {
       "dataNature": "manual-verified",
-      "lastVerifiedAt": "2026-11-23",
+      "lastVerifiedAt": "2026-11-24",
       "sourceIds": [
         "sk:source:jr-index"
       ]
@@ -182,7 +554,42 @@
         "id": "sk:direction:jr-23-east",
         "towards": {
           "ja": "新大阪・放出・久宝寺方面",
-          "en": "Toward Shin-Osaka, Hanaten and Kyuhoji"
+          "en": "Toward Shin-Osaka, Hanaten and Kyuhoji",
+          "zh": "往新大阪、放出、久宝寺"
+        },
+        "neighborStationName": {
+          "ja": "新大阪",
+          "en": "Shin-Osaka",
+          "zh": "新大阪"
+        },
+        "bound": null,
+        "terminusStationName": null,
+        "sourceIds": [
+          "sk:source:jr-index",
+          "sk:source:jr-network-symbols"
+        ]
+      }
+    ],
+    "track": null,
+    "provenance": {
+      "dataNature": "manual-verified",
+      "lastVerifiedAt": "2026-11-24",
+      "sourceIds": [
+        "sk:source:jr-index",
+        "sk:source:jr-network-symbols"
+      ]
+    }
+  },
+  {
+    "platformId": "sk:platform:jr-23-24",
+    "lineId": "sk:line:tokaido-express",
+    "directions": [
+      {
+        "id": "sk:direction:jr-24-express",
+        "towards": {
+          "ja": "新大阪・京都方面",
+          "en": "Toward Shin-Osaka and Kyoto",
+          "zh": "往新大阪、京都"
         },
         "neighborStationName": null,
         "bound": null,
@@ -195,7 +602,7 @@
     "track": null,
     "provenance": {
       "dataNature": "manual-verified",
-      "lastVerifiedAt": "2026-11-23",
+      "lastVerifiedAt": "2026-11-24",
       "sourceIds": [
         "sk:source:jr-index"
       ]
@@ -209,35 +616,48 @@
         "id": "sk:direction:kita-1-west",
         "towards": {
           "ja": "尼崎・宝塚・三ノ宮方面",
-          "en": "Toward Amagasaki, Takarazuka and Sannomiya"
+          "en": "Toward Amagasaki, Takarazuka and Sannomiya",
+          "zh": "往尼崎、宝塚、三宫"
         },
-        "neighborStationName": null,
+        "neighborStationName": {
+          "ja": "新福島",
+          "en": "Shin-Fukushima",
+          "zh": "新福岛"
+        },
         "bound": null,
         "terminusStationName": null,
         "sourceIds": [
-          "sk:source:kitashinchi"
+          "sk:source:kitashinchi",
+          "sk:source:jr-network-symbols"
         ]
       },
       {
         "id": "sk:direction:kita-2-east",
         "towards": {
           "ja": "京橋・四条畷・松井山手方面",
-          "en": "Toward Kyobashi, Shijonawate and Matsuiyamate"
+          "en": "Toward Kyobashi, Shijonawate and Matsuiyamate",
+          "zh": "往京桥、四条畷、松井山手"
         },
-        "neighborStationName": null,
+        "neighborStationName": {
+          "ja": "大阪天満宮",
+          "en": "Osaka Temmangu",
+          "zh": "大阪天满宫"
+        },
         "bound": null,
         "terminusStationName": null,
         "sourceIds": [
-          "sk:source:kitashinchi"
+          "sk:source:kitashinchi",
+          "sk:source:jr-network-symbols"
         ]
       }
     ],
     "track": null,
     "provenance": {
       "dataNature": "manual-verified",
-      "lastVerifiedAt": "2026-11-23",
+      "lastVerifiedAt": "2026-11-24",
       "sourceIds": [
-        "sk:source:kitashinchi"
+        "sk:source:kitashinchi",
+        "sk:source:jr-network-symbols"
       ]
     }
   },
@@ -249,14 +669,20 @@
         "id": "sk:direction:metro-1-nakamozu",
         "towards": {
           "ja": "なんば・天王寺・なかもず方面",
-          "en": "Toward Namba, Tennoji and Nakamozu"
+          "en": "Toward Namba, Tennoji and Nakamozu",
+          "zh": "往难波、天王寺、中百舌鸟"
         },
         "neighborStationName": {
           "ja": "淀屋橋",
-          "en": "Yodoyabashi"
+          "en": "Yodoyabashi",
+          "zh": "淀屋桥"
         },
         "bound": null,
-        "terminusStationName": null,
+        "terminusStationName": {
+          "ja": "なかもず",
+          "en": "Nakamozu",
+          "zh": "中百舌鸟"
+        },
         "sourceIds": [
           "sk:source:metro-map",
           "sk:source:metro-umeda-stations"
@@ -266,10 +692,86 @@
     "track": null,
     "provenance": {
       "dataNature": "manual-verified",
-      "lastVerifiedAt": "2026-11-23",
+      "lastVerifiedAt": "2026-11-24",
       "sourceIds": [
         "sk:source:metro-map",
         "sk:source:metro-umeda-stations"
+      ]
+    }
+  },
+  {
+    "platformId": "sk:platform:higashi-1",
+    "lineId": "sk:line:tanimachi",
+    "directions": [
+      {
+        "id": "sk:direction:higashi-1-yaominami",
+        "towards": {
+          "ja": "八尾南方面",
+          "en": "Toward Yaominami",
+          "zh": "往八尾南"
+        },
+        "neighborStationName": {
+          "ja": "南森町",
+          "en": "Minamimorimachi",
+          "zh": "南森町"
+        },
+        "bound": null,
+        "terminusStationName": {
+          "ja": "八尾南",
+          "en": "Yaominami",
+          "zh": "八尾南"
+        },
+        "sourceIds": [
+          "sk:source:higashi-map",
+          "sk:source:metro-network-colors"
+        ]
+      }
+    ],
+    "track": null,
+    "provenance": {
+      "dataNature": "manual-verified",
+      "lastVerifiedAt": "2026-11-24",
+      "sourceIds": [
+        "sk:source:higashi-map",
+        "sk:source:metro-network-colors"
+      ]
+    }
+  },
+  {
+    "platformId": "sk:platform:higashi-2",
+    "lineId": "sk:line:tanimachi",
+    "directions": [
+      {
+        "id": "sk:direction:higashi-2-dainichi",
+        "towards": {
+          "ja": "大日方面",
+          "en": "Toward Dainichi",
+          "zh": "往大日"
+        },
+        "neighborStationName": {
+          "ja": "中崎町",
+          "en": "Nakazakicho",
+          "zh": "中崎町"
+        },
+        "bound": null,
+        "terminusStationName": {
+          "ja": "大日",
+          "en": "Dainichi",
+          "zh": "大日"
+        },
+        "sourceIds": [
+          "sk:source:higashi-map",
+          "sk:source:metro-network-colors"
+        ]
+      }
+    ],
+    "track": null,
+    "provenance": {
+      "dataNature": "manual-verified",
+      "lastVerifiedAt": "2026-11-24",
+      "sourceIds": [
+        "sk:source:higashi-map",
+        "sk:source:metro-network-colors"
       ]
     }
   },
@@ -281,14 +783,20 @@
         "id": "sk:direction:nishi-1-2-suminoekoen",
         "towards": {
           "ja": "本町・なんば・住之江公園方面",
-          "en": "Toward Hommachi, Namba and Suminoekoen"
+          "en": "Toward Hommachi, Namba and Suminoekoen",
+          "zh": "往本町、难波、住之江公园"
         },
         "neighborStationName": {
           "ja": "肥後橋",
-          "en": "Higobashi"
+          "en": "Higobashi",
+          "zh": "肥后桥"
         },
         "bound": null,
-        "terminusStationName": null,
+        "terminusStationName": {
+          "ja": "住之江公園",
+          "en": "Suminoekoen",
+          "zh": "住之江公园"
+        },
         "sourceIds": [
           "sk:source:metro-nishi-map",
           "sk:source:nishi"
@@ -298,7 +806,7 @@
     "track": null,
     "provenance": {
       "dataNature": "manual-verified",
-      "lastVerifiedAt": "2026-11-23",
+      "lastVerifiedAt": "2026-11-24",
       "sourceIds": [
         "sk:source:metro-nishi-map",
         "sk:source:nishi"
@@ -313,11 +821,13 @@
         "id": "sk:direction:hk-1-kyoto",
         "towards": {
           "ja": "京都河原町、北千里方面",
-          "en": "Toward Kyoto-kawaramachi and Kita-senri"
+          "en": "Toward Kyoto-kawaramachi and Kita-senri",
+          "zh": "往京都河原町、北千里"
         },
         "neighborStationName": {
           "ja": "十三",
-          "en": "Juso"
+          "en": "Juso",
+          "zh": "十三"
         },
         "bound": null,
         "terminusStationName": null,
@@ -331,7 +841,7 @@
     "track": null,
     "provenance": {
       "dataNature": "manual-verified",
-      "lastVerifiedAt": "2026-11-23",
+      "lastVerifiedAt": "2026-11-24",
       "sourceIds": [
         "sk:source:hankyu",
         "sk:source:hankyu-current",
@@ -347,11 +857,13 @@
         "id": "sk:direction:hk-2-kyoto",
         "towards": {
           "ja": "京都河原町、北千里方面",
-          "en": "Toward Kyoto-kawaramachi and Kita-senri"
+          "en": "Toward Kyoto-kawaramachi and Kita-senri",
+          "zh": "往京都河原町、北千里"
         },
         "neighborStationName": {
           "ja": "十三",
-          "en": "Juso"
+          "en": "Juso",
+          "zh": "十三"
         },
         "bound": null,
         "terminusStationName": null,
@@ -365,7 +877,7 @@
     "track": null,
     "provenance": {
       "dataNature": "manual-verified",
-      "lastVerifiedAt": "2026-11-23",
+      "lastVerifiedAt": "2026-11-24",
       "sourceIds": [
         "sk:source:hankyu",
         "sk:source:hankyu-current",
@@ -381,11 +893,13 @@
         "id": "sk:direction:hk-3-kyoto",
         "towards": {
           "ja": "京都河原町、北千里方面",
-          "en": "Toward Kyoto-kawaramachi and Kita-senri"
+          "en": "Toward Kyoto-kawaramachi and Kita-senri",
+          "zh": "往京都河原町、北千里"
         },
         "neighborStationName": {
           "ja": "十三",
-          "en": "Juso"
+          "en": "Juso",
+          "zh": "十三"
         },
         "bound": null,
         "terminusStationName": null,
@@ -399,7 +913,7 @@
     "track": null,
     "provenance": {
       "dataNature": "manual-verified",
-      "lastVerifiedAt": "2026-11-23",
+      "lastVerifiedAt": "2026-11-24",
       "sourceIds": [
         "sk:source:hankyu",
         "sk:source:hankyu-current",
@@ -415,11 +929,13 @@
         "id": "sk:direction:hk-4-takarazuka",
         "towards": {
           "ja": "宝塚方面",
-          "en": "Toward Takarazuka"
+          "en": "Toward Takarazuka",
+          "zh": "往宝塚"
         },
         "neighborStationName": {
           "ja": "中津",
-          "en": "Nakatsu"
+          "en": "Nakatsu",
+          "zh": "中津"
         },
         "bound": null,
         "terminusStationName": null,
@@ -433,7 +949,7 @@
     "track": null,
     "provenance": {
       "dataNature": "manual-verified",
-      "lastVerifiedAt": "2026-11-23",
+      "lastVerifiedAt": "2026-11-24",
       "sourceIds": [
         "sk:source:hankyu",
         "sk:source:hankyu-current",
@@ -449,11 +965,13 @@
         "id": "sk:direction:hk-5-takarazuka",
         "towards": {
           "ja": "宝塚方面",
-          "en": "Toward Takarazuka"
+          "en": "Toward Takarazuka",
+          "zh": "往宝塚"
         },
         "neighborStationName": {
           "ja": "中津",
-          "en": "Nakatsu"
+          "en": "Nakatsu",
+          "zh": "中津"
         },
         "bound": null,
         "terminusStationName": null,
@@ -467,7 +985,7 @@
     "track": null,
     "provenance": {
       "dataNature": "manual-verified",
-      "lastVerifiedAt": "2026-11-23",
+      "lastVerifiedAt": "2026-11-24",
       "sourceIds": [
         "sk:source:hankyu",
         "sk:source:hankyu-current",
@@ -483,11 +1001,13 @@
         "id": "sk:direction:hk-6-takarazuka",
         "towards": {
           "ja": "宝塚方面",
-          "en": "Toward Takarazuka"
+          "en": "Toward Takarazuka",
+          "zh": "往宝塚"
         },
         "neighborStationName": {
           "ja": "中津",
-          "en": "Nakatsu"
+          "en": "Nakatsu",
+          "zh": "中津"
         },
         "bound": null,
         "terminusStationName": null,
@@ -501,7 +1021,7 @@
     "track": null,
     "provenance": {
       "dataNature": "manual-verified",
-      "lastVerifiedAt": "2026-11-23",
+      "lastVerifiedAt": "2026-11-24",
       "sourceIds": [
         "sk:source:hankyu",
         "sk:source:hankyu-current",
@@ -517,11 +1037,13 @@
         "id": "sk:direction:hk-7-kobe",
         "towards": {
           "ja": "神戸三宮方面",
-          "en": "Toward Kobe-sannomiya"
+          "en": "Toward Kobe-sannomiya",
+          "zh": "往神户三宫"
         },
         "neighborStationName": {
           "ja": "中津",
-          "en": "Nakatsu"
+          "en": "Nakatsu",
+          "zh": "中津"
         },
         "bound": null,
         "terminusStationName": null,
@@ -535,7 +1057,7 @@
     "track": null,
     "provenance": {
       "dataNature": "manual-verified",
-      "lastVerifiedAt": "2026-11-23",
+      "lastVerifiedAt": "2026-11-24",
       "sourceIds": [
         "sk:source:hankyu",
         "sk:source:hankyu-current",
@@ -551,11 +1073,13 @@
         "id": "sk:direction:hk-8-kobe",
         "towards": {
           "ja": "神戸三宮方面",
-          "en": "Toward Kobe-sannomiya"
+          "en": "Toward Kobe-sannomiya",
+          "zh": "往神户三宫"
         },
         "neighborStationName": {
           "ja": "中津",
-          "en": "Nakatsu"
+          "en": "Nakatsu",
+          "zh": "中津"
         },
         "bound": null,
         "terminusStationName": null,
@@ -569,7 +1093,7 @@
     "track": null,
     "provenance": {
       "dataNature": "manual-verified",
-      "lastVerifiedAt": "2026-11-23",
+      "lastVerifiedAt": "2026-11-24",
       "sourceIds": [
         "sk:source:hankyu",
         "sk:source:hankyu-current",
@@ -585,11 +1109,13 @@
         "id": "sk:direction:hk-9-kobe",
         "towards": {
           "ja": "神戸三宮方面",
-          "en": "Toward Kobe-sannomiya"
+          "en": "Toward Kobe-sannomiya",
+          "zh": "往神户三宫"
         },
         "neighborStationName": {
           "ja": "中津",
-          "en": "Nakatsu"
+          "en": "Nakatsu",
+          "zh": "中津"
         },
         "bound": null,
         "terminusStationName": null,
@@ -603,7 +1129,7 @@
     "track": null,
     "provenance": {
       "dataNature": "manual-verified",
-      "lastVerifiedAt": "2026-11-23",
+      "lastVerifiedAt": "2026-11-24",
       "sourceIds": [
         "sk:source:hankyu",
         "sk:source:hankyu-current",
@@ -619,11 +1145,13 @@
         "id": "sk:direction:hs-1-2-kobe",
         "towards": {
           "ja": "神戸三宮方面",
-          "en": "Toward Kobe-sannomiya"
+          "en": "Toward Kobe-sannomiya",
+          "zh": "往神户三宫"
         },
         "neighborStationName": {
           "ja": "福島",
-          "en": "Fukushima"
+          "en": "Fukushima",
+          "zh": "福岛"
         },
         "bound": null,
         "terminusStationName": null,
@@ -636,7 +1164,7 @@
     "track": null,
     "provenance": {
       "dataNature": "manual-verified",
-      "lastVerifiedAt": "2026-11-23",
+      "lastVerifiedAt": "2026-11-24",
       "sourceIds": [
         "sk:source:hanshin-map",
         "sk:source:hanshin-network"
@@ -651,11 +1179,13 @@
         "id": "sk:direction:hs-3-4-kobe",
         "towards": {
           "ja": "神戸三宮方面",
-          "en": "Toward Kobe-sannomiya"
+          "en": "Toward Kobe-sannomiya",
+          "zh": "往神户三宫"
         },
         "neighborStationName": {
           "ja": "福島",
-          "en": "Fukushima"
+          "en": "Fukushima",
+          "zh": "福岛"
         },
         "bound": null,
         "terminusStationName": null,
@@ -668,7 +1198,7 @@
     "track": null,
     "provenance": {
       "dataNature": "manual-verified",
-      "lastVerifiedAt": "2026-11-23",
+      "lastVerifiedAt": "2026-11-24",
       "sourceIds": [
         "sk:source:hanshin-map",
         "sk:source:hanshin-network"

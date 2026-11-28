@@ -8,6 +8,7 @@ import type {
   Point,
 } from '../../src/domain/types.ts'
 import { addDistrict } from './district.ts'
+import { chineseName } from './namesZh.ts'
 import { checked } from './sources.ts'
 
 // Editorial coordinates in arbitrary units. Only adjacency, order and fare boundaries encode railway facts.
@@ -20,7 +21,7 @@ export function entity(
 ): Entity {
   return {
     id: 'sk:' + kind + ':' + slug,
-    names: { ja, en, ja_kana: null, zh: null },
+    names: { ja, en, ja_kana: null, zh: chineseName(ja) },
     externalIds: {},
     provenance: {
       sourceIds: refs.map((key) => 'sk:source:' + key),
@@ -971,10 +972,17 @@ addDistrict(
   { model, entity, level, place, link },
   { street, upper, ground, lower, conc, subway: subway.id, jr: jr.id },
 )
-// Representative, explicitly non-exhaustive services for the depicted boarding faces.
+// Scheduled services from the operator’s platform guide, grouped by the depicted boarding faces.
 for (const [slug, ja, en, tracks] of [
   ['loop', '大阪環状線', 'Osaka Loop Line', ['1-2']],
   ['kobe', 'JR神戸線', 'JR Kobe Line', ['3-4', '5-6']],
+  ['takarazuka', 'JR宝塚線', 'JR Takarazuka Line', ['3-4', '5-6']],
+  ['yumesaki', 'JRゆめ咲線', 'JR Yumesaki Line', ['1-2']],
+  ['kansai-airport', '関西空港線', 'Kansai-airport Line', ['1-2', '21-22']],
+  ['hanwa', '阪和線', 'Hanwa Line', ['1-2', '21-22']],
+  ['yamatoji', '大和路線', 'Yamatoji Line', ['1-2']],
+  ['bantan', '播但線', 'Bantan Line', ['3-4']],
+  ['tokaido-express', '東海道線', 'Tokaido Line', ['11', '23-24']],
   ['kyoto', 'JR京都線', 'JR Kyoto Line', ['7-8', '9-10']],
   ['east', 'おおさか東線', 'Osaka Higashi Line', ['21-22', '23-24']],
 ] as const) {
@@ -988,11 +996,15 @@ for (const [slug, ja, en, tracks] of [
     const platform = model.places.find(
       (p) => p.id === 'sk:platform:jr-' + tracksId,
     )!
-    platform.serviceLineIds = [service.id]
+    platform.serviceLineIds ??= []
+    platform.serviceLineIds.push(service.id)
+    const number = tracksId.replace('-', '・')
+    platform.boarding ??= { label: number, trackSides: [] }
     platform.provenance.sourceIds.push('sk:source:jr-index')
   }
 }
 dest.serviceLineIds = [line.id]
+dest.boarding = { label: '1', trackSides: [] }
 
 // The red accessible paths on JR sheets 2, 6 and 7 support these specific demo segments.
 const accessibleJR = new Set([

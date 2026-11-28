@@ -28,7 +28,7 @@ test('AT-URL-02: a platform deep link opens and focuses the model', async ({ pag
 
 test('AT-URL-03: refresh restores view and route choices', async ({ page }) => {
   await page.goto('/')
-  await page.getByRole('button', { name: 'EN', exact: true }).click()
+  await page.locator('header select').selectOption('en')
   await page.getByRole('button', { name: 'Toggle theme' }).click()
   await page.getByRole('button', { name: 'Routes & places' }).click()
   await page.getByLabel('To', { exact: true }).selectOption('sk:platform:jr-3-4')
@@ -50,13 +50,19 @@ test('AT-URL-03: refresh restores view and route choices', async ({ page }) => {
 
 test('App split regression snapshots preserve header, floor controls and itinerary', async ({ page }) => {
   await page.goto('/')
-  await page.getByRole('button', { name: 'EN', exact: true }).click()
+  await page.locator('header select').selectOption('en')
   await expect(page.locator('header')).toMatchAriaSnapshot(`
     - heading "Umeda Station 3D" [level=1]
+    - group "Map view":
+      - button "3D" [pressed]
+      - button "2D"
     - button "Routes & places"
     - button "Controls"
     - button "Toggle theme"
-    - button "日本語"
+    - combobox "Language":
+      - option "日本語"
+      - option "EN" [selected]
+      - option "中文"
   `)
   await expect(page.locator('.floors')).toMatchAriaSnapshot(`
     - group "Floor":
@@ -67,9 +73,6 @@ test('App split regression snapshots preserve header, floor controls and itinera
       - button "1F"
       - button "B1F"
       - button "B2F"
-      - button "Passenger view"
-      - button "Architecture" [pressed]
-      - button "Explode"
   `)
   await page.getByRole('button', { name: 'Routes & places' }).click()
   await expect(page.locator('aside')).toMatchAriaSnapshot(`

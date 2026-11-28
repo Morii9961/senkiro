@@ -28,7 +28,7 @@ function series(operator: string, id: string, label: string, category: VehicleSe
   return {
     id: 'sk:vehicle:' + id,
     operatorId: 'sk:operator:' + operator,
-    names: { ja: label + '系', en: label + ' series', ja_kana: null, zh: null },
+    names: { ja: label + '系', en: label + ' series', ja_kana: null, zh: label + ' 系' },
     category,
     // Approximate exterior paint and display proportions, independent of line badge colors.
     livery: { body, accent, stripe, nature: 'schematic' },
@@ -48,6 +48,10 @@ const rapid = series('jr-west', 'jr-225', '225', 'rapid', {
 })
 const east = series('jr-west', 'jr-221', '221', 'commuter', {
   ratio: 5.75, colors: ['#e8e2d7', '#747575', '#416b86'], sources: ['jr-vehicle-225', 'jr-vehicle-exterior'],
+})
+const commuter = series('jr-west', 'jr-321', '321', 'commuter', {
+  ratio: 6.25, colors: ['#c0c2c4', '#727778', '#003c73'],
+  sources: ['jr-vehicle-service', 'jr-vehicle-321-design'],
 })
 const midosuji = series('osaka-metro', 'metro-30000', '30000', 'subway', {
   ratio: 5.55, colors: ['#c2c6cc', '#757b84', '#bb2635'],
@@ -73,7 +77,7 @@ const hanshin = series('hanshin', 'hanshin-5700', '5700', 'commuter', {
   formation: [4, 'hanshin-vehicle-5700-set'],
 })
 
-export const vehicleSeries = [loop, rapid, east, midosuji, tanimachi, yotsubashi, hankyuKyoto, hankyu, hanshin]
+export const vehicleSeries = [loop, rapid, east, commuter, midosuji, tanimachi, yotsubashi, hankyuKyoto, hankyu, hanshin]
 
 const representative = (line: string, item: VehicleSeries): VehicleAssignment => ({
   lineId: 'sk:line:' + line, seriesId: item.id, status: 'representative', sourceIds: item.provenance.sourceIds,
@@ -84,5 +88,9 @@ export const vehicleAssignments: VehicleAssignment[] = [
   representative('east', east), representative('midosuji', midosuji), representative('tanimachi', tanimachi),
   representative('yotsubashi', yotsubashi), representative('hk-kyoto', hankyuKyoto),
   representative('hk-kobe', hankyu), representative('hk-takarazuka', hankyu), representative('hs-main', hanshin),
-  { lineId: 'sk:line:jr-tozai', seriesId: null, status: 'unknown', sourceIds: [] },
+  representative('jr-tozai', commuter), representative('takarazuka', commuter),
+  { ...representative('yumesaki', loop), sourceIds: ['sk:source:jr-vehicle-service'] },
+  { ...representative('yamatoji', east), sourceIds: ['sk:source:jr-vehicle-service'] },
+  ...['hanwa', 'kansai-airport', 'bantan', 'tokaido-express'].map((lineId): VehicleAssignment =>
+    ({ lineId: 'sk:line:' + lineId, seriesId: null, status: 'unknown', sourceIds: [] })),
 ]

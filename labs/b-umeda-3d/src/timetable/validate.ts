@@ -32,20 +32,22 @@ export function validateDataset(dataset: TimetableDataset, registry: TimetableRe
       issues.push({ severity, code, message, index, trip_id: row.trip_id || null })
       if (severity === 'error') bad.add(index)
     }
-    for (const field of ['station_id', 'operator_id', 'line_id', 'service_date_type', 'trip_id', 'source_id'] as const) {
+    for (const field of ['station_id', 'operator_id', 'service_date_type', 'trip_id', 'source_id'] as const) {
       if (!row[field].trim()) add('error', 'missing-field', field + ' is required')
     }
     if (demoId(row.source_id) !== demo) add('error', 'mixed-dataset', 'Record source has the wrong kind')
-    if (!sourceIds.has(row.source_id)) add('error', 'unknown-source', 'Source is absent from the dataset')
+    if (!sourceIds.has(row.source_id) || row.related_source_ids?.some((id) => !sourceIds.has(id))) {
+      add('error', 'unknown-source', 'Source is absent from the dataset')
+    }
     if (demo && !demoId(row.trip_id)) add('error', 'demo-trip-id', 'Fixture trip IDs use the demo: prefix')
     if (row.train_number !== null && (demo || !row.train_number.trim() || row.train_number === row.trip_id)) {
       add('error', 'invalid-train-number', 'Only a number provided by a source can be published')
     }
 
     const station = registry.stations.get(row.station_id)
-    const line = registry.lines.get(row.line_id)
+    const line = row.line_id === null ? undefined : registry.lines.get(row.line_id)
     if (!station) add('error', 'unknown-station', 'Station ID is absent from the Umeda registry')
-    if (!line) add('error', 'unknown-line', 'Line ID is absent from the Umeda registry')
+    if (!line && (demo || row.line_id !== null)) add('error', 'unknown-line', 'Line ID is absent from the Umeda registry')
     if ((station && station.operatorId !== row.operator_id) || (line && line.operatorId !== row.operator_id)) {
       add('error', 'operator-mismatch', 'The station and line must belong to the record operator')
     }
@@ -56,7 +58,9 @@ export function validateDataset(dataset: TimetableDataset, registry: TimetableRe
       add('warning', 'no-platform', 'Without a known platform the record is list-only')
     } else {
       const platform = registry.platforms.get(row.platform_id)
-      if (!platform || platform.stationId !== row.station_id || !platform.serviceLineIds?.includes(row.line_id)) {
+      if (!platform || platform.stationId !== row.station_id ||
+          (line && !platform.serviceLineIds?.includes(line.id)) ||
+          (row.platform_number && !platform.boarding?.label.split(/[・·]/).includes(row.platform_number))) {
         add('error', 'platform-mismatch', 'The platform must serve the given station and line')
       }
     }
@@ -84,7 +88,8 @@ export function validateDataset(dataset: TimetableDataset, registry: TimetableRe
       add('error', 'bad-formation', 'Formation must be a whole number of cars from 1 to 20')
     }
     const { valid_from: from, valid_until: until } = row
-    if ((from !== null && !validDate(from)) || (until !== null && !validDate(until))) {
+    if ((from !== null && !validDate(from)) || (until !== null && !validDate(until)) ||
+        (row.source_date != null && !validDate(row.source_date))) {
       add('error', 'bad-date', 'Validity dates must be real calendar dates in YYYY-MM-DD format')
     } else if (from && until && until < from) {
       add('error', 'validity-reversed', 'Validity ends before it starts')

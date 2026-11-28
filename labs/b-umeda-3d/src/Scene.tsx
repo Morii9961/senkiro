@@ -1,16 +1,18 @@
+import { nameIn, textIn } from './domain/language'
 import { useEffect, useRef, useState } from 'react'
 import * as T from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import type { Language, Place } from './domain/types'
 import type { Step } from './domain/graph'
 import { ownersOf } from './domain/index'
-import { lineBadgeTextColor, unverifiedLineColor } from './domain/lines'
+import { lineBadgeTextColor } from './domain/lines'
+import { timetableText } from './timetable/display'
 import { floors, nodes, station, sites, inSite, lineStyleById, linesById } from './model'
 import { buildLabels, objectLabel, type SceneLabelSpec } from './scene/labels/build'
 import { labelAttachment, layoutLabels, type LabelCandidate, type PlacedLabel } from './scene/labels/layout'
-import { effectiveBand, nextBand, permitsLabel, type LabelDepth, type ZoomBand } from './scene/labels/config'
+import { nextBand, permitsLabel, type ZoomBand } from './scene/labels/config'
 import { isLabelOccluded, proxyBounds, type OcclusionProxy } from './scene/labels/occlusion'
-import { scenePlaceFilter } from './scene/view'
+import { scenePlaceFilter, siteFilter } from './scene/view'
 import { createRouteOverlay, routeBands } from './scene/route3d'
 import { targetFromOwner, type SelectionTarget } from './state/selection'
 import { deriveTrackPaths, railCenterHeight, railHeight, trackFloorGap, trackOffset } from './trains/trackPaths'
@@ -18,7 +20,6 @@ import { trainClockSeconds, type TrainClock } from './trains/clock'
 import { createTrainLayer } from './trains/layer'
 import type { TrainPlan } from './trains/simulate'
 
-import { shopWindows, type ShopWindow } from './shopWindows'
 import { signage, type Board } from './signage'
 import { architecturalMaterial, Finish } from './surfaces'
 import {
@@ -35,7 +36,6 @@ import * as architecture from './architecture'
 interface Props {
   lang: Language
   dark: boolean
-  detail: LabelDepth
   floor: number | null
   spread: boolean
   route: Step[]
@@ -123,6 +123,10 @@ export function Scene(props: Props) {
     world.add(sun)
     const unit = new T.BoxGeometry(),
       material = architecturalMaterial()
+    const contextMaterial = new T.MeshBasicMaterial({
+      color: 0x687781, transparent: true, opacity: 0.13, depthWrite: false,
+    })
+    let contextMesh: T.InstancedMesh | null = null
     const outlineMaterial = new T.MeshBasicMaterial({ color: selected, side: T.BackSide })
     const passageMarker = new T.Mesh(unit, new T.MeshBasicMaterial({ color: selected }))
     passageMarker.visible = false
@@ -138,6 +142,7 @@ export function Scene(props: Props) {
     box.appendChild(labelLeaders)
     const clusterPins = new Map<string, { el: HTMLSpanElement; members: string[] }>()
     let previousLabels = new Map<string, PlacedLabel>()
+    let draggingModel = false
     let zoomBand: ZoomBand = 'far'
     let supplementalLabel: Label | null = null
     const occlusionProxies: OcclusionProxy[] = []
@@ -185,7 +190,6 @@ export function Scene(props: Props) {
       endZoom: number
     } | null = null
     let fade: { start: number; from: Float32Array; to: Float32Array } | null = null
-    const shopDisplay = shopWindows(world, draw)
     const animatedOffset = new T.Vector3()
     const view = new T.Vector3(53, 67, 116),
       right = new T.Vector3(view.z, 0, -view.x).normalize()
@@ -196,7 +200,6 @@ export function Scene(props: Props) {
       for (const n of station.places) {
         if (!inSite(n, p.siteId)) continue
         const order = floors.get(n.levelId)!.ordinal
-        if (p.floor !== null && p.floor !== order) continue
         for (const dx of [-1, 1])
           for (const dz of [-1, 1]) {
             corners.push(
@@ -210,7 +213,6 @@ export function Scene(props: Props) {
       }
       if (
         p.shell &&
-        p.floor === null &&
         (!p.siteId || p.siteId === 'sk:station:jr-osaka')
       ) {
         for (const x of [-23, 24])
@@ -247,56 +249,72 @@ export function Scene(props: Props) {
       lens.updateMatrixWorld()
       gl.domElement.dataset.view = propsNow.eye ? 'interior' : 'overview'
       gl.domElement.dataset.zoom = String(lens.zoom)
-      const density = h / (camera.top - camera.bottom) * camera.zoom
-      zoomBand = nextBand(zoomBand, density)
-      const band = effectiveBand(zoomBand, propsNow.floor !== null || propsNow.step >= 0)
+      zoomBand = nextBand(zoomBand, camera.zoom)
       gl.domElement.dataset.band = zoomBand
       gl.domElement.dataset.camera = [...controls.target.toArray(), lens.zoom]
         .map((value) => value.toFixed(2)).join(',')
+      const currentLabels = supplementalLabel ? [...labels, supplementalLabel] : labels
+      if (draggingModel && previousLabels.size) {
+        const anchors = new Map(currentLabels.map(({ key, position }) => [key, position]))
+        const pins = new Map(currentLabels.map(({ key, el }) => [key, el]))
+        const point = new T.Vector3()
+        for (const entry of previousLabels.values()) {
+          const anchor = entry.members
+            ? anchors.get(entry.members[0])
+            : anchors.get(entry.key)
+          const el = pins.get(entry.key) ?? clusterPins.get(entry.key)?.el
+          if (!anchor || !el) continue
+          point.copy(anchor)
+          if (entry.members) {
+            for (const member of entry.members.slice(1)) {
+              const position = anchors.get(member)
+              if (position) point.add(position)
+            }
+            point.divideScalar(entry.members.length)
+          }
+          point.project(lens)
+          const x = (point.x + 1) * w / 2 + entry.rect.x - entry.anchor.x
+          const y = (1 - point.y) * h / 2 + entry.rect.y - entry.anchor.y
+          el.style.transform = 'translate(' + x + 'px,' + y + 'px)'
+        }
+        renderFrame(lens)
+        return
+      }
       const stage = box.getBoundingClientRect()
       const reserved = Array.from(box.parentElement!.querySelectorAll<HTMLElement>(
-        '.view-tag, .surround, .zoom, .walk-hud, .sample-tag, .eye-hint, .detail-control, .floor-change-banner',
+        '.view-tag, .surround, .floors, .zoom, .walk-hud, .sample-tag, .eye-hint, .floor-change-banner',
       )).filter((element) => element.offsetWidth > 0).map((element) => {
         const rect = element.getBoundingClientRect()
         return { x: rect.x - stage.x, y: rect.y - stage.y, width: rect.width, height: rect.height }
       })
-      const currentLabels = supplementalLabel ? [...labels, supplementalLabel] : labels
       settleOcclusion(currentLabels)
       const candidates: LabelCandidate[] = []
       for (const label of currentLabels) {
         const priority = propsNow.showRoute
           ? label.routePriority ?? label.priority
           : label.priority
-        const emphasized = label.el.classList.contains('selected') || label.el.classList.contains('hovered')
-        const level = emphasized || (label.active && propsNow.step >= 0) ? 0 : label.level
+        const selected = label.el.classList.contains('selected')
+        const level = selected || (label.active && propsNow.step >= 0) ? 0 : label.level
         label.el.dataset.labelLevel = String(level)
-        if (label.icon) {
-          const text = level === 0 ? label.icon + ' ' + label.text : label.icon
-          if (label.el.textContent !== text) label.el.textContent = text
-        }
+        if (propsNow.eye || (label.routeOnly && !propsNow.showRoute) ||
+          !permitsLabel(level, zoomBand, label.variant === 'lines')) continue
         const v = label.position.clone().project(lens),
           x = ((v.x + 1) * w) / 2,
           y = ((1 - v.y) * h) / 2
-        if (propsNow.eye || (label.routeOnly && !propsNow.showRoute) ||
-          (level !== 0 && (v.z < -1 || v.z > 1))) continue
+        if (level !== 0 && (v.z < -1 || v.z > 1)) continue
         const platform = label.variant === 'platform' && label.targetId ? nodes.get(label.targetId) : null
         const singleNumber = platform && /^\d+$/.test(label.text)
-        const clusterOnly = level !== 0 && band === 'far' && !!singleNumber
-        if (label.variant === 'lines' ? band !== 'far'
-          : !clusterOnly && !permitsLabel(level, band, propsNow.detail)) continue
         candidates.push({
           key: label.key, x, y, level,
-          // In structure mode, give concourses space before placing the numerous facility icons.
-          rank: propsNow.detail === 'structure' && level === 4 ? 3 : undefined,
-          priority: emphasized ? -20 : priority,
+          priority: selected ? -20 : priority,
           width: Math.min(label.el.offsetWidth || 80, Math.max(1, w - 16)),
           height: label.el.offsetHeight || 18,
           previous: previousLabels.has(label.key),
           occluded: occludedLabels.has(label.key),
-          preferred: label.el.classList.contains('hovered') ? previousLabels.get(label.key)?.rect : undefined,
           meaning: label.targetKind + ':' + label.text,
-          clusterKey: singleNumber && band !== 'near' ? platform.stationId ?? undefined : undefined,
-          clusterOnly,
+          clusterKey: singleNumber ? platform.stationId ?? undefined : undefined,
+          clusterMarks: singleNumber ? Array.from(label.el.querySelectorAll<HTMLElement>('.line-mark'))
+            .map((mark) => ({ id: mark.dataset.lineId!, width: mark.offsetWidth + 4 })) : undefined,
           number: singleNumber ? Number(label.text) : undefined,
         })
       }
@@ -323,6 +341,9 @@ export function Scene(props: Props) {
             el.dataset.key = entry.key
             el.dataset.labelLevel = '2'
             el.textContent = entry.text ?? ''
+            appendLineMarks(el, [...new Set(entry.members.flatMap((key) =>
+              currentLabels.find((label) => label.key === key)?.badges?.map(({ lineId }) => lineId) ?? [],
+            ))])
             box.appendChild(el)
             cluster = { el, members: entry.members }
             clusterPins.set(entry.key, cluster)
@@ -358,7 +379,7 @@ export function Scene(props: Props) {
       const probe: Record<string, [number, number]> = {}
       const w = box.clientWidth
       const h = box.clientHeight
-      const fullDetail = permitsLabel(3, effectiveBand(zoomBand, propsNow.floor !== null || propsNow.step >= 0), propsNow.detail)
+      const fullDetail = zoomBand === 'near'
       const project = (point: T.Vector3): [number, number] => {
         point.project(lens)
         return [(point.x + 1) * w / 2, (1 - point.y) * h / 2]
@@ -378,10 +399,17 @@ export function Scene(props: Props) {
           trainMarkers.set(id, marker)
           box.appendChild(marker)
         }
-        const ja = propsNow.lang === 'ja'
-        const destination = instance.destinationText?.slice(0, 18)
-        const label = [ja ? '架空' : 'Fictional', instance.serviceClass, destination].filter(Boolean).join(' · ')
-        if (marker.textContent !== label) marker.textContent = label
+        const lang = propsNow.lang
+        const destination = timetableText(instance.destinationText, lang)?.slice(0, 18)
+        const label = [textIn(lang, '架空', 'Fictional', '虚构'), timetableText(instance.serviceClass, lang), destination]
+          .filter(Boolean).join(' · ')
+        if (marker.dataset.label !== label || marker.lang !== lang) {
+          marker.lang = lang
+          marker.dataset.label = label
+          marker.textContent = label
+          marker.title = ''
+          if (instance.lineId) appendLineMarks(marker, [instance.lineId])
+        }
         marker.style.left = x + 'px'
         marker.style.top = y + 'px'
         marker.classList.toggle('selected-train', selected)
@@ -452,7 +480,7 @@ export function Scene(props: Props) {
     function positionPin(el: HTMLSpanElement, entry: PlacedLabel) {
       el.classList.toggle('positioned', previousLabels.has(entry.key))
       el.classList.toggle('occluded-pin', entry.occluded)
-      if (entry.occluded) el.dataset.occlusion = propsNow.lang === 'ja' ? '遮蔽' : 'Occluded'
+      if (entry.occluded) el.dataset.occlusion = textIn(propsNow.lang, '遮蔽', 'Occluded', '被遮挡')
       else delete el.dataset.occlusion
       if (entry.edge) {
         const { x, y, width, height } = entry.rect
@@ -470,36 +498,38 @@ export function Scene(props: Props) {
       if (spec.variant) el.classList.add(spec.variant + '-pin')
       if (spec.targetId) el.dataset.owner = spec.targetId
       el.dataset.key = spec.key
-      el.textContent = spec.icon ?? spec.text
+      el.textContent = spec.text
       if (spec.title) el.title = spec.title
-      if (spec.variant === 'lines') {
-        el.textContent = ''
-        for (const { lineId } of spec.badges ?? []) {
-          const line = linesById.get(lineId)
-          if (!line) continue
-          const style = lineStyleById.get(lineId)
-          const hex = style?.color?.hex
-          const badge = document.createElement('span')
-          badge.className = 'line-badge'
-          badge.dataset.size = 'xs'
-          badge.textContent = style?.shortName?.[propsNow.lang] ?? line.names[propsNow.lang]
-          badge.title = hex ? line.names[propsNow.lang] : unverifiedLineColor(propsNow.lang)
-          if (hex) {
-            badge.style.backgroundColor = hex
-            badge.style.color = lineBadgeTextColor(hex)
-          }
-          el.appendChild(badge)
-        }
-      }
-      if (spec.variant === 'platform') {
-        const lineId = spec.badges?.[0]?.lineId
-        const color = lineId ? lineStyleById.get(lineId)?.color : null
-        if (!color) el.title += ' · ' + unverifiedLineColor(propsNow.lang)
-        el.dataset.lineColor = color ? 'known' : 'unknown'
-        if (color) el.style.setProperty('--line-stripe', color.hex)
+      if (spec.variant === 'lines') el.textContent = ''
+      if (spec.badges?.length) {
+        appendLineMarks(el, spec.badges.map(({ lineId }) => lineId))
+        el.dataset.lineColor = spec.badges.some(({ lineId }) => lineStyleById.get(lineId)?.color) ? 'known' : 'unknown'
       }
       box.appendChild(el)
       return { ...spec, position: new T.Vector3(...spec.anchor), order: labels.length, el }
+    }
+
+    function appendLineMarks(el: HTMLElement, ids: string[]) {
+      const lineNames: string[] = []
+      for (const id of ids) {
+        const line = linesById.get(id)
+        const style = lineStyleById.get(id)
+        if (!line || !style) continue
+        const name = nameIn(line.names, propsNow.lang)
+        lineNames.push(name)
+        const mark = document.createElement('span')
+        mark.className = 'line-mark'
+        mark.dataset.kind = style.kind
+        mark.dataset.lineId = id
+        mark.title = name
+        mark.textContent = style.stationNumberPrefix ?? style.shortName?.[propsNow.lang] ?? name
+        if (style.color) {
+          mark.style.backgroundColor = style.color.hex
+          mark.style.color = lineBadgeTextColor(style.color.hex)
+        }
+        el.appendChild(mark)
+      }
+      if (lineNames.length) el.title = [el.title, ...lineNames].filter(Boolean).join(' · ')
     }
 
     function scheduleFrame() {
@@ -521,7 +551,8 @@ export function Scene(props: Props) {
 
     function animate(now: number) {
       raf = 0
-      const animateView = !!(fade || focus)
+      const animateView = !!focus
+      const animateColors = !!fade
       if (fade && group?.instanceColor) {
         const t = motion.matches ? 1 : T.MathUtils.clamp((now - fade.start) / 160, 0, 1)
         const colors = group.instanceColor.array
@@ -547,12 +578,12 @@ export function Scene(props: Props) {
       const movedWithTrain = updatedTrains && updateFollow()
       if (animateView || movedWithTrain) {
         if (!controls.update()) draw()
-      } else if (updatedTrains) renderFrame()
+      } else if (animateColors || updatedTrains) renderFrame()
       if (fade || focus) scheduleFrame()
       scheduleTrainFrame(now)
     }
 
-    function applyAppearance(rebuilt: boolean, previous?: Props) {
+    function applyAppearance(rebuilt: boolean, relayout: boolean, previous?: Props) {
       if (!group?.instanceColor) return
       const { selection, hovered, showRoute } = propsNow
       const highlighted = selection ? ownersOf(station, selection) : new Set<string>()
@@ -606,26 +637,25 @@ export function Scene(props: Props) {
       data.highlighted = String(selectedIndices.length + Number(passageMarker.visible) + Number(trainSelected))
       data.dimmed = String(dimmed)
       box.style.cursor = hovered ? 'pointer' : ''
-      const hasLabel = (id: string) => labels.some((label) =>
-        label.targetId === id && (!label.routeOnly || showRoute),
-      )
-      const emphasized = selection && (selectedIndices.length > 0 || passageMarker.visible) && !hasLabel(selection.id)
-        ? selection : hovered && !hasLabel(hovered.id) ? hovered : null
-      if (supplementalLabel?.targetId !== emphasized?.id) {
-        supplementalLabel?.el.remove()
-        const spec = emphasized ? objectLabel(station, propsNow, emphasized) : null
-        supplementalLabel = spec ? createLabel(spec) : null
+      if (relayout) {
+        const hasLabel = selection && labels.some((label) =>
+          label.targetId === selection.id && (!label.routeOnly || showRoute),
+        )
+        const target = selection && (selectedIndices.length > 0 || passageMarker.visible) && !hasLabel
+          ? selection : null
+        if (supplementalLabel?.targetId !== target?.id) {
+          supplementalLabel?.el.remove()
+          const spec = target ? objectLabel(station, propsNow, target) : null
+          supplementalLabel = spec ? createLabel(spec) : null
+        }
+        for (const { el, routePriority } of supplementalLabel ? [...labels, supplementalLabel] : labels) {
+          el.classList.toggle('selected', !!selection && el.dataset.owner === selection.id)
+          if (routePriority !== undefined) el.classList.toggle('active', showRoute)
+        }
+        const priority = (label: Label) => label.el.classList.contains('selected') ? -5
+          : (showRoute ? label.routePriority : undefined) ?? label.priority
+        labels.sort((a, b) => priority(a) - priority(b) || a.order - b.order)
       }
-      for (const { el, routePriority } of supplementalLabel ? [...labels, supplementalLabel] : labels) {
-        const owner = el.dataset.owner
-        el.classList.toggle('selected', !!selection && owner === selection.id)
-        el.classList.toggle('hovered', !!hovered && owner === hovered.id)
-        if (routePriority !== undefined) el.classList.toggle('active', showRoute)
-      }
-      const priority = (label: Label) => label.el.classList.contains('selected') ? -5
-        : label.el.classList.contains('hovered') ? -4
-        : (showRoute ? label.routePriority : undefined) ?? label.priority
-      labels.sort((a, b) => priority(a) - priority(b) || a.order - b.order)
 
       if (updateOutline) {
         if (outline) {
@@ -652,7 +682,9 @@ export function Scene(props: Props) {
         fade = { start: performance.now(), from: colors.slice(), to: next }
         scheduleFrame()
       }
-      draw()
+      // Hover uses the placed labels for hit testing, so it cannot change their layout.
+      if (relayout) draw()
+      else if (!fade) renderFrame()
     }
 
     function markCoveredPassage(hasInstances: boolean) {
@@ -744,7 +776,6 @@ export function Scene(props: Props) {
       )
       const refit =
         !propsNow ||
-        propsNow.floor !== p.floor ||
         propsNow.spread !== p.spread ||
         propsNow.siteId !== p.siteId ||
         propsNow.shell !== p.shell
@@ -778,7 +809,7 @@ export function Scene(props: Props) {
       if (refit) bounds = fit(p)
       gl.domElement.setAttribute(
         'aria-label',
-        p.lang === 'ja' ? '駅構内の三次元図' : 'Interactive station model',
+        textIn(p.lang, '駅構内の三次元図', 'Interactive station model', '车站 3D 模型'),
       )
       labels.splice(0).forEach((l) => l.el.remove())
       supplementalLabel?.el.remove()
@@ -793,9 +824,14 @@ export function Scene(props: Props) {
         world.remove(group)
         group.dispose()
       }
+      if (contextMesh) {
+        world.remove(contextMesh)
+        contextMesh.dispose()
+        contextMesh = null
+      }
       const matrices: T.Matrix4[] = [],
         colors: T.Color[] = []
-      const panes: ShopWindow[] = []
+      const contextMatrices: T.Matrix4[] = []
       const boards: Board[] = []
       const finishes: number[] = []
       let finish: number = Finish.metal
@@ -804,8 +840,10 @@ export function Scene(props: Props) {
         hall = 0xddccb1,
         steel = 0x686963
       const gap = p.spread ? 9 : trackFloorGap
-      const visible = scenePlaceFilter(station, p, undefined)
+      const visible = siteFilter(station, p.siteId)
+      const focused = scenePlaceFilter(station, p, undefined)
       const ordinal = (place: Place) => floors.get(place.levelId)!.ordinal
+      let inContext = false
       const routeFloors = new Set((current ? [current] : p.route)
         .flatMap(({ from, to }) => [ordinal(from), ordinal(to)]))
       outsideRouteFloors = new Set(p.floor === null && routeFloors.size ? [
@@ -821,7 +859,7 @@ export function Scene(props: Props) {
           n.point[1],
         )
       if (tracks && trackDebug) {
-        const displayed = tracks.filter((track) => visible(nodes.get(track.platformId)!))
+        const displayed = tracks.filter((track) => focused(nodes.get(track.platformId)!))
         const positions: number[] = []
         const colors: number[] = []
         const known = new T.Color(0x00a7b2)
@@ -855,6 +893,10 @@ export function Scene(props: Props) {
         dummy.scale.set(w, h, d)
         dummy.quaternion.copy(rotation ?? new T.Quaternion())
         dummy.updateMatrix()
+        if (inContext) {
+          contextMatrices.push(dummy.matrix.clone())
+          return
+        }
         finishes.push(surface)
         owners.push(owner)
         matrices.push(dummy.matrix.clone())
@@ -884,6 +926,7 @@ export function Scene(props: Props) {
       for (const n of station.places.filter(visible)) {
         if (n.kind === 'Landing') continue
         owner = n.id
+        inContext = !focused(n)
         const [w, d] = n.size,
           at = pos(n)
         const deckLevel = at.clone().add(new T.Vector3(0, 0.09, 0))
@@ -905,6 +948,7 @@ export function Scene(props: Props) {
           n.kind === 'Platform' ? plate : n.zone === 'unpaid' ? hall : rim,
           (center, width, height, depth, color) => {
             block(center, width, height, depth, color)
+            if (inContext) return
             const half = new T.Vector3(width, height, depth).multiplyScalar(0.5)
             // Use the deck generator's individual blocks so stair openings stay open.
             const bounds = new T.Box3(center.clone().sub(half), center.clone().add(half))
@@ -931,11 +975,12 @@ export function Scene(props: Props) {
             at,
             landings,
             block,
-            (position, alongX) =>
-              boards.push({ position, alongX, platform: n.id }),
+            (position, alongX) => {
+              if (!inContext) boards.push({ position, alongX, platform: n.id })
+            },
           )
           const sides: (-1 | 1)[] =
-            n.boarding?.trackSides ??
+            n.boarding?.trackSides.length ? n.boarding.trackSides :
             (n.id.endsWith('jr-11')
               ? [1]
               : n.id.endsWith('metro-1')
@@ -1024,13 +1069,12 @@ export function Scene(props: Props) {
             })
           if (n.id !== 'sk:concourse:hk-outer') {
             if (p.shell)
-              concourseWalls(n, deckLevel, openings, block, panes, !!p.eye)
+              concourseWalls(n, deckLevel, openings, block, !!p.eye)
             else architecture.hallRails(n, deckLevel, openings, block)
           }
           if (
             n.id === 'sk:concourse:hk-headhall' &&
             p.shell &&
-            p.floor === null &&
             !current
           )
             terminalRoof(n, at, block, beam)
@@ -1038,14 +1082,14 @@ export function Scene(props: Props) {
       }
       if (
         p.shell &&
-        p.floor === null &&
         !current &&
         (!p.siteId || p.siteId === 'sk:station:jr-osaka')
       ) {
         owner = 'sk:station:jr-osaka'
+        inContext = p.floor !== null
         osakaShed(gap, (at, w, h, d, color, rotation, surface) => {
           block(at, w, h, d, color, rotation, surface)
-          if (surface === Finish.roof) {
+          if (!inContext && surface === Finish.roof) {
             occlusionProxies.push({
               owner, floorOrdinal: null,
               bounds: new T.Box3(new T.Vector3(-0.5, -0.5, -0.5), new T.Vector3(0.5, 0.5, 0.5)),
@@ -1062,14 +1106,23 @@ export function Scene(props: Props) {
           va = visible(a),
           vb = visible(b)
         if (!va && !vb) continue
+        const fa = focused(a), fb = focused(b)
+        inContext = p.floor !== null && !(fa && fb)
         const start = pos(a, 0.46),
           end = pos(b, 0.46)
         if (e.kind === 'Elevator') {
+          const stopA = va && !liftStops.has(a.id)
+          const stopB = vb && !liftStops.has(b.id)
+          if (inContext && fa !== fb) {
+            inContext = false
+            architecture.lift(start, end, stopA && fa, stopB && fb, block, beam, false)
+            inContext = true
+          }
           architecture.lift(
             start,
             end,
-            va && !liftStops.has(a.id),
-            vb && !liftStops.has(b.id),
+            stopA && (!inContext || !fa),
+            stopB && (!inContext || !fb),
             block,
             beam,
             va && vb,
@@ -1135,21 +1188,21 @@ export function Scene(props: Props) {
         }
         if (
           !current &&
-          va !== vb &&
+          fa !== fb &&
           (e.kind === 'Stairs' || e.kind === 'Escalator')
         ) {
-          const landing = va ? start : end
+          inContext = false
+          const landing = fa ? start : end
           architecture.stairs(
             e,
             landing,
-            landing.clone().lerp(va ? end : start, 0.3),
+            landing.clone().lerp(fa ? end : start, 0.3),
             block,
             beam,
           )
         }
       }
-      routeOverlay.rebuild(routeBands(p.route, { ordinal, visible, gap, active: p.step }))
-      shopDisplay.rebuild(panes)
+      routeOverlay.rebuild(routeBands(p.route, { ordinal, visible: focused, gap, active: p.step }))
       signs.rebuild(boards, world)
       unit.dispose()
       unit.setAttribute(
@@ -1173,6 +1226,13 @@ export function Scene(props: Props) {
         }
       }
       world.add(group)
+      if (contextMatrices.length) {
+        contextMesh = new T.InstancedMesh(unit, contextMaterial, contextMatrices.length)
+        contextMatrices.forEach((matrix, index) => contextMesh!.setMatrixAt(index, matrix))
+        contextMesh.computeBoundingSphere()
+        world.add(contextMesh)
+      }
+      gl.domElement.dataset.contextInstances = String(contextMatrices.length)
       for (const spec of buildLabels(station, p, p.selection, { steps: p.route, step: p.step })) {
         labels.push(createLabel(spec))
       }
@@ -1244,6 +1304,7 @@ export function Scene(props: Props) {
         const color = p.dark ? 0x262a2e : 0xb5bdbe
         world.background = p.eye ? new T.Color(color) : null
         world.fog = p.eye ? new T.FogExp2(color, 0.018) : null
+        contextMaterial.color.setHex(p.dark ? 0x9aabb5 : 0x687781)
       }
       const rebuildGeometry = key !== geometryKey
       const needsView = lastReset !== p.reset || lastZoom !== p.zoom.tick
@@ -1279,10 +1340,11 @@ export function Scene(props: Props) {
           occlusionPose = ''
         }
       }
-      if (rebuildGeometry || changedExample || changedSelection || p.hovered !== previous?.hovered ||
-          p.dark !== previous?.dark || p.showRoute !== previous?.showRoute) {
-        applyAppearance(rebuildGeometry, previous)
-      } else if (needsView || p.detail !== previous?.detail) draw()
+      const appearanceChanged = rebuildGeometry || changedExample || changedSelection ||
+        p.dark !== previous?.dark || p.showRoute !== previous?.showRoute
+      if (appearanceChanged || p.hovered !== previous?.hovered) {
+        applyAppearance(rebuildGeometry, appearanceChanged || needsView, previous)
+      } else if (needsView) draw()
       else if (updatedTrains) renderFrame()
       if (changedSchedule) scheduleTrainFrame(performance.now())
       if (p.following !== previous?.following) {
@@ -1456,6 +1518,17 @@ export function Scene(props: Props) {
       if (!controls.update()) draw()
     }
     controls.addEventListener('change', draw)
+    controls.addEventListener('start', () => {
+      draggingModel = true
+      window.clearTimeout(settleTimer)
+      occlusionPose = ''
+      labelLeaders.style.visibility = 'hidden'
+    })
+    controls.addEventListener('end', () => {
+      draggingModel = false
+      labelLeaders.style.visibility = ''
+      draw()
+    })
     gl.domElement.addEventListener('keydown', keyboard)
     const observer = new ResizeObserver(size)
     observer.observe(box)
@@ -1486,8 +1559,9 @@ export function Scene(props: Props) {
       trackDebug?.geometry.dispose()
       trackDebug?.material.dispose()
       group?.dispose()
+      contextMesh?.dispose()
+      contextMaterial.dispose()
       outline?.dispose()
-      shopDisplay.dispose()
       signs.dispose()
       material.dispose()
       outlineMaterial.dispose()
@@ -1504,9 +1578,7 @@ export function Scene(props: Props) {
     <div className="scene" ref={host}>
       {failed && (
         <button className="fallback" onClick={props.onFallback}>
-          {props.lang === 'ja'
-            ? 'WebGL利用不可 · 平面図を開く'
-            : 'WebGL unavailable · Open floor plan'}
+          {textIn(props.lang, 'WebGL利用不可 · 平面図を開く', 'WebGL unavailable · Open floor plan', 'WebGL 不可用，打开平面图')}
         </button>
       )}
     </div>

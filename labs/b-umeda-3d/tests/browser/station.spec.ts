@@ -19,7 +19,7 @@ test('opens the WebGL model, walks a segment and switches floors without console
     'triangles',
   )
   await page.screenshot({ path: info.outputPath('overview.png') })
-  await page.getByRole('button', { name: 'EN', exact: true }).click()
+  await page.locator('header select').selectOption('en')
   await page.getByRole('button', { name: 'Routes & places' }).click()
   await page.getByRole('button', { name: 'Start walkthrough' }).click()
   await expect(page.locator('[aria-current="step"]')).toHaveCount(1)
@@ -49,7 +49,7 @@ test('lets a mobile visitor inspect fare zones, sources and the synthetic overla
 }, info) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/')
-  await page.getByRole('button', { name: 'EN', exact: true }).click()
+  await page.locator('header select').selectOption('en')
   await page.getByRole('button', { name: 'Routes & places' }).click()
   await page.getByRole('button', { name: 'Model guide' }).click()
   await expect(page.getByText('Live feed unavailable')).toBeVisible()
@@ -94,9 +94,11 @@ test('selects a model feature and navigates custom endpoints in either direction
   page,
 }, info) => {
   await page.goto('/')
-  await page.getByRole('button', { name: 'EN', exact: true }).click()
+  await page.locator('header select').selectOption('en')
   await page.getByRole('button', { name: '2F', exact: true }).click()
-  const pin = page.locator('.pin[data-owner="sk:platform:jr-3-4"]').first()
+  const zoomIn = page.getByRole('button', { name: 'Zoom in', exact: true })
+  for (let i = 0; i < 4; i++) await zoomIn.click()
+  const pin = page.locator('.platform-pin[data-owner="sk:platform:jr-3-4"]')
   await expect(pin).toBeVisible()
   const rect = await pin.boundingBox()
   await page.mouse.click(rect!.x + rect!.width / 2, rect!.y + rect!.height / 2)
@@ -137,7 +139,7 @@ test('opens each district model and shows its own floors, platforms and retail p
     if (m.type() === 'error') errors.push(m.text())
   })
   await page.goto('/')
-  await page.getByRole('button', { name: 'EN', exact: true }).click()
+  await page.locator('header select').selectOption('en')
   for (const [label, expected] of [
     ['Hankyu Osaka-umeda', '3F'],
     ['Hanshin Osaka-Umeda', 'B2F'],
@@ -148,7 +150,7 @@ test('opens each district model and shows its own floors, platforms and retail p
   ]) {
     await page.locator('.surround summary').click()
     await page.locator('.site-list button').filter({ hasText: label }).click()
-    await expect(page.locator('.viewer-bar strong')).toContainText(label)
+    await expect(page.locator('.surround summary')).toHaveText(label)
     await expect(
       page
         .locator('.floors')
@@ -161,19 +163,7 @@ test('opens each district model and shows its own floors, platforms and retail p
     if (label === 'Hankyu Osaka-umeda' || label === 'Whity Umeda') {
       const slug = label.split(' ')[0]
       await page.screenshot({ path: info.outputPath(slug + '.png') })
-      const interior = page.getByRole('button', { name: 'Passenger view' })
-      await interior.click()
-      const canvas = page.locator('canvas')
-      await expect(canvas).toHaveAttribute('data-view', 'interior')
-      await page.screenshot({
-        path: info.outputPath('passenger-' + slug + '.png'),
-      })
-      const frame = await canvas.getAttribute('data-frame')
-      await canvas.focus()
-      await page.keyboard.press('ArrowRight')
-      await expect(canvas).not.toHaveAttribute('data-frame', frame!)
-      await interior.click()
-      await expect(canvas).toHaveAttribute('data-view', 'overview')
+      await expect(page.locator('.floors').getByRole('button', { name: 'Passenger view' })).toHaveCount(0)
     }
   }
   await page.getByRole('button', { name: '2D', exact: true }).click()
@@ -182,8 +172,6 @@ test('opens each district model and shows its own floors, platforms and retail p
   await page.getByRole('button', { name: '3D', exact: true }).click()
   await page.locator('.surround summary').click()
   await page.getByRole('button', { name: /Entire district/ }).click()
-  await expect(page.locator('.viewer-bar strong')).toContainText(
-    'Osaka / Umeda',
-  )
+  await expect(page.locator('.surround summary')).toHaveText('Stations & arcades')
   expect(errors).toEqual([])
 })

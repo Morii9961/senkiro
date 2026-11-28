@@ -2,85 +2,246 @@
   {
     "lineId": "sk:line:midosuji",
     "kind": "subway",
-    "color": null,
-    "stationNumberPrefix": null,
-    "shortName": null
-  },
-  {
-    "lineId": "sk:line:hk-kyoto",
-    "kind": "private",
-    "color": null,
-    "stationNumberPrefix": null,
-    "shortName": null
-  },
-  {
-    "lineId": "sk:line:hk-takarazuka",
-    "kind": "private",
-    "color": null,
-    "stationNumberPrefix": null,
-    "shortName": null
-  },
-  {
-    "lineId": "sk:line:hk-kobe",
-    "kind": "private",
-    "color": null,
-    "stationNumberPrefix": null,
-    "shortName": null
-  },
-  {
-    "lineId": "sk:line:hs-main",
-    "kind": "private",
-    "color": null,
-    "stationNumberPrefix": null,
+    "color": {
+      "hex": "#c92136",
+      "sourceIds": [
+        "sk:source:metro-network-colors"
+      ],
+      "dataNature": "derived"
+    },
+    "stationNumberPrefix": "M",
     "shortName": null
   },
   {
     "lineId": "sk:line:tanimachi",
     "kind": "subway",
-    "color": null,
-    "stationNumberPrefix": null,
-    "shortName": null
-  },
-  {
-    "lineId": "sk:line:jr-tozai",
-    "kind": "jr",
-    "color": null,
-    "stationNumberPrefix": null,
+    "color": {
+      "hex": "#602384",
+      "sourceIds": [
+        "sk:source:metro-network-colors"
+      ],
+      "dataNature": "derived"
+    },
+    "stationNumberPrefix": "T",
     "shortName": null
   },
   {
     "lineId": "sk:line:yotsubashi",
     "kind": "subway",
-    "color": null,
-    "stationNumberPrefix": null,
+    "color": {
+      "hex": "#006bac",
+      "sourceIds": [
+        "sk:source:metro-network-colors"
+      ],
+      "dataNature": "derived"
+    },
+    "stationNumberPrefix": "Y",
+    "shortName": null
+  },
+  {
+    "lineId": "sk:line:hk-kyoto",
+    "kind": "private",
+    "color": {
+      "hex": "#00834c",
+      "sourceIds": [
+        "sk:source:hankyu-sign-colors"
+      ],
+      "dataNature": "derived"
+    },
+    "stationNumberPrefix": "HK",
+    "shortName": null
+  },
+  {
+    "lineId": "sk:line:hk-takarazuka",
+    "kind": "private",
+    "color": {
+      "hex": "#dc7700",
+      "sourceIds": [
+        "sk:source:hankyu-sign-colors"
+      ],
+      "dataNature": "derived"
+    },
+    "stationNumberPrefix": "HK",
+    "shortName": null
+  },
+  {
+    "lineId": "sk:line:hk-kobe",
+    "kind": "private",
+    "color": {
+      "hex": "#006aa7",
+      "sourceIds": [
+        "sk:source:hankyu-sign-colors"
+      ],
+      "dataNature": "derived"
+    },
+    "stationNumberPrefix": "HK",
+    "shortName": null
+  },
+  {
+    "lineId": "sk:line:hs-main",
+    "kind": "private",
+    "color": {
+      "hex": "#0075c2",
+      "sourceIds": [
+        "sk:source:hanshin-line-colors"
+      ],
+      "dataNature": "derived"
+    },
+    "stationNumberPrefix": "HS",
+    "shortName": null
+  },
+  {
+    "lineId": "sk:line:jr-tozai",
+    "kind": "jr",
+    "color": {
+      "hex": "#a92e82",
+      "sourceIds": [
+        "sk:source:jr-network-symbols"
+      ],
+      "dataNature": "derived"
+    },
+    "stationNumberPrefix": "H",
     "shortName": null
   },
   {
     "lineId": "sk:line:loop",
     "kind": "jr",
-    "color": null,
-    "stationNumberPrefix": null,
+    "color": {
+      "hex": "#d62638",
+      "sourceIds": [
+        "sk:source:jr-network-symbols"
+      ],
+      "dataNature": "derived"
+    },
+    "stationNumberPrefix": "O",
     "shortName": null
   },
   {
     "lineId": "sk:line:kobe",
     "kind": "jr",
-    "color": null,
-    "stationNumberPrefix": null,
+    "color": {
+      "hex": "#0071bb",
+      "sourceIds": [
+        "sk:source:jr-network-symbols"
+      ],
+      "dataNature": "derived"
+    },
+    "stationNumberPrefix": "A",
     "shortName": null
   },
   {
     "lineId": "sk:line:kyoto",
     "kind": "jr",
-    "color": null,
-    "stationNumberPrefix": null,
+    "color": {
+      "hex": "#0071bb",
+      "sourceIds": [
+        "sk:source:jr-network-symbols"
+      ],
+      "dataNature": "derived"
+    },
+    "stationNumberPrefix": "A",
     "shortName": null
   },
   {
     "lineId": "sk:line:east",
     "kind": "jr",
+    "color": {
+      "hex": "#507984",
+      "sourceIds": [
+        "sk:source:jr-network-symbols"
+      ],
+      "dataNature": "derived"
+    },
+    "stationNumberPrefix": "F",
+    "shortName": null
+  },
+  {
+    "lineId": "sk:line:takarazuka",
+    "kind": "jr",
+    "color": {
+      "hex": "#e7ac00",
+      "sourceIds": [
+        "sk:source:jr-network-symbols"
+      ],
+      "dataNature": "derived"
+    },
+    "stationNumberPrefix": "G",
+    "shortName": null
+  },
+  {
+    "lineId": "sk:line:yumesaki",
+    "kind": "jr",
+    "color": {
+      "hex": "#164a91",
+      "sourceIds": [
+        "sk:source:jr-network-symbols"
+      ],
+      "dataNature": "derived"
+    },
+    "stationNumberPrefix": "P",
+    "shortName": null
+  },
+  {
+    "lineId": "sk:line:kansai-airport",
+    "kind": "jr",
+    "color": {
+      "hex": "#0877a8",
+      "sourceIds": [
+        "sk:source:jr-network-symbols"
+      ],
+      "dataNature": "derived"
+    },
+    "stationNumberPrefix": "S",
+    "shortName": null
+  },
+  {
+    "lineId": "sk:line:hanwa",
+    "kind": "jr",
+    "color": {
+      "hex": "#e1691b",
+      "sourceIds": [
+        "sk:source:jr-network-symbols"
+      ],
+      "dataNature": "derived"
+    },
+    "stationNumberPrefix": "R",
+    "shortName": null
+  },
+  {
+    "lineId": "sk:line:yamatoji",
+    "kind": "jr",
+    "color": {
+      "hex": "#00834a",
+      "sourceIds": [
+        "sk:source:jr-network-symbols"
+      ],
+      "dataNature": "derived"
+    },
+    "stationNumberPrefix": "Q",
+    "shortName": null
+  },
+  {
+    "lineId": "sk:line:bantan",
+    "kind": "jr",
+    "color": {
+      "hex": "#ad3978",
+      "sourceIds": [
+        "sk:source:jr-network-symbols"
+      ],
+      "dataNature": "derived"
+    },
+    "stationNumberPrefix": "J",
+    "shortName": null
+  },
+  {
+    "lineId": "sk:line:tokaido-express",
+    "kind": "other",
     "color": null,
     "stationNumberPrefix": null,
-    "shortName": null
+    "shortName": {
+      "ja": "東海道線",
+      "en": "Tokaido Line",
+      "zh": "东海道线"
+    }
   }
 ]

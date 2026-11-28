@@ -103,6 +103,58 @@
   },
   {
     "lineId": "sk:line:jr-tozai",
+    "seriesId": "sk:vehicle:jr-321",
+    "status": "representative",
+    "sourceIds": [
+      "sk:source:jr-vehicle-service",
+      "sk:source:jr-vehicle-321-design"
+    ]
+  },
+  {
+    "lineId": "sk:line:takarazuka",
+    "seriesId": "sk:vehicle:jr-321",
+    "status": "representative",
+    "sourceIds": [
+      "sk:source:jr-vehicle-service",
+      "sk:source:jr-vehicle-321-design"
+    ]
+  },
+  {
+    "lineId": "sk:line:yumesaki",
+    "seriesId": "sk:vehicle:jr-323",
+    "status": "representative",
+    "sourceIds": [
+      "sk:source:jr-vehicle-service"
+    ]
+  },
+  {
+    "lineId": "sk:line:yamatoji",
+    "seriesId": "sk:vehicle:jr-221",
+    "status": "representative",
+    "sourceIds": [
+      "sk:source:jr-vehicle-service"
+    ]
+  },
+  {
+    "lineId": "sk:line:hanwa",
+    "seriesId": null,
+    "status": "unknown",
+    "sourceIds": []
+  },
+  {
+    "lineId": "sk:line:kansai-airport",
+    "seriesId": null,
+    "status": "unknown",
+    "sourceIds": []
+  },
+  {
+    "lineId": "sk:line:bantan",
+    "seriesId": null,
+    "status": "unknown",
+    "sourceIds": []
+  },
+  {
+    "lineId": "sk:line:tokaido-express",
     "seriesId": null,
     "status": "unknown",
     "sourceIds": []

@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest'
-import { effectiveBand, nextBand, permitsLabel, Z1, Z2, type ZoomBand } from '../src/scene/labels/config'
+import { nextBand, permitsLabel, Z1, Z2, type ZoomBand } from '../src/scene/labels/config'
 
 it('AT-LBL-06: 5% oscillation around either threshold does not change the band', () => {
   for (const [threshold, low, high] of [[Z1, 'far', 'mid'], [Z2, 'mid', 'near']] as const) {
@@ -13,13 +13,12 @@ it('AT-LBL-06: 5% oscillation around either threshold does not change the band',
   }
 })
 
-it('enforces the depth cap, near station retirement and one-band promotion', () => {
-  expect(effectiveBand('far', true)).toBe('mid')
-  expect(effectiveBand('mid', true)).toBe('near')
-  expect(permitsLabel(0, 'far', 'guide')).toBe(true)
-  expect(permitsLabel(2, 'far', 'guide')).toBe(false)
-  expect(permitsLabel(1, 'near', 'guide')).toBe(false)
-  expect(permitsLabel(3, 'near', 'facility')).toBe(true)
-  expect(permitsLabel(4, 'near', 'guide')).toBe(false)
-  expect(permitsLabel(4, 'near', 'structure')).toBe(true)
+it('shows stations, then lines, then platforms and facilities as zoom increases', () => {
+  expect(permitsLabel(0, 'far')).toBe(true)
+  expect(permitsLabel(1, 'far')).toBe(true)
+  expect(permitsLabel(2, 'far', true)).toBe(false)
+  expect(permitsLabel(2, 'mid', true)).toBe(true)
+  expect(permitsLabel(2, 'mid')).toBe(false)
+  expect(permitsLabel(2, 'near', true)).toBe(false)
+  for (const depth of [2, 3, 4]) expect(permitsLabel(depth, 'near')).toBe(true)
 })

@@ -58,6 +58,11 @@ const exteriors: Record<string, Exterior> = {
     panes: [1, 3, 3, 1], glassHeight: 0.32, gangway: 'central', headlights: [0.23, 0.29, 0.13],
     waist: 'cream', overhead: true,
   },
+  'sk:vehicle:jr-321': {
+    cab: 'cab-squared', cabDepth: 0.26, height: 0.57, doors: [-0.35, -0.12, 0.12, 0.35],
+    panes: [1, 1, 1, 1, 1], glassHeight: 0.32, gangway: null, headlights: [0.39, 0.32, 0.12],
+    waist: 'blue-apron', overhead: true,
+  },
   'sk:vehicle:metro-30000': metroModern,
   'sk:vehicle:metro-32': metroModern,
   'sk:vehicle:metro-23': {

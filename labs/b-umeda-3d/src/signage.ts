@@ -1,5 +1,6 @@
 import * as T from 'three'
-import { nodes, station } from './model'
+import { lineStyleById, nodes, station } from './model'
+import { lineBadgeTextColor } from './domain/lines'
 import type { Place } from './domain/types'
 export interface Board {
   position: T.Vector3
@@ -34,12 +35,21 @@ export function signage() {
     ctx.fillText(name, x + 12, y + 49, 246)
     ctx.font = '21px sans-serif'
     ctx.fillText(st.names.en, x + 13, y + 83, 231)
-    ctx.fillStyle = p.serviceLineIds?.includes('sk:line:tanimachi')
-      ? '#bb95c1'
-      : p.stationId?.includes('hankyu')
-        ? '#b99783'
-        : '#9cbac0'
-    ctx.fillRect(x + 9, y + 96, 366, 5)
+    let markX = x + 254
+    for (const id of p.serviceLineIds ?? []) {
+      const style = lineStyleById.get(id)
+      const code = style?.stationNumberPrefix ?? style?.shortName?.ja
+      if (!code) continue
+      ctx.font = 'bold 11px sans-serif'
+      const width = Math.max(20, ctx.measureText(code).width + 6)
+      const hex = style?.color?.hex ?? '#e1e3e3'
+      ctx.fillStyle = hex
+      ctx.fillRect(markX, y + 75, width, 21)
+      ctx.fillStyle = lineBadgeTextColor(hex)
+      ctx.textAlign = 'center'
+      ctx.fillText(code, markX + width / 2, y + 89)
+      markX += width + 3
+    }
     ctx.fillStyle = '#e9e4d5'
     ctx.font = 'bold 45px sans-serif'
     ctx.textAlign = 'right'

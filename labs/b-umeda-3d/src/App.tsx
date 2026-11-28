@@ -1,3 +1,4 @@
+import { nameIn } from './domain/language'
 import { useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState } from 'react'
 import { Scene } from './Scene'
 import { FloorPlan } from './FloorPlan'
@@ -6,7 +7,7 @@ import type { Language } from './domain/types'
 import { floorLabels, floors, nodes, station, sites, inSite } from './model'
 import { Guide } from './Guide'
 import { exampleService } from './providers/service'
-import { availableFeed } from './providers/timetable'
+import { availableFeed, loadOfficialTimetable, type OfficialTimetable } from './providers/timetable'
 import { createFacilityIndex, ownersOf } from './domain/index'
 import { createSearchIndex } from './domain/searchIndex'
 import { exits } from '../data/manual/exits'
@@ -19,7 +20,6 @@ import { initialSelection, selectionReducer, targetFromOwner, type SelectionTarg
 import { parseUrl, serializeUrl } from './state/url'
 import { AppHeader } from './ui/controls/AppHeader'
 import { FloorControls } from './ui/controls/FloorControls'
-import { DetailControl } from './ui/controls/DetailControl'
 import { FloorChangeBanner } from './ui/controls/FloorChangeBanner'
 import { DetailSheet, type SheetHeight } from './ui/panels/DetailSheet'
 import { InfoDialog } from './ui/panels/InfoDialog'
@@ -62,7 +62,6 @@ export function App() {
     [dark, theme] = useState(initial.theme === 'dark'),
     [plan, setPlan] = useState(initial.mode === '2d')
   const [floor, selectFloor] = useState<number | null>(initial.floor),
-    [spread, setSpread] = useState(false),
     [reset, setReset] = useState(0)
   const [zoom, setZoom] = useState({ tick: 0, factor: 1 }),
     [planZoom, setPlanZoom] = useState(1)
@@ -92,7 +91,6 @@ export function App() {
     setPlan(false)
     setEye(id)
   }
-  const [shell, setShell] = useState(true)
   const site = sites.find((s) => s.id === siteId)
   const siteFloors = floorLabels.filter(
     ([n]) =>
@@ -129,17 +127,19 @@ export function App() {
   const searchInput = useRef<HTMLInputElement>(null)
   const [recent, setRecent] = useState<string[]>([])
   const [drawer, setDrawer] = useState(
-    initial.step >= 0 || initial.stepFreeOnly || initial.from !== null || initial.to !== null || !!initial.routeDraft,
+    initial.step >= 0 || initial.stepFreeOnly || initial.from !== null || initial.to !== null || !!initial.routeDraft ||
+      initial.feed === 'timetable-sim',
   )
   const tour = tours.findIndex(
     (x) => x.start === trip.start && x.end === trip.end,
   )
   const [routeStep, selectStep] = useState(initial.step),
     [lift, setLift] = useState(initial.stepFreeOnly)
-  const [feed, setFeed] = useState(() => availableFeed(initial.feed))
+  const [feedKind, setFeedKind] = useState(initial.feed)
+  const [officialTimetable, setOfficialTimetable] = useState<OfficialTimetable | null>()
+  const feed = useMemo(() => availableFeed(feedKind, officialTimetable), [feedKind, officialTimetable])
   const [trainClock, setTrainClock] = useState(startTrainClock)
   const [trainDay, setTrainDay] = useState<DayType>('weekday')
-  const [detail, setDetail] = useState(initial.detail)
   const [sheetHeight, setSheetHeight] = useState<SheetHeight>('half')
   const example = feed.kind === 'demo'
   const trainPlans = useMemo(() => feed.kind === 'demo'
@@ -163,14 +163,25 @@ export function App() {
     const timer = window.setInterval(refresh, 200)
     return () => window.clearInterval(timer)
   }, [selection, selectedTrain, trainClock])
-  const [panel, setPanel] = useState<'search' | 'route' | 'layers' | 'trains'>('route'),
+  const [panel, setPanel] = useState<'search' | 'route' | 'layers' | 'trains'>(initial.feed === 'timetable-sim' ? 'trains' : 'route'),
     [dialog, setDialog] = useState<'help' | 'sources' | null>(null)
-  const t = (ja: string, en: string) => (lang === 'ja' ? ja : en)
-  function changeTrainMode(mode: 'off' | 'demo') {
-    if (mode === feed.kind) return
-    if (mode === 'off' && selection?.kind === 'train') clear()
+  const wantsTimetable = panel === 'trains' || selection?.kind === 'platform'
+  useEffect(() => {
+    if (!wantsTimetable || officialTimetable !== undefined) return
+    const request = new AbortController()
+    void loadOfficialTimetable(request.signal).then((dataset) => {
+      if (!request.signal.aborted) setOfficialTimetable(dataset)
+    }).catch(() => {
+      if (!request.signal.aborted) setOfficialTimetable(null)
+    })
+    return () => request.abort()
+  }, [officialTimetable, wantsTimetable])
+  const t = (ja: string, en: string, zh: string) => lang === 'zh' ? zh : lang === 'ja' ? ja : en
+  function changeTrainMode(mode: 'off' | 'demo' | 'timetable-sim') {
+    if (mode === feedKind) return
+    if (mode !== 'demo' && selection?.kind === 'train') clear()
     if (mode === 'demo') setTrainClock(startTrainClock())
-    setFeed(availableFeed(mode))
+    setFeedKind(mode)
   }
   function changeTrainSpeed(speed: TrainSpeed) {
     const now = performance.now()
@@ -194,7 +205,7 @@ export function App() {
       site: siteId,
       floor,
       mode: plan ? '2d' : '3d',
-      detail,
+      detail: initial.detail,
       selection: selection?.kind === 'train' ? null : selection,
       from: !routeDraft && trip.start === tours[0].start && nodes.get(trip.end!)?.kind !== 'Entrance'
         ? null : trip.start,
@@ -204,10 +215,10 @@ export function App() {
       step,
       lang,
       theme: dark ? 'dark' : 'light',
-      feed: feed.kind,
+      feed: feedKind,
     }, url.searchParams).toString()
     if (url.href !== window.location.href) window.history.replaceState(window.history.state, '', url)
-  }, [dark, detail, feed, floor, lang, lift, plan, routeDraft, selection, siteId, step, trip.start, trip.end])
+  }, [dark, feedKind, floor, initial.detail, lang, lift, plan, routeDraft, selection, siteId, step, trip.start, trip.end])
   const selectionPlaces = useMemo(() => selectedTrain ? [nodes.get(selectedTrain.track.platformId)!]
     : selection ? targetPlaces(selection) : [], [selectedTrain, selection])
   const selectionFloors = new Set(selectionPlaces.map((place) => floors.get(place.levelId)!.ordinal))
@@ -388,28 +399,16 @@ export function App() {
   return (
     <main className={dark ? 'app dark' : 'app'}>
       <AppHeader
-        {...{ lang, dark, drawer }}
+        {...{ lang, dark, drawer, plan }}
         onDrawer={() => setDrawer(!drawer)}
         onHelp={() => setDialog('help')}
         onTheme={() => theme(!dark)}
-        onLanguage={() => language(lang === 'ja' ? 'en' : 'ja')}
+        onLanguage={language}
+        onPlan={togglePlan}
       />
       <div className={'workspace' + (drawer || objectDetail ? ' with-drawer' : '') +
         (objectDetail ? ' with-detail' : '')} data-sheet-height={objectDetail ? sheetHeight : undefined}>
         <section className="viewer">
-          <div className="viewer-bar">
-            <strong>
-              {site?.names[lang] ?? t('大阪・梅田', 'Osaka / Umeda')}
-            </strong>
-            <div className="seg">
-              <button aria-pressed={!plan} onClick={() => togglePlan(false)}>
-                3D
-              </button>
-              <button aria-pressed={plan} onClick={() => togglePlan(true)}>
-                2D
-              </button>
-            </div>
-          </div>
           <div className="stage">
             {plan ? (
               <FloorPlan
@@ -431,14 +430,11 @@ export function App() {
                   lang,
                   dark,
                   floor,
-                  spread,
                   step,
                   reset,
                   zoom,
                   example,
-                  detail,
                   siteId,
-                  shell,
                   eye,
                   selection,
                   hovered,
@@ -446,6 +442,8 @@ export function App() {
                   trainPlans,
                   following,
                 }}
+                spread={false}
+                shell
                 route={path}
                 showRoute={step >= 0 || drawer}
                 onInspect={inspect}
@@ -458,27 +456,27 @@ export function App() {
             )}
             {example && (
               <div className="sample-tag sim-banner" data-testid="sim-banner">
-                <SimBanner lang={lang} /> · {t('サンプルモード', 'EXAMPLE MODE')} ·{' '}
-                {t('梅田 1番線', 'Umeda platform 1')} +
+                <SimBanner lang={lang} /> · {t('サンプルモード', 'EXAMPLE MODE', '示例模式')} ·{' '}
+                {t('梅田 1番線', 'Umeda platform 1', '梅田 1 号站台')} +
                 {exampleService.updates[0].delayMinutes} min · SENKIRO Lab ·{' '}
                 {exampleService.updates[0].observedAt}
               </div>
             )}
             {differentFloor && (
               <div className="eye-hint">
-                {t('対象は別の階にあります。', 'This feature is on another floor.')}{' '}
+                {t('対象は別の階にあります。', 'This feature is on another floor.', '此设施位于其他楼层。')}{' '}
                 <button onClick={() => {
                   if (selectedTrain) selectFloor(floors.get(nodes.get(selectedTrain.track.platformId)!.levelId)!.ordinal)
                   else inspect(selection!.id)
-                }}>{t('移動', 'Go to floor')}</button>
+                }}>{t('移動', 'Go to floor', '前往该层')}</button>
               </div>
             )}
             {eye && (
               <div className="eye-hint">
-                {nodes.get(eye)!.names[lang]} ·{' '}
-                {t('ドラッグで見回す', 'Drag to look around')}
+                {nameIn(nodes.get(eye)!.names, lang)} ·{' '}
+                {t('ドラッグで見回す', 'Drag to look around', '拖动环顾')}
                 <br />
-                {t('内装はイメージです。', 'Illustrative interior finishes.')}
+                {t('内装はイメージです。', 'Illustrative interior finishes.', '内装为示意。')}
               </div>
             )}
             {!plan && fromLevel && toLevel && fromLevel.ordinal !== toLevel.ordinal && (
@@ -488,7 +486,7 @@ export function App() {
             {step >= 0 && path[step] && (
               <div className="walk-hud">
                 <button
-                  aria-label={t('前の区間', 'Previous segment')}
+                  aria-label={t('前の区間', 'Previous segment', '上一段')}
                   onClick={() => highlight(step - 1)}
                 >
                   ‹
@@ -500,7 +498,7 @@ export function App() {
                   {instruction(path[step], lang)}
                 </span>
                 <button
-                  aria-label={t('案内を進める', 'Advance walkthrough')}
+                  aria-label={t('案内を進める', 'Advance walkthrough', '继续导览')}
                   disabled={step === path.length - 1}
                   onClick={() => highlight(step + 1)}
                 >
@@ -513,7 +511,7 @@ export function App() {
                     setReset((r) => r + 1)
                   }}
                 >
-                  {t('全経路', 'Overview')}
+                  {t('全経路', 'Overview', '全程')}
                 </button>
               </div>
             )}
@@ -528,14 +526,14 @@ export function App() {
                     ),
                   ].join(' → ')
                 : !plan && floor === null
-                  ? t('全階', 'ALL LEVELS')
+                  ? t('全階', 'ALL LEVELS', '全部楼层')
                   : shownFloor}
             </div>
             <details className="surround">
               <summary>
                 {site
-                  ? site.names[lang]
-                  : t('駅・地下街を選択', 'Stations & arcades')}
+                  ? nameIn(site.names, lang)
+                  : t('駅・地下街を選択', 'Stations & arcades', '选择车站或地下街')}
               </summary>
               <div className="site-list">
                 {[null, ...sites].map((s) => (
@@ -547,88 +545,61 @@ export function App() {
                       e.currentTarget.closest('details')!.open = false
                     }}
                   >
-                    {s?.names[lang] ?? t('大阪・梅田 全域', 'Entire district')}
+                    {nameIn(s?.names, lang) ?? t('大阪・梅田 全域', 'Entire district', '大阪·梅田全区')}
                     <span>{s ? (s.stationId ? '▤' : '◇') : '⌖'}</span>
                   </button>
                 ))}
               </div>
             </details>
-            {!plan && <DetailControl lang={lang} value={detail} onChange={setDetail} />}
-            <div className="zoom">
-              <button
-                onClick={() => changeZoom(1.2)}
-                aria-label={t('拡大', 'Zoom in')}
-              >
-                ＋
-              </button>
-              <button
-                onClick={() => changeZoom(1 / 1.2)}
-                aria-label={t('縮小', 'Zoom out')}
-              >
-                −
-              </button>
-              <button
-                aria-label={t('視点をリセット', 'Reset view')}
-                title={t('視点をリセット', 'Reset view')}
-                onClick={resetView}
-              >
-                ⟲
-              </button>
+            <div className="stage-tools">
+              <FloorControls
+                {...{ lang, plan, siteFloors, selectionFloors, routeFloors }}
+                floor={plan ? floorNow : floor}
+                onFloor={(next) => {
+                  setEye(null)
+                  selectFloor(next)
+                  selectStep(-1)
+                  if (next !== null) setPlanZoom(1)
+                }}
+              />
+              <div className="zoom">
+                <button onClick={() => changeZoom(1.2)} aria-label={t('拡大', 'Zoom in', '放大')}>＋</button>
+                <button onClick={() => changeZoom(1 / 1.2)} aria-label={t('縮小', 'Zoom out', '缩小')}>−</button>
+                <button
+                  aria-label={t('視点をリセット', 'Reset view', '重置视角')}
+                  title={t('視点をリセット', 'Reset view', '重置视角')}
+                  onClick={resetView}
+                >
+                  ⟲
+                </button>
+              </div>
             </div>
-          </div>
-          <FloorControls
-            {...{ lang, plan, siteFloors, selectionFloors, routeFloors, eye, shell, spread, interior }}
-            floor={plan ? floorNow : floor}
-            onFloor={(next) => {
-              setEye(null)
-              selectFloor(next)
-              selectStep(-1)
-              if (next !== null) setPlanZoom(1)
-            }}
-            onShell={() => setShell(!shell)}
-            onSpread={() => setSpread(!spread)}
-          />
-          <div className="legend">
-            <span>
-              <i className="key platform-key" />
-              {t('ホーム', 'Platform')}
-            </span>
-            <span>
-              <i className="key hall-key" />
-              {t('改札外', 'Outside gates')}
-            </span>
-            <span>
-              <i className="key path-key" />
-              {t('経路', 'Route')}
-            </span>
-            <small>
-              {t('内装・寸法は模式表現', 'Schematic layout and finishes')}
-            </small>
           </div>
         </section>
         <aside ref={panelElement} hidden={!drawer && !objectDetail}>
           {objectDetail && <DetailSheet spec={objectDetail} lang={lang} height={sheetHeight}
+            officialTimetable={example ? null : officialTimetable}
             onHeight={setSheetHeight} onClose={clear} onSelect={(target) => inspect(target.id)} onAction={detailAction} />}
           {drawer && (
             <>
               <nav>
                 <button aria-pressed={panel === 'search'} onClick={() => setPanel('search')}>
-                  {t('探す', 'Search')}
+                  {t('探す', 'Search', '搜索')}
                 </button>
                 <button
                   aria-pressed={panel === 'route'}
                   onClick={() => setPanel('route')}
                 >
-                  {t('経路案内', 'Itinerary')}
+                  {t('経路案内', 'Itinerary', '路线导览')}
                 </button>
                 <button
                   aria-pressed={panel === 'layers'}
                   onClick={() => setPanel('layers')}
                 >
-                  {t('モデル情報', 'Model guide')}
+                  {t('モデル情報', 'Model guide', '模型信息')}
                 </button>
                 <button aria-pressed={panel === 'trains'} onClick={() => setPanel('trains')}>
-                  {t('列車', 'Trains')}
+                  {t('列車', 'Trains', '列车')}
                 </button>
               </nav>
               {panel === 'search' ? (
@@ -659,6 +630,7 @@ export function App() {
                 />
               ) : panel === 'trains' ? (
                 <TrainPanel lang={lang} feed={feed} clock={trainClock} day={trainDay}
+                  timetable={officialTimetable}
                   onMode={changeTrainMode} onDay={setTrainDay} onSpeed={changeTrainSpeed} />
               ) : (
                 <Guide
@@ -678,7 +650,7 @@ export function App() {
 
       {dialog && <InfoDialog lang={lang} dialog={dialog} close={() => setDialog(null)} />}
       <div className="selection-announcement" data-selection-announcement="" aria-live="polite" aria-atomic="true">
-        {objectDetail ? t(objectDetail.title + 'を選択', 'Selected ' + objectDetail.title) : ''}
+        {objectDetail ? t(objectDetail.title + 'を選択', 'Selected ' + objectDetail.title, '已选择 ' + objectDetail.title) : ''}
       </div>
     </main>
   )

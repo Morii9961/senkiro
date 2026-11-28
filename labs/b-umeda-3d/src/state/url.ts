@@ -71,7 +71,7 @@ export function parseUrl(params: URLSearchParams): UrlState {
     ...(params.get('draft') === '1' ? { routeDraft: true as const } : {}),
     stepFreeOnly: params.get('sf') === '1',
     step: step !== null && step >= 0 ? step : defaultUrlState.step,
-    lang: choice(params.get('lang'), ['ja', 'en'], defaultUrlState.lang),
+    lang: choice(params.get('lang'), ['ja', 'en', 'zh'], defaultUrlState.lang),
     theme: choice(params.get('theme'), ['light', 'dark'], defaultUrlState.theme),
     feed: choice(params.get('feed'), ['off', 'timetable-sim', 'demo', 'live'], defaultUrlState.feed),
   }
