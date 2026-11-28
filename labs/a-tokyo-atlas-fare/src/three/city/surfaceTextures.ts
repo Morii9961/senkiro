@@ -869,58 +869,54 @@ export function createRailYardTextureSet(isDark: boolean): SurfaceTextureSet {
   const [cRgh, r] = makeCanvas(size, size);
   const [cBmp, b] = makeCanvas(size, size);
 
-  a.fillStyle = isDark ? '#20262f' : '#5e5a54';
+  a.fillStyle = isDark ? '#212730' : '#625e57';
   a.fillRect(0, 0, size, size);
   r.fillStyle = '#ececec';
   r.fillRect(0, 0, size, size);
   b.fillStyle = '#787878';
   b.fillRect(0, 0, size, size);
 
-  for (let i = 0; i < 1800; i++) {
+  // Subtle omnidirectional gravel/oil/concrete maintenance mottling (zero directional zebra stripes!)
+  for (let i = 0; i < 18; i++) {
+    const px = hash2(i, 1, 709) * size;
+    const py = hash2(i, 2, 709) * size;
+    const rad = 18 + hash2(i, 3, 709) * 30;
+    const v = hash2(i, 4, 709);
+    const innerCol = v > 0.62
+      ? isDark
+        ? 'rgba(138,148,162,0.08)'
+        : 'rgba(196,190,180,0.13)'
+      : v < 0.30
+        ? isDark
+          ? 'rgba(8,12,18,0.14)'
+          : 'rgba(42,38,34,0.12)'
+        : isDark
+          ? 'rgba(62,72,86,0.08)'
+          : 'rgba(128,122,114,0.10)';
+    drawWrappedPool(a, px, py, rad, size, innerCol, 'rgba(0,0,0,0.03)');
+  }
+
+  for (let i = 0; i < 3200; i++) {
     const px = Math.floor(hash2(i, 1, 701) * size);
     const py = Math.floor(hash2(i, 2, 701) * size);
     const v = hash2(i, 3, 701);
+    const sz = v > 0.84 ? 2 : 1;
     a.fillStyle = v > 0.55
       ? isDark
         ? 'rgba(148,163,184,0.12)'
         : 'rgba(205,198,188,0.18)'
       : isDark
         ? 'rgba(5,8,14,0.28)'
-        : 'rgba(36,33,30,0.24)';
-    a.fillRect(px, py, 2, 2);
-    b.fillStyle = v > 0.5 ? '#9c9c9c' : '#585858';
-    b.fillRect(px, py, 2, 2);
-  }
-
-  const tracks = 4;
-  const laneW = size / tracks;
-  for (let t = 0; t < tracks; t++) {
-    const cx = Math.round((t + 0.5) * laneW);
-    a.fillStyle = isDark ? 'rgba(10,14,20,0.34)' : 'rgba(42,39,35,0.26)';
-    a.fillRect(cx - 14, 0, 28, size);
-
-    a.fillStyle = isDark ? 'rgba(90,98,108,0.45)' : 'rgba(176,170,162,0.55)';
-    b.fillStyle = '#b4b4b4';
-    for (let y = 2; y < size; y += 8) {
-      a.fillRect(cx - 11, y, 22, 3);
-      b.fillRect(cx - 11, y, 22, 3);
-    }
-
-    a.fillStyle = isDark ? '#708090' : '#bcc4ce';
-    r.fillStyle = '#484848';
-    b.fillStyle = '#e0e0e0';
-    a.fillRect(cx - 6, 0, 2, size);
-    a.fillRect(cx + 4, 0, 2, size);
-    r.fillRect(cx - 6, 0, 2, size);
-    r.fillRect(cx + 4, 0, 2, size);
-    b.fillRect(cx - 6, 0, 2, size);
-    b.fillRect(cx + 4, 0, 2, size);
+        : 'rgba(36,33,30,0.22)';
+    a.fillRect(px, py, sz, sz);
+    b.fillStyle = v > 0.5 ? '#a0a0a0' : '#565656';
+    b.fillRect(px, py, sz, sz);
   }
 
   return {
-    map: finalizeSurfaceTexture(cAlb, true, THREE.RepeatWrapping, THREE.RepeatWrapping, 0.045, 0.045),
-    roughnessMap: finalizeSurfaceTexture(cRgh, false, THREE.RepeatWrapping, THREE.RepeatWrapping, 0.045, 0.045),
-    bumpMap: finalizeSurfaceTexture(cBmp, false, THREE.RepeatWrapping, THREE.RepeatWrapping, 0.045, 0.045),
+    map: finalizeSurfaceTexture(cAlb, true, THREE.RepeatWrapping, THREE.RepeatWrapping, 0.032, 0.032),
+    roughnessMap: finalizeSurfaceTexture(cRgh, false, THREE.RepeatWrapping, THREE.RepeatWrapping, 0.032, 0.032),
+    bumpMap: finalizeSurfaceTexture(cBmp, false, THREE.RepeatWrapping, THREE.RepeatWrapping, 0.032, 0.032),
   };
 }
 
@@ -979,17 +975,17 @@ export function createIndustrialPortTextureSet(isDark: boolean): SurfaceTextureS
     b.stroke();
   }
 
-  a.fillStyle = isDark ? 'rgba(217,160,52,0.34)' : 'rgba(196,144,44,0.42)';
+  a.fillStyle = isDark ? 'rgba(217,160,52,0.14)' : 'rgba(196,144,44,0.18)';
   a.fillRect(0, 62, size, 3);
   a.fillRect(0, 190, size, 3);
-  a.fillStyle = isDark ? 'rgba(203,213,225,0.22)' : 'rgba(232,236,240,0.40)';
+  a.fillStyle = isDark ? 'rgba(203,213,225,0.12)' : 'rgba(232,236,240,0.18)';
   for (let x = 8; x < size; x += 24) {
     a.fillRect(x, 126, 12, 2);
   }
 
   return {
-    map: finalizeSurfaceTexture(cAlb, true, THREE.RepeatWrapping, THREE.RepeatWrapping, 0.025, 0.025),
-    roughnessMap: finalizeSurfaceTexture(cRgh, false, THREE.RepeatWrapping, THREE.RepeatWrapping, 0.025, 0.025),
-    bumpMap: finalizeSurfaceTexture(cBmp, false, THREE.RepeatWrapping, THREE.RepeatWrapping, 0.025, 0.025),
+    map: finalizeSurfaceTexture(cAlb, true, THREE.RepeatWrapping, THREE.RepeatWrapping, 0.020, 0.020),
+    roughnessMap: finalizeSurfaceTexture(cRgh, false, THREE.RepeatWrapping, THREE.RepeatWrapping, 0.020, 0.020),
+    bumpMap: finalizeSurfaceTexture(cBmp, false, THREE.RepeatWrapping, THREE.RepeatWrapping, 0.020, 0.020),
   };
 }

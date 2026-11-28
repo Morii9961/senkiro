@@ -15,6 +15,7 @@ import { SURFACE_ELEVATION_LAYERS } from '../../contracts/atlasV2.js';
 import { lonLatToWorld } from '../geoProjection.js';
 import { injectBuildingLightingShader } from '../materials/buildingLightingShader.js';
 import type { CityLightingUniforms } from '../materials/groundShader.js';
+import { injectWaterShader } from '../materials/waterShader.js';
 
 export interface OuterMetroHandle {
   readonly group: THREE.Group;
@@ -36,6 +37,7 @@ function buildRibbonXZ(
   if (pts.length < 2) return null;
   const half = width * 0.5;
   const pos: number[] = [];
+  const uvs: number[] = [];
   const idx: number[] = [];
 
   for (let i = 0; i < pts.length; i++) {
@@ -47,8 +49,13 @@ function buildRibbonXZ(
     const len = Math.hypot(dx, dz) || 1;
     const nx = -dz / len;
     const nz = dx / len;
-    pos.push(cur[0] + nx * half, y, cur[1] + nz * half);
-    pos.push(cur[0] - nx * half, y, cur[1] - nz * half);
+    const ax = cur[0] + nx * half;
+    const az = cur[1] + nz * half;
+    const bx = cur[0] - nx * half;
+    const bz = cur[1] - nz * half;
+    pos.push(ax, y, az);
+    pos.push(bx, y, bz);
+    uvs.push(ax, az, bx, bz);
     if (i > 0) {
       const b = (i - 1) * 2;
       idx.push(b, b + 2, b + 1, b + 1, b + 2, b + 3);
@@ -57,109 +64,12 @@ function buildRibbonXZ(
 
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
   g.setIndex(idx);
   const ni = g.toNonIndexed();
   g.dispose();
   ni.computeVertexNormals();
   return ni;
-}
-
-/**
- * Builds low-poly distant mountain ridge silhouettes around western/southwestern/southern Kanto
- * (Okutama, Mt. Takao, Tanzawa, Boso Peninsula) at 36–56km distance.
- */
-function buildDistantMountainRidges(): THREE.BufferGeometry | null {
-  const ridgeArcs: { pts: [number, number][]; maxH: number; width: number }[] = [
-    // Western Okutama / Chichibu / Mt. Takao foothills (-36km..-52km west)
-    {
-      pts: [
-        [-38_000, -28_000],
-        [-41_000, -18_000],
-        [-39_000, -9_000],
-        [-42_000, 1_500],
-        [-40_500, 11_000],
-        [-43_000, 21_000],
-      ],
-      maxH: 920,
-      width: 9500,
-    },
-    // Southwestern Tanzawa / Hakone horizon ridge
-    {
-      pts: [
-        [-44_000, 19_000],
-        [-40_000, 29_000],
-        [-34_000, 38_000],
-        [-25_000, 44_000],
-      ],
-      maxH: 1080,
-      width: 10500,
-    },
-    // Southeastern Chiba / Boso Peninsula low coastal hills across Tokyo Bay
-    {
-      pts: [
-        [24_000, 18_000],
-        [26_500, 25_000],
-        [25_000, 33_000],
-        [21_500, 41_000],
-      ],
-      maxH: 420,
-      width: 7500,
-    },
-  ];
-
-  const parts: THREE.BufferGeometry[] = [];
-  for (let ai = 0; ai < ridgeArcs.length; ai++) {
-    const arc = ridgeArcs[ai]!;
-    const subPts: [number, number][] = [];
-    for (let i = 0; i < arc.pts.length - 1; i++) {
-      const [ax, az] = arc.pts[i]!;
-      const [bx, bz] = arc.pts[i + 1]!;
-      for (let s = 0; s < 5; s++) {
-        const t = s / 5;
-        subPts.push([ax + (bx - ax) * t, az + (bz - az) * t]);
-      }
-    }
-    subPts.push(arc.pts[arc.pts.length - 1]!);
-
-    const pos: number[] = [];
-    const idx: number[] = [];
-    for (let i = 0; i < subPts.length; i++) {
-      const [cx, cz] = subPts[i]!;
-      const prev = subPts[Math.max(0, i - 1)]!;
-      const next = subPts[Math.min(subPts.length - 1, i + 1)]!;
-      const dx = next[0] - prev[0];
-      const dz = next[1] - prev[1];
-      const len = Math.hypot(dx, dz) || 1;
-      const nx = -dz / len;
-      const nz = dx / len;
-      const edgeTaper = Math.sin((i / (subPts.length - 1)) * Math.PI);
-      const peakH =
-        arc.maxH * (0.45 + 0.55 * hashDet(i, ai * 31 + 7)) * Math.max(0.18, edgeTaper);
-      const hw = arc.width * 0.5;
-
-      // 3-vertex cross section: left base, ridge crest, right base
-      pos.push(cx + nx * hw, -2, cz + nz * hw);
-      pos.push(cx, peakH, cz);
-      pos.push(cx - nx * hw, -2, cz - nz * hw);
-
-      if (i > 0) {
-        const b = (i - 1) * 3;
-        idx.push(b, b + 3, b + 1, b + 1, b + 3, b + 4);
-        idx.push(b + 1, b + 4, b + 2, b + 2, b + 4, b + 5);
-      }
-    }
-    const g = new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-    g.setIndex(idx);
-    const ni = g.toNonIndexed();
-    g.dispose();
-    ni.computeVertexNormals();
-    parts.push(ni);
-  }
-
-  const merged = mergeGeometries(parts, false);
-  parts.forEach((p) => p.dispose());
-  return merged;
 }
 
 export function buildOuterMetroEnvironment(
@@ -217,6 +127,7 @@ export function buildOuterMetroEnvironment(
     envMapIntensity: 1.5,
     clippingPlanes: clipPlanes,
   });
+  injectWaterShader(outerRiverMat, lightingUniforms, 'river');
   let riverMesh: THREE.Mesh | null = null;
   if (riverGeoms.length > 0) {
     const mergedRivers = mergeGeometries(riverGeoms, false);
@@ -228,23 +139,6 @@ export function buildOuterMetroEnvironment(
       riverMesh.renderOrder = 3;
       group.add(riverMesh);
     }
-  }
-
-  // 2. Distant Horizon Mountain Silhouettes (Okutama / Tanzawa / Boso)
-  const ridgeMat = new THREE.MeshStandardMaterial({
-    color: 0x5c6e78,
-    roughness: 0.95,
-    metalness: 0.0,
-    clippingPlanes: clipPlanes,
-  });
-  const ridgeGeom = buildDistantMountainRidges();
-  let ridgeMesh: THREE.Mesh | null = null;
-  if (ridgeGeom) {
-    ridgeMesh = new THREE.Mesh(ridgeGeom, ridgeMat);
-    ridgeMesh.name = 'outer-kanto-mountain-ridges';
-    ridgeMesh.receiveShadow = false;
-    ridgeMesh.castShadow = false;
-    group.add(ridgeMesh);
   }
 
   // 3. Lightweight Real Neighboring Regional Sub-Center Skylines (low-LOD distant context)
@@ -321,7 +215,7 @@ export function buildOuterMetroEnvironment(
 
   return {
     group,
-    setTimeOfDay(nightFactor: number, goldenFactor: number, blueHourFactor: number): void {
+    setTimeOfDay(nightFactor: number, goldenFactor: number, _blueHourFactor: number): void {
       const riverDay = new THREE.Color(0x3b6e94);
       const riverGolden = new THREE.Color(0x8c6858);
       const riverNight = new THREE.Color(0x102744);
@@ -329,16 +223,6 @@ export function buildOuterMetroEnvironment(
         .copy(riverDay)
         .lerp(riverNight, nightFactor)
         .lerp(riverGolden, goldenFactor * 0.36);
-
-      const ridgeDay = new THREE.Color(0x5d6f7a);
-      const ridgeGolden = new THREE.Color(0x886c6a);
-      const ridgeBlue = new THREE.Color(0x22385e);
-      const ridgeNight = new THREE.Color(0x0d1a2e);
-      ridgeMat.color
-        .copy(ridgeDay)
-        .lerp(ridgeNight, nightFactor)
-        .lerp(ridgeBlue, blueHourFactor * 0.55)
-        .lerp(ridgeGolden, goldenFactor * 0.35);
 
       const regDay = new THREE.Color(0xb2bac2);
       const regNight = new THREE.Color(0x394558);
@@ -349,11 +233,9 @@ export function buildOuterMetroEnvironment(
     },
     dispose(): void {
       riverMesh?.geometry.dispose();
-      ridgeMesh?.geometry.dispose();
       boxGeom.dispose();
       regionalInst.dispose();
       outerRiverMat.dispose();
-      ridgeMat.dispose();
       regionalMat.dispose();
     },
   };

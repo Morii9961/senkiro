@@ -736,6 +736,7 @@ export class CityTerrainLayer {
       this.groundMaterial,
       this.quayMaterial,
       this.cutawayUniforms,
+      this.lightingUniforms,
     );
     this.group.add(this.bayfrontDetails.group);
 
@@ -750,6 +751,7 @@ export class CityTerrainLayer {
       this.clipPlanes,
       this.waterMaterial,
       this.cutawayUniforms,
+      this.lightingUniforms,
     );
     this.group.add(this.airportComplexes.group);
 

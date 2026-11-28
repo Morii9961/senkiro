@@ -203,13 +203,19 @@ if (uBldgFadeEnabled > 0.5) {
       .replace(
         '#include <tonemapping_fragment>',
         `{
-  // Distance aerial perspective matching groundShader.ts in linear space before tone mapping
+  // Distance aerial perspective + unified world-space 23-ward horizon dissolve
   float vDist = length(vViewPosition);
   float aerialT = smoothstep(7200.0, 34000.0, vDist) * (0.34 + 0.36 * uBldgVisualMode);
+  vec2 metroDelta = (vBldgWorldPos.xz - vec2(-1600.0, 200.0)) * vec2(0.92, 1.0);
+  float worldR = length(metroDelta);
+  float naritaDist = length(vBldgWorldPos.xz - vec2(55980.0, -9280.0));
+  float naritaKeep = 1.0 - smoothstep(3200.0, 7500.0, naritaDist);
+  float worldEdgeT = smoothstep(16500.0, 31000.0, worldR) * (1.0 - naritaKeep) * 0.96;
+  float totalHazeT = clamp(max(aerialT, worldEdgeT), 0.0, 1.0);
   vec3 viewDirW = normalize(vBldgWorldPos - cameraPosition);
   float sunAlign = clamp(dot(viewDirW, normalize(uBldgSunDir)) * 0.5 + 0.5, 0.0, 1.0);
   vec3 hazeCol = mix(uBldgAerialColor, uBldgSunColor * 0.72 + uBldgSkyHorizon * 0.28, pow(max(sunAlign, 0.001), 2.5) * uBldgGolden * 0.65);
-  gl_FragColor.rgb = mix(gl_FragColor.rgb, hazeCol, aerialT);
+  gl_FragColor.rgb = mix(gl_FragColor.rgb, hazeCol, totalHazeT);
 }
 #include <tonemapping_fragment>`,
       );

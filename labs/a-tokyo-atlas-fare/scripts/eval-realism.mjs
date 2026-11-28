@@ -244,6 +244,28 @@ async function main() {
     await setSceneView(page, { lon: 139.7662, lat: 35.6808, dist: 560, polar: 56, az: 32, hour: 22.5, waitMs: 1400 });
     await capture(page, shots, 'N3-tokyo-station-night-2230', { scene: 'N', hour: 22.5 });
 
+    // Scene U: Urban Fabric, Anti-Striping, Haneda/Ota, Port Architecture, Shinagawa & Edge-Fade Checks
+    await setSceneView(page, { lon: 139.7920, lat: 35.6520, dist: 3400, polar: 52, az: -28, hour: 14.5, waitMs: 1800 });
+    await capture(page, shots, 'U1-toyosu-koto-fabric-day', { scene: 'U', hour: 14.5 });
+
+    await setSceneView(page, { lon: 139.7240, lat: 35.7360, dist: 4600, polar: 56, az: 24, hour: 14.5, waitMs: 1800 });
+    await capture(page, shots, 'U2-ikebukuro-north-organic-day', { scene: 'U', hour: 14.5 });
+
+    await setSceneView(page, { lon: 139.7420, lat: 35.5650, dist: 5800, polar: 54, az: 16, hour: 14.5, waitMs: 1800 });
+    await capture(page, shots, 'U3-haneda-ota-corridor-day', { scene: 'U', hour: 14.5 });
+
+    await setSceneView(page, { lon: 139.7680, lat: 35.6160, dist: 5200, polar: 54, az: 118, hour: 14.5, waitMs: 1800 });
+    await capture(page, shots, 'U4-tokyobay-ports-day', { scene: 'U', hour: 14.5 });
+
+    await setSceneView(page, { lon: 139.7395, lat: 35.6305, dist: 1550, polar: 56, az: 92, hour: 14.5, waitMs: 1500 });
+    await capture(page, shots, 'U5-shinagawa-railyard-day', { scene: 'U', hour: 14.5 });
+
+    await setSceneView(page, { lon: 139.8450, lat: 35.7350, dist: 6800, polar: 56, az: -125, hour: 14.5, waitMs: 1800 });
+    await capture(page, shots, 'U6-northeast-23ward-fade-day', { scene: 'U', hour: 14.5 });
+
+    await setSceneView(page, { lon: 139.8550, lat: 35.5350, dist: 14500, polar: 62, az: 148, hour: 14.5, waitMs: 1600 });
+    await capture(page, shots, 'U7-tokyobay-horizon-dissolve-day', { scene: 'U', hour: 14.5 });
+
     // Scene H: Railway dynamic verification (Cutaway + Train Follow)
     await setSceneView(page, { lon: 139.7016, lat: 35.6580, dist: 650, polar: 60, az: -36, hour: 13.5, waitMs: 1200 });
     await page.evaluate(() => window.__SENKIRO_3D_CTRL__.setUnderground(true));

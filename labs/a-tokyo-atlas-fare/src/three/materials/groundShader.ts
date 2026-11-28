@@ -340,13 +340,19 @@ ${GROUND_NOISE_GLSL}`,
       .replace(
         '#include <tonemapping_fragment>',
         `{
-  // Sun-aware aerial perspective haze in linear space before tone mapping
+  // Sun-aware aerial perspective haze + unified world-space 23-ward horizon dissolve
   float vDist = length(vViewPosition);
   float aerialT = smoothstep(9500.0, 52000.0, vDist) * (0.24 + 0.34 * uGrVisualMode);
+  vec2 metroDelta = (vGroundWorldPos.xz - vec2(-1600.0, 200.0)) * vec2(0.92, 1.0);
+  float worldR = length(metroDelta);
+  float naritaDist = length(vGroundWorldPos.xz - vec2(55980.0, -9280.0));
+  float naritaKeep = 1.0 - smoothstep(3200.0, 7500.0, naritaDist);
+  float worldEdgeT = smoothstep(16500.0, 31000.0, worldR) * (1.0 - naritaKeep);
+  float totalHazeT = clamp(max(aerialT, worldEdgeT), 0.0, 1.0);
   vec3 viewDirW = normalize(vGroundWorldPos - cameraPosition);
   float sunAlign = clamp(dot(viewDirW, normalize(uGrSunDir)) * 0.5 + 0.5, 0.0, 1.0);
   vec3 hazeCol = mix(uGrAerialColor, uGrSunColor * 0.72 + uGrSkyHorizon * 0.28, pow(max(sunAlign, 0.001), 2.5) * uGrGoldenFactor * 0.65);
-  gl_FragColor.rgb = mix(gl_FragColor.rgb, hazeCol, aerialT);
+  gl_FragColor.rgb = mix(gl_FragColor.rgb, hazeCol, totalHazeT);
 }
 #include <tonemapping_fragment>`,
       );

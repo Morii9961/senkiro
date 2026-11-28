@@ -6,7 +6,9 @@
 
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { injectBuildingLightingShader } from '../materials/buildingLightingShader.js';
 import { injectRadialCutaway, type CutawayUniforms } from '../materials/cutawayShader.js';
+import type { CityLightingUniforms } from '../materials/groundShader.js';
 import type { UrbanBaseEnvironment } from '../types.js';
 import { pointInPoly } from './cityGeometryHelpers.js';
 import {
@@ -128,6 +130,7 @@ export function buildTokyoBayWaterfront(
   groundMaterial: THREE.MeshStandardMaterial,
   quayMaterial: THREE.MeshStandardMaterial,
   cutawayUniforms?: CutawayUniforms,
+  lightingUniforms?: CityLightingUniforms,
 ): BayfrontDetailHandle {
   const group = new THREE.Group();
   group.name = 'tokyo-bay-waterfront-architecture';
@@ -167,6 +170,33 @@ export function buildTokyoBayWaterfront(
   addMerged(islandSeawallGeoms, quayMaterial, 'tokyo-bay-island-seawalls', 1);
   addMerged(islandGroundGeoms, groundMaterial, 'tokyo-bay-reclaimed-islands', 1);
 
+  // Sea Forest Park (海の森公園) green coastal landscape on southeastern Central Breakwater
+  const forestParkMat = new THREE.MeshStandardMaterial({
+    color: isDark ? 0x16241b : 0x46633d,
+    roughness: 0.95,
+    metalness: 0.0,
+    clippingPlanes: clipPlanes,
+  });
+  if (cutawayUniforms) {
+    injectRadialCutaway(forestParkMat, cutawayUniforms, 'terrain');
+  }
+  const seaForestGeom = buildFlatWorldPoly(
+    [
+      [3150, 8850],
+      [4350, 8880],
+      [4360, 9840],
+      [3120, 9820],
+    ],
+    -0.60,
+  );
+  if (seaForestGeom) {
+    const seaForestMesh = new THREE.Mesh(seaForestGeom, forestParkMat);
+    seaForestMesh.name = 'tokyo-bay-sea-forest-park';
+    seaForestMesh.receiveShadow = true;
+    seaForestMesh.renderOrder = 2;
+    group.add(seaForestMesh);
+  }
+
   // ---- Materials for 3D Port & Depot Architecture ----
   const containerMat = new THREE.MeshStandardMaterial({
     color: isDark ? 0x5c6878 : 0xffffff,
@@ -199,6 +229,14 @@ export function buildTokyoBayWaterfront(
     depotHallMat,
     parkedTrainMat,
   ];
+  if (lightingUniforms) {
+    for (const m of detailMaterials) {
+      injectBuildingLightingShader(m, lightingUniforms, {
+        isGlazed: false,
+        fadeWithDistance: false,
+      });
+    }
+  }
   if (cutawayUniforms) {
     for (const m of detailMaterials) {
       injectRadialCutaway(m, cutawayUniforms, 'building');
@@ -212,6 +250,38 @@ export function buildTokyoBayWaterfront(
   const parkedTrainRecords: { x: number; z: number; len: number; a: number; color: number }[] = [];
 
   const blocks = env.landuseBlocks ?? [];
+  const railwayBlocks = blocks.filter((b) => b.kind === 'railway' && b.pts.length >= 3);
+  const surfaceBayRoads = env.roads.filter(
+    (r) => r.el !== 1 && r.pts.length >= 2 && r.pts.some(([, z]) => z >= 3800),
+  );
+  const placedPortCells = new Set<string>();
+  const portCellKey = (x: number, z: number) => `${Math.round(x / 22)},${Math.round(z / 22)}`;
+
+  const isInRailwayYard = (px: number, pz: number): boolean => {
+    for (let i = 0; i < railwayBlocks.length; i++) {
+      if (pointInPoly(px, pz, railwayBlocks[i]!.pts)) return true;
+    }
+    return false;
+  };
+
+  const isNearSurfaceRoad = (px: number, pz: number, padM = 16): boolean => {
+    const padSq = padM * padM;
+    for (let i = 0; i < surfaceBayRoads.length; i++) {
+      const r = surfaceBayRoads[i]!;
+      for (let s = 0; s < r.pts.length - 1; s++) {
+        const [ax, az] = r.pts[s]!;
+        const [bx, bz] = r.pts[s + 1]!;
+        const dx = bx - ax;
+        const dz = bz - az;
+        const lenSq = dx * dx + dz * dz || 1;
+        const t = Math.max(0, Math.min(1, ((px - ax) * dx + (pz - az) * dz) / lenSq));
+        const dSq = (px - (ax + dx * t)) ** 2 + (pz - (az + dz * t)) ** 2;
+        if (dSq <= padSq + r.w * r.w * 0.25) return true;
+      }
+    }
+    return false;
+  };
+
   for (let bi = 0; bi < blocks.length; bi++) {
     const blk = blocks[bi]!;
     if (blk.pts.length < 3) continue;
@@ -243,17 +313,31 @@ export function buildTokyoBayWaterfront(
         }
       }
 
-      // Place orderly maritime bay rows + logistics warehouses (clear crane/truck avenues every ~135m)
+      // Place orderly maritime bay rows + logistics warehouses (per-block cap prevents starvation!)
       const stepX = 28;
       const stepZ = 22;
-      for (let x = minX + 24; x < maxX - 24 && containerRecords.length < 1800; x += stepX) {
+      let blockContainers = 0;
+      const maxBlockContainers = Math.min(480, Math.max(90, Math.floor((spanX * spanZ) / 3600)));
+
+      for (
+        let x = minX + 24;
+        x < maxX - 24 && blockContainers < maxBlockContainers && containerRecords.length < 4200;
+        x += stepX
+      ) {
         if (Math.abs((x - minX) % 135) < 22) continue;
-        for (let z = minZ + 20; z < maxZ - 20 && containerRecords.length < 1800; z += stepZ) {
+        for (
+          let z = minZ + 20;
+          z < maxZ - 20 && blockContainers < maxBlockContainers && containerRecords.length < 4200;
+          z += stepZ
+        ) {
           if (Math.abs((z - minZ) % 135) < 20) continue;
           if (!pointInPoly(x, z, blk.pts)) continue;
+          const ck = portCellKey(x, z);
+          if (placedPortCells.has(ck)) continue;
           const r = hashDet(x, z, bi + 7);
           if (r < 0.26) continue; // realistic truck aisles
-          if (r > 0.87 && depotHallRecords.length < 220) {
+          placedPortCells.add(ck);
+          if (r > 0.87 && depotHallRecords.length < 380) {
             // Port logistics warehouse shed
             depotHallRecords.push({
               x,
@@ -276,14 +360,15 @@ export function buildTokyoBayWaterfront(
               a: rowAngle,
               color: CONTAINER_PALETTE[colIdx]!,
             });
+            blockContainers++;
           }
         }
       }
 
       // Line iconic red-white quay gantry cranes along eastern/southern berth edges
-      if (spanZ > 450 && craneRecords.length < 70) {
+      if (spanZ > 450 && craneRecords.length < 120) {
         const quayX = maxX - 18;
-        for (let z = minZ + 90; z < maxZ - 90 && craneRecords.length < 70; z += 135) {
+        for (let z = minZ + 90; z < maxZ - 90 && craneRecords.length < 120; z += 135) {
           if (pointInPoly(quayX - 25, z, blk.pts)) {
             craneRecords.push({ x: quayX, z, a: 0 });
           }
@@ -312,7 +397,7 @@ export function buildTokyoBayWaterfront(
         for (let z = minZ + 70; z < maxZ - 70; z += stepZ) {
           if (!pointInPoly(x, z, blk.pts)) continue;
           const r = hashDet(x, z, bi + 91);
-          if (r < 0.36 && depotHallRecords.length < 260) {
+          if (r < 0.36 && depotHallRecords.length < 380) {
             // Long-span railway maintenance inspection shed
             depotHallRecords.push({
               x,
@@ -339,6 +424,180 @@ export function buildTokyoBayWaterfront(
             });
           }
         }
+      }
+    }
+  }
+
+  // ---- 1b. Direct Island-Aware Port Terminals (Oi Wharf, Odaiba/Aomi, Central Breakwater) ----
+  const addIslandPortGrid = (
+    islPts: readonly [number, number][],
+    bounds: { x0: number; x1: number; z0: number; z1: number },
+    opts: {
+      stepX: number;
+      stepZ: number;
+      rowAngle: number;
+      warehouseProb: number;
+      maxContainers: number;
+      skipPredicate?: (x: number, z: number) => boolean;
+    },
+  ) => {
+    let addedContainers = 0;
+    for (
+      let x = bounds.x0;
+      x <= bounds.x1 && addedContainers < opts.maxContainers && containerRecords.length < 4200;
+      x += opts.stepX
+    ) {
+      if (Math.abs((x - bounds.x0) % 140) < opts.stepX * 0.8) continue;
+      for (
+        let z = bounds.z0;
+        z <= bounds.z1 && addedContainers < opts.maxContainers && containerRecords.length < 4200;
+        z += opts.stepZ
+      ) {
+        if (Math.abs((z - bounds.z0) % 140) < opts.stepZ * 0.8) continue;
+        if (opts.skipPredicate?.(x, z)) continue;
+        if (!pointInPoly(x, z, islPts as [number, number][])) continue;
+        if (isInRailwayYard(x, z) || isNearSurfaceRoad(x, z, 18)) continue;
+        const ck = portCellKey(x, z);
+        if (placedPortCells.has(ck)) continue;
+        const r = hashDet(x, z, 409);
+        if (r < 0.24) continue;
+        placedPortCells.add(ck);
+
+        if (r > 1.0 - opts.warehouseProb && depotHallRecords.length < 380) {
+          depotHallRecords.push({
+            x,
+            z,
+            w: 48 + hashDet(x, z, 419) * 47,
+            h: 10 + hashDet(x, z, 431) * 6,
+            d: 22 + hashDet(x, z, 439) * 14,
+            a: opts.rowAngle,
+          });
+        } else {
+          const tiers = 2 + Math.floor(hashDet(x, z, 449) * 3);
+          const colIdx = Math.floor(
+            hashDet(Math.floor(x / 72), Math.floor(z / 48), 461) * CONTAINER_PALETTE.length,
+          );
+          containerRecords.push({
+            x,
+            z,
+            h: tiers * 2.6,
+            a: opts.rowAngle,
+            color: CONTAINER_PALETTE[colIdx]!,
+          });
+          addedContainers++;
+        }
+      }
+    }
+  };
+
+  // (i) Shinagawa Wharf / Oi Container Terminal east of Oi Rail Yard
+  const oiIsl = TOKYO_BAY_ISLANDS.find((isl) => isl.id === 'shinagawa-oi-wharf');
+  if (oiIsl) {
+    const oiQuaySegments: [[number, number], [number, number]][] = [
+      [[-565, 4250], [-505, 5780]],
+      [[-505, 5780], [-345, 7750]],
+      [[-345, 7750], [645, 9380]],
+      [[645, 9380], [645, 10650]],
+    ];
+    for (let ci = 0; ci < 18 && craneRecords.length < 120; ci++) {
+      const seg = oiQuaySegments[Math.floor((ci / 18) * oiQuaySegments.length)]!;
+      const localT = ((ci / 18) * oiQuaySegments.length) % 1;
+      const cx = seg[0][0] + (seg[1][0] - seg[0][0]) * localT;
+      const cz = seg[0][1] + (seg[1][1] - seg[0][1]) * localT;
+      if (pointInPoly(cx - 24, cz, oiIsl.pts as [number, number][])) {
+        craneRecords.push({ x: cx, z: cz, a: 0 });
+      }
+    }
+    addIslandPortGrid(
+      oiIsl.pts,
+      { x0: -1400, x1: 620, z0: 4120, z1: 10720 },
+      {
+        stepX: 32,
+        stepZ: 24,
+        rowAngle: Math.PI * 0.5,
+        warehouseProb: 0.14,
+        maxContainers: 650,
+        skipPredicate: (x, z) => x <= -620 && z >= 7000,
+      },
+    );
+  }
+
+  // (ii) Odaiba / Aomi Container Terminal (south) & Waterfront Commercial/Exhibition Complex (north)
+  const aomiIsl = TOKYO_BAY_ISLANDS.find((isl) => isl.id === 'odaiba-aomi');
+  if (aomiIsl) {
+    for (let ci = 0; ci < 16 && craneRecords.length < 120; ci++) {
+      const t = (ci + 0.5) / 16;
+      const cz = 6400 + t * (8750 - 6400);
+      const cx = cz < 8220 ? 350 + ((cz - 6800) / 1420) * 165 : 515 + ((cz - 8220) / 660) * 320;
+      const clampedX = Math.max(360, cx);
+      if (pointInPoly(clampedX + 26, cz, aomiIsl.pts as [number, number][])) {
+        craneRecords.push({ x: clampedX, z: cz, a: Math.PI });
+      }
+    }
+    addIslandPortGrid(
+      aomiIsl.pts,
+      { x0: 550, x1: 2650, z0: 6450, z1: 8750 },
+      {
+        stepX: 34,
+        stepZ: 24,
+        rowAngle: Math.PI * 0.5,
+        warehouseProb: 0.15,
+        maxContainers: 580,
+      },
+    );
+    // Northern Odaiba commercial & Big Sight/exhibition waterfront masses
+    let odaibaBlocksAdded = 0;
+    for (let x = 200; x <= 2500 && odaibaBlocksAdded < 14 && depotHallRecords.length < 380; x += 210) {
+      for (let z = 5350; z <= 6250 && odaibaBlocksAdded < 14 && depotHallRecords.length < 380; z += 195) {
+        const jx = x + (hashDet(x, z, 631) - 0.5) * 65;
+        const jz = z + (hashDet(x, z, 643) - 0.5) * 55;
+        if (!pointInPoly(jx, jz, aomiIsl.pts as [number, number][])) continue;
+        if (isNearSurfaceRoad(jx, jz, 28) || isInRailwayYard(jx, jz)) continue;
+        const r = hashDet(x, z, 653);
+        if (r < 0.25) continue;
+        depotHallRecords.push({
+          x: jx,
+          z: jz,
+          w: 42 + r * 53,
+          h: 18 + hashDet(x, z, 661) * 34,
+          d: 32 + hashDet(x, z, 673) * 36,
+          a: (hashDet(x, z, 683) - 0.5) * 0.45,
+        });
+        odaibaBlocksAdded++;
+      }
+    }
+  }
+
+  // (iii) Central Breakwater (中央防波堤) Northern Container Terminal & Logistics Yards
+  const cbIsl = TOKYO_BAY_ISLANDS.find((isl) => isl.id === 'central-breakwater');
+  if (cbIsl) {
+    for (let ci = 0; ci < 12 && craneRecords.length < 120; ci++) {
+      const cx = 2420 + (ci / 11) * (4280 - 2420);
+      craneRecords.push({ x: cx, z: 7580, a: Math.PI * 0.5 });
+    }
+    addIslandPortGrid(
+      cbIsl.pts,
+      { x0: 2400, x1: 4250, z0: 7680, z1: 8450 },
+      {
+        stepX: 32,
+        stepZ: 24,
+        rowAngle: 0,
+        warehouseProb: 0.10,
+        maxContainers: 420,
+      },
+    );
+    // Logistics sheds behind container terminal (west of Sea Forest Park)
+    for (let x = 2380; x <= 3040 && depotHallRecords.length < 380; x += 145) {
+      for (let z = 8560; z <= 9150 && depotHallRecords.length < 380; z += 110) {
+        if (!pointInPoly(x, z, cbIsl.pts as [number, number][])) continue;
+        depotHallRecords.push({
+          x,
+          z,
+          w: 88 + hashDet(x, z, 709) * 32,
+          h: 11 + hashDet(x, z, 719) * 5,
+          d: 34 + hashDet(x, z, 727) * 14,
+          a: 0,
+        });
       }
     }
   }
@@ -443,9 +702,10 @@ export function buildTokyoBayWaterfront(
       containerMat.color.setHex(nextDark ? 0x5c6878 : 0xffffff);
       craneMat.color.setHex(nextDark ? 0x7a3430 : 0xa84840);
       depotHallMat.color.setHex(nextDark ? 0x475569 : 0xc8cfd8);
+      forestParkMat.color.setHex(nextDark ? 0x16241b : 0x46633d);
     },
     setOpacity(opacity: number, isTranslucent: boolean): void {
-      for (const m of detailMaterials) {
+      for (const m of [...detailMaterials, forestParkMat]) {
         const need = m.transparent !== isTranslucent;
         m.transparent = isTranslucent;
         m.opacity = opacity;
@@ -462,6 +722,7 @@ export function buildTokyoBayWaterfront(
         if (o instanceof THREE.Mesh) o.geometry.dispose();
       });
       for (const m of detailMaterials) m.dispose();
+      forestParkMat.dispose();
     },
   };
 }

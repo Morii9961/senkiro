@@ -154,10 +154,16 @@ vec3 senkiroWaterNormal(vec2 xz, float t, float distFade, float isBayFlag) {
         `{
   float vDist = length(vViewPosition);
   float aerialT = smoothstep(9500.0, 52000.0, vDist) * (0.26 + 0.34 * uWatVisualMode);
+  vec2 metroDelta = (vWaterWorldPos.xz - vec2(-1600.0, 200.0)) * vec2(0.92, 1.0);
+  float worldR = length(metroDelta);
+  float naritaDist = length(vWaterWorldPos.xz - vec2(55980.0, -9280.0));
+  float naritaKeep = 1.0 - smoothstep(3200.0, 7500.0, naritaDist);
+  float worldEdgeT = smoothstep(17500.0, 32500.0, worldR) * (1.0 - naritaKeep);
+  float totalHazeT = clamp(max(aerialT, worldEdgeT), 0.0, 1.0);
   vec3 viewDirW = normalize(vWaterWorldPos - cameraPosition);
   float sunAlign = clamp(dot(viewDirW, normalize(uWatSunDir)) * 0.5 + 0.5, 0.0, 1.0);
   vec3 hazeCol = mix(uWatAerialColor, uWatSunColor * 0.72 + uWatSkyHorizon * 0.28, pow(max(sunAlign, 0.001), 2.5) * uWatGolden * 0.65);
-  gl_FragColor.rgb = mix(gl_FragColor.rgb, hazeCol, aerialT);
+  gl_FragColor.rgb = mix(gl_FragColor.rgb, hazeCol, totalHazeT);
 }
 #include <tonemapping_fragment>`,
       );
