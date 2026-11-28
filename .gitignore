@@ -37,3 +37,11 @@ Desktop.ini
 .idea/
 **/.vscode/*
 !**/.vscode/extensions.json
+.claude/
+
+# Multi-worktree, Monorepo cache & local backups
+worktrees/
+labs/_worktrees/
+.local-raw-backup/
+artifacts/
+.turbo/

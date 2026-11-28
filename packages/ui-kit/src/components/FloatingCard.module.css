@@ -1,0 +1,51 @@
+.root {
+  position: relative;
+  border: var(--sk-hairline) solid var(--sk-color-hairline-strong);
+  border-radius: var(--sk-radius-lg);
+  background: var(--sk-color-surface);
+  color: var(--sk-color-text);
+  box-shadow: var(--sk-shadow-float);
+}
+
+.regular {
+  padding: var(--sk-space-4);
+}
+
+.compact {
+  padding: var(--sk-space-3);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sk-space-3);
+  margin-bottom: var(--sk-space-3);
+}
+
+.titles {
+  min-width: 0;
+}
+
+.eyebrow {
+  margin: 0 0 2px;
+  color: var(--sk-color-text-subtle);
+  font-size: var(--sk-text-2xs);
+  font-weight: 700;
+  letter-spacing: var(--sk-tracking-sign);
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--sk-text-md);
+  font-weight: 700;
+  line-height: var(--sk-leading-tight);
+}
+
+.actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--sk-space-2);
+}

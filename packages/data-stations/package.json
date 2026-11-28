@@ -1,0 +1,59 @@
+{
+  "name": "@senkiro/data-stations",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Source-traceable SENKIRO indoor station datasets for Umeda and Shinjuku.",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./umeda": {
+      "types": "./src/umeda.ts",
+      "default": "./src/umeda.ts"
+    },
+    "./shinjuku": {
+      "types": "./src/shinjuku.ts",
+      "default": "./src/shinjuku.ts"
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./umeda": {
+        "types": "./dist/umeda.d.ts",
+        "default": "./dist/umeda.js"
+      },
+      "./shinjuku": {
+        "types": "./dist/shinjuku.d.ts",
+        "default": "./dist/shinjuku.js"
+      },
+      "./package.json": "./package.json"
+    }
+  },
+  "files": [
+    "src",
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "biome lint --error-on-warnings .",
+    "check": "biome check --error-on-warnings .",
+    "test": "vitest run",
+    "migrate:labs": "node scripts/migrate.mjs && biome format --write src/umeda.ts src/shinjuku.ts src/shinjuku-places.ts src/shinjuku-links.ts"
+  },
+  "dependencies": {
+    "@senkiro/contracts": "workspace:*"
+  },
+  "devDependencies": {
+    "@senkiro/station-3d": "workspace:*"
+  }
+}

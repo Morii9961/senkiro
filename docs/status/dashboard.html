@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SENKIRO 开发进度总看板（离线版）</title>
+  <style>
+    :root {
+      --bg: #f6f5f1;
+      --card: #ffffff;
+      --sub: #f0eee8;
+      --fg: #1b1f24;
+      --muted: #5c6570;
+      --border: #dcd8ce;
+      --primary: #2563eb;
+      --success: #15803d;
+      --warning: #b45309;
+      --accent: #4f46e5;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #14181e;
+        --card: #1b2028;
+        --sub: #222832;
+        --fg: #edf1f7;
+        --muted: #98a2b3;
+        --border: #2f3744;
+        --primary: #60a5fa;
+        --success: #4ade80;
+        --warning: #fbbf24;
+        --accent: #818cf8;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 20px;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", "Hiragino Sans", sans-serif;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    main { max-width: 1120px; margin: 0 auto; display: grid; gap: 16px; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 18px;
+    }
+    .header-top {
+      display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px;
+      border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 14px;
+    }
+    .badge {
+      display: inline-block; padding: 2px 8px; border-radius: 4px;
+      background: var(--primary); color: #fff; font-weight: 700; font-size: 11px; letter-spacing: 0.08em;
+    }
+    h1 { margin: 0; font-size: 18px; display: inline; vertical-align: middle; margin-left: 8px; }
+    h2 { margin: 0 0 10px 0; font-size: 14px; }
+    .muted { color: var(--muted); font-size: 12px; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 16px; }
+    .subcard {
+      background: var(--sub); border: 1px solid var(--border); border-radius: 8px; padding: 12px;
+    }
+    .subcard.active { border: 2px solid var(--warning); }
+    .kpi-row { display: flex; justify-content: space-between; align-items: baseline; margin-top: 4px; }
+    .kpi-num { font-size: 22px; font-weight: 700; font-family: ui-monospace, monospace; }
+    .bar { height: 7px; border-radius: 99px; background: var(--border); overflow: hidden; margin: 8px 0 6px; }
+    .bar > div { height: 100%; }
+    .ok { color: var(--success); }
+    .warn { color: var(--warning); }
+    .pri { color: var(--primary); }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th, td { text-align: left; padding: 7px 6px; border-bottom: 1px solid var(--border); }
+    th { color: var(--muted); font-weight: 600; }
+    td.num, th.num { text-align: right; font-family: ui-monospace, monospace; }
+    .req-item {
+      background: var(--sub); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px;
+      display: flex; justify-content: space-between; gap: 8px; font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="card">
+      <div class="header-top">
+        <div>
+          <span class="badge">SENKIRO</span>
+          <h1>全周期开发进度总看板</h1>
+          <div class="muted" style="margin-top:6px;">
+            線・記・路 — Every line, a story. · 集成线：<span class="mono">integration/phase-0@eb77275</span> · 主干：<span class="mono">main</span>（已合入 Exit Gate 0）
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <div class="muted">当前所处项目坐标</div>
+          <div class="ok" style="font-weight:700;">Phase 0 · Exit Gate 0 已通过（待启动 Phase 1）</div>
+          <div class="muted mono">快照：2026-11-28 19:20 +08:00</div>
+        </div>
+      </div>
+
+      <div class="grid-4">
+        <div class="subcard">
+          <div class="muted">当前阶段完成度（Phase 0）</div>
+          <div class="kpi-row"><span class="kpi-num ok">100%</span><span class="muted mono">6 / 6 单元</span></div>
+          <div class="bar"><div style="width:100%;background:var(--success)"></div></div>
+          <div class="muted">Exit Gate 0 通过，已合并进 main</div>
+        </div>
+        <div class="subcard">
+          <div class="muted">距离 Web MVP（Phase 0–3）</div>
+          <div class="kpi-row"><span class="kpi-num pri">33.3%</span><span class="muted mono">6 / 18 单元</span></div>
+          <div class="bar"><div style="width:33.3%;background:var(--primary)"></div></div>
+          <div class="muted">含京阪神图鉴、多社换乘与足迹闭环</div>
+        </div>
+        <div class="subcard">
+          <div class="muted">全路线图主线（Phase 0–6）</div>
+          <div class="kpi-row"><span class="kpi-num">19.4%</span><span class="muted mono">6 / 31 单元</span></div>
+          <div class="bar"><div style="width:19.4%;background:var(--accent)"></div></div>
+          <div class="muted">含 3 座已归档 Lab 为 9 / 34（26.5%）</div>
+        </div>
+        <div class="subcard">
+          <div class="muted">已合入正式包 & 单测健康度</div>
+          <div class="kpi-row"><span class="kpi-num ok">307 / 307</span><span class="muted mono">8 个项目</span></div>
+          <div class="bar"><div style="width:100%;background:var(--success)"></div></div>
+          <div class="muted">Biome 201 文件 0 错 0 警 · E2E 10 / 10</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <h2 style="margin:0;">全链路七阶段开发路线（Phase 0 → Phase 6）与前置 Lab 基准</h2>
+        <span class="muted">口径：各阶段调度单元完成数 / 规划总单元数</span>
+      </div>
+      <div class="grid-4">
+        <div class="subcard">
+          <div style="display:flex;justify-content:space-between;"><strong>先行 Lab A/B/C</strong><span class="mono ok">3/3 · 100%</span></div>
+          <div class="bar"><div style="width:100%;background:var(--success)"></div></div>
+          <div class="muted">东京图鉴运价、梅田 7 站 3D、新宿 10 层 3D 已冻结归档。</div>
+        </div>
+        <div class="subcard">
+          <div style="display:flex;justify-content:space-between;"><strong>Phase 0 · Monorepo 筑基</strong><span class="mono ok">6/6 · 100%</span></div>
+          <div class="bar"><div style="width:100%;background:var(--success)"></div></div>
+          <div class="muted">Exit Gate 0 通过：8 包全绿、槽位接线完成、E2E 10/10，已并入 main。</div>
+        </div>
+        <div class="subcard active">
+          <div style="display:flex;justify-content:space-between;"><strong>▶ Phase 1 · 京阪神 Atlas</strong><span class="mono warn">0/4 · 0%</span></div>
+          <div class="bar"><div style="width:0%"></div></div>
+          <div class="muted">下一站：P1-Coord 冻结关西 ID 与 PMTiles 规范，再派 8 社数据、Atlas UI 与京都 3D。</div>
+        </div>
+        <div class="subcard">
+          <div style="display:flex;justify-content:space-between;"><strong>Phase 2 · 换乘与关西运价</strong><span class="mono muted">0/4 · 0%</span></div>
+          <div class="bar"><div style="width:0%"></div></div>
+          <div class="muted">RAPTOR/CSA Worker、JR 西日本+私铁附加费与比价闭环。</div>
+        </div>
+        <div class="subcard">
+          <div style="display:flex;justify-content:space-between;"><strong>Phase 3 · 制霸与车票 (MVP)</strong><span class="mono muted">0/4 · 0%</span></div>
+          <div class="bar"><div style="width:0%"></div></div>
+          <div class="muted">SQLite 四维制霸、3 套原创纪念票、关西车辆图鉴。</div>
+        </div>
+        <div class="subcard">
+          <div style="display:flex;justify-content:space-between;"><strong>Phase 4 · 全国·通票·云同步</strong><span class="mono muted">0/5 · 0%</span></div>
+          <div class="bar"><div style="width:0%"></div></div>
+          <div class="muted">全国 9,000+ 站 R2 PMTiles、8 款通票回本、Hono 同步。</div>
+        </div>
+        <div class="subcard">
+          <div style="display:flex;justify-content:space-between;"><strong>Phase 5 · Expo App·离线包</strong><span class="mono muted">0/4 · 0%</span></div>
+          <div class="bar"><div style="width:0%"></div></div>
+          <div class="muted">Expo 新架构 + MapLibre Native + &quot;use dom&quot; 3D + 离线包。</div>
+        </div>
+        <div class="subcard">
+          <div style="display:flex;justify-content:space-between;"><strong>Phase 6 · 商业 API 与 V1</strong><span class="mono muted">0/4 · 0%</span></div>
+          <div class="bar"><div style="width:0%"></div></div>
+          <div class="muted">商业时刻运价 API、SENKIRO Pro、京阪神 3D 地下网、文化扩展。</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="grid-2">
+      <section class="card">
+        <h2>Phase 0 执行单元拆解（6 / 6 完成 · 100%）</h2>
+        <table>
+          <thead><tr><th>单元</th><th>交付范围</th><th>状态</th><th class="num">核验</th></tr></thead>
+          <tbody>
+            <tr><td class="mono"><strong>P0-Coord</strong></td><td>Lab 归档、契约 v1.0、交接规程与派单</td><td class="ok">已完成</td><td class="num">3 分支冻结</td></tr>
+            <tr><td class="mono"><strong>P0-W0</strong></td><td>根工程骨架 + <span class="mono">@senkiro/contracts</span></td><td class="ok">已合入</td><td class="num">75/75</td></tr>
+            <tr><td class="mono"><strong>P0-S1</strong></td><td><span class="mono">domain-core + fare-engine + local-db</span></td><td class="ok">已合入</td><td class="num">99/99</td></tr>
+            <tr><td class="mono"><strong>P0-S2</strong></td><td>命令式 <span class="mono">station-3d</span> + 梅田/新宿数据</td><td class="ok">已合入</td><td class="num">48/48</td></tr>
+            <tr><td class="mono"><strong>P0-S3</strong></td><td><span class="mono">ui-kit</span> + <span class="mono">apps/web</span> 三语全屏壳</td><td class="ok">已合入</td><td class="num">57/57</td></tr>
+            <tr><td class="mono"><strong>P0-W2</strong></td><td>契约上提、Web 槽位接线与 Exit Gate 0 E2E</td><td class="ok">已合入</td><td class="num">+28 · E2E 10/10</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="card">
+        <h2>已合入正式包与单测明细（8 / 8 编译通过 · 307 / 307）</h2>
+        <table>
+          <thead><tr><th>包 / 应用</th><th>核心职责</th><th>状态</th><th class="num">Vitest</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">@senkiro/contracts</td><td>v1.0 SkId、三语回退、五图类型、运价钩子与诚实守卫</td><td class="ok">已验证</td><td class="num">83 / 83</td></tr>
+            <tr><td class="mono">@senkiro/domain-core</td><td>三图索引、650m 对齐守卫、C0 高程求解</td><td class="ok">已验证</td><td class="num">47 / 47</td></tr>
+            <tr><td class="mono">@senkiro/fare-engine</td><td>6 态运价内核 + kanto-jr + kansai 占位</td><td class="ok">已验证</td><td class="num">40 / 40</td></tr>
+            <tr><td class="mono">@senkiro/local-db</td><td>Drizzle 6 表 + OPFS Worker + HLC + 备份</td><td class="ok">已验证</td><td class="num">12 / 12</td></tr>
+            <tr><td class="mono">@senkiro/station-3d</td><td>命令式 Three.js 场景 + 2D 横向分栏 + 寻路 + 受控楼层</td><td class="ok">已验证</td><td class="num">49 / 49</td></tr>
+            <tr><td class="mono">@senkiro/data-stations</td><td>梅田 7 站 + 新宿 10 站（含 KSJ 坐标）</td><td class="ok">已验证</td><td class="num">8 / 8</td></tr>
+            <tr><td class="mono">@senkiro/ui-kit</td><td>和纸浅色/石墨深色令牌 + Radix 导视组件</td><td class="ok">已验证</td><td class="num">27 / 27</td></tr>
+            <tr><td class="mono">@senkiro/web</td><td>纯代码路由壳 + 梅田/新宿 Explorer 与 SQLite 探针接线</td><td class="ok">已验证</td><td class="num">41 / 41</td></tr>
+          </tbody>
+        </table>
+      </section>
+    </div>
+
+    <section class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <h2 style="margin:0;">全产品 22 项核心需求（R-01 ～ R-22）阶段落位表</h2>
+        <span class="muted">对照 docs/plan-v1.0.md §4 · 底座就绪 4 项 / 后续 Phase 按期落地 18 项</span>
+      </div>
+      <div class="grid-3">
+        <div class="req-item"><span><strong class="mono">R-04</strong> 站内平面与 3D</span><span class="ok">Phase 0 引擎+双站已接入 Web</span></div>
+        <div class="req-item"><span><strong class="mono">R-08</strong> 票价拆解器</span><span class="ok">Phase 0 内核+关东已入库</span></div>
+        <div class="req-item"><span><strong class="mono">R-09</strong> 高级运价规则</span><span class="ok">Phase 0 内核已入库</span></div>
+        <div class="req-item"><span><strong class="mono">R-13</strong> 足迹/铁路制霸</span><span class="pri">SQLite 底座已建 · Phase 3 UI</span></div>
+        <div class="req-item"><span><strong class="mono">R-01</strong> 铁路地图与百科</span><span class="muted">Phase 1（京阪神+东京）</span></div>
+        <div class="req-item"><span><strong class="mono">R-02</strong> 直通运营关系</span><span class="muted">Phase 1（关西 5 组）</span></div>
+        <div class="req-item"><span><strong class="mono">R-03</strong> 车站详情</span><span class="muted">Phase 1（京阪神）</span></div>
+        <div class="req-item"><span><strong class="mono">R-05</strong> 换乘案内</span><span class="muted">Phase 2（RAPTOR/CSA）</span></div>
+        <div class="req-item"><span><strong class="mono">R-06</strong> 多策略路线比较</span><span class="muted">Phase 2（快/省/少换/电梯）</span></div>
+        <div class="req-item"><span><strong class="mono">R-07</strong> 运行信息</span><span class="muted">Phase 1/2 占位 · Phase 5 授权</span></div>
+        <div class="req-item"><span><strong class="mono">R-10</strong> 多公司价格比较</span><span class="muted">Phase 2（大阪—京都）</span></div>
+        <div class="req-item"><span><strong class="mono">R-14</strong> 行政区旅行记录</span><span class="muted">Phase 3（关西市町村）</span></div>
+        <div class="req-item"><span><strong class="mono">R-15</strong> 数字车票博物馆</span><span class="muted">Phase 3（3 套原创主题）</span></div>
+        <div class="req-item"><span><strong class="mono">R-16</strong> 车辆与列车图鉴</span><span class="muted">Phase 3（关西主力车系）</span></div>
+        <div class="req-item"><span><strong class="mono">R-11 / R-12</strong> 通票地图与回本</span><span class="muted">Phase 4（8 款通票包）</span></div>
+        <div class="req-item"><span><strong class="mono">R-20</strong> 离线旅行包</span><span class="muted">Phase 5（Expo 离线包）</span></div>
+        <div class="req-item"><span><strong class="mono">R-21</strong> 账户与 HLC 同步</span><span class="muted">Phase 4 Web · Phase 5 三端</span></div>
+        <div class="req-item"><span><strong class="mono">R-17/18/19/22</strong> 摄影·站章·历史·分享</span><span class="muted">Phase 6 文化与商业 V1</span></div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

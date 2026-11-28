@@ -1,0 +1,45 @@
+{
+  "name": "@senkiro/local-db",
+  "version": "0.1.0",
+  "private": true,
+  "description": "SQLite journey repository shared by browser workers and native adapters.",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts",
+    "./web": "./src/web.ts",
+    "./node": "./src/node.ts"
+  },
+  "publishConfig": {
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./web": {
+        "types": "./dist/web.d.ts",
+        "default": "./dist/web.js"
+      },
+      "./node": {
+        "types": "./dist/node.d.ts",
+        "default": "./dist/node.js"
+      }
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "check": "biome check --error-on-warnings . && tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@senkiro/contracts": "workspace:*",
+    "@sqlite.org/sqlite-wasm": "3.54.1-build1",
+    "drizzle-orm": "^0.45.4"
+  }
+}
