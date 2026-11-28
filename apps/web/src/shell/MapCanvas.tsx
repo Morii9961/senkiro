@@ -1,6 +1,12 @@
 import type { AppRegion } from '@senkiro/contracts';
+import { formatTemplate } from '@senkiro/ui-kit';
 import { useMessages } from '../app/hooks.ts';
 import { presetCenter, REGION_PRESETS, type RegionViewPreset } from '../data/regions.ts';
+import { AtlasMapLayer } from '../features/atlas/AtlasMapLayer.tsx';
+import { type AtlasMapStatus, useAtlasUi } from '../features/atlas/atlas-store.ts';
+import { type AtlasBundleState, useAtlasBundle } from '../features/atlas/use-atlas-bundle.ts';
+import type { Messages } from '../i18n/messages.ts';
+import { useShellSlots } from '../slots/slots.tsx';
 import styles from './MapCanvas.module.css';
 
 /** Equirectangular projection scaled by cos(latitude) so grid cells look square. */
@@ -32,13 +38,72 @@ export interface MapCanvasProps {
   region: AppRegion;
 }
 
+export type MapState = 'unconnected' | 'unavailable' | 'loading' | 'ready' | 'no-webgl' | 'error';
+
+/** One honest state for the status line, from the data slot and the engine. */
+export function mapState(
+  connected: boolean,
+  bundle: AtlasBundleState,
+  engine: AtlasMapStatus,
+): MapState {
+  if (!connected) {
+    return 'unconnected';
+  }
+  // Missing data is the more fundamental fact, so it outranks the engine's state.
+  if (bundle.status === 'unavailable') {
+    return 'unavailable';
+  }
+  if (engine === 'no-webgl') {
+    return 'no-webgl';
+  }
+  if (bundle.status === 'error' || engine === 'error') {
+    return 'error';
+  }
+  return bundle.status === 'ready' && engine === 'ready' ? 'ready' : 'loading';
+}
+
+function statusText(
+  m: Messages,
+  state: MapState,
+  region: AppRegion,
+  bundle: AtlasBundleState,
+  engineError: string | null,
+): string {
+  const values = { region: m.regions[region].name };
+  switch (state) {
+    case 'unconnected':
+      return m.map.states.unconnected;
+    case 'unavailable':
+      return formatTemplate(m.map.states.unavailable, values);
+    case 'loading':
+      return formatTemplate(m.map.states.loading, values);
+    case 'no-webgl':
+      return m.map.states.noWebgl;
+    case 'error':
+      return formatTemplate(m.map.states.error, {
+        error: bundle.status === 'error' ? bundle.error : (engineError ?? '—'),
+      });
+    case 'ready': {
+      const ready = bundle.status === 'ready' ? bundle : null;
+      const source = ready?.bundle.pmtilesUrl === '' ? m.map.sourceInline : m.map.sourcePmtiles;
+      return `${m.map.states.ready} · ${source}${ready?.preview === true ? ` · ${m.map.preview}` : ''}`;
+    }
+  }
+}
+
 /**
- * Phase 0 map base: a precise latitude/longitude graticule for the region's view preset,
- * filling the viewport. It draws no railway lines. `[data-map-mount]` is the element a
- * MapLibre GL JS adapter will attach to in Phase 1.
+ * Map base. The Phase 0 latitude/longitude graticule for the region's view preset always
+ * renders first; when an `atlasDataSource` slot is connected and WebGL exists, the lazy
+ * MapLibre engine mounts into `[data-map-mount]` above it and the graticule hides once the
+ * vector line network has loaded. The status line says honestly which state applies.
  */
 export function MapCanvas({ region }: MapCanvasProps) {
   const m = useMessages();
+  const { atlasDataSource } = useShellSlots();
+  const bundle = useAtlasBundle(region);
+  const engine = useAtlasUi((ui) => ui.mapStatus);
+  const engineError = useAtlasUi((ui) => ui.mapError);
+  const state = mapState(atlasDataSource !== undefined, bundle, engine);
   const preset = REGION_PRESETS[region];
   const { west, south, east, north } = preset.bounds;
   const center = presetCenter(preset);
@@ -60,8 +125,7 @@ export function MapCanvas({ region }: MapCanvasProps) {
   const gy1 = p.y(south - padLat);
 
   return (
-    <div className={styles.root} data-region={region}>
-      <div className={styles.mount} data-map-mount="maplibre" aria-hidden="true" />
+    <div className={styles.root} data-region={region} data-map-state={state}>
       <svg
         className={styles.grid}
         viewBox={`${x0} ${y0} ${width} ${height}`}
@@ -149,10 +213,17 @@ export function MapCanvas({ region }: MapCanvasProps) {
           />
         </g>
       </svg>
-      <p className={styles.status} role="status">
+      <div
+        className={styles.mount}
+        data-map-mount="maplibre"
+        aria-hidden={atlasDataSource === undefined ? true : undefined}
+      >
+        <AtlasMapLayer region={region} />
+      </div>
+      <p className={styles.status} role="status" data-map-status={state}>
         <span className={styles.statusDot} aria-hidden="true" />
         <span>
-          <strong>{m.map.engineStatus}</strong>
+          <strong>{statusText(m, state, region, bundle, engineError)}</strong>
           <span className={styles.statusDetail}>
             {' '}
             · {m.map.viewCenter} {fmt(center.lat, 'N', 'S')} {fmt(center.lon, 'E', 'W')} ·{' '}

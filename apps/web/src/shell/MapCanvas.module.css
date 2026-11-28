@@ -21,6 +21,11 @@
   height: 100%;
 }
 
+/* The vector line network replaces the graticule once it has drawn. */
+.root[data-map-state="ready"] .grid {
+  visibility: hidden;
+}
+
 .minor {
   stroke: var(--sk-color-grid-minor);
   stroke-width: 1;
@@ -75,6 +80,16 @@
   margin-top: 0.35rem;
   border-radius: 50%;
   border: 1.5px solid var(--sk-color-verified);
+}
+
+.root:is([data-map-state="unconnected"], [data-map-state="unavailable"], [data-map-state="loading"])
+  .statusDot {
+  border-color: var(--sk-color-unknown);
+  border-style: dashed;
+}
+
+.root:is([data-map-state="error"], [data-map-state="no-webgl"]) .statusDot {
+  border-color: var(--sk-color-synthetic);
 }
 
 .statusDetail {

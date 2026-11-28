@@ -6,7 +6,15 @@
  * This file holds UI copy only. Entity names (stations, hubs, lines) come from data via
  * `resolveLocalizedName`; unknown facts are rendered with `<UnknownValue />`.
  */
-import type { AppModule, AppRegion, AppTheme, Locale } from '@senkiro/contracts';
+import type {
+  AppModule,
+  AppRegion,
+  AppTheme,
+  CoverageStatus,
+  InterchangeGateType,
+  LineClass,
+  Locale,
+} from '@senkiro/contracts';
 
 export interface ModuleCopy {
   /** Brand module name, e.g. "SENKIRO Atlas". */
@@ -51,6 +59,18 @@ export interface Messages {
     engineDetail: string;
     viewCenter: string;
     presetNote: string;
+    /** Atlas map engine states; `{region}`, `{error}` placeholders. */
+    states: {
+      unconnected: string;
+      unavailable: string;
+      loading: string;
+      ready: string;
+      noWebgl: string;
+      error: string;
+    };
+    sourcePmtiles: string;
+    sourceInline: string;
+    preview: string;
   };
   hubs: {
     sectionTitle: string;
@@ -63,7 +83,77 @@ export interface Messages {
     loading: string;
   };
   honesty: { title: string; rules: readonly string[] };
-  atlas: { dataStatus: string; lines: string; stations: string };
+  atlas: {
+    dataStatus: string;
+    lines: string;
+    stations: string;
+    complexes: string;
+    throughServices: string;
+    dataSource: string;
+    notConnected: string;
+    unavailable: string;
+    loading: string;
+    loadError: string;
+    previewNotice: string;
+    search: {
+      label: string;
+      placeholder: string;
+      hint: string;
+      empty: string;
+      groups: { complex: string; station: string; line: string };
+      kinds: { complex: string; station: string; line: string };
+      /** `{stations}` and `{operators}` placeholders. */
+      complexMeta: string;
+      memberOf: string;
+      standalone: string;
+      hiddenByFilter: string;
+      matchedBy: string;
+    };
+    filter: {
+      title: string;
+      showAll: string;
+      hiddenCount: string;
+      toggle: string;
+    };
+    entry: {
+      back: string;
+      kinds: { line: string; station: string; complex: string };
+      notFound: string;
+      operator: string;
+      lineClass: string;
+      lineClasses: Record<LineClass, string>;
+      coverage: string;
+      coverageStatus: Record<CoverageStatus, string>;
+      stationSequence: string;
+      sequenceNote: string;
+      jumpStation: string;
+      operatingKm: string;
+      operatingKmTotal: string;
+      operationalStatus: string;
+      operationalUnavailable: string;
+      provenance: string;
+      stationCode: string;
+      lines: string;
+      complex: string;
+      standalone: string;
+      members: string;
+      interchanges: string;
+      gate: Record<InterchangeGateType, string>;
+      walking: string;
+      minutes: string;
+      stepFree: string;
+      stepFreeValues: { yes: string; no: string };
+      excluded: string;
+      excludedLead: string;
+      enterHub: string;
+      hubPending: string;
+      through: string;
+      boundary: string;
+      throughLines: string;
+      throughOperators: string;
+      unknownEntity: string;
+    };
+  };
   route: { heading: string };
   tickets: { fare: string; fareNotice: string; keepsake: string; keepsakeNotice: string };
   journey: { rides: string; visited: string; coverage: string; notice: string };
@@ -120,7 +210,7 @@ const zhCN: Messages = {
     languageLabel: '语言',
     themeLabel: '主题',
     mapLabel: '铁道地图底板',
-    phaseNotice: 'Phase 0 预览：尚未接入任何线路、票价或时刻数据。',
+    phaseNotice: 'Phase 1 预览：票价、时刻与运行情报尚未接入；线网数据以各条目标注的数据来源为准。',
   },
   modules: {
     atlas: {
@@ -177,6 +267,17 @@ const zhCN: Messages = {
       'MapLibre GL JS 将于 Phase 1 加载 PMTiles 铁道图层；当前仅显示经纬网格，无线路数据。',
     viewCenter: '视图中心',
     presetNote: '视图范围为近似相机预设，仅用于定位，不是车站坐标数据。',
+    states: {
+      unconnected: 'Atlas 线网数据源尚未接入（Wave 2 接线），当前仅显示经纬网格。',
+      unavailable: '{region}暂无已发布的线网数据，仅显示经纬网格。',
+      loading: '正在加载{region}线网数据…',
+      ready: 'MapLibre 矢量线网已加载',
+      noWebgl: '此浏览器无法使用 WebGL，矢量地图未启动；仍可在 Atlas 面板检索线路与车站。',
+      error: '线网地图加载失败：{error}。未显示任何替代数据。',
+    },
+    sourcePmtiles: 'PMTiles 矢量瓦片',
+    sourceInline: '数据包内联几何',
+    preview: '预览夹具（合成数据，仅供测试，不是铁路数据）',
   },
   hubs: {
     sectionTitle: '枢纽快速入口',
@@ -197,7 +298,84 @@ const zhCN: Messages = {
       '纪念车票仅为收藏卡，不能用于乘车。',
     ],
   },
-  atlas: { dataStatus: '数据状态', lines: '线路', stations: '车站' },
+  atlas: {
+    dataStatus: '数据状态',
+    lines: '线路',
+    stations: '车站',
+    complexes: '车站复合体',
+    throughServices: '直通运营',
+    dataSource: '数据来源',
+    notConnected: 'Atlas 线网数据源尚未接入：线路、车站与复合体将在 Wave 2 接线后显示。',
+    unavailable: '此区域暂无已发布的线网数据包。',
+    loading: '正在加载线网数据…',
+    loadError: '线网数据加载失败：{error}。未显示任何替代数据。',
+    previewNotice: '当前显示的是预览夹具（合成数据），仅用于测试界面，不代表真实铁路数据。',
+    search: {
+      label: '检索车站、复合体与线路',
+      placeholder: '站名 · 假名 · English · 站号',
+      hint: '支持简体中文、日文、假名、英文与站号（如 HK-86、K11）。',
+      empty: '没有匹配「{query}」的车站、复合体或线路。',
+      groups: { complex: '车站复合体', station: '独立车站', line: '线路' },
+      kinds: { complex: '复合体', station: '车站', line: '线路' },
+      complexMeta: '{stations} 站 · {operators} 社',
+      memberOf: '属于 {complex}',
+      standalone: '不属于任何复合体',
+      hiddenByFilter: '另有 {count} 条结果被运营商筛选隐藏。',
+      matchedBy: '匹配 {text}',
+    },
+    filter: {
+      title: '运营商',
+      showAll: '全部显示',
+      hiddenCount: '已隐藏 {count} 社',
+      toggle: '显示或隐藏 {operator}',
+    },
+    entry: {
+      back: '返回检索',
+      kinds: { line: '线路', station: '车站', complex: '车站复合体' },
+      notFound: '当前数据包中没有 {id}，未显示任何推测内容。',
+      operator: '运营商',
+      lineClass: '线路类别',
+      lineClasses: {
+        shinkansen: '新干线',
+        trunk: '干线',
+        local_line: '地方交通线',
+        metro: '地铁',
+        private: '私铁',
+        unknown: '未分类',
+      },
+      coverage: '收录范围',
+      coverageStatus: { full: '完整', partial: '部分', none: '未收录' },
+      stationSequence: '站序',
+      sequenceNote: '仅列出本数据包收录的 {count} 站。',
+      jumpStation: '查看车站：{station}',
+      operatingKm: '营业里程（営業キロ）',
+      operatingKmTotal: '{km} km（{count} 个区间合计）',
+      operationalStatus: '运行情报',
+      operationalUnavailable:
+        '无实时授权运行数据：SENKIRO 未接入任何获授权的实时运行信息源，因此不显示正常、延误或停运状态。',
+      provenance: '数据溯源',
+      stationCode: '站号',
+      lines: '所属线路',
+      complex: '所属复合体',
+      standalone: '独立车站，不属于任何车站复合体。',
+      members: '纳入车站（{count}）',
+      interchanges: '换乘',
+      gate: { in_gate: '闸内换乘', out_of_gate: '出闸换乘', unknown: '闸机类型未核实' },
+      walking: '步行',
+      minutes: '{minutes} 分钟',
+      stepFree: '无台阶',
+      stepFreeValues: { yes: '是', no: '否' },
+      excluded: '不含（防误并）',
+      excludedLead: '以下车站不属于{complex}，请勿混同：',
+      enterHub: '进入站内 3D/2D 导览',
+      hubPending: '站内模型建设中，打开后显示诚实占位。',
+      through: '直通运营',
+      boundary: '边界站',
+      throughLines: '直通线路',
+      throughOperators: '参与运营商',
+      unknownEntity: '未收录：{id}',
+    },
+  },
   route: { heading: '出发与到达' },
   tickets: {
     fare: '票价',
@@ -269,7 +447,8 @@ const ja: Messages = {
     languageLabel: '言語',
     themeLabel: 'テーマ',
     mapLabel: '鉄道マップ',
-    phaseNotice: 'Phase 0 プレビュー：路線・運賃・時刻のデータはまだ接続されていません。',
+    phaseNotice:
+      'Phase 1 プレビュー：運賃・時刻・運行情報はまだ接続されていません。路線データは各項目に示した出典に基づきます。',
   },
   modules: {
     atlas: {
@@ -327,6 +506,20 @@ const ja: Messages = {
       'MapLibre GL JS は Phase 1 で PMTiles の鉄道レイヤーを読み込みます。現在は経緯度グリッドのみで、路線データはありません。',
     viewCenter: '表示の中心',
     presetNote: '表示範囲はおおよそのカメラ設定で、駅の座標データではありません。',
+    states: {
+      unconnected:
+        'Atlas の路線データソースは未接続です（Wave 2 で接続）。現在は経緯度グリッドのみです。',
+      unavailable:
+        '{region}の路線データはまだ公開されていません。経緯度グリッドのみ表示しています。',
+      loading: '{region}の路線データを読み込み中…',
+      ready: 'MapLibre ベクター路線図を読み込みました',
+      noWebgl:
+        'このブラウザでは WebGL が使えないため、ベクター地図は起動していません。Atlas パネルから路線や駅は検索できます。',
+      error: '路線図を読み込めませんでした：{error}。代わりのデータは表示していません。',
+    },
+    sourcePmtiles: 'PMTiles ベクタータイル',
+    sourceInline: 'データパッケージ内のジオメトリ',
+    preview: 'プレビュー用フィクスチャ（合成データ・テスト専用、鉄道データではありません）',
   },
   hubs: {
     sectionTitle: 'ハブへの入口',
@@ -353,7 +546,90 @@ const ja: Messages = {
       '記念きっぷはコレクション用で、乗車には使えません。',
     ],
   },
-  atlas: { dataStatus: 'データの状態', lines: '路線', stations: '駅' },
+  atlas: {
+    dataStatus: 'データの状態',
+    lines: '路線',
+    stations: '駅',
+    complexes: '駅複合体',
+    throughServices: '直通運転',
+    dataSource: 'データの出所',
+    notConnected:
+      'Atlas の路線データソースは未接続です。路線・駅・駅複合体は Wave 2 の接続後に表示されます。',
+    unavailable: 'このエリアの路線データパッケージはまだ公開されていません。',
+    loading: '路線データを読み込み中…',
+    loadError: '路線データを読み込めませんでした：{error}。代わりのデータは表示していません。',
+    previewNotice:
+      '表示中のデータはプレビュー用フィクスチャ（合成データ）で、画面のテスト専用です。実際の鉄道データではありません。',
+    search: {
+      label: '駅・駅複合体・路線を検索',
+      placeholder: '駅名・かな・English・駅ナンバー',
+      hint: '日本語・かな・簡体字中国語・英語・駅ナンバー（例：HK-86、K11）で検索できます。',
+      empty: '「{query}」に一致する駅・駅複合体・路線はありません。',
+      groups: { complex: '駅複合体', station: '個別の駅', line: '路線' },
+      kinds: { complex: '複合体', station: '駅', line: '路線' },
+      complexMeta: '{stations}駅・{operators}社',
+      memberOf: '{complex}に含まれる',
+      standalone: 'どの駅複合体にも含まれない',
+      hiddenByFilter: 'ほかに {count} 件が事業者フィルターで非表示です。',
+      matchedBy: '一致：{text}',
+    },
+    filter: {
+      title: '事業者',
+      showAll: 'すべて表示',
+      hiddenCount: '{count}社を非表示',
+      toggle: '{operator}の表示・非表示',
+    },
+    entry: {
+      back: '検索に戻る',
+      kinds: { line: '路線', station: '駅', complex: '駅複合体' },
+      notFound: '現在のデータパッケージに {id} はありません。推測した内容は表示しません。',
+      operator: '事業者',
+      lineClass: '路線の種別',
+      lineClasses: {
+        shinkansen: '新幹線',
+        trunk: '幹線',
+        local_line: '地方交通線',
+        metro: '地下鉄',
+        private: '私鉄',
+        unknown: '未分類',
+      },
+      coverage: '収録範囲',
+      coverageStatus: { full: '全区間', partial: '一部', none: '未収録' },
+      stationSequence: '駅の順序',
+      sequenceNote: 'このデータパッケージに収録された {count} 駅のみを表示しています。',
+      jumpStation: '駅を表示：{station}',
+      operatingKm: '営業キロ',
+      operatingKmTotal: '{km} km（{count}区間の合計）',
+      operationalStatus: '運行情報',
+      operationalUnavailable:
+        '許諾を得たリアルタイム運行情報はありません：SENKIRO は許諾済みの運行情報源に接続していないため、平常・遅延・運転見合わせを表示しません。',
+      provenance: 'データの出典',
+      stationCode: '駅ナンバー',
+      lines: '路線',
+      complex: '駅複合体',
+      standalone: 'どの駅複合体にも含まれない単独の駅です。',
+      members: '含まれる駅（{count}）',
+      interchanges: '乗り換え',
+      gate: {
+        in_gate: '改札内乗り換え',
+        out_of_gate: '改札外乗り換え',
+        unknown: '改札の種別は未確認',
+      },
+      walking: '徒歩',
+      minutes: '{minutes}分',
+      stepFree: '段差なし',
+      stepFreeValues: { yes: 'はい', no: 'いいえ' },
+      excluded: '含まない駅（誤統合防止）',
+      excludedLead: '次の駅は{complex}に含まれません。混同しないでください：',
+      enterHub: '駅構内 3D/2D ガイドを開く',
+      hubPending: '構内モデルは整備中です。開くと仮表示になります。',
+      through: '直通運転',
+      boundary: '境界駅',
+      throughLines: '直通する路線',
+      throughOperators: '参加事業者',
+      unknownEntity: '未収録：{id}',
+    },
+  },
   route: { heading: '出発地と目的地' },
   tickets: {
     fare: '運賃',
@@ -433,7 +709,8 @@ const en: Messages = {
     languageLabel: 'Language',
     themeLabel: 'Theme',
     mapLabel: 'Railway map canvas',
-    phaseNotice: 'Phase 0 preview: no line, fare or timetable data is connected yet.',
+    phaseNotice:
+      'Phase 1 preview: no fare, timetable or service-status data is connected yet; line data follows the source shown on each entry.',
   },
   modules: {
     atlas: {
@@ -498,6 +775,19 @@ const en: Messages = {
     viewCenter: 'View centre',
     presetNote:
       'The view extent is an approximate camera preset for orientation, not station coordinates.',
+    states: {
+      unconnected:
+        'The Atlas line-network source is not connected yet (wired in Wave 2); only the latitude/longitude grid is shown.',
+      unavailable: 'No line-network data is published for {region} yet; only the grid is shown.',
+      loading: 'Loading the {region} line network…',
+      ready: 'MapLibre vector line network loaded',
+      noWebgl:
+        'WebGL is not available in this browser, so the vector map did not start. Lines and stations can still be searched in the Atlas panel.',
+      error: 'The line map failed to load: {error}. No substitute data is shown.',
+    },
+    sourcePmtiles: 'PMTiles vector tiles',
+    sourceInline: 'geometry inside the data bundle',
+    preview: 'Preview fixture (synthetic, for tests only — not railway data)',
   },
   hubs: {
     sectionTitle: 'Hub quick entry',
@@ -524,7 +814,90 @@ const en: Messages = {
       'Keepsake tickets are collectibles and cannot be used for travel.',
     ],
   },
-  atlas: { dataStatus: 'Data status', lines: 'Lines', stations: 'Stations' },
+  atlas: {
+    dataStatus: 'Data status',
+    lines: 'Lines',
+    stations: 'Stations',
+    complexes: 'Station complexes',
+    throughServices: 'Through services',
+    dataSource: 'Data source',
+    notConnected:
+      'The Atlas line-network source is not connected yet: lines, stations and complexes appear once Wave 2 wires it.',
+    unavailable: 'No line-network bundle is published for this region yet.',
+    loading: 'Loading line-network data…',
+    loadError: 'The line-network data failed to load: {error}. No substitute data is shown.',
+    previewNotice:
+      'You are looking at a preview fixture (synthetic data) for testing the interface. It is not real railway data.',
+    search: {
+      label: 'Search stations, complexes and lines',
+      placeholder: 'Name · kana · 中文 · station number',
+      hint: 'Search in English, Japanese, kana, Simplified Chinese or by station number (e.g. HK-86, K11).',
+      empty: 'No station, complex or line matches “{query}”.',
+      groups: { complex: 'Station complexes', station: 'Individual stations', line: 'Lines' },
+      kinds: { complex: 'Complex', station: 'Station', line: 'Line' },
+      complexMeta: '{stations} stations · {operators} operators',
+      memberOf: 'Part of {complex}',
+      standalone: 'Not part of any complex',
+      hiddenByFilter: '{count} more results are hidden by the operator filter.',
+      matchedBy: 'Matched {text}',
+    },
+    filter: {
+      title: 'Operators',
+      showAll: 'Show all',
+      hiddenCount: '{count} hidden',
+      toggle: 'Show or hide {operator}',
+    },
+    entry: {
+      back: 'Back to search',
+      kinds: { line: 'Line', station: 'Station', complex: 'Station complex' },
+      notFound: '{id} is not in the current data bundle. Nothing guessed is shown.',
+      operator: 'Operator',
+      lineClass: 'Line class',
+      lineClasses: {
+        shinkansen: 'Shinkansen',
+        trunk: 'Trunk line',
+        local_line: 'Local line',
+        metro: 'Metro',
+        private: 'Private railway',
+        unknown: 'Unclassified',
+      },
+      coverage: 'Coverage',
+      coverageStatus: { full: 'Full', partial: 'Partial', none: 'Not covered' },
+      stationSequence: 'Stations in order',
+      sequenceNote: 'Only the {count} stations in this data bundle are listed.',
+      jumpStation: 'Show station: {station}',
+      operatingKm: 'Operating distance (eigyō kiro)',
+      operatingKmTotal: '{km} km (sum of {count} sections)',
+      operationalStatus: 'Service status',
+      operationalUnavailable:
+        'No licensed real-time service data: SENKIRO is not connected to any authorised real-time feed, so no normal, delayed or suspended status is shown.',
+      provenance: 'Provenance',
+      stationCode: 'Station number',
+      lines: 'Lines',
+      complex: 'Station complex',
+      standalone: 'A standalone station, not part of any station complex.',
+      members: 'Member stations ({count})',
+      interchanges: 'Transfers',
+      gate: {
+        in_gate: 'Transfer inside the gates',
+        out_of_gate: 'Transfer outside the gates',
+        unknown: 'Gate type unverified',
+      },
+      walking: 'Walk',
+      minutes: '{minutes} min',
+      stepFree: 'Step-free',
+      stepFreeValues: { yes: 'yes', no: 'no' },
+      excluded: 'Not included (anti-merge)',
+      excludedLead: 'These stations are not part of {complex} — do not mix them up:',
+      enterHub: 'Open the in-station 3D/2D guide',
+      hubPending: 'The in-station model is being built; it opens on an honest placeholder.',
+      through: 'Through services',
+      boundary: 'Boundary station',
+      throughLines: 'Lines',
+      throughOperators: 'Operators',
+      unknownEntity: 'Not in this bundle: {id}',
+    },
+  },
   route: { heading: 'Origin and destination' },
   tickets: {
     fare: 'Fare',

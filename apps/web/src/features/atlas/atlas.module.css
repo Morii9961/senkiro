@@ -1,0 +1,230 @@
+/* SENKIRO Atlas panel and map. Line colours arrive only through --sk-line-color and are
+   used for thin strips and swatches, never for large surfaces. */
+
+.mapView {
+  width: 100%;
+  height: 100%;
+}
+
+.sectionTitle {
+  margin: 0;
+  color: var(--sk-color-text-subtle);
+  font-size: var(--sk-text-2xs);
+  font-weight: 700;
+  letter-spacing: var(--sk-tracking-sign);
+  text-transform: uppercase;
+}
+
+.count {
+  margin-left: var(--sk-space-2);
+  color: var(--sk-color-text-subtle);
+  font-size: var(--sk-text-2xs);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.hint {
+  margin: 0;
+  color: var(--sk-color-text-subtle);
+  font-size: var(--sk-text-xs);
+}
+
+.code {
+  font-family: var(--sk-font-mono);
+  font-size: 0.95em;
+}
+
+/* Search */
+
+.search {
+  display: grid;
+  gap: var(--sk-space-2);
+  min-width: 0;
+}
+
+.searchLabel {
+  color: var(--sk-color-text-subtle);
+  font-size: var(--sk-text-2xs);
+  font-weight: 700;
+  letter-spacing: var(--sk-tracking-sign);
+  text-transform: uppercase;
+}
+
+.searchInput {
+  width: 100%;
+  min-width: 0;
+  min-height: var(--sk-touch-target);
+  padding: 0 var(--sk-space-3);
+  border: var(--sk-hairline) solid var(--sk-color-hairline-strong);
+  border-radius: var(--sk-radius-md);
+  background: var(--sk-color-surface-sunken);
+  font-size: var(--sk-text-md);
+}
+
+.searchInput::placeholder {
+  color: var(--sk-color-text-subtle);
+}
+
+.results {
+  display: grid;
+  gap: var(--sk-space-3);
+  min-width: 0;
+}
+
+.empty {
+  margin: 0;
+  color: var(--sk-color-text-muted);
+  font-size: var(--sk-text-sm);
+}
+
+.group {
+  display: grid;
+  gap: var(--sk-space-1);
+  min-width: 0;
+}
+
+.groupTitle {
+  margin: 0;
+  color: var(--sk-color-text-subtle);
+  font-size: var(--sk-text-2xs);
+  font-weight: 700;
+  letter-spacing: var(--sk-tracking-sign);
+}
+
+.resultList {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.result {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--sk-space-2);
+  align-items: start;
+  width: 100%;
+  min-height: var(--sk-touch-target);
+  padding: var(--sk-space-2);
+  border: var(--sk-hairline) solid transparent;
+  border-left: var(--sk-strip) solid var(--sk-line-color, var(--sk-color-hairline));
+  border-radius: var(--sk-radius-sm);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.result:hover {
+  border-color: var(--sk-color-hairline);
+  border-left-color: var(--sk-line-color, var(--sk-color-hairline-strong));
+  background: var(--sk-color-surface-raised);
+}
+
+.kind {
+  padding: 1px var(--sk-space-1);
+  border: var(--sk-hairline) solid var(--sk-color-hairline-strong);
+  border-radius: var(--sk-radius-xs);
+  color: var(--sk-color-text-muted);
+  font-size: var(--sk-text-2xs);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.kind[data-kind="complex"] {
+  border-color: var(--sk-color-accent);
+  color: var(--sk-color-accent);
+}
+
+.resultBody {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.resultTitle {
+  overflow-wrap: anywhere;
+  font-size: var(--sk-text-sm);
+  font-weight: 600;
+}
+
+.meta {
+  overflow-wrap: anywhere;
+  color: var(--sk-color-text-subtle);
+  font-size: var(--sk-text-xs);
+}
+
+.mark {
+  border-radius: var(--sk-radius-xs);
+  background: var(--sk-color-accent-soft);
+  color: inherit;
+}
+
+/* Operator filter */
+
+.filter {
+  display: grid;
+  gap: var(--sk-space-2);
+}
+
+.filterHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--sk-space-1);
+}
+
+.linkButton {
+  margin-left: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--sk-color-accent);
+  font-size: var(--sk-text-xs);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sk-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sk-space-1);
+  min-height: var(--sk-control-height);
+  padding: 0 var(--sk-space-2);
+  border: var(--sk-hairline) solid var(--sk-color-hairline-strong);
+  border-radius: 999px;
+  background: var(--sk-color-surface-raised);
+  font-size: var(--sk-text-xs);
+  cursor: pointer;
+}
+
+.chip[aria-pressed="false"] {
+  border-style: dashed;
+  background: transparent;
+  color: var(--sk-color-text-subtle);
+  text-decoration: line-through;
+}
+
+.swatch {
+  flex: none;
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 50%;
+  background: var(--sk-line-color, var(--sk-color-hairline-strong));
+}
+
+.chip[aria-pressed="false"] .swatch {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--sk-line-color, var(--sk-color-hairline-strong));
+}

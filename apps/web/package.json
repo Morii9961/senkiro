@@ -22,6 +22,8 @@
     "@senkiro/station-3d": "workspace:*",
     "@senkiro/ui-kit": "workspace:*",
     "@tanstack/react-router": "^1.170.46",
+    "maplibre-gl": "^5.4.0",
+    "pmtiles": "^4.3.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "three": "0.187.0",

@@ -62,7 +62,11 @@ export function AppShell() {
   const [dock, setDock] = useState<HTMLElement | null>(null);
   const [layer, setLayer] = useState<HTMLElement | null>(null);
   const dockBottom = useDockBottom(dock);
-  const panelOpen = panelOpenState ?? search.module !== 'atlas';
+  // Automatic: open for every module except Atlas, and for Atlas once the URL names an
+  // entity (a shared link to a station, complex or line opens its entry).
+  const atlasEntity =
+    search.station !== undefined || search.complex !== undefined || search.line !== undefined;
+  const panelOpen = panelOpenState ?? (search.module !== 'atlas' || atlasEntity);
   const ModuleView = MODULE_VIEWS[search.module];
   const copy = m.modules[search.module];
 
