@@ -2,6 +2,6 @@ packages:
   - packages/*
   - apps/*
 
-# pnpm 10 blocks dependency lifecycle scripts by default; allow only what the toolchain needs.
-onlyBuiltDependencies:
-  - esbuild
+# pnpm 10 blocks dependency lifecycle scripts by default. The current toolchain needs none
+# (biome/turbo/rolldown ship prebuilt platform binaries); list any future exception under
+# `onlyBuiltDependencies` here, with the reason.
