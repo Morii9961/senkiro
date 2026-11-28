@@ -105,7 +105,7 @@ vec3 senkiroWaterNormal(vec2 xz, float t, float distFade, float isBayFlag) {
   // Warm sunset/golden ambient scatter tint + cool twilight/night depth
   float duskCool = clamp(uWatBlueHour * 0.68 + uWatNight * 0.90, 0.0, 1.0);
   waterBodyCol = mix(waterBodyCol, waterBodyCol * vec3(0.95, 0.85, 0.80), uWatGolden * 0.45);
-  waterBodyCol = mix(waterBodyCol, waterBodyCol * vec3(0.28, 0.38, 0.55), duskCool);
+  waterBodyCol = mix(waterBodyCol, waterBodyCol * vec3(0.14, 0.21, 0.34), duskCool);
 
   // Schlick Fresnel grazing sky & horizon reflection (crisp at oblique angles, deep maritime overhead)
   float ndotv = clamp(dot(wNorm, viewDirW), 0.0, 1.0);
@@ -115,6 +115,7 @@ vec3 senkiroWaterNormal(vec2 xz, float t, float distFade, float isBayFlag) {
   float reflUp = clamp(reflDir.y * 0.5 + 0.5, 0.0, 1.0);
   vec3 skyRefl = mix(uWatSkyHorizon, uWatSkyTop, smoothstep(0.42, 0.90, reflUp));
   skyRefl = mix(skyRefl, uWatSunColor * 0.72 + uWatSkyHorizon * 0.28, uWatGolden * 0.38);
+  skyRefl *= mix(1.0, 0.56, uWatNight);
 
   // Solar / lunar specular glitter column across ripples
   vec3 lightDir = normalize(vec3(uWatSunDir.x, max(0.08, uWatSunDir.y), uWatSunDir.z));
@@ -136,13 +137,13 @@ vec3 senkiroWaterNormal(vec2 xz, float t, float distFade, float isBayFlag) {
     float colMask = smoothstep(0.56, 0.92, bandHash);
     float streakBreak = 0.5 + 0.5 * sin(vWaterWorldPos.z * 0.11 + wNorm.z * 42.0 + uWatTime * 1.4);
     float streakWave = pow(clamp(0.5 + 0.5 * cos(fract(colCoord) * 6.283185), 0.0001, 1.0), 3.2);
-    float riverMask = mix(1.0, 0.28, uWatIsBay);
-    vec3 streakColor = bandHash > 0.76
-      ? vec3(1.0, 0.80, 0.48)
-      : vec3(0.76, 0.88, 1.0);
+    float riverMask = mix(1.0, 0.32, uWatIsBay);
+    vec3 streakColor = bandHash > 0.72
+      ? vec3(1.0, 0.78, 0.42)
+      : vec3(0.74, 0.88, 1.0);
     float grazingBoost = 0.35 + 0.65 * (1.0 - ndotv);
-    finalWater += streakColor * colMask * streakWave * streakBreak * riverMask * grazingBoost * nightWaterFactor * 0.42;
-    finalWater += vec3(0.14, 0.19, 0.27) * mix(0.16, 0.055, uWatIsBay) * nightWaterFactor;
+    finalWater += streakColor * colMask * streakWave * streakBreak * riverMask * grazingBoost * nightWaterFactor * 0.62;
+    finalWater += vec3(0.12, 0.17, 0.26) * mix(0.045, 0.015, uWatIsBay) * nightWaterFactor;
   }
   outgoingLight = finalWater;
 }

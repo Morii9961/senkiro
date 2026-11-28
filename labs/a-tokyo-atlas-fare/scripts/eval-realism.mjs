@@ -234,6 +234,16 @@ async function main() {
       await capture(page, shots, step.id, { scene: 'G', hour: step.hour });
     }
 
+    // Scene N: Nocturnal Panorama & Street-Level Acceptance Shots (22:30 JST, before train-follow mode)
+    await setSceneView(page, { lon: 139.7480, lat: 35.6760, dist: 7600, polar: 56, az: -15, hour: 22.5, waitMs: 2200 });
+    await capture(page, shots, 'N1-tokyo-panorama-night-2230', { scene: 'N', hour: 22.5 });
+
+    await setSceneView(page, { lon: 139.7610, lat: 35.6730, dist: 1450, polar: 58, az: -32, hour: 22.5, waitMs: 1600 });
+    await capture(page, shots, 'N2-ginza-marunouchi-night-2230', { scene: 'N', hour: 22.5 });
+
+    await setSceneView(page, { lon: 139.7662, lat: 35.6808, dist: 560, polar: 56, az: 32, hour: 22.5, waitMs: 1400 });
+    await capture(page, shots, 'N3-tokyo-station-night-2230', { scene: 'N', hour: 22.5 });
+
     // Scene H: Railway dynamic verification (Cutaway + Train Follow)
     await setSceneView(page, { lon: 139.7016, lat: 35.6580, dist: 650, polar: 60, az: -36, hour: 13.5, waitMs: 1200 });
     await page.evaluate(() => window.__SENKIRO_3D_CTRL__.setUnderground(true));

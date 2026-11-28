@@ -134,6 +134,39 @@ function createPlatformDeckTexture(): THREE.CanvasTexture {
   return tex;
 }
 
+function createPlatformNightEmissiveTexture(): THREE.CanvasTexture {
+  const size = 256;
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  if (ctx) {
+    ctx.fillStyle = '#141820';
+    ctx.fillRect(0, 0, size, size);
+
+    for (const px of [64, 192]) {
+      const grad = ctx.createRadialGradient(px, 96, 4, px, 96, 62);
+      grad.addColorStop(0, 'rgba(224,240,255,0.88)');
+      grad.addColorStop(0.55, 'rgba(175,205,240,0.28)');
+      grad.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(px - 62, 96 - 62, 124, 124);
+    }
+
+    ctx.fillStyle = 'rgba(255,216,120,0.45)';
+    ctx.fillRect(0, size - 44, size, 16);
+
+    ctx.fillStyle = 'rgba(235,245,255,0.55)';
+    ctx.fillRect(0, size - 25, size, 5);
+  }
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.wrapT = THREE.ClampToEdgeWrapping;
+  tex.repeat.set(6, 1);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
 function createPlatformScreenDoorTexture(): THREE.CanvasTexture {
   const w = 256;
   const h = 64;
@@ -358,6 +391,7 @@ export class TunnelAndStationLayer implements UndergroundLayerAdapter {
 
   private readonly tunnelTexture: THREE.CanvasTexture;
   private readonly platformDeckTexture: THREE.CanvasTexture;
+  private readonly platformEmissiveTexture: THREE.CanvasTexture;
   private readonly screenDoorTexture: THREE.CanvasTexture;
   private readonly canopyRoofTexture: THREE.CanvasTexture;
   private readonly concourseBridgeTexture: THREE.CanvasTexture;
@@ -403,6 +437,7 @@ export class TunnelAndStationLayer implements UndergroundLayerAdapter {
 
     this.tunnelTexture = createTunnelConcreteTexture();
     this.platformDeckTexture = createPlatformDeckTexture();
+    this.platformEmissiveTexture = createPlatformNightEmissiveTexture();
     this.screenDoorTexture = createPlatformScreenDoorTexture();
     this.canopyRoofTexture = createCanopyRoofTexture();
     this.concourseBridgeTexture = createConcourseBridgeTexture();
@@ -440,6 +475,7 @@ export class TunnelAndStationLayer implements UndergroundLayerAdapter {
       color: 0xffffff,
       map: this.platformDeckTexture,
       emissive: new THREE.Color(0xdceeff),
+      emissiveMap: this.platformEmissiveTexture,
       emissiveIntensity: 0,
       roughness: 0.86,
       metalness: 0.04,
@@ -815,12 +851,12 @@ export class TunnelAndStationLayer implements UndergroundLayerAdapter {
 
   setNightFactor(nightFactor: number): void {
     const nf = Math.max(0, Math.min(1, nightFactor));
-    this.stationSlabMat.emissiveIntensity = nf * 0.58;
-    this.stationCanopyMat.emissiveIntensity = nf * 0.22;
-    this.platformScreenMat.emissiveIntensity = nf * 0.28;
-    this.kioskMat.emissiveIntensity = nf * 0.65;
-    this.canopyLightMat.emissiveIntensity = 0.28 + nf * 1.65;
-    this.concourseBridgeMat.emissiveIntensity = 0.12 + nf * 0.85;
+    this.stationSlabMat.emissiveIntensity = nf * 0.72;
+    this.stationCanopyMat.emissiveIntensity = nf * 0.12;
+    this.platformScreenMat.emissiveIntensity = nf * 0.24;
+    this.kioskMat.emissiveIntensity = nf * 0.58;
+    this.canopyLightMat.emissiveIntensity = 0.28 + nf * 1.55;
+    this.concourseBridgeMat.emissiveIntensity = 0.12 + nf * 0.76;
   }
 
   setTheme(isDark: boolean): void {
@@ -1162,6 +1198,7 @@ export class TunnelAndStationLayer implements UndergroundLayerAdapter {
     }
     this.tunnelTexture.dispose();
     this.platformDeckTexture.dispose();
+    this.platformEmissiveTexture.dispose();
     this.screenDoorTexture.dispose();
     this.canopyRoofTexture.dispose();
     this.concourseBridgeTexture.dispose();

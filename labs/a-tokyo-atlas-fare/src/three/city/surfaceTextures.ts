@@ -36,6 +36,30 @@ function hash2(x: number, y: number, seed = 409): number {
   return h - Math.floor(h);
 }
 
+function drawWrappedPool(
+  ctx: CanvasRenderingContext2D,
+  px: number,
+  py: number,
+  rad: number,
+  size: number,
+  innerCol: string,
+  midCol: string,
+): void {
+  for (let ox = -size; ox <= size; ox += size) {
+    for (let oy = -size; oy <= size; oy += size) {
+      const cx = px + ox;
+      const cy = py + oy;
+      if (cx + rad < 0 || cx - rad > size || cy + rad < 0 || cy - rad > size) continue;
+      const grad = ctx.createRadialGradient(cx, cy, 2, cx, cy, rad);
+      grad.addColorStop(0, innerCol);
+      grad.addColorStop(0.5, midCol);
+      grad.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(cx - rad, cy - rad, rad * 2, rad * 2);
+    }
+  }
+}
+
 function finalizeSurfaceTexture(
   canvas: HTMLCanvasElement,
   isColor: boolean,
@@ -177,50 +201,56 @@ export function createAsphaltRoadTextureSet(
     paintLine(0.905, 9, whitePaint, false);
   }
 
-  // Layered Tokyo streetlamp illumination rhythm along curbs (warm sodium trunks -> crisp LED avenues -> subtle residential)
-  const drawLampPool = (lx: number, ly: number, rad: number, innerCol: string, midCol: string) => {
-    const grad = e.createRadialGradient(lx, ly, 3, lx, ly, rad);
-    grad.addColorStop(0, innerCol);
-    grad.addColorStop(0.45, midCol);
-    grad.addColorStop(1, 'rgba(0,0,0,0)');
-    e.fillStyle = grad;
-    e.fillRect(lx - rad, ly - rad, rad * 2, rad * 2);
+  // Elliptical road-spanning lamp wash wrapped vertically (zero repetitive dot-grids or fake vehicles)
+  const drawEllipticalRoadWash = (
+    lx: number,
+    ly: number,
+    rad: number,
+    innerCol: string,
+    midCol: string,
+  ) => {
+    for (const oy of [-h, 0, h]) {
+      const cy = ly + oy;
+      if (cy + rad < 0 || cy - rad > h) continue;
+      e.save();
+      e.translate(lx, cy);
+      e.scale(1.45, 1.0);
+      const grad = e.createRadialGradient(0, 0, 4, 0, 0, rad);
+      grad.addColorStop(0, innerCol);
+      grad.addColorStop(0.48, midCol);
+      grad.addColorStop(1, 'rgba(0,0,0,0)');
+      e.fillStyle = grad;
+      e.fillRect(-rad, -rad, rad * 2, rad * 2);
+      e.restore();
+    }
   };
 
   if (roadClass === 'trunk') {
-    e.fillStyle = 'rgba(255,178,96,0.16)';
+    e.fillStyle = 'rgba(255,180,104,0.12)';
     e.fillRect(0, 0, w, h);
-    for (const ly of [56, 184, 312, 440]) {
-      drawLampPool(32, ly, 165, 'rgba(255,204,132,0.82)', 'rgba(255,164,82,0.34)');
-      drawLampPool(w - 32, (ly + 64) % h, 165, 'rgba(255,204,132,0.82)', 'rgba(255,164,82,0.34)');
-    }
-    // Subtle traffic lane wash & illuminated road center markings
-    e.fillStyle = 'rgba(255,214,158,0.14)';
-    e.fillRect(Math.round(w * 0.16), 0, Math.round(w * 0.26), h);
-    e.fillRect(Math.round(w * 0.58), 0, Math.round(w * 0.26), h);
-    e.fillStyle = 'rgba(255,244,224,0.42)';
-    e.fillRect(Math.round(w * 0.27), 64, 6, 26);
-    e.fillStyle = 'rgba(255,82,66,0.42)';
-    e.fillRect(Math.round(w * 0.68), 260, 6, 24);
+    drawEllipticalRoadWash(42, 128, 235, 'rgba(255,202,128,0.62)', 'rgba(255,166,88,0.22)');
+    drawEllipticalRoadWash(w - 42, 384, 235, 'rgba(255,202,128,0.62)', 'rgba(255,166,88,0.22)');
+    // Subtle illuminated center double-amber lines & faint edge markings
+    e.fillStyle = 'rgba(255,212,138,0.16)';
+    e.fillRect(Math.round(w * 0.486 - 2), 0, 4, h);
+    e.fillRect(Math.round(w * 0.514 - 2), 0, 4, h);
+    e.fillStyle = 'rgba(240,244,250,0.12)';
+    e.fillRect(Math.round(w * 0.055 - 2), 0, 4, h);
+    e.fillRect(Math.round(w * 0.945 - 2), 0, 4, h);
   } else if (roadClass === 'primary') {
-    e.fillStyle = 'rgba(248,214,166,0.12)';
+    e.fillStyle = 'rgba(240,206,158,0.09)';
     e.fillRect(0, 0, w, h);
-    for (const ly of [80, 240, 400]) {
-      drawLampPool(36, ly, 148, 'rgba(255,218,162,0.72)', 'rgba(242,194,134,0.28)');
-      drawLampPool(w - 36, (ly + 80) % h, 148, 'rgba(255,218,162,0.72)', 'rgba(242,194,134,0.28)');
-    }
+    drawEllipticalRoadWash(48, 128, 215, 'rgba(255,216,160,0.54)', 'rgba(238,194,138,0.18)');
+    drawEllipticalRoadWash(w - 48, 384, 215, 'rgba(255,216,160,0.54)', 'rgba(238,194,138,0.18)');
   } else if (roadClass === 'secondary') {
-    e.fillStyle = 'rgba(218,224,234,0.08)';
+    e.fillStyle = 'rgba(204,214,230,0.05)';
     e.fillRect(0, 0, w, h);
-    for (const ly of [96, 352]) {
-      drawLampPool(40, ly, 128, 'rgba(245,232,210,0.56)', 'rgba(208,212,226,0.20)');
-      drawLampPool(w - 40, (ly + 128) % h, 128, 'rgba(245,232,210,0.56)', 'rgba(208,212,226,0.20)');
-    }
+    drawEllipticalRoadWash(52, 144, 190, 'rgba(238,228,214,0.40)', 'rgba(196,208,228,0.13)');
+    drawEllipticalRoadWash(w - 52, 400, 190, 'rgba(238,228,214,0.40)', 'rgba(196,208,228,0.13)');
   } else {
-    e.fillStyle = 'rgba(182,196,216,0.05)';
+    e.fillStyle = 'rgba(170,184,208,0.025)';
     e.fillRect(0, 0, w, h);
-    drawLampPool(48, 128, 108, 'rgba(226,234,248,0.38)', 'rgba(184,198,222,0.14)');
-    drawLampPool(w - 48, 368, 108, 'rgba(226,234,248,0.38)', 'rgba(184,198,222,0.14)');
+    drawEllipticalRoadWash(56, 256, 170, 'rgba(222,232,248,0.28)', 'rgba(176,192,216,0.09)');
   }
 
   return {
@@ -259,18 +289,14 @@ export function createIntersectionAsphaltTextureSet(isDark: boolean): SurfaceTex
   paintAsphaltAggregate(a, r, b, w, h, isDark, false);
   e.fillStyle = '#000000';
   e.fillRect(0, 0, w, h);
-  e.fillStyle = 'rgba(255,212,158,0.20)';
+  e.fillStyle = 'rgba(255,200,140,0.10)';
   e.fillRect(0, 0, w, h);
   const juncGrad = e.createRadialGradient(w * 0.5, h * 0.5, 16, w * 0.5, h * 0.5, w * 0.50);
-  juncGrad.addColorStop(0, 'rgba(255,234,202,0.72)');
-  juncGrad.addColorStop(0.55, 'rgba(255,208,148,0.32)');
+  juncGrad.addColorStop(0, 'rgba(255,228,186,0.48)');
+  juncGrad.addColorStop(0.55, 'rgba(255,198,136,0.16)');
   juncGrad.addColorStop(1, 'rgba(0,0,0,0)');
   e.fillStyle = juncGrad;
   e.fillRect(0, 0, w, h);
-  // Subtle illuminated intersection edge markings
-  e.fillStyle = 'rgba(255,244,228,0.22)';
-  e.fillRect(w * 0.20, h * 0.14, w * 0.60, 8);
-  e.fillRect(w * 0.20, h * 0.84, w * 0.60, 8);
 
   return {
     map: finalizeSurfaceTexture(cAlb, true, THREE.RepeatWrapping, THREE.RepeatWrapping, 0.06, 0.06),
@@ -306,10 +332,11 @@ export function createIntersectionAsphaltTextureSet(isDark: boolean): SurfaceTex
  */
 export function createSidewalkPaverTextureSet(isDark: boolean): SurfaceTextureSet {
   const size = 512;
+  const eSize = 256;
   const [cAlb, a] = makeCanvas(size, size);
   const [cRgh, r] = makeCanvas(size, size);
   const [cBmp, b] = makeCanvas(size, size);
-  const [cEmi, e] = makeCanvas(size, size);
+  const [cEmi, e] = makeCanvas(eSize, eSize);
 
   a.fillStyle = isDark ? '#28313e' : '#9c988f';
   a.fillRect(0, 0, size, size);
@@ -317,20 +344,23 @@ export function createSidewalkPaverTextureSet(isDark: boolean): SurfaceTextureSe
   r.fillRect(0, 0, size, size);
   b.fillStyle = '#b4b4b4';
   b.fillRect(0, 0, size, size);
-  e.fillStyle = '#241d15';
-  e.fillRect(0, 0, size, size);
+  e.fillStyle = '#0c0907';
+  e.fillRect(0, 0, eSize, eSize);
 
-  for (let i = 0; i < 22; i++) {
-    const px = hash2(i, 1, 313) * size;
-    const py = hash2(i, 2, 313) * size;
-    const rad = 48 + hash2(i, 3, 313) * 68;
+  for (let i = 0; i < 14; i++) {
+    const px = hash2(i, 1, 313) * eSize;
+    const py = hash2(i, 2, 313) * eSize;
+    const rad = (46 + hash2(i, 3, 313) * 38) * 0.5;
     const isCool = hash2(i, 4, 313) > 0.56;
-    const grad = e.createRadialGradient(px, py, 3, px, py, rad);
-    grad.addColorStop(0, isCool ? 'rgba(222,238,255,0.44)' : 'rgba(255,212,158,0.56)');
-    grad.addColorStop(0.55, isCool ? 'rgba(182,208,242,0.16)' : 'rgba(235,182,120,0.20)');
-    grad.addColorStop(1, 'rgba(0,0,0,0)');
-    e.fillStyle = grad;
-    e.fillRect(px - rad, py - rad, rad * 2, rad * 2);
+    drawWrappedPool(
+      e,
+      px,
+      py,
+      rad,
+      eSize,
+      isCool ? 'rgba(214,232,255,0.26)' : 'rgba(255,210,154,0.34)',
+      isCool ? 'rgba(174,202,238,0.09)' : 'rgba(232,180,118,0.11)',
+    );
   }
 
   const cell = 16;
@@ -401,10 +431,11 @@ export function createSidewalkPaverTextureSet(isDark: boolean): SurfaceTextureSe
  */
 export function createUrbanPlazaTextureSet(isDark: boolean): SurfaceTextureSet {
   const size = 512;
+  const eSize = 256;
   const [cAlb, a] = makeCanvas(size, size);
   const [cRgh, r] = makeCanvas(size, size);
   const [cBmp, b] = makeCanvas(size, size);
-  const [cEmi, e] = makeCanvas(size, size);
+  const [cEmi, e] = makeCanvas(eSize, eSize);
 
   a.fillStyle = isDark ? '#2a3340' : '#a49f96';
   a.fillRect(0, 0, size, size);
@@ -412,8 +443,8 @@ export function createUrbanPlazaTextureSet(isDark: boolean): SurfaceTextureSet {
   r.fillRect(0, 0, size, size);
   b.fillStyle = '#b0b0b0';
   b.fillRect(0, 0, size, size);
-  e.fillStyle = '#221c15';
-  e.fillRect(0, 0, size, size);
+  e.fillStyle = '#090807';
+  e.fillRect(0, 0, eSize, eSize);
 
   const cellW = 32;
   const cellH = 24;
@@ -445,16 +476,11 @@ export function createUrbanPlazaTextureSet(isDark: boolean): SurfaceTextureSet {
     }
   }
 
-  for (let i = 0; i < 16; i++) {
-    const px = hash2(i, 1, 773) * size;
-    const py = hash2(i, 2, 773) * size;
-    const rad = 58 + hash2(i, 3, 773) * 72;
-    const grad = e.createRadialGradient(px, py, 3, px, py, rad);
-    grad.addColorStop(0, 'rgba(255,222,172,0.52)');
-    grad.addColorStop(0.5, 'rgba(240,192,132,0.18)');
-    grad.addColorStop(1, 'rgba(0,0,0,0)');
-    e.fillStyle = grad;
-    e.fillRect(px - rad, py - rad, rad * 2, rad * 2);
+  for (let i = 0; i < 10; i++) {
+    const px = hash2(i, 1, 773) * eSize;
+    const py = hash2(i, 2, 773) * eSize;
+    const rad = (54 + hash2(i, 3, 773) * 38) * 0.5;
+    drawWrappedPool(e, px, py, rad, eSize, 'rgba(255,218,166,0.34)', 'rgba(235,186,126,0.10)');
   }
 
   return {
@@ -471,10 +497,11 @@ export function createUrbanPlazaTextureSet(isDark: boolean): SurfaceTextureSet {
  */
 export function createUrbanParcelTextureSet(isDark: boolean): SurfaceTextureSet {
   const size = 512;
+  const eSize = 256;
   const [cAlb, a] = makeCanvas(size, size);
   const [cRgh, r] = makeCanvas(size, size);
   const [cBmp, b] = makeCanvas(size, size);
-  const [cEmi, e] = makeCanvas(size, size);
+  const [cEmi, e] = makeCanvas(eSize, eSize);
 
   a.fillStyle = isDark ? '#1a212b' : '#8d8980';
   a.fillRect(0, 0, size, size);
@@ -482,8 +509,8 @@ export function createUrbanParcelTextureSet(isDark: boolean): SurfaceTextureSet 
   r.fillRect(0, 0, size, size);
   b.fillStyle = '#909090';
   b.fillRect(0, 0, size, size);
-  e.fillStyle = '#120f0b';
-  e.fillRect(0, 0, size, size);
+  e.fillStyle = '#060504';
+  e.fillRect(0, 0, eSize, eSize);
 
   const step = 16;
   for (let y = 0; y < size; y += step) {
@@ -513,23 +540,25 @@ export function createUrbanParcelTextureSet(isDark: boolean): SurfaceTextureSet 
     }
   }
 
-  // Organic narrow-alley porch lamps, neighborhood intersections & vending machine light accents
-  for (let i = 0; i < 24; i++) {
-    const px = hash2(i, 1, 941) * size;
-    const py = hash2(i, 2, 941) * size;
-    const rad = 26 + hash2(i, 3, 941) * 44;
+  // Organic seamlessly-wrapped neighborhood light pools (zero tiled stroke grids)
+  for (let i = 0; i < 16; i++) {
+    const px = hash2(i, 1, 941) * eSize;
+    const py = hash2(i, 2, 941) * eSize;
+    const rad = (28 + hash2(i, 3, 941) * 30) * 0.5;
     const coolLed = hash2(i, 4, 941) > 0.68;
-    const grad = e.createRadialGradient(px, py, 2, px, py, rad);
-    grad.addColorStop(0, coolLed ? 'rgba(210,228,255,0.42)' : 'rgba(255,204,138,0.48)');
-    grad.addColorStop(1, 'rgba(0,0,0,0)');
-    e.fillStyle = grad;
-    e.fillRect(px - rad, py - rad, rad * 2, rad * 2);
+    drawWrappedPool(
+      e,
+      px,
+      py,
+      rad,
+      eSize,
+      coolLed ? 'rgba(204,224,255,0.18)' : 'rgba(255,204,138,0.24)',
+      coolLed ? 'rgba(164,190,230,0.05)' : 'rgba(225,170,104,0.07)',
+    );
   }
 
   a.strokeStyle = isDark ? 'rgba(10,16,24,0.24)' : 'rgba(72,68,62,0.16)';
   a.lineWidth = 1;
-  e.strokeStyle = 'rgba(255,206,144,0.24)';
-  e.lineWidth = 2;
   for (let i = 8; i < size; i += 32) {
     a.beginPath();
     a.moveTo(i, 0);
@@ -539,16 +568,6 @@ export function createUrbanParcelTextureSet(isDark: boolean): SurfaceTextureSet 
     a.moveTo(0, i);
     a.lineTo(size, i);
     a.stroke();
-    if (i % 64 === 8) {
-      e.beginPath();
-      e.moveTo(i, 0);
-      e.lineTo(i, size);
-      e.stroke();
-      e.beginPath();
-      e.moveTo(0, i);
-      e.lineTo(size, i);
-      e.stroke();
-    }
   }
 
   b.strokeStyle = '#707070';
@@ -577,10 +596,11 @@ export function createUrbanParcelTextureSet(isDark: boolean): SurfaceTextureSet 
  */
 export function createCommercialHardscapeTextureSet(isDark: boolean): SurfaceTextureSet {
   const size = 512;
+  const eSize = 256;
   const [cAlb, a] = makeCanvas(size, size);
   const [cRgh, r] = makeCanvas(size, size);
   const [cBmp, b] = makeCanvas(size, size);
-  const [cEmi, e] = makeCanvas(size, size);
+  const [cEmi, e] = makeCanvas(eSize, eSize);
 
   a.fillStyle = isDark ? '#202834' : '#7d8188';
   a.fillRect(0, 0, size, size);
@@ -588,8 +608,8 @@ export function createCommercialHardscapeTextureSet(isDark: boolean): SurfaceTex
   r.fillRect(0, 0, size, size);
   b.fillStyle = '#929292';
   b.fillRect(0, 0, size, size);
-  e.fillStyle = '#221c15';
-  e.fillRect(0, 0, size, size);
+  e.fillStyle = '#0c0a08';
+  e.fillRect(0, 0, eSize, eSize);
 
   const cell = 32;
   for (let y = 0; y < size; y += cell) {
@@ -608,24 +628,25 @@ export function createCommercialHardscapeTextureSet(isDark: boolean): SurfaceTex
     }
   }
 
-  for (let i = 0; i < 28; i++) {
-    const px = hash2(i, 1, 991) * size;
-    const py = hash2(i, 2, 991) * size;
-    const rad = 36 + hash2(i, 3, 991) * 58;
+  for (let i = 0; i < 18; i++) {
+    const px = hash2(i, 1, 991) * eSize;
+    const py = hash2(i, 2, 991) * eSize;
+    const rad = (38 + hash2(i, 3, 991) * 36) * 0.5;
     const isCool = hash2(i, 4, 991) > 0.55;
-    const grad = e.createRadialGradient(px, py, 2, px, py, rad);
-    grad.addColorStop(0, isCool ? 'rgba(218,236,255,0.52)' : 'rgba(255,212,152,0.62)');
-    grad.addColorStop(0.55, isCool ? 'rgba(176,204,242,0.18)' : 'rgba(240,180,112,0.22)');
-    grad.addColorStop(1, 'rgba(0,0,0,0)');
-    e.fillStyle = grad;
-    e.fillRect(px - rad, py - rad, rad * 2, rad * 2);
+    drawWrappedPool(
+      e,
+      px,
+      py,
+      rad,
+      eSize,
+      isCool ? 'rgba(214,232,255,0.28)' : 'rgba(255,210,148,0.34)',
+      isCool ? 'rgba(172,200,238,0.08)' : 'rgba(232,176,108,0.10)',
+    );
   }
 
   a.strokeStyle = isDark ? 'rgba(10,14,22,0.35)' : 'rgba(62,66,72,0.22)';
   a.lineWidth = 1;
   b.strokeStyle = '#6c6c6c';
-  e.strokeStyle = 'rgba(255,220,172,0.28)';
-  e.lineWidth = 2;
   for (let i = 0; i <= size; i += 64) {
     a.beginPath();
     a.moveTo(i, 0);
@@ -643,14 +664,6 @@ export function createCommercialHardscapeTextureSet(isDark: boolean): SurfaceTex
     b.moveTo(0, i);
     b.lineTo(size, i);
     b.stroke();
-    e.beginPath();
-    e.moveTo(i, 0);
-    e.lineTo(i, size);
-    e.stroke();
-    e.beginPath();
-    e.moveTo(0, i);
-    e.lineTo(size, i);
-    e.stroke();
   }
 
   return {

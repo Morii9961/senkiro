@@ -273,15 +273,15 @@ ${GROUND_NOISE_GLSL}`,
   roughnessFactor = clamp(roughnessFactor + (nR - 0.5) * 0.08, 0.25, 0.99);
   if (uGrSurfaceKind > 9.5) {
     // Weathered urban asphalt gains subtle grazing sky & lamp specular sheen at dusk/night
-    roughnessFactor = mix(roughnessFactor, 0.54, clamp(uGrBlueHourFactor * 0.55 + uGrNightFactor * 0.75, 0.0, 1.0));
+    roughnessFactor = mix(roughnessFactor, 0.42, clamp(uGrBlueHourFactor * 0.55 + uGrNightFactor * 0.80, 0.0, 1.0));
   }
 }`,
       )
       .replace(
         '#include <emissivemap_fragment>',
-        `#include <emissivemap_fragment>
-{
-  // Continuous Multi-Scale Tokyo Night Radiance Carpet (zero circular spotlight blobs!)
+        `if (uGrNightFactor > 0.12 || uGrBlueHourFactor > 0.02) {
+#include <emissivemap_fragment>
+  // Continuous Dual-Scale Tokyo Night Radiance (zero 46m checkerboards, zero circular hub blobs!)
   // Keeps parks, forest understories & outer countryside naturally dark.
   float nightOn = smoothstep(0.18, 0.85, uGrNightFactor + uGrBlueHourFactor * 0.62);
   if (nightOn > 0.01 && (uGrSurfaceKind < 6.5 || uGrSurfaceKind > 9.5)) {
@@ -297,40 +297,43 @@ ${GROUND_NOISE_GLSL}`,
       max(pow(max(0.0, dot(dirN, normalize(vec2(0.95, -0.15)))), 3.0),
           pow(max(0.0, dot(dirN, normalize(vec2(-0.98, -0.12)))), 3.0))
     );
-    float metroEnvelope = 1.0 - smoothstep(4500.0, 26500.0, radialDist * (1.0 - corr * 0.24));
+    float metroEnvelope = 1.0 - smoothstep(4800.0, 27000.0, radialDist * (1.0 - corr * 0.25));
 
-    // Domain-warped organic urban block & neighborhood light-temperature lattice
-    vec2 bWarp = vec2(wp.x * 0.88 - wp.y * 0.47, wp.x * 0.47 + wp.y * 0.88);
-    vec2 cellId = floor(bWarp / 46.0);
-    vec2 cellF = fract(bWarp / 46.0);
-    float cellSeed = senkiroHash21(cellId);
-    float blockCluster = senkiroValueNoise(wp * 0.0022 + vec2(3.1, -2.4));
-    float alleyDist = min(min(cellF.x, 1.0 - cellF.x), min(cellF.y, 1.0 - cellF.y));
-    float alleyGlow = (1.0 - smoothstep(0.03, 0.24, alleyDist)) * (0.45 + 0.55 * cellSeed);
+    // Smooth domain-warped FBM modulation (zero hard cell borders or checkerboards)
+    float macroNoise = senkiroFbm3(wp * 0.00085 + vec2(1.7, -2.3));
+    float midNoise = senkiroValueNoise(wp * 0.0065 + vec2(macroNoise * 2.4, -macroNoise * 1.9));
+    float organicMod = smoothstep(0.16, 0.88, macroNoise * 0.62 + midNoise * 0.38);
 
-    // Attenuate high-frequency block flicker gently at extreme horizon distance so it coalesces cleanly
-    float nearKeep = 1.0 - smoothstep(3200.0, 14500.0, camDist);
-    float blockPulse = mix(0.65, 0.35 + 0.95 * smoothstep(0.18, 0.88, cellSeed * 0.65 + blockCluster * 0.35), nearKeep);
+    vec3 warmSodium = vec3(1.00, 0.70, 0.36);
+    vec3 neutralLed = vec3(0.88, 0.93, 1.00);
+    vec3 carpetColor = mix(warmSodium, neutralLed, smoothstep(0.38, 0.86, midNoise) * 0.46);
 
-    vec3 warmSodium = vec3(1.00, 0.72, 0.40);
-    vec3 neutralLed = vec3(0.92, 0.95, 1.00);
-    vec3 carpetColor = mix(warmSodium, neutralLed, smoothstep(0.45, 0.92, cellSeed) * 0.52);
-
-    float kindWeight = 0.20;
+    // Restrained close-up bounce to preserve deep dark contact shadows around buildings
+    float kindWeightClose = 0.032;
     if (uGrSurfaceKind > 9.5) {
-      kindWeight = 0.08; // Roads mainly shine through their dedicated lamp-pool emissiveMap
+      kindWeightClose = 0.030;
     } else if (abs(uGrSurfaceKind - 2.0) < 0.5 || abs(uGrSurfaceKind - 6.0) < 0.5) {
-      kindWeight = 0.34; // Commercial canyons & plazas: dense storefront & signage bounce
+      kindWeightClose = 0.075;
     } else if (abs(uGrSurfaceKind - 5.0) < 0.5) {
-      kindWeight = 0.28; // Sidewalks: continuous shopfront & pedestrian bollard glow
-    } else if (abs(uGrSurfaceKind - 1.0) < 0.5) {
-      kindWeight = 0.22; // Residential blocks: calm neighborhood street & porch carpet
+      kindWeightClose = 0.095;
     } else if (uGrSurfaceKind > 2.5 && uGrSurfaceKind < 4.5) {
-      kindWeight = 0.14; // Industrial & rail yards: restrained sodium yard floodlights
+      kindWeightClose = 0.025;
     }
+    totalEmissiveRadiance += carpetColor * metroEnvelope * (0.35 + 0.65 * organicMod) * kindWeightClose * nightOn;
 
-    float carpetStrength = metroEnvelope * (0.35 + 0.65 * blockCluster) * (blockPulse * 0.68 + alleyGlow * 0.55);
-    totalEmissiveRadiance += carpetColor * carpetStrength * kindWeight * nightOn;
+    // Panorama-scale sparkling urban micro-light tapestry (fades IN above 1.4km, zero close-up artifacts)
+    float panFade = smoothstep(1400.0, 4800.0, camDist) * (1.0 - smoothstep(22000.0, 48000.0, camDist));
+    if (panFade > 0.01 && uGrSurfaceKind < 6.5) {
+      vec2 w1 = wp * 0.038 + vec2(macroNoise * 3.8, -midNoise * 3.2);
+      vec2 w2 = vec2(wp.x * 0.82 - wp.y * 0.57, wp.x * 0.57 + wp.y * 0.82) * 0.019 + vec2(-midNoise * 2.5, macroNoise * 2.9);
+      float sparkA = pow(max(senkiroValueNoise(w1), 0.0001), 3.4);
+      float sparkB = pow(max(senkiroValueNoise(w2), 0.0001), 2.6);
+      float microTapestry = (sparkA * 0.72 + sparkB * 0.48) * (0.40 + 0.60 * organicMod) * metroEnvelope;
+      float tempMix = smoothstep(0.32, 0.78, senkiroValueNoise(wp * 0.011 + vec2(7.1, 3.4)));
+      vec3 tapColor = mix(vec3(1.00, 0.68, 0.34), vec3(0.86, 0.92, 1.00), tempMix * 0.48);
+      float landTapWeight = (abs(uGrSurfaceKind - 2.0) < 0.5 || abs(uGrSurfaceKind - 6.0) < 0.5) ? 0.58 : (uGrSurfaceKind < 1.5 ? 0.42 : 0.20);
+      totalEmissiveRadiance += tapColor * microTapestry * landTapWeight * panFade * nightOn;
+    }
   }
 }`,
       )

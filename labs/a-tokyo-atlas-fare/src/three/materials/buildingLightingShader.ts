@@ -156,26 +156,24 @@ if (uBldgFadeEnabled > 0.5) {
     vec3 tintTemp = mix(vec3(1.06, 0.96, 0.84), vec3(0.88, 0.95, 1.08), bSeed);
     totalEmissiveRadiance *= winMod * tintTemp;
 
-    // Selective architectural crown uplighting on ~35% of tall high-rises (> 62m)
-    if (vBldgWorldPos.y > 62.0 && bSeed > 0.64) {
-      float crownMask = smoothstep(62.0, 122.0, vBldgWorldPos.y);
-      vec3 crownTint = bSeed > 0.84 ? vec3(0.24, 0.31, 0.44) : vec3(0.32, 0.25, 0.17);
+    // Selective architectural crown uplighting on high-rises (> 70m)
+    if (vBldgWorldPos.y > 70.0 && bSeed > 0.72) {
+      float crownMask = smoothstep(70.0, 145.0, vBldgWorldPos.y);
+      vec3 crownTint = bSeed > 0.86 ? vec3(0.16, 0.22, 0.34) : vec3(0.22, 0.17, 0.11);
       float crownStrength = clamp(uBldgBlueHour * 0.82 + uBldgNight, 0.0, 1.0);
       totalEmissiveRadiance += crownTint * crownMask * crownStrength * (0.48 + 0.52 * uBldgVisualMode) * farEmissiveAtten;
     }
   }
 
-  // Nocturnal street-canyon warm streetlight bounce + cool sky ambient rim
-  // so lower plinths, storefronts & rooftop silhouettes stay legible at street zoom and panorama scale
+  // Tight, crisp nocturnal street-canyon lower bounce + delicate sky rim
   float twilightOrNight = clamp(uBldgBlueHour * 0.85 + uBldgNight, 0.0, 1.0);
   if (twilightOrNight > 0.02) {
-    float wallWeight = vBldgWorldNormal.y > 0.55 ? 0.22 : 1.0;
-    float streetBounceClose = exp(-max(0.0, vBldgWorldPos.y) / 14.0);
-    float streetBounceMid = exp(-max(0.0, vBldgWorldPos.y) / 32.0);
-    vec3 bounceCol = (vec3(0.24, 0.165, 0.095) * streetBounceClose + vec3(0.085, 0.068, 0.052) * streetBounceMid) * wallWeight * twilightOrNight;
-    float roofOrUpper = vBldgWorldNormal.y > 0.45 ? 0.055 : 0.036;
-    vec3 skyRim = uBldgSkyHorizon * roofOrUpper * (0.45 + 0.55 * clamp(vBldgWorldPos.y / 65.0, 0.0, 1.0)) * twilightOrNight;
-    totalEmissiveRadiance += (bounceCol + skyRim) * (0.68 + 0.32 * uBldgVisualMode);
+    float wallWeight = vBldgWorldNormal.y > 0.55 ? 0.12 : 1.0;
+    float streetBounceClose = exp(-max(0.0, vBldgWorldPos.y) / 7.5);
+    vec3 bounceCol = vec3(0.072, 0.048, 0.026) * streetBounceClose * wallWeight * twilightOrNight;
+    float roofOrUpper = vBldgWorldNormal.y > 0.45 ? 0.022 : 0.018;
+    vec3 skyRim = uBldgSkyHorizon * roofOrUpper * (0.40 + 0.60 * clamp(vBldgWorldPos.y / 80.0, 0.0, 1.0)) * twilightOrNight;
+    totalEmissiveRadiance += (bounceCol + skyRim) * (0.65 + 0.35 * uBldgVisualMode);
   }
 }`,
       )
