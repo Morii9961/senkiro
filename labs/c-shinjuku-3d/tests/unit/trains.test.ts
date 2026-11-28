@@ -1,0 +1,385 @@
+import { describe, expect, it } from 'vitest';
+import { demoFixture } from '../../src/timetable/demoFixture';
+import type { TimetableRecord } from '../../src/timetable/types';
+import {
+  APPROACH_SECONDS, ASSUMED_DWELL_SECONDS, DEPART_SECONDS, NOMINAL_CAR_LENGTH, SHORT_STOP_SECONDS, TERMINATING_HOLD_SECONDS, TURNS_BACK_REMARK, buildTrainPlans, trainStateAt, trainStatesAt,
+} from '../../src/trains/simulate';
+import { physicalTrackKey, trackLine } from '../../src/trains/trackGeometry';
+import { allTrackRunKeys, modelTrackKeys, trackRun } from '../../src/trains/trackRuns';
+import { FORMATION_FACTS, GENERIC_VEHICLE, LINE_VEHICLE_RULES, SERVICE_VEHICLE_RULES, VEHICLES, resolveVehicle, vehicleBySeries } from '../../src/trains/vehicles';
+import { buildTrainParts, doorCentres } from '../../src/trains/parts';
+import { loadModel, loadSources } from './helpers';
+
+const model = loadModel();
+const sources = new Set(loadSources().map((s) => s.id));
+
+const base: TimetableRecord = {
+  station_id: 'jr-east:shinjuku', operator_id: 'jr-east', line_id: 'jr-east:yamanote', platform_id: 'jr-east:shinjuku:14', direction_id: null,
+  service_date_type: 'weekday', trip_id: 't1', train_number: null, arrival_time_local: '08:00:00', departure_time_local: '08:01:00',
+  destination_text: null, service_class: null, vehicle_series: null, formation_length: null, vehicle_assignment_status: 'unknown',
+  source_id: 'src:x', valid_from: null, valid_until: null, remarks: null,
+};
+const rec = (over: Partial<TimetableRecord>): TimetableRecord => ({ ...base, ...over });
+const plansOf = (records: TimetableRecord[]) => buildTrainPlans(model, records, { dayType: null });
+const T = 8 * 3600;
+
+describe('track running table', () => {
+  it('covers every track of the model, and nothing else', () => {
+    expect([...allTrackRunKeys()].sort()).toEqual([...modelTrackKeys(model)].sort());
+  });
+
+  it('every track with a recorded side yields a track line beside its platform', () => {
+    for (const a of model.areas) {
+      if (a.kind !== 'platform') continue;
+      for (const t of a.tracks) {
+        const line = trackLine(a, t.number);
+        if (!t.side) {
+          expect(line).toBeNull();
+          continue;
+        }
+        const r = a.footprint[0]!;
+        const [lo, hi] = line!.axis === 'x' ? [r.z0, r.z1] : [r.x0, r.x1];
+        // the centre line lies outside the platform slab, within a track's width of its edge
+        expect(line!.centre < lo || line!.centre > hi, a.id).toBe(true);
+        expect(Math.min(Math.abs(line!.centre - lo), Math.abs(line!.centre - hi))).toBeLessThan(0.5);
+        // the track runs on past both ends, except at the head of a terminus, where it stops at the buffer stop
+        const head = a.terminus?.end;
+        if (head === 'x-' || head === 'z-') expect(line!.clipLo).toBe(line!.lo);
+        else expect(line!.clipLo).toBeLessThan(line!.lo);
+        if (head === 'x+' || head === 'z+') expect(line!.clipHi).toBe(line!.hi);
+        else expect(line!.clipHi).toBeGreaterThan(line!.hi);
+      }
+    }
+  });
+
+  it('two platform numbers share a pair of rails only as the two faces of one track', () => {
+    const seen = new Map<string, string>();
+    for (const a of model.areas) {
+      if (a.kind !== 'platform') continue;
+      for (const t of a.tracks) {
+        const line = trackLine(a, t.number);
+        if (!line) continue;
+        const key = `${a.levelId}|${line.axis}|${line.centre.toFixed(2)}`;
+        const other = seen.get(key);
+        if (other) {
+          const [oa, on] = other.split('#');
+          const ol = trackLine(model.areas.find((x) => x.id === oa) as never, on!)!;
+          // a platform on each side of the same rails (Odakyu's boarding / alighting faces)
+          expect(ol.platformSide, `${a.id}#${t.number} vs ${other}`).toBe(-line.platformSide);
+          expect(physicalTrackKey(ol)).toBe(physicalTrackKey(line));
+        }
+        seen.set(key, `${a.id}#${t.number}`);
+      }
+    }
+  });
+});
+
+describe('vehicle rules', () => {
+  it('every vehicle, line rule and formation fact cites a registered source', () => {
+    for (const v of [...VEHICLES, GENERIC_VEHICLE]) for (const s of v.sourceIds) expect(sources.has(s), `${v.id}: ${s}`).toBe(true);
+    for (const r of LINE_VEHICLE_RULES) {
+      expect(VEHICLES.some((v) => v.id === r.vehicleId), r.line_id).toBe(true);
+      for (const s of r.sourceIds) expect(sources.has(s), s).toBe(true);
+    }
+    for (const f of FORMATION_FACTS) for (const s of f.sourceIds) expect(sources.has(s), s).toBe(true);
+  });
+
+  it('takes the type from the trip first, then from a sourced line rule, else the generic train', () => {
+    const trip = resolveVehicle(rec({ vehicle_series: 'E233系', vehicle_assignment_status: 'verified', formation_length: 12 }));
+    expect(trip).toMatchObject({ basis: 'trip', status: 'verified', cars: 12, carsBasis: 'trip' });
+    expect(trip.spec.id).toBe('jr-east:E233');
+
+    const rule = resolveVehicle(base);
+    expect(rule).toMatchObject({ basis: 'line-rule', status: 'verified', seriesLabel: 'E235系', cars: 11, carsBasis: 'line-fact' });
+    expect(rule.sourceIds).toContain('src:trafficnews-yamanote-e235');
+
+    expect(resolveVehicle(rec({ line_id: 'jr-east:chuo-rapid' })).status).toBe('representative');
+
+    // several types share the line: one of them, marked representative, and no car count
+    const odakyu = resolveVehicle(rec({ station_id: 'odakyu:shinjuku', operator_id: 'odakyu', line_id: 'odakyu:odawara' }));
+    expect(odakyu).toMatchObject({ basis: 'line-rule', status: 'representative', seriesLabel: '3000形', cars: 10, carsBasis: 'line-fact' });
+
+    // the through limited express to Tobu: two types share it, so none is chosen (its length, 6 cars, is known)
+    const none = resolveVehicle(rec({ line_id: 'jr-east:tobu-through-limited-express' }));
+    expect(none).toMatchObject({ basis: 'none', status: 'unknown', cars: 6 });
+    expect(resolveVehicle(rec({ line_id: 'jr-east:narita-express' }))).toMatchObject({ basis: 'line-rule', status: 'verified', seriesLabel: 'E259系', cars: 6 });
+    expect(none.spec).toBe(GENERIC_VEHICLE);
+
+    const notInLibrary = resolveVehicle(rec({ vehicle_series: '8000形', vehicle_assignment_status: 'representative' }));
+    expect(notInLibrary).toMatchObject({ basis: 'trip-series-not-in-library', status: 'representative', seriesLabel: '8000形' });
+    expect(notInLibrary.spec).toBe(GENERIC_VEHICLE);
+  });
+
+  it('never assumes a number of cars: only the trip or a sourced fact (a representative length, where the line runs several) gives one', () => {
+    // a line the library has no fact for stays unknown
+    expect(resolveVehicle(rec({ line_id: 'x:not-a-line' })).cars).toBeNull();
+    // representative lengths are facts with a source, and say so
+    for (const f of FORMATION_FACTS.filter((x) => x.representative)) expect(f.sourceIds.length).toBeGreaterThan(0);
+    expect(resolveVehicle(rec({ station_id: 'odakyu:shinjuku', line_id: 'odakyu:odawara' })).cars).toBe(10);
+    expect(resolveVehicle(rec({ line_id: 'jr-east:shonan-shinjuku' }))).toMatchObject({ cars: 10, seriesLabel: 'E231系1000番台' });
+    expect(resolveVehicle(rec({ line_id: 'jr-east:chuo-limited-express' }))).toMatchObject({ status: 'verified', seriesLabel: 'E353系', cars: 9 });
+    expect(resolveVehicle(rec({ line_id: 'jr-east:saikyo' }))).toMatchObject({ cars: 10, carsBasis: 'line-fact' });
+    // the trip's own figure wins over a fact about the line
+    expect(resolveVehicle(rec({ formation_length: 10 }))).toMatchObject({ cars: 10, carsBasis: 'trip' });
+    const oedo = resolveVehicle(rec({ station_id: 'toei:shinjuku:E27', line_id: 'toei:oedo' }));
+    expect(oedo).toMatchObject({ cars: 8, carsBasis: 'line-fact', status: 'representative', seriesLabel: '12-600形' });
+    expect(oedo.sourceIds).toContain('src:toei-shinjuku-map');
+  });
+
+  it('matches series spellings', () => {
+    expect(vehicleBySeries('E235系')?.id).toBe('jr-east:E235');
+    expect(vehicleBySeries('e235 series')?.id).toBe('jr-east:E235');
+    expect(vehicleBySeries('E233-0')?.id).toBe('jr-east:E233');
+    expect(vehicleBySeries('E657')).toBeNull();
+    // the same number at two companies: the operator decides, and a type the library lacks stays unresolved
+    expect(vehicleBySeries('2000系', 'tokyo-metro')?.id).toBe('tokyo-metro:2000');
+    expect(vehicleBySeries('2000系', 'seibu')).toBeNull();
+    expect(resolveVehicle(rec({ station_id: 'seibu:seibu-shinjuku', operator_id: 'seibu', line_id: 'seibu:shinjuku', vehicle_series: '2000系', vehicle_assignment_status: 'verified' }))).toMatchObject({ basis: 'trip-series-not-in-library', seriesLabel: '2000系' });
+  });
+});
+
+describe('train simulation', () => {
+  it('runs in, stops, opens and closes the doors, and leaves — on a through track', () => {
+    const { plans, unplaced } = plansOf([base]);
+    expect(unplaced).toEqual([]);
+    const p = plans[0]!;
+    expect(p.run?.kind).toBe('through');
+    expect(p.arrivalAssumed).toBe(false);
+    expect(trainStateAt(p, T - APPROACH_SECONDS - 1)).toBeNull();
+
+    const far = trainStateAt(p, T - APPROACH_SECONDS + 1)!;
+    const near = trainStateAt(p, T - 2)!;
+    expect(far.phase).toBe('approaching');
+    expect(near.phase).toBe('braking');
+    // heads south (x grows) and comes from the north: behind the stop position, closing in
+    expect(far.heading).toBe(1);
+    expect(far.along).toBeLessThan(near.along);
+    expect(near.along).toBeLessThan(p.stopAt);
+    // decelerating: covers less ground in the last seconds than in the first
+    const step = (t: number) => Math.abs(trainStateAt(p, t + 1)!.along - trainStateAt(p, t)!.along);
+    expect(step(T - 3)).toBeLessThan(step(T - APPROACH_SECONDS + 2));
+
+    expect(trainStateAt(p, T)!).toMatchObject({ phase: 'stopped', along: p.stopAt, doors: 0, moving: false });
+    expect(trainStateAt(p, T + 3)!.phase).toBe('doors-opening');
+    expect(trainStateAt(p, T + 30)!).toMatchObject({ phase: 'doors-open', doors: 1 });
+    expect(trainStateAt(p, T + 54.5)!.phase).toBe('doors-closing');
+    expect(trainStateAt(p, T + 59)!).toMatchObject({ doors: 0, moving: false });
+
+    const leaving = trainStateAt(p, T + 60 + 10)!;
+    expect(leaving).toMatchObject({ phase: 'departing', heading: 1, doors: 0 });
+    expect(leaving.along).toBeGreaterThan(p.stopAt);
+    expect(trainStateAt(p, T + 60 + DEPART_SECONDS)).toBeNull();
+    // by then it is wholly past the end of the drawn track
+    const last = trainStateAt(p, T + 60 + DEPART_SECONDS - 0.01)!;
+    expect(last.along - p.length / 2).toBeGreaterThan(p.line.clipHi);
+    expect(far.along + p.length / 2).toBeLessThan(p.line.clipLo + 3);
+  });
+
+  it('at a terminal track the train leaves the way it came', () => {
+    const p = plansOf([rec({ station_id: 'odakyu:shinjuku', operator_id: 'odakyu', line_id: 'odakyu:odawara', platform_id: 'odakyu:shinjuku:4' })]).plans[0]!;
+    expect(p.run?.kind).toBe('terminal');
+    const coming = trainStateAt(p, T - 20)!;
+    const going = trainStateAt(p, T + 60 + 20)!;
+    expect(coming.along).toBeGreaterThan(p.stopAt);
+    expect(going.along).toBeGreaterThan(p.stopAt);
+    expect(coming.heading).toBe(-1);
+    expect(going.heading).toBe(1);
+  });
+
+  it('marks the dwell as assumed when the timetable has no arrival time', () => {
+    const p = plansOf([rec({ arrival_time_local: null })]).plans[0]!;
+    expect(p.arrivalAssumed).toBe(true);
+    expect(p.arrive).toBe(T + 60 - ASSUMED_DWELL_SECONDS);
+  });
+
+  it('a terminating train stays a while with its doors open and is not given a made-up departure', () => {
+    const p = plansOf([rec({ departure_time_local: null })]).plans[0]!;
+    expect(p.depart).toBeNull();
+    expect(trainStateAt(p, T + 30)!).toMatchObject({ phase: 'doors-open', moving: false });
+    expect(trainStateAt(p, T + TERMINATING_HOLD_SECONDS)).toBeNull();
+  });
+
+  it('shows a train only while it stands when the direction of the track is not established', () => {
+    const p = plansOf([rec({ line_id: 'jr-east:narita-express', platform_id: 'jr-east:shinjuku:5' })]).plans[0]!;
+    expect(p.run?.departs).toBeNull();
+    expect(trainStateAt(p, T - 1)).toBeNull();
+    expect(trainStateAt(p, T + 10)!).toMatchObject({ heading: 0, moving: false });
+    expect(trainStateAt(p, T + 60)).toBeNull();
+  });
+
+  it('draws the cars the data gives and fits them to the platform; an unknown length stays unknown', () => {
+    const eleven = plansOf([rec({ formation_length: 11 })]).plans[0]!;
+    expect(eleven.carLength).toBeCloseTo(NOMINAL_CAR_LENGTH);
+    expect(eleven.length).toBeCloseTo(11 * NOMINAL_CAR_LENGTH);
+    const unknown = plansOf([rec({ line_id: 'x:not-a-line', platform_id: 'jr-east:shinjuku:13' })]).plans[0]!;
+    expect(unknown.carLength).toBeNull();
+    const oedo = plansOf([rec({ station_id: 'toei:shinjuku:E27', operator_id: 'toei', line_id: 'toei:oedo', platform_id: 'toei:shinjuku:E27:6' })]).plans[0]!;
+    expect(oedo.vehicle.cars).toBe(8);
+    // a short platform: the cars shrink so that the train still fits
+    expect(oedo.length).toBeLessThan(oedo.line.hi - oedo.line.lo);
+    expect(oedo.carLength!).toBeLessThan(NOMINAL_CAR_LENGTH);
+  });
+
+  it('reports records it cannot place instead of drawing them somewhere', () => {
+    const { plans, unplaced } = plansOf([
+      rec({ platform_id: null }),
+      rec({ trip_id: 'a', platform_id: 'jr-east:shinjuku:99' }),
+      // 新宿西口 (E01) has tracks 1 and 2; track 6 belongs to the Oedo Line's 新宿 (E27), a different station
+      rec({ trip_id: 'b', station_id: 'toei:shinjuku-nishiguchi:E01', operator_id: 'toei', line_id: 'toei:oedo', platform_id: 'toei:shinjuku-nishiguchi:E01:6' }),
+    ]);
+    expect(plans).toEqual([]);
+    expect(unplaced.map((u) => u.reason)).toEqual(['no-platform', 'track-not-in-model', 'track-not-in-model']);
+    const e01 = plansOf([rec({ trip_id: 'c', station_id: 'toei:shinjuku-nishiguchi:E01', operator_id: 'toei', line_id: 'toei:oedo', platform_id: 'toei:shinjuku-nishiguchi:E01:1' })]);
+    expect(e01.plans.map((p) => p.platformAreaId)).toEqual(['sk:platform:toei-shinjuku-nishiguchi-1-2']);
+    expect(e01.plans[0]!.vehicle).toMatchObject({ cars: 8, carsBasis: 'line-fact' });
+  });
+
+  it('a stop printed as the same minute is drawn as a short stop inside that minute, and says so', () => {
+    const [plan] = plansOf([rec({ arrival_time_local: '08:00', departure_time_local: '08:00' })]).plans;
+    expect(plan!.shortStopAssumed).toBe(true);
+    expect(plan!.arrive).toBe(T);
+    expect(plan!.depart).toBe(T + SHORT_STOP_SECONDS);
+    expect(Math.max(...[5, 10, 15, 20].map((s) => trainStateAt(plan!, T + s)?.doors ?? 0))).toBeGreaterThan(0);
+    // times with seconds, or a real dwell, are drawn as given
+    expect(plansOf([rec({ arrival_time_local: '08:00:00', departure_time_local: '08:00:00' })]).plans[0]!.shortStopAssumed).toBe(false);
+    expect(plansOf([rec({ arrival_time_local: '08:00', departure_time_local: '08:01' })]).plans[0]!.depart).toBe(T + 60);
+  });
+
+  it('a JR trip that names its direction runs that way, also on the limited-express tracks 5・6 whose direction the track table leaves open', () => {
+    const nex = rec({ line_id: 'jr-east:narita-express', platform_id: 'jr-east:shinjuku:6', direction_id: 'southbound' });
+    const tobu = rec({ trip_id: 't2', line_id: 'jr-east:tobu-through-limited-express', platform_id: 'jr-east:shinjuku:5', direction_id: 'northbound' });
+    const plain = rec({ trip_id: 't3', platform_id: 'jr-east:shinjuku:5', direction_id: null });
+    const [a, b, c] = plansOf([nex, tobu, plain]).plans.sort((x, y) => x.record.trip_id.localeCompare(y.record.trip_id));
+    expect(a!.run?.departs).toBe(1);
+    expect(b!.run?.departs).toBe(-1);
+    expect(c!.run?.departs).toBeNull();
+    // a southbound train ends its run coming from the north (smaller x)
+    const arriving = plansOf([rec({ platform_id: 'jr-east:shinjuku:10', direction_id: 'southbound', departure_time_local: null })]).plans[0]!;
+    expect(trainStateAt(arriving, arriving.arrive - 10)!.along).toBeLessThan(arriving.stopAt);
+  });
+
+  it('an arrival-only record and a departure-only record of the same train on one track are drawn as one train', () => {
+    // Toei's timetable ends with the arrival at 新線新宿; Keio's station timetable has the departure (destination written with U+FA10)
+    const arrival = rec({ station_id: 'toei:shinjuku:S01', operator_id: 'toei', line_id: 'toei:shinjuku', platform_id: 'toei:shinjuku:S01:4', trip_id: 'toei-1', train_number: '753T', arrival_time_local: '08:15', departure_time_local: null, destination_text: '笹塚', source_id: 'src:a' });
+    const departure = rec({ station_id: 'keio:shinjuku-newline', operator_id: 'keio', line_id: 'keio:keio-new', platform_id: 'keio:shinjuku-newline:4', trip_id: 'keio-1', arrival_time_local: null, departure_time_local: '08:16', destination_text: '笹\ufa10', source_id: 'src:b' });
+    const other = rec({ ...departure, trip_id: 'keio-2', departure_time_local: '08:40', destination_text: '橋本' });
+    const { plans } = plansOf([arrival, departure, other]);
+    expect(plans).toHaveLength(2);
+    const merged = plans.find((p) => p.record.trip_id === 'keio-1')!;
+    expect(merged.arrive).toBe(T + 15 * 60);
+    expect(merged.depart).toBe(T + 16 * 60);
+    expect(merged.arrivalAssumed).toBe(false);
+    expect(merged.record.arrival_time_local).toBe('08:15');
+    expect(merged.record.train_number).toBe('753T'); // the departure table has none; the arrival record's number is kept
+    expect(merged.record.remarks).toMatch(/toei-1/);
+    // a departure to another destination is still the same train on this track (renumbered or turned back), and says so
+    const renumbered = plansOf([arrival, rec({ ...departure, destination_text: '橋本' })]).plans;
+    expect(renumbered).toHaveLength(1);
+    expect(renumbered[0]!.record.remarks).toMatch(/arrives as a train for 笹塚 \(753T\)/);
+    // too far apart: two trains
+    expect(plansOf([arrival, rec({ ...departure, departure_time_local: '08:30' })]).plans).toHaveLength(2);
+    // a train that ends here and goes back the way it came is never joined to the next departure on its track
+    const turning = rec({ ...arrival, destination_text: '新宿', remarks: `${TURNS_BACK_REMARK} (ends at 新宿)` });
+    const apart = plansOf([turning, departure]).plans;
+    expect(apart).toHaveLength(2);
+    expect(apart.find((p) => p.record.trip_id === 'keio-1')!.arrivalAssumed).toBe(true);
+  });
+
+  it('on an east–west platform a trip that names its direction runs that way', () => {
+    const west = rec({ station_id: 'keio:shinjuku-newline', operator_id: 'keio', line_id: 'keio:keio-new', platform_id: 'keio:shinjuku-newline:5', direction_id: 'westbound' });
+    const [p] = plansOf([west]).plans;
+    expect(p!.run?.departs).toBe(1); // track 5 is signed 本八幡方面 (east); this train leaves west
+  });
+
+  it('filters by the kind of day', () => {
+    const records = [base, rec({ trip_id: 'h', service_date_type: 'holiday' })];
+    expect(buildTrainPlans(model, records, { dayType: 'weekday' }).plans.map((p) => p.record.trip_id)).toEqual(['t1']);
+    expect(buildTrainPlans(model, records, { dayType: 'sunday' }).plans.map((p) => p.record.trip_id)).toEqual(['h']);
+  });
+
+  it('two trains never overlap on a track, all day, in the demo fixture', () => {
+    const { plans, unplaced } = plansOf(demoFixture().records);
+    expect(unplaced).toEqual([]);
+    const byTrack = new Map<string, typeof plans>();
+    for (const p of plans) byTrack.set(p.physicalTrack, [...(byTrack.get(p.physicalTrack) ?? []), p]);
+    for (const [key, list] of byTrack) {
+      for (let t = 5 * 3600 - 120; t < 25 * 3600; t += 7) {
+        const on = list.map((p) => trainStateAt(p, t)).filter((s) => s !== null);
+        for (let i = 0; i < on.length; i++) {
+          for (let j = i + 1; j < on.length; j++) {
+            const gap = Math.abs(on[i]!.along - on[j]!.along) - (on[i]!.plan.length + on[j]!.plan.length) / 2;
+            expect(gap, `${key} at ${t}`).toBeGreaterThan(0);
+          }
+        }
+      }
+    }
+  });
+
+  it('shows no train when none is scheduled', () => {
+    const { plans } = plansOf(demoFixture().records);
+    expect(trainStatesAt(plans, 3.5 * 3600)).toEqual([]);
+    expect(trainStatesAt(plans, 12 * 3600).length).toBeGreaterThan(5);
+    for (const s of trainStatesAt(plans, 12 * 3600)) expect(s.liveState).toBe('scheduled');
+  });
+});
+
+describe('vehicles by service', () => {
+  const od = (service_class: string) => resolveVehicle(rec({ station_id: 'odakyu:shinjuku', operator_id: 'odakyu', line_id: 'odakyu:odawara', service_class }));
+  it('the Romancecar services each get a Romancecar, and ふじさん its MSE', () => {
+    expect(od('特急ロマンスカー ふじさん')).toMatchObject({ basis: 'service-rule', status: 'verified', seriesLabel: '60000形', cars: 6 });
+    expect(od('特急ロマンスカー はこね')).toMatchObject({ seriesLabel: '70000形', status: 'representative', cars: 7 });
+    expect(od('特急ロマンスカー ホームウェイ')).toMatchObject({ seriesLabel: '30000形', status: 'representative' });
+    expect(od('快速急行')).toMatchObject({ basis: 'line-rule', seriesLabel: '3000形' });
+  });
+
+  it('京王ライナー, 小江戸 and 拝島ライナー, スペーシア日光 and きぬがわ get their own types', () => {
+    expect(resolveVehicle(rec({ station_id: 'keio:shinjuku', operator_id: 'keio', line_id: 'keio:keio', service_class: '京王ライナー' })).seriesLabel).toBe('5000系');
+    const seibu = (service_class: string) => resolveVehicle(rec({ station_id: 'seibu:seibu-shinjuku', operator_id: 'seibu', line_id: 'seibu:shinjuku', service_class }));
+    expect(seibu('特急')).toMatchObject({ seriesLabel: '10000系', cars: 7 });
+    expect(seibu('特急小江戸')).toMatchObject({ seriesLabel: '10000系', cars: 7 });
+    expect(seibu('ライナー')).toMatchObject({ seriesLabel: '40000系', cars: 10 });
+    expect(seibu('拝島ライナー')).toMatchObject({ seriesLabel: '40000系', cars: 10 });
+    expect(seibu('急行').seriesLabel).toBe('30000系');
+    // S-TRAIN through the 副都心線 is Seibu's 40000系; other 副都心線 trains keep the line's representative type
+    const fukutoshin = (service_class: string) => resolveVehicle(rec({ station_id: 'tokyo-metro:shinjuku-sanchome:F13', operator_id: 'tokyo-metro', line_id: 'tokyo-metro:fukutoshin', service_class }));
+    expect(fukutoshin('S-TRAIN2号')).toMatchObject({ basis: 'service-rule', status: 'verified', seriesLabel: '40000系', cars: 10 });
+    expect(fukutoshin('Fライナー').basis).not.toBe('service-rule');
+    const tobu = (remarks: string) => resolveVehicle(rec({ line_id: 'jr-east:tobu-through-limited-express', service_class: '特急', remarks }));
+    expect(tobu('スペーシア日光 1号').seriesLabel).toBe('100系');
+    expect(tobu('スペーシアきぬがわ 3号').seriesLabel).toBe('100系');
+    expect(tobu('きぬがわ 3号').seriesLabel).toBe('253系1000番台');
+    for (const r of SERVICE_VEHICLE_RULES) {
+      expect(VEHICLES.some((v) => v.id === r.vehicleId), r.vehicleId).toBe(true);
+      for (const id of r.sourceIds) expect(sources.has(id), id).toBe(true);
+    }
+  });
+});
+
+describe('train shapes', () => {
+  const spec = (id: string) => VEHICLES.find((v) => v.id === id)!;
+
+  it('a train of unknown length is still drawn as cars, with doors', () => {
+    const parts = buildTrainParts({ spec: GENERIC_VEHICLE, cars: null, length: 8 * NOMINAL_CAR_LENGTH, accent: '#888888' });
+    expect(parts.filter((p) => p.leaf).length).toBe(8 * GENERIC_VEHICLE.doorsPerSide * 2);
+  });
+
+  it('every type in the library has a livery and its doors line up with the platform-door positions', () => {
+    for (const v of VEHICLES) {
+      expect(v.livery, v.id).toBeTruthy();
+      const parts = buildTrainParts({ spec: v, cars: 10, length: 10 * NOMINAL_CAR_LENGTH, accent: '#888888' });
+      const leaves = parts.filter((p) => p.leaf === 1).map((p) => p.a0);
+      const doors = doorCentres({ spec: v, cars: 10, length: 10 * NOMINAL_CAR_LENGTH });
+      expect(leaves.map((a) => a.toFixed(4))).toEqual(doors.map((d) => d.a.toFixed(4)));
+    }
+  });
+
+  it('the Chuo Line rapid train has two bilevel cars in a 12-car train, and the Oedo Line cars are smaller', () => {
+    const e233 = buildTrainParts({ spec: spec('jr-east:E233'), cars: 12, length: 12 * NOMINAL_CAR_LENGTH, accent: '#888888' });
+    const tops = new Set(e233.filter((p) => p.c0 < 0 && p.c1 > 0 && p.u0 > 0.1 && p.u0 < 0.13).map((p) => p.u1.toFixed(3)));
+    expect(tops.size).toBe(2);
+    const oedo = buildTrainParts({ spec: spec('toei:12-600'), cars: 8, length: 8 * NOMINAL_CAR_LENGTH, accent: '#888888' });
+    const std = buildTrainParts({ spec: spec('toei:10-300'), cars: 8, length: 8 * NOMINAL_CAR_LENGTH, accent: '#888888' });
+    const height = (ps: typeof oedo) => Math.max(...ps.map((p) => p.u1));
+    expect(height(oedo)).toBeLessThan(height(std));
+  });
+});
