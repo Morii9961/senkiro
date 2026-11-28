@@ -1,0 +1,45 @@
+{
+  "name": "@senkiro/data-pipeline",
+  "version": "0.1.0",
+  "private": true,
+  "description": "SENKIRO offline spatial data extraction, 650 m cross-source alignment, corridor slot assignment, and pure TypeScript MVT v2.1 / PMTiles v3 builder.",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./package.json": "./package.json"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "biome lint --error-on-warnings .",
+    "check": "biome check --error-on-warnings .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@senkiro/contracts": "workspace:*",
+    "@senkiro/domain-core": "workspace:*",
+    "geojson-vt": "^4.0.2",
+    "pmtiles": "^4.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.4"
+  }
+}
