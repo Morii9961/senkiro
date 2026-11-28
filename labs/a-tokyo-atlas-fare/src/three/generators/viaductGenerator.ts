@@ -73,6 +73,8 @@ export class ViaductLayer {
 
     this.pierMaterial = new THREE.MeshStandardMaterial({
       color: 0xa4abb4,
+      emissive: 0x3b3329,
+      emissiveIntensity: 0,
       roughness: 0.88,
       metalness: 0.06,
       transparent: false,
@@ -180,6 +182,8 @@ export class ViaductLayer {
 
       const deckMaterial = new THREE.MeshStandardMaterial({
         color: 0xbcc1c8,
+        emissive: 0x3b3329,
+        emissiveIntensity: 0,
         roughness: 0.85,
         metalness: 0.06,
         transparent: false,
@@ -249,6 +253,15 @@ export class ViaductLayer {
     }
     for (const b of this.batches) {
       b.group.visible = b.filterVisible && this.showDecks;
+    }
+  }
+
+  setNightFactor(nightFactor: number): void {
+    const nf = Math.max(0, Math.min(1, nightFactor));
+    const intensity = nf * 0.28;
+    this.pierMaterial.emissiveIntensity = intensity;
+    for (const b of this.batches) {
+      b.deckMaterial.emissiveIntensity = intensity;
     }
   }
 

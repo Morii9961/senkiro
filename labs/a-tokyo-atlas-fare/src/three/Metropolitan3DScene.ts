@@ -596,6 +596,8 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
     this.terrainLayer.setTimeOfDay(solar.hour, solar.nightFactor);
     this.outerMetro.setTimeOfDay(solar.nightFactor, solar.goldenFactor, solar.blueHourFactor);
     this.tunnelLayer.setNightFactor(solar.nightFactor);
+    this.viaductLayer.setNightFactor(solar.nightFactor);
+    this.railLayer.setNightFactor(solar.nightFactor);
     this.cutawayVisuals.setTheme(solar.isDark);
 
     if (this.enclosedUndergroundActive) {

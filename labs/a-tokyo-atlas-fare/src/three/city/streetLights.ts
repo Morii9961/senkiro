@@ -24,6 +24,7 @@ export interface StreetLightNetworkHandle {
   readonly group: THREE.Group;
   readonly lampCount: number;
   readonly trafficCount: number;
+  readonly beaconCount: number;
   setNightFactor(nf: number): void;
   setOpacity(opacity: number, isTranslucent: boolean): void;
   updateAnimation(elapsedSec: number): void;
@@ -32,6 +33,7 @@ export interface StreetLightNetworkHandle {
 
 const MAX_LAMP_POINTS = 42_000;
 const MAX_TRAFFIC_POINTS = 8_000;
+const MAX_BEACON_POINTS = 256;
 
 function hashDet(a: number, b: number, salt = 17): number {
   let h =
@@ -161,6 +163,73 @@ void main() {
 }
 `;
 
+const BEACON_VERTEX_SHADER = /* glsl */ `
+#include <common>
+#include <logdepthbuf_pars_vertex>
+#include <clipping_planes_pars_vertex>
+
+attribute vec3 aColor;
+attribute float aSize;
+attribute float aGain;
+attribute float aPhase;
+
+uniform float uTimeSec;
+uniform float uPixelScale;
+uniform float uDpr;
+uniform float uMinPx;
+uniform float uMaxPx;
+
+varying vec3 vColor;
+varying float vGain;
+varying float vFogFade;
+
+void main() {
+  float pulseWave = 0.5 + 0.5 * sin(uTimeSec * 2.1 + aPhase * 6.2831853);
+  float pulse = 0.24 + 0.76 * pow(max(pulseWave, 0.0001), 4.0);
+  vColor = aColor;
+  vGain = aGain * pulse;
+
+  vec3 transformed = vec3(position);
+  #include <project_vertex>
+  #include <logdepthbuf_vertex>
+  #include <clipping_planes_vertex>
+
+  float camDist = max(-mvPosition.z, 12.0);
+  vFogFade = 1.0 - smoothstep(14000.0, 42000.0, camDist);
+  gl_PointSize = clamp(
+    aSize * projectionMatrix[1][1] * uPixelScale / camDist,
+    uMinPx * uDpr,
+    uMaxPx * uDpr
+  );
+}
+`;
+
+const SKYLINE_BEACON_CLUSTERS: readonly {
+  x: number;
+  z: number;
+  count: number;
+  spreadM: number;
+  minH: number;
+  maxH: number;
+}[] = [
+  // Shinjuku Nishi-Guchi skyscraper cluster
+  { x: -6420, z: -1300, count: 14, spreadM: 520, minH: 155, maxH: 245 },
+  // Marunouchi / Otemachi / Yaesu CBD
+  { x: -120, z: 45, count: 12, spreadM: 560, minH: 145, maxH: 235 },
+  // Toranomon / Azabudai / Roppongi corridor
+  { x: -2550, z: 1850, count: 10, spreadM: 680, minH: 150, maxH: 260 },
+  // Shibuya Scramble / Hikarie / Sakuragaoka
+  { x: -6080, z: 2520, count: 9, spreadM: 480, minH: 140, maxH: 228 },
+  // Ikebukuro Sunshine 60 & station towers
+  { x: -4680, z: -5350, count: 7, spreadM: 420, minH: 135, maxH: 235 },
+  // Shinagawa / Tamachi / Osaki / Shiodome towers
+  { x: -2420, z: 5820, count: 8, spreadM: 640, minH: 135, maxH: 215 },
+  // Shiodome / Hamamatsucho bayfront towers
+  { x: -620, z: 2480, count: 7, spreadM: 440, minH: 140, maxH: 218 },
+  // Toyosu / Harumi / Odaiba waterfront towers
+  { x: 2560, z: 3650, count: 7, spreadM: 760, minH: 130, maxH: 195 },
+];
+
 const CURATED_IMPERIAL_PALACE_LIGHTS: readonly {
   x: number;
   y: number;
@@ -256,7 +325,7 @@ export function buildTokyoStreetLightNetwork(
     if (Math.abs(ix) > 14_500 || Math.abs(iz) > 14_500) continue;
     const h = hashDet(Math.round(ix), Math.round(iz), 19);
     const floodHex = h > 0.45 ? 0xfff2de : 0xeef6ff;
-    pushLamp(ix, 8.4, iz, floodHex, 7.2, 0.72, 16, true);
+    pushLamp(ix, 8.4, iz, floodHex, 7.6, 0.84, 16, true);
 
     if (rad >= 9 && lampSize.length < MAX_LAMP_POINTS) {
       const ang = h * Math.PI * 2;
@@ -342,7 +411,7 @@ export function buildTokyoStreetLightNetwork(
               const sideSign = poleSeq % 2 === 0 ? 1 : -1;
               const off = Math.min(r.w * 0.25, 2.2) * sideSign;
               const hex = rnd > 0.4 ? 0xffad42 : 0xffbf66;
-              pushLamp(cx + nx * off, lampY, cz + nz * off, hex, 5.8, 0.64 + rnd * 0.16, 10);
+              pushLamp(cx + nx * off, lampY, cz + nz * off, hex, 6.4, 0.76 + rnd * 0.18, 10);
             } else if (r.hw === 'trunk') {
               // Both curbs on Tokyo trunk arterials (opposite side staggered half-phase)
               const hA = hashDet(Math.round(cx), Math.round(cz), 31);
@@ -352,8 +421,8 @@ export function buildTokyoStreetLightNetwork(
                 lampY,
                 cz + nz * curbOffset,
                 hexA,
-                6.0,
-                0.62 + hA * 0.18,
+                6.6,
+                0.78 + hA * 0.20,
                 10,
               );
 
@@ -370,8 +439,8 @@ export function buildTokyoStreetLightNetwork(
                   lampY,
                   ocz - nz * curbOffset,
                   hexB,
-                  6.0,
-                  0.62 + hB * 0.18,
+                  6.6,
+                  0.78 + hB * 0.20,
                   10,
                 );
               }
@@ -383,8 +452,8 @@ export function buildTokyoStreetLightNetwork(
                 lampY,
                 cz + nz * curbOffset * side,
                 hex,
-                5.0,
-                0.50 + rnd * 0.18,
+                5.5,
+                0.64 + rnd * 0.20,
                 10,
               );
             } else if (r.hw === 'secondary') {
@@ -395,8 +464,8 @@ export function buildTokyoStreetLightNetwork(
                 lampY,
                 cz + nz * curbOffset * side,
                 hex,
-                3.8,
-                0.32 + rnd * 0.14,
+                4.3,
+                0.44 + rnd * 0.16,
                 10,
               );
             } else {
@@ -407,8 +476,8 @@ export function buildTokyoStreetLightNetwork(
                 lampY,
                 cz + nz * curbOffset,
                 hex,
-                2.8,
-                0.20 + rnd * 0.10,
+                3.3,
+                0.28 + rnd * 0.12,
                 10,
               );
             }
@@ -453,8 +522,8 @@ export function buildTokyoStreetLightNetwork(
       uOpacity: { value: 1.0 },
       uPixelScale: { value: initialScale },
       uDpr: { value: initialDpr },
-      uMinPx: { value: 1.2 },
-      uMaxPx: { value: 7.5 },
+      uMinPx: { value: 1.4 },
+      uMaxPx: { value: 9.0 },
     },
     transparent: true,
     depthWrite: false,
@@ -607,8 +676,8 @@ export function buildTokyoStreetLightNetwork(
       uOpacity: { value: 1.0 },
       uPixelScale: { value: initialScale },
       uDpr: { value: initialDpr },
-      uMinPx: { value: 1.1 },
-      uMaxPx: { value: 5.5 },
+      uMinPx: { value: 1.2 },
+      uMaxPx: { value: 6.5 },
     },
     transparent: true,
     depthWrite: false,
@@ -632,6 +701,95 @@ export function buildTokyoStreetLightNetwork(
   };
   group.add(trafficPoints);
 
+  // ---- Layer C: High-Rise Red Aviation Obstruction Beacons ----
+  const bPos: number[] = [];
+  const bCol: number[] = [];
+  const bSize: number[] = [];
+  const bGain: number[] = [];
+  const bPhase: number[] = [];
+  const beaconRed = new THREE.Color(0xff2424);
+
+  const pushBeacon = (x: number, y: number, z: number, size: number, gain: number, phase: number) => {
+    if (bSize.length >= MAX_BEACON_POINTS) return;
+    bPos.push(x, y, z);
+    bCol.push(beaconRed.r, beaconRed.g, beaconRed.b);
+    bSize.push(size);
+    bGain.push(gain);
+    bPhase.push(phase);
+  };
+
+  for (let i = 0; i < env.landmarks.length && bSize.length < MAX_BEACON_POINTS; i++) {
+    const lm = env.landmarks[i]!;
+    if (lm.height <= 60) continue;
+    const basePhase = hashDet(Math.round(lm.x), Math.round(lm.z), 911);
+    pushBeacon(lm.x, lm.height + 2.0, lm.z, lm.height >= 250 ? 11.5 : 8.5, 1.18, basePhase);
+    if (lm.height >= 200) {
+      pushBeacon(lm.x, lm.height * 0.68, lm.z, 7.2, 0.92, (basePhase + 0.35) % 1);
+    }
+    if ((lm.width ?? 0) >= 52 && lm.height >= 140) {
+      const rx = (lm.width ?? 52) * 0.36;
+      const rz = (lm.depth ?? lm.width ?? 52) * 0.36;
+      pushBeacon(lm.x + rx, lm.height + 1.4, lm.z + rz, 6.8, 0.90, (basePhase + 0.18) % 1);
+      pushBeacon(lm.x - rx, lm.height + 1.4, lm.z - rz, 6.8, 0.90, (basePhase + 0.62) % 1);
+    }
+  }
+
+  for (let ci = 0; ci < SKYLINE_BEACON_CLUSTERS.length && bSize.length < MAX_BEACON_POINTS; ci++) {
+    const cl = SKYLINE_BEACON_CLUSTERS[ci]!;
+    for (let bi = 0; bi < cl.count && bSize.length < MAX_BEACON_POINTS; bi++) {
+      const ang = hashDet(ci * 41 + bi, 7, 307) * Math.PI * 2;
+      const rad = Math.sqrt(hashDet(ci * 41 + bi, 13, 419)) * cl.spreadM;
+      const bx = cl.x + Math.cos(ang) * rad;
+      const bz = cl.z + Math.sin(ang) * rad;
+      const bh = cl.minH + hashDet(ci * 41 + bi, 29, 521) * (cl.maxH - cl.minH);
+      const bph = hashDet(Math.round(bx), Math.round(bz), 613);
+      pushBeacon(bx, bh, bz, 7.6, 1.02, bph);
+    }
+  }
+
+  const beaconCount = bSize.length;
+  const beaconGeom = new THREE.BufferGeometry();
+  beaconGeom.setAttribute('position', new THREE.Float32BufferAttribute(bPos, 3));
+  beaconGeom.setAttribute('aColor', new THREE.Float32BufferAttribute(bCol, 3));
+  beaconGeom.setAttribute('aSize', new THREE.Float32BufferAttribute(bSize, 1));
+  beaconGeom.setAttribute('aGain', new THREE.Float32BufferAttribute(bGain, 1));
+  beaconGeom.setAttribute('aPhase', new THREE.Float32BufferAttribute(bPhase, 1));
+  beaconGeom.computeBoundingSphere();
+
+  const beaconMat = new THREE.ShaderMaterial({
+    vertexShader: BEACON_VERTEX_SHADER,
+    fragmentShader: POINT_FRAGMENT_SHADER,
+    uniforms: {
+      uTimeSec: { value: 0 },
+      uNightGlow: { value: initialGlow },
+      uOpacity: { value: 1.0 },
+      uPixelScale: { value: initialScale },
+      uDpr: { value: initialDpr },
+      uMinPx: { value: 1.6 },
+      uMaxPx: { value: 8.5 },
+    },
+    transparent: true,
+    depthWrite: false,
+    depthTest: true,
+    blending: THREE.AdditiveBlending,
+    clipping: true,
+    clippingPlanes: clipPlanes,
+    toneMapped: true,
+  });
+
+  const beaconPoints = new THREE.Points(beaconGeom, beaconMat);
+  beaconPoints.name = 'tokyo-aviation-beacons';
+  beaconPoints.frustumCulled = false;
+  beaconPoints.renderOrder = 14;
+  beaconPoints.onBeforeRender = (renderer) => {
+    renderer.getDrawingBufferSize(drawSize);
+    if (drawSize.y > 0) {
+      beaconMat.uniforms.uPixelScale!.value = drawSize.y * 0.5;
+      beaconMat.uniforms.uDpr!.value = renderer.getPixelRatio();
+    }
+  };
+  group.add(beaconPoints);
+
   let curNightGlow = initialGlow;
   let curOpacity = 1.0;
 
@@ -644,21 +802,25 @@ export function buildTokyoStreetLightNetwork(
     group,
     lampCount,
     trafficCount,
+    beaconCount,
     setNightFactor(nf: number): void {
       curNightGlow = smoothNightLampRamp(nf);
       lampMat.uniforms.uNightGlow!.value = curNightGlow;
       trafficMat.uniforms.uNightGlow!.value = curNightGlow;
+      beaconMat.uniforms.uNightGlow!.value = curNightGlow;
       syncVisibility();
     },
     setOpacity(opacity: number, _isTranslucent: boolean): void {
       curOpacity = Math.max(0, Math.min(1, opacity));
       lampMat.uniforms.uOpacity!.value = curOpacity;
       trafficMat.uniforms.uOpacity!.value = curOpacity;
+      beaconMat.uniforms.uOpacity!.value = curOpacity;
       syncVisibility();
     },
     updateAnimation(elapsedSec: number): void {
       if (group.visible) {
         trafficMat.uniforms.uTimeSec!.value = elapsedSec;
+        beaconMat.uniforms.uTimeSec!.value = elapsedSec;
       }
     },
     dispose(): void {
@@ -666,6 +828,8 @@ export function buildTokyoStreetLightNetwork(
       lampMat.dispose();
       trafficGeom.dispose();
       trafficMat.dispose();
+      beaconGeom.dispose();
+      beaconMat.dispose();
     },
   };
 }

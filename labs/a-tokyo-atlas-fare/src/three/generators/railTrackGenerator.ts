@@ -350,6 +350,8 @@ export class RailTrackLayer {
       // Crushed-stone ballast on surface; smooth precast track slab on viaducts/tunnels
       const roadbedMaterial = new THREE.MeshStandardMaterial({
         color: isSurface ? 0x69645b : 0x7c838d,
+        emissive: isSurface ? 0x262f3b : 0x2a323e,
+        emissiveIntensity: 0,
         roughness: 0.94,
         metalness: 0.04,
         transparent: false,
@@ -360,6 +362,8 @@ export class RailTrackLayer {
 
       const railMaterial = new THREE.MeshStandardMaterial({
         color: 0xd4dde6,
+        emissive: 0x465870,
+        emissiveIntensity: 0,
         roughness: 0.22,
         metalness: 0.86,
         envMapIntensity: 1.2,
@@ -656,6 +660,14 @@ export class RailTrackLayer {
     }
 
     this.refreshBatchVisibility();
+  }
+
+  setNightFactor(nightFactor: number): void {
+    const nf = Math.max(0, Math.min(1, nightFactor));
+    for (const batch of this.batches) {
+      batch.roadbedMaterial.emissiveIntensity = batch.isUnderground ? 0.0 : nf * 0.18;
+      batch.railMaterial.emissiveIntensity = batch.isUnderground ? 0.0 : nf * 0.22;
+    }
   }
 
   /**

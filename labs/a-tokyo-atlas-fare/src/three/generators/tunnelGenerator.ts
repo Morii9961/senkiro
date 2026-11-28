@@ -439,6 +439,8 @@ export class TunnelAndStationLayer implements UndergroundLayerAdapter {
     this.stationSlabMat = new THREE.MeshStandardMaterial({
       color: 0xffffff,
       map: this.platformDeckTexture,
+      emissive: new THREE.Color(0xdceeff),
+      emissiveIntensity: 0,
       roughness: 0.86,
       metalness: 0.04,
       clippingPlanes: clipPlanes,
@@ -447,6 +449,8 @@ export class TunnelAndStationLayer implements UndergroundLayerAdapter {
     this.platformScreenMat = new THREE.MeshStandardMaterial({
       color: 0xeef6fc,
       map: this.screenDoorTexture,
+      emissive: new THREE.Color(0xffe4b8),
+      emissiveIntensity: 0,
       roughness: 0.26,
       metalness: 0.35,
       transparent: true,
@@ -471,6 +475,8 @@ export class TunnelAndStationLayer implements UndergroundLayerAdapter {
     this.stationCanopyMat = new THREE.MeshStandardMaterial({
       color: 0xe2e8f0,
       map: this.canopyRoofTexture,
+      emissive: new THREE.Color(0xd8e6f8),
+      emissiveIntensity: 0,
       roughness: 0.42,
       metalness: 0.38,
       envMapIntensity: 0.9,
@@ -498,6 +504,8 @@ export class TunnelAndStationLayer implements UndergroundLayerAdapter {
 
     this.kioskMat = new THREE.MeshStandardMaterial({
       color: 0x3b4858,
+      emissive: new THREE.Color(0xfff0d2),
+      emissiveIntensity: 0,
       roughness: 0.32,
       metalness: 0.45,
       envMapIntensity: 1.0,
@@ -807,8 +815,12 @@ export class TunnelAndStationLayer implements UndergroundLayerAdapter {
 
   setNightFactor(nightFactor: number): void {
     const nf = Math.max(0, Math.min(1, nightFactor));
-    this.canopyLightMat.emissiveIntensity = 0.24 + nf * 1.45;
-    this.concourseBridgeMat.emissiveIntensity = 0.08 + nf * 0.68;
+    this.stationSlabMat.emissiveIntensity = nf * 0.58;
+    this.stationCanopyMat.emissiveIntensity = nf * 0.22;
+    this.platformScreenMat.emissiveIntensity = nf * 0.28;
+    this.kioskMat.emissiveIntensity = nf * 0.65;
+    this.canopyLightMat.emissiveIntensity = 0.28 + nf * 1.65;
+    this.concourseBridgeMat.emissiveIntensity = 0.12 + nf * 0.85;
   }
 
   setTheme(isDark: boolean): void {
