@@ -1,0 +1,44 @@
+{
+  "name": "@senkiro/fare-engine",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Region-neutral fare engine and regional rule packs.",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts",
+    "./packs/kanto-jr": "./src/packs/kanto-jr/index.ts",
+    "./packs/kansai": "./src/packs/kansai/index.ts"
+  },
+  "publishConfig": {
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./packs/kanto-jr": {
+        "types": "./dist/packs/kanto-jr/index.d.ts",
+        "default": "./dist/packs/kanto-jr/index.js"
+      },
+      "./packs/kansai": {
+        "types": "./dist/packs/kansai/index.d.ts",
+        "default": "./dist/packs/kansai/index.js"
+      }
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "check": "biome check --error-on-warnings . && tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@senkiro/contracts": "workspace:*",
+    "@senkiro/domain-core": "workspace:*"
+  }
+}

@@ -33,6 +33,15 @@ importers:
         specifier: workspace:*
         version: link:../contracts
 
+  packages/fare-engine:
+    dependencies:
+      '@senkiro/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@senkiro/domain-core':
+        specifier: workspace:*
+        version: link:../domain-core
+
 packages:
 
   '@biomejs/biome@2.6.9':
