@@ -2,22 +2,25 @@
   "schema_version": "1.1",
   "project_id": "senkiro.main",
   "project_name": "SENKIRO",
-  "snapshot_at": "2026-11-28T17:35:00+08:00",
+  "snapshot_at": "2026-11-28T19:20:00+08:00",
   "source": {
     "branch": "integration/phase-0",
+    "integration_sha": "eb77275",
     "base_main_sha": "e3cba601be157bd0a2a1295e1e36d579c3369923",
     "tests_rerun": true,
     "basis": [
-      "2026-11-28 Wave 1 全量合入验证：在 integration/phase-0 绕过 Turbo 缓存实跑 pnpm install --offline --frozen-lockfile && pnpm check && pnpm build && pnpm test，Biome 194 文件 0 错误 0 警告，8 个项目构建通过，全仓 Vitest 279/279 通过（contracts 75, domain-core 47, fare-engine 40, local-db 12, station-3d 40, data-stations 8, ui-kit 27, web 30）",
-      "Playwright Exit Gate 0 E2E 与真实硬件 GPU 尚未在集成分支运行，归入 P0-W2 验收"
+      "2026-11-28 P0-W2 合入验证：在 integration/phase-0@eb77275 执行 pnpm install --offline --frozen-lockfile，清除全部 dist/ 与独立 TURBO_CACHE_DIR 后 TURBO_FORCE=true 实跑 pnpm check && pnpm build && pnpm test：Biome 201 文件 0 错误 0 警告，8 个项目 typecheck 与构建通过，全仓 Vitest 307/307 通过（contracts 83, domain-core 47, fare-engine 40, local-db 12, station-3d 49, data-stations 8, ui-kit 27, web 41）",
+      "2026-11-28 PowerShell 实跑 pnpm --filter @senkiro/web test:e2e：Playwright Exit Gate 0 10/10 通过，Chromium 156 headless，WebGL 为硬件 GPU（ANGLE NVIDIA RTX 4080 Laptop / D3D11，software=false）",
+      "主控复核生产构建 CSS 含 62 个 --sk-* 令牌定义，P0-W2 报告的令牌丢失缺陷已在 apps/web 侧规避",
+      "未覆盖：Firefox、WebKit、软件渲染 WebGL 与真实帧率基准"
     ]
   },
   "reporter": {
-    "agent": "gemini",
-    "note": "Chief Coordinator (Wave 1 Complete, P0-W2 Dispatched)"
+    "agent": "claude",
+    "note": "Temporary Chief Coordinator (covering for Gemini) — P0-W2 accepted, Exit Gate 0 passed, integration/phase-0 merged into main"
   },
-  "stage": "phase_0_wave2_ready",
-  "summary": "Wave 0 与 Wave 1 全部四条分支均已验收合入 integration/phase-0，8 个项目 279 项单测全绿通过，4 个旧工作树已清理。已发布 P0-W2 收官联调派单，完成后即达成 Exit Gate 0。",
+  "stage": "phase_0_exit_gate_passed",
+  "summary": "Phase 0 全部五条分支均已验收合入 integration/phase-0，8 个项目 307 项单测与 10 项 Playwright E2E 全绿，Exit Gate 0 通过并合并进 main。下一步启动 Phase 1 Wave 0（P1-Coord）。",
   "overall_progress": null,
   "milestones": [
     {
@@ -46,7 +49,7 @@
     },
     {
       "id": "p0_s2_station_3d",
-      "title": "Wave 1 (P0-S2)：station-3d (40/40) + data-stations (8/8)",
+      "title": "Wave 1 (P0-S2)：station-3d + data-stations（命令式 Three.js 与梅田/新宿数据）",
       "status": "done",
       "evidence_level": "verified_test",
       "evidence_refs": [
@@ -58,7 +61,7 @@
     },
     {
       "id": "p0_s3_ui_web_shell",
-      "title": "Wave 1 (P0-S3)：ui-kit (27/27) + apps/web (30/30)",
+      "title": "Wave 1 (P0-S3)：ui-kit (27/27) + apps/web 三语全屏壳",
       "status": "done",
       "evidence_level": "verified_test",
       "evidence_refs": [
@@ -70,28 +73,69 @@
     },
     {
       "id": "p0_w2_exit_gate",
-      "title": "Wave 2 (P0-W2)：契约上提、apps/web 槽位接线与 Playwright Exit Gate 0 E2E",
-      "status": "not_started",
-      "evidence_level": "repository",
+      "title": "Wave 2 (P0-W2)：契约上提、apps/web 槽位接线与 Playwright Exit Gate 0 E2E（307/307 单测 + 10/10 E2E）",
+      "status": "done",
+      "evidence_level": "verified_test",
       "evidence_refs": [
-        "docs/dispatch/phase-0/p0-w2-exit-gate-brief.md"
+        "docs/dispatch/reports/p0-w2-exit-gate.md",
+        "apps/web/tests/e2e/exit-gate-0.spec.ts",
+        "apps/web/src/slots/registry.ts",
+        "packages/contracts/src/fare.ts"
       ],
-      "human_acceptance": "pending"
+      "human_acceptance": "done"
+    },
+    {
+      "id": "exit_gate_0",
+      "title": "Exit Gate 0：integration/phase-0 以 --no-ff 合并进 main",
+      "status": "done",
+      "evidence_level": "verified_test",
+      "evidence_refs": [
+        "docs/status/PROJECT_STATUS.md"
+      ],
+      "human_acceptance": "done"
     }
   ],
   "blockers": [],
   "next_actions": [
     {
-      "id": "launch_p0_w2",
-      "title": "新建 feat/p0-w2-exit-gate 工作树并分发 P0-W2 收官联调派单",
+      "id": "launch_p1_coord",
+      "title": "基于 main 创建 integration/phase-1，执行 P1-Coord：冻结关西 ID 注册表、PMTiles 图层规范与数据源许可矩阵",
       "priority": "P0",
-      "result": "完成契约上提、StationExplorer/local-db 接线与 Playwright E2E 后达成 Exit Gate 0。"
+      "result": "生成 docs/dispatch/phase-1/ 下 P1-S1 / P1-S2 / P1-S3 自包含派单书，放行 Phase 1 Wave 1 三路并行。"
+    },
+    {
+      "id": "ui_kit_tokens_side_effects",
+      "title": "packages/ui-kit：入口 index.ts 被视为无副作用，生产构建丢弃 tokens.css 与 base.css；apps/web 仅补回令牌，生产页仍缺 base.css（body 8px 边距、content-box、无 focus-visible）",
+      "priority": "P1",
+      "result": "ui-kit 暴露并保留 base.css 或提供显式样式入口，apps/web 导入；E2E 断言生产页 body 边距与 box-sizing。并入 Phase 1 首批派单。"
+    },
+    {
+      "id": "e2e_narrow_layout_and_fallback_copy",
+      "title": "窄屏 E2E #7–#10 无法失败（壳层均为 position: fixed）；探针 memory-fallback 文案在跨标签页占用时归因错误",
+      "priority": "P1",
+      "result": "改为元素级边界断言；Worker 回传降级原因并区分文案。详单见 docs/dispatch/phase-0/README.md §4。"
+    },
+    {
+      "id": "e2e_browser_coverage",
+      "title": "apps/web E2E 补测 Firefox、WebKit 与无 GPU 软件渲染路径",
+      "priority": "P2",
+      "result": "并入 Phase 1 Exit Gate 1 验收清单。"
+    },
+    {
+      "id": "probe_synthetic_rides",
+      "title": "LocalDb 探针自检行（dataNature=synthetic）写入真实 ride_records；Phase 3 journey-store 统计须排除合成行",
+      "priority": "P2",
+      "result": "写入 Phase 3 P3-S1 派单书的必测反例。"
     }
   ],
   "needs_morii": [
     {
-      "id": "start_p0_w2",
-      "decision": "按 docs/dispatch/phase-0/p0-w2-exit-gate-brief.md 新建 feat/p0-w2-exit-gate 并启动 Phase 0 终极收官联调。"
+      "id": "push_exit_gate_0",
+      "decision": "确认是否将本地 main 与 integration/phase-0 推送至 origin（当前 origin/main@e3cba60、origin/integration/phase-0@b413683）。"
+    },
+    {
+      "id": "start_phase_1",
+      "decision": "确认 Phase 1 Wave 0（P1-Coord）由谁执行：等待 Gemini 额度恢复，或由临时主控起草关西 ID 注册表与三份派单书。"
     }
   ]
 }

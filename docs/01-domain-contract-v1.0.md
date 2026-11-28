@@ -249,3 +249,23 @@ export interface AppSearchParams {
   theme: AppTheme;                 // 默认 'dark' 或按系统偏好
 }
 ```
+
+---
+
+## 7. v1.0 增补记录（向后兼容，`DOMAIN_CONTRACT_VERSION` 保持 `'1.0'`）
+
+以下字段均为**可选**增补，不改变任何既有字段语义；未实现增补项的 v1.0 数据包与规则包无需改动即可继续注册。权威定义以 `@senkiro/contracts` 源码为准。
+
+### 7.1 Phase 0 · `P0-W2` 契约上提（2026-11-28，合入 `integration/phase-0@eb77275`）
+
+- **§5.2 `StationHubDataset`** 增加 `planNorth?: PlatformSide`：2D 平面图指北方位。缺省表示方位未核实，渲染端不得自行猜测。梅田为 `'z-'`，新宿为 `'x-'`（`packages/contracts/src/station.ts`）。
+- **§5.4 `TariffProvider`** 增加 `sourceIds?: readonly string[]`：该运价表依据的 `SourceRecord` ID 列表。
+- **§5.4 `RegionalFareRulePack`** 增加六个可选钩子，引擎在规则包未实现时走默认行为（`packages/contracts/src/fare.ts`）：
+  - `precheck?(context: FarePrecheckContext): FareRuleRejection | null`：路径解析前的票种 / 覆盖范围检查，`null` 表示放行。
+  - `resolveRoutePreference?(request: FareQuoteRequest): FareRulePreferencePlan | FareRuleRejection | null`：解析 `pack:*` 等路线偏好。计划只含线路 / 车站 ID 数组与布尔开关，不引用 `domain-core` 类型。
+  - `resolveRuleVersion?(travelDate: string): string | null`：乘车日生效的规则版本，`null` 表示无版本生效。
+  - `computeValidityAndStopover?(context: FareBillingContext): FareValidityResult`：有效期与途中下车判定。
+  - `pricingUnits?(context: FareBillingContext): readonly FarePricingUnit[]`：通算或分运营商计费单元，缺省为每运营商一个单元。
+  - `lookupSurcharge?(context: FareBillingContext): SurchargeQuoteResult`：特急 / 座席附加费查询。
+- 配套类型 `FareRuleRejection`、`FarePrecheckContext`、`FareRulePreferencePlan`、`FareBillingContext`、`FareValidityResult`、`FarePricingUnit`、`PricedSurchargeQuote`、`SurchargeQuoteResult`，以及运行时守卫 `isFareRuleRejection(value)`。规则包拒绝报价时必须返回带 `reason` 的 `FareRuleRejection`（状态为 `UnpricedFareQuoteStatus`），不得以缺字段对象表达拒绝。
+- `@senkiro/fare-engine` 的 `pack.ts` 仅保留旧名的 `@deprecated` 类型别名。其中 `FareRoutingOptions` 已等同于 `FareRulePreferencePlan`，不再接受 P0-S1 时期的 `search` 字段。
