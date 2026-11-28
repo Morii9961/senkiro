@@ -1,6 +1,10 @@
-import type { FareExplanationStep, PathLeg, ResolvedPath } from '@senkiro/contracts';
+import type {
+  FareExplanationStep,
+  FareRuleRejection,
+  PathLeg,
+  ResolvedPath,
+} from '@senkiro/contracts';
 import type { GraphStep, TrackGraphIndex } from '@senkiro/domain-core';
-import type { FareRejection } from '../../pack.ts';
 import { explain, line, SLICE, station } from './rules.ts';
 
 export const TOHOKU_SHINKANSEN = line('jr-east-tohoku-shinkansen');
@@ -25,7 +29,7 @@ export function applyShinkansenEquivalence(
   path: ResolvedPath,
   revised: boolean,
   explanation: FareExplanationStep[],
-): ResolvedPath | FareRejection {
+): ResolvedPath | FareRuleRejection {
   const ruleId = revised ? 'JR-ART16-2-V2026' : 'JR-ART16-2-V2025';
   const firstStation = path.stationIds[0];
   if (!firstStation || !path.usesShinkansen) {

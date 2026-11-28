@@ -140,6 +140,7 @@ describe.each(hubs)(
     it('meets the public v1.0 dataset contract and preserves every official KSJ point', () => {
       expect(validateStationHubDataset(dataset)).toEqual([]);
       expect(wrapper).toEqual({ dataset, planNorth: north });
+      expect(dataset.planNorth).toBe(north);
       expect(dataset.complex).toMatchObject({
         id: complexId,
         coordinates: center,

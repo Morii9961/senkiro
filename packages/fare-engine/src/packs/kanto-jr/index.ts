@@ -1,18 +1,16 @@
 import type {
+  FareBillingContext,
+  FarePricingUnit,
   FareQuoteRequest,
   FareRulePackOutcome,
+  FareRulePreferencePlan,
+  RegionalFareRulePack,
   ResolvedPath,
   SkId,
   TariffProvider,
 } from '@senkiro/contracts';
 import type { FareRuleGraph, TrackGraphIndex } from '@senkiro/domain-core';
 import { isWithinDates } from '../../engine.ts';
-import type {
-  FareBillingContext,
-  FareEngineRulePack,
-  FarePricingUnit,
-  FareRoutingOptions,
-} from '../../pack.ts';
 import {
   applyShinkansenEquivalence,
   TOHOKU_SHINKANSEN,
@@ -48,32 +46,30 @@ const conventional = {
   requireFareZoneTag: SLICE,
 };
 
-const detours: Partial<Record<`pack:${string}`, FareRoutingOptions>> = {
+const detours: Partial<Record<`pack:${string}`, FareRulePreferencePlan>> = {
   'pack:saikyo_bypass': {
     viaStationIds: [station('jr-east-toda-koen')],
-    search: { preferLineIds: new Set([line('jr-east-tohoku-saikyo')]) },
+    preferredLineIds: [line('jr-east-tohoku-saikyo')],
   },
   'pack:yokosuka_bypass': {
     viaStationIds: [station('jr-east-nishi-oi')],
-    search: { preferLineIds: new Set([line('jr-east-tokaido-hinkaku')]) },
+    preferredLineIds: [line('jr-east-tokaido-hinkaku')],
   },
   'pack:oku_bypass': {
     viaStationIds: [station('jr-east-oku')],
-    search: { preferLineIds: new Set([line('jr-east-tohoku-oku')]) },
+    preferredLineIds: [line('jr-east-tohoku-oku')],
   },
   'pack:yamanote_loop_detour': {
     viaStationIds: [station('jr-east-shibuya'), station('jr-east-ikebukuro')],
-    search: {
-      preferLineIds: new Set([line('jr-east-yamanote')]),
-      avoidLineIds: new Set([line('jr-east-chuo')]),
-    },
+    preferredLineIds: [line('jr-east-yamanote')],
+    avoidedLineIds: [line('jr-east-chuo')],
   },
 };
 
-function resolveRoutePreference(request: FareQuoteRequest): FareRoutingOptions | null {
+function resolveRoutePreference(request: FareQuoteRequest): FareRulePreferencePlan | null {
   const { originStationId, destinationStationId, routePreference } = request;
   if (routePreference === 'shinkansen') {
-    return { search: { preferLineIds: new Set([TOKAIDO_SHINKANSEN, TOHOKU_SHINKANSEN]) } };
+    return { preferredLineIds: [TOKAIDO_SHINKANSEN, TOHOKU_SHINKANSEN] };
   }
   const detour =
     routePreference?.startsWith('pack:') && detours[routePreference as `pack:${string}`];
@@ -123,7 +119,7 @@ export function createKantoJrRulePack({
   trackGraph,
   fareRuleGraph,
   tariffProviders,
-}: KantoJrRulePackOptions): FareEngineRulePack {
+}: KantoJrRulePackOptions): RegionalFareRulePack {
   return {
     id: 'kanto-jr',
     region: 'kanto',

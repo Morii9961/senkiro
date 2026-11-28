@@ -3,26 +3,28 @@ import {
   createUnpricedFareQuote,
   type FareBreakdownItem,
   type FareExplanationStep,
+  type FarePricingUnit,
   type FareQuote,
   type FareQuoteBaseFields,
   type FareQuoteRequest,
+  isFareRuleRejection,
   parseSkId,
+  type RegionalFareRulePack,
   type ResolvedPath,
   type SkId,
   type UnpricedFareQuoteStatus,
 } from '@senkiro/contracts';
 import type { TrackGraphIndex } from '@senkiro/domain-core';
-import type { FareEngineRulePack, FarePricingUnit } from './pack.ts';
 import { resolveActualPath } from './route.ts';
 
 export interface FareEngineContext {
   trackGraph: TrackGraphIndex;
-  rulePacks: readonly FareEngineRulePack[];
+  rulePacks: readonly RegionalFareRulePack[];
 }
 
 export function createFareEngineContext(
   trackGraph: TrackGraphIndex,
-  rulePacks: readonly FareEngineRulePack[],
+  rulePacks: readonly RegionalFareRulePack[],
 ): FareEngineContext {
   return { trackGraph, rulePacks };
 }
@@ -152,7 +154,7 @@ export function calculateFareQuote(
     }
 
     const actualPath = resolveActualPath(request, trackGraph, pack);
-    if ('status' in actualPath) {
+    if (isFareRuleRejection(actualPath)) {
       return reject(actualPath.status, actualPath.reason, actualPath.steps);
     }
     fields.actualPath = actualPath;

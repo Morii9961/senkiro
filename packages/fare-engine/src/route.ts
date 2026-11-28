@@ -1,12 +1,47 @@
-import { type FareQuoteRequest, parseSkId, type ResolvedPath, type SkId } from '@senkiro/contracts';
-import type { GraphStep, TrackGraphIndex } from '@senkiro/domain-core';
-import type { FareEngineRulePack, FareRejection } from './pack.ts';
+import {
+  type FareQuoteRequest,
+  type FareRulePreferencePlan,
+  type FareRuleRejection,
+  isFareRuleRejection,
+  parseSkId,
+  type RegionalFareRulePack,
+  type ResolvedPath,
+  type SkId,
+} from '@senkiro/contracts';
+import type { GraphStep, TrackGraphIndex, TrackPathSearchOptions } from '@senkiro/domain-core';
+
+/** Translate the contract-owned plan into `domain-core` path-search options. */
+export function toTrackSearchOptions(plan: FareRulePreferencePlan | null): TrackPathSearchOptions {
+  const options: TrackPathSearchOptions = {};
+  if (plan === null) {
+    return options;
+  }
+  if (plan.allowShinkansen !== undefined) {
+    options.allowShinkansen = plan.allowShinkansen;
+  }
+  if (plan.allowLocalLines !== undefined) {
+    options.allowLocalLines = plan.allowLocalLines;
+  }
+  if (plan.requireFareZoneTag !== undefined) {
+    options.requireFareZoneTag = plan.requireFareZoneTag;
+  }
+  if (plan.preferredLineIds?.length) {
+    options.preferLineIds = new Set(plan.preferredLineIds);
+  }
+  if (plan.preferredLineWeightFactor !== undefined) {
+    options.preferredLineWeightFactor = plan.preferredLineWeightFactor;
+  }
+  if (plan.avoidedLineIds?.length) {
+    options.avoidLineIds = new Set(plan.avoidedLineIds);
+  }
+  return options;
+}
 
 export function resolveActualPath(
   request: FareQuoteRequest,
   graph: TrackGraphIndex,
-  pack: FareEngineRulePack,
-): ResolvedPath | FareRejection {
+  pack: RegionalFareRulePack,
+): ResolvedPath | FareRuleRejection {
   const { originStationId, destinationStationId, actualSegmentIds } = request;
   const operatorFilter = (id: SkId<'operator'>) =>
     pack.operatorScopes.includes(parseSkId(id, 'operator').slug);
@@ -41,10 +76,12 @@ export function resolveActualPath(
   const preference = request.preferShinkansen
     ? 'shinkansen'
     : (request.routePreference ?? 'shortest');
-  const routing = pack.resolveRoutePreference?.({ ...request, routePreference: preference });
-  if (routing && 'status' in routing) {
+  const routing =
+    pack.resolveRoutePreference?.({ ...request, routePreference: preference }) ?? null;
+  if (isFareRuleRejection(routing)) {
     return routing;
   }
+  const search = toTrackSearchOptions(routing);
   if (preference.startsWith('pack:') && !routing && !request.viaStationIds?.length) {
     return { status: 'UNSUPPORTED', reason: `Unknown route preference: ${preference}.` };
   }
@@ -60,7 +97,7 @@ export function resolveActualPath(
         preference === 'shinkansen' ||
         graph.isShinkansenOnlyStation(from) ||
         graph.isShinkansenOnlyStation(to),
-      ...routing?.search,
+      ...search,
       operatorFilter,
     });
     if (leg === null) {

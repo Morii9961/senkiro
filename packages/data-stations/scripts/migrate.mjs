@@ -17,14 +17,21 @@ const showJson = (lab, path) =>
 const b = (path) => showJson('b-umeda-3d', path);
 const c = (path) => showJson('c-shinjuku-3d', path);
 
-const umeda = migrateUmeda(
-  b('data/processed/station.json'),
-  b('data/processed/services.json'),
-  b('data/processed/exits.json'),
-  b('data/processed/line-styles.json'),
-  b('data/sources.json'),
-);
-const shinjuku = migrateShinjuku(c('data/processed/station.json'), c('data/sources.json'));
+// `planNorth` is part of the contract dataset (P0-W2); the wrappers keep it for compatibility.
+const umeda = {
+  ...migrateUmeda(
+    b('data/processed/station.json'),
+    b('data/processed/services.json'),
+    b('data/processed/exits.json'),
+    b('data/processed/line-styles.json'),
+    b('data/sources.json'),
+  ),
+  planNorth: UMEDA.north,
+};
+const shinjuku = {
+  ...migrateShinjuku(c('data/processed/station.json'), c('data/sources.json')),
+  planNorth: SHINJUKU.north,
+};
 const header = `// Converted from the Lab processed data with pnpm migrate:labs.
 import type { StationHubDataset } from '@senkiro/contracts';
 `;

@@ -14683,6 +14683,7 @@ export const umedaHubDataset: StationHubDataset = {
     en: 'Schematic station model. Geometry, level heights and distances are not surveyed. Check current access and step-free information with the operators.',
     zh: '站内示意模型，形状、楼层高度和距离均为非实测数据。最新的通行和无台阶信息请向运营方确认。',
   },
+  planNorth: 'z-',
 };
 
 export const umedaHub = { dataset: umedaHubDataset, planNorth: 'z-' } as const;
