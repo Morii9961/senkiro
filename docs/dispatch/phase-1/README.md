@@ -32,7 +32,7 @@ flowchart LR
 | **Wave 1** | **P1-S1** `[REP-02]` | Gemini | `feat/p1-data-kansai` | `E:\Workteree\SENKIRO\p1-data-kansai` | `packages/data-pipeline/**`, `packages/data-kansai/**`, `pnpm-lock.yaml`, `docs/dispatch/reports/p1-s1-data-kansai.md` | **✅ 已合并验收**（`0f1e70e`，全仓 `384/384` + E2E `20/20`） | [p1-s1-data-kansai-brief.md](./p1-s1-data-kansai-brief.md) · [报告](../reports/p1-s1-data-kansai.md) |
 | **Wave 1** | **P1-S2** | Claude | `feat/p1-atlas-ui` | `E:\Workteree\SENKIRO\p1-atlas-ui` | `packages/ui-kit/**`, `apps/web/**`, `pnpm-lock.yaml`, `docs/dispatch/reports/p1-s2-atlas-ui.md` | **✅ 已合并验收**（`82ea02a`，全仓 `364/364` + E2E `20/20`） | [p1-s2-atlas-ui-brief.md](./p1-s2-atlas-ui-brief.md) · [报告](../reports/p1-s2-atlas-ui.md) |
 | **Wave 1** | **P1-S3** `[REP-01]` | GPT / Codex | `feat/p1-station-kyoto` | `E:\Workteree\SENKIRO\p1-station-kyoto` | `packages/data-stations/**`, `packages/station-3d/**`, `packages/local-db/**`, `packages/fare-engine/**`, `docs/dispatch/reports/p1-s3-station-kyoto.md` | **▶ 二期精修中** | [p1-s3-station-kyoto-brief.md](./p1-s3-station-kyoto-brief.md) · [Sol 深度指南](./p1-s3-sol-master-guide.md) |
-| **Wave 2** | **P1-W2** | Claude / Gemini | `feat/p1-w2-exit-gate` | `E:\Workteree\SENKIRO\p1-w2-exit-gate` | `apps/web/**`, `packages/data-kansai/**`, `docs/dispatch/reports/p1-w2-exit-gate.md` | **⏸ 等 Wave 1 合入** | [p1-w2-exit-gate-brief.md](./p1-w2-exit-gate-brief.md) |
+| **Wave 2** | **P1-W2** | Claude / Gemini | `feat/p1-w2-exit-gate` | `E:\Workteree\SENKIRO\p1-w2-exit-gate` | `apps/web/**`, `packages/data-kansai/**`, `packages/contracts/src/track.ts`（仅 M0 `reasonNames`，主控特批）, `packages/contracts/tests/station-complex-exclusion.test.ts`, `pnpm-lock.yaml`, `docs/dispatch/reports/p1-w2-exit-gate.md` | **⏸ 等 P1-S3 合入** | [p1-w2-exit-gate-brief.md](./p1-w2-exit-gate-brief.md) |
 
 > **零重叠核验**：Wave 1 三路（`P1-S1` / `P1-S2` / `P1-S3`）各自独占完全不相交的 `packages/*`、`apps/*` 与 `reports/*` 路径（`pnpm-lock.yaml` 按总规程仅允许各自增删依赖时自动更新，若汇合时冲突由主控执行 `pnpm install --lockfile-only` 消解）。
 
@@ -93,12 +93,12 @@ flowchart LR
 ### 5.3 移交 `P1-W2` 的接线与收尾事项
 
 1. **正式数据源接线**：按 [p1-s2 报告 §6](../reports/p1-s2-atlas-ui.md) 在 `registry.ts` 挂 provider，`regions: ['kansai', 'kanto']`：关西懒加载 `@senkiro/data-kansai` 的 `kansaiAtlasBundle`，关东懒加载 `@senkiro/data-kansai/kanto-preview` 的 `kantoPreviewAtlasBundle`。两者的 `pmtilesUrl` / `verticalPmtilesUrl` 已写为 `/tiles/kansai-rail.pmtiles`、`/tiles/kanto-rail.pmtiles`、`/tiles/kanto-rail-vertical.odbl.pmtiles`，需把 `packages/data-kansai/tiles/*.pmtiles`（包导出 `./tiles/*.pmtiles`）复制或映射到 `apps/web` 的 `/tiles/`。接线后改写或删除 `atlas.spec.ts` 中“无数据源时不加载 MapLibre chunk”一条。
-2. **预览注入口**：`window.__SENKIRO_ATLAS_PREVIEW__` 目前在生产构建中同样生效（注入数据一律标为预览）。正式 provider 接入后决定：保留为带标注的测试入口，或限定为非生产构建。
+2. **预览注入口（已决定）**：`window.__SENKIRO_ATLAS_PREVIEW__` 保留为测试入口，注入时优先并继续标注预览；未注入时用正式 provider，生产页不出现预览标记。Exit Gate 1 的 E2E 必须跑真实数据。
 3. **真实瓦片与地图点击**：补浏览器内加载真实 `kansai-rail.pmtiles` 的 E2E，以及地图画布点击拾取（徽章 → `hub + complex`，站 → `station`，线 → `line`）的端到端断言。Wave 1 只跑过内联 GeoJSON 路径，点击拾取只有单测。
 4. **OPFS 回退原因**：`P1-S3` 合入后，把 `exit-gate-0.spec.ts` 内存回退用例从接受 `'unreported' | 'unsupported'` 收紧为只接受 `'unsupported'`，并完成双标签页 `pool-busy` E2E。
 5. **地图字形抽查**：截图中简中站名 `京都站（JR西日本）` 的全角括号疑似未正确绘制（MapLibre 未设 `glyphs` 时由本地 TinySDF 绘字）。接入真实数据后在三语下各截一张图复核，必要时调整标签文本或字体栈。
-6. **防误并说明的语言（待主控决定）**：契约 `StationComplex.explicitlyExcluded[].reason` 是单语 `string`。`P1-S1` 数据中的 `reason` 全部用简体中文书写，因此日文 / 英文界面会显示中文说明。可选方案：在契约 §7 增补可选的 `reasonNames?: LocalizedNames`（需 `P1-W2` 前由主控升级 `packages/contracts`），或 Phase 1 接受单语并在非中文界面标注“说明仅提供中文”。
-7. **关东预览区单站“复合体”**：`kantoTrackGraph` 有 401 个复合体，其中 342 个只含 1 站（沿用 Lab A 结构）。Atlas 搜索会把这些普通站归入“车站复合体”分组。`P1-W2` 在界面隐藏单站复合体，或在 `packages/data-kansai` 的关东迁移中只保留 ≥2 站的复合体（该包在 `P1-W2` 的 `ownedPaths` 内）。
+6. **防误并说明三语化（已决定，2026-11-28 Morii 拍板）**：`P1-S1` 数据中的 `reason` 全部为简体中文。契约增补可选字段 `StationComplexExclusion.reasonNames?: LocalizedNames`，规格冻结于 [01-domain-contract §7.2](../../01-domain-contract-v1.0.md)；由 `P1-W2` M0 一并实现契约字段、`data-kansai` 三语数据与 Web 展示（`packages/contracts/src/track.ts` 经主控特批纳入 `P1-W2` 的 `ownedPaths`）。
+7. **关东预览区单站“复合体”**：`kantoTrackGraph` 有 401 个复合体，其中 342 个只含 1 站（沿用 Lab A 结构）。Atlas 搜索会把这些普通站归入“车站复合体”分组。已决定在 `packages/data-kansai` 的关东迁移中只保留 ≥2 站的复合体（`P1-W2` M1 第 3 步）。
 8. **两套搜索实现**：`@senkiro/data-kansai` 导出 `searchAtlasEntities`，`apps/web` 另有自己的 `features/atlas/atlas-index.ts`。`P1-W2` 以 Web 侧为准（已过防误并 E2E），并确认 Exit Gate 1 的五个搜索词在真实数据上同样区分正确。
 9. **数据块体积**：`data-kansai` 生成源码约 3.8 MB。接线后必须留在懒加载 chunk，`bundle.spec.ts` 的 200 kB 入口预算会拦截误入主块。
 

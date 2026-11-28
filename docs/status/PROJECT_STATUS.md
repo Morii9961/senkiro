@@ -1,6 +1,6 @@
 # SENKIRO 项目状态
 
-快照时间：2026-11-28T23:21:00+08:00 · 协议 1.1 · 项目 ID `senkiro.main` · 报告：Claude（`P1-Coord` 总控调度，接替 Gemini）
+快照时间：2026-11-28T23:35:00+08:00 · 协议 1.1 · 项目 ID `senkiro.main` · 报告：Claude（`P1-Coord` 总控调度，接替 Gemini）
 
 代码基线：`main@0f7b764`（Exit Gate 0 合入点）→ `integration/phase-1@0f1e70e`。阶段：**Phase 1 Wave 1 合入中**（`phase_1_wave_1_merging`，3 路已合入 2 路）。整体进度不估算。
 
@@ -25,8 +25,7 @@
 ## 下一步
 
 1. `P1-S3` 按 Sol 指南完成 Step A–E 后交付，主控核验合入。
-2. 主控在启动 `P1-W2` 前决定防误并说明的三语方案（[README §5.3 第 6 项](../dispatch/phase-1/README.md)：契约增补 `reasonNames?: LocalizedNames`，或 Phase 1 接受单语）。
-3. Wave 1 三路全部合入后启动 `P1-W2`，其接线与收尾事项见 [Phase 1 README §5.3](../dispatch/phase-1/README.md)（共 9 项）。
+2. Wave 1 三路全部合入后启动 `P1-W2`。派单书已按 [README §5.3](../dispatch/phase-1/README.md) 九项重写：新增 M0「防误并说明三语化」（Morii 2026-11-28 拍板，契约增补 `StationComplexExclusion.reasonNames`，规格见 [01-domain-contract §7.2](../01-domain-contract-v1.0.md)），并写定预览注入口、静态瓦片提供方式与关东单站复合体的处理决定。
 
 ## 依据与验证范围
 

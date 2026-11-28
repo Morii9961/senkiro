@@ -149,7 +149,7 @@ export interface BaseEntity<T extends EntityIdPrefix = EntityIdPrefix> {
 - **`TrackSegment`**：`fromStationId`、`toStationId`、`railLineIds[]`、`operatorId`、`geometry: [number, number][]`（`[lon, lat]`）、`operatingKm: number | null`、`distanceNature: DataNature`、`lineClass`、`isShinkansen: boolean`、`parallelConventionalLineId: SkId<'line'> | null`、`fareZoneTags: string[]`（替代旧东京布尔字段，例如 `'suburban:tokyo'`、`'suburban:osaka'`、`'tariff:keihanshin'`）。
 - **`TrackVerticalAttribute`**（ODbL 物理隔离附加层）：`trackSegmentId: SkId<'segment'>`、`verticalClass: 'elevated' | 'at_grade' | 'underground' | 'unknown'`、`verticalOrder: number | null`、`elevationM: number | null`、`provenance`。
 - **`Station`**：`operatorId`、`railLineIds[]`、`stationComplexId: SkId<'complex'> | null`、`stationCode: string | null`、`coordinates: [number, number]`、`municipalityCode: string | null`、`wardOrCity: string | null`、`fareZoneTags: string[]`。
-- **`StationComplex`**：`stationIds: SkId<'station'>[]`、`coordinates: [number, number]`、`wardOrCity: string | null`、`explicitlyExcluded: Array<{ name: string; stationId?: SkId<'station'>; reason: string }>`（防止如「JR 京都 vs 河原町」「新宿 vs 西武新宿」误合并）。
+- **`StationComplex`**：`stationIds: SkId<'station'>[]`、`coordinates: [number, number]`、`wardOrCity: string | null`、`explicitlyExcluded: Array<{ name: string; stationId?: SkId<'station'>; reason: string; reasonNames?: LocalizedNames }>`（防止如「JR 京都 vs 河原町」「新宿 vs 西武新宿」误合并；`reasonNames` 见 §7.2）。
 - **`Interchange`**：`fromStationId`、`toStationId`、`stationComplexId`、`gateType: 'in_gate' | 'out_of_gate' | 'unknown'`、`walkingMinutes: number | null`、`stepFree: boolean | null`、`notes: string | null`。
 
 ### 5.2 图 2 · 车站室内三维空间图（`StationGraph`）
@@ -269,3 +269,17 @@ export interface AppSearchParams {
   - `lookupSurcharge?(context: FareBillingContext): SurchargeQuoteResult`：特急 / 座席附加费查询。
 - 配套类型 `FareRuleRejection`、`FarePrecheckContext`、`FareRulePreferencePlan`、`FareBillingContext`、`FareValidityResult`、`FarePricingUnit`、`PricedSurchargeQuote`、`SurchargeQuoteResult`，以及运行时守卫 `isFareRuleRejection(value)`。规则包拒绝报价时必须返回带 `reason` 的 `FareRuleRejection`（状态为 `UnpricedFareQuoteStatus`），不得以缺字段对象表达拒绝。
 - `@senkiro/fare-engine` 的 `pack.ts` 仅保留旧名的 `@deprecated` 类型别名。其中 `FareRoutingOptions` 已等同于 `FareRulePreferencePlan`，不再接受 P0-S1 时期的 `search` 字段。
+
+### 7.2 Phase 1 · 防误并说明三语化（2026-11-28 主控冻结，由 `P1-W2` M0 实现）
+
+- **§5.1 `StationComplex.explicitlyExcluded[]`**（`StationComplexExclusion`，`packages/contracts/src/track.ts`）增加 `reasonNames?: LocalizedNames`：排除原因的三语说明。`reason: string` 保持必填、语义不变，作为原文与旧数据兼容字段。
+  ```ts
+  export interface StationComplexExclusion {
+    name: string;
+    stationId?: SkId<'station'>;
+    reason: string;
+    reasonNames?: LocalizedNames; // 新增；说明性文字，ja_kana 恒为 null
+  }
+  ```
+- **展示规则**：存在 `reasonNames` 时按 §2 `resolveLocalizedName(reasonNames, locale)` 回退显示；`reasonNames` 缺省或四个字段全为 `null` 时显示 `reason` 原文。被排除站的名称优先用 `stationId` 在同一数据包中解析到的 `Station.names`，解析不到时显示 `name` 原文。
+- **诚实性**：`reasonNames` 是说明性文字，不是专有名称，可依据已核实事实（距离、方位、所属商圈 / 复合体）三语撰写；其中出现的站名仍须使用已核实译名，未核实时保留日文原名，不得机翻编造。距离、方位等数字须与 `reason` 一致。

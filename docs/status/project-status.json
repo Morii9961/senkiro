@@ -2,7 +2,7 @@
   "schema_version": "1.1",
   "project_id": "senkiro.main",
   "project_name": "SENKIRO",
-  "snapshot_at": "2026-11-28T23:21:00+08:00",
+  "snapshot_at": "2026-11-28T23:35:00+08:00",
   "source": {
     "branch": "integration/phase-1",
     "base_main_sha": "0f7b764f7243c864fd056844fe8f2a357bd2f662",
@@ -96,16 +96,10 @@
       "result": "主控核验三站截图、全对寻路穷举与全仓回归后合入。"
     },
     {
-      "id": "decide_exclusion_reason_i18n",
-      "title": "决定 explicitlyExcluded 说明的三语方案（契约增补 reasonNames 或 Phase 1 接受单语）",
-      "priority": "P1",
-      "result": "在启动 P1-W2 前落定；若增补契约，由主控升级 packages/contracts 与 docs/01-domain-contract-v1.0.md §7。"
-    },
-    {
       "id": "launch_p1_w2",
       "title": "Wave 1 三路合入后启动 P1-W2 完成接线与 Exit Gate 1（含 Firefox/WebKit/软件渲染路径）",
       "priority": "P1",
-      "result": "含 README §5.3 的 9 项接线与收尾事项；全量通过后以 --no-ff 合并进 main 并推送 origin。"
+      "result": "派单书已按 README §5.3 九项重写，含 M0 防误并说明三语化（契约 §7.2 reasonNames）；全量通过后以 --no-ff 合并进 main 并推送 origin。"
     },
     {
       "id": "probe_synthetic_rides",
@@ -118,6 +112,18 @@
     {
       "id": "p1_s3_handoff",
       "decision": "P1-S3 完成后把交接信息转给主控，以便核验合入。"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "exclusion_reason_i18n",
+      "date": "2026-11-28",
+      "by": "morii",
+      "decision": "防误并说明三语化：契约增补 StationComplexExclusion.reasonNames?: LocalizedNames，由 P1-W2 M0 实现（packages/contracts/src/track.ts 特批纳入 P1-W2 ownedPaths）。",
+      "refs": [
+        "docs/01-domain-contract-v1.0.md",
+        "docs/dispatch/phase-1/p1-w2-exit-gate-brief.md"
+      ]
     }
   ]
 }
