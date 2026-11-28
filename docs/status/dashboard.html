@@ -92,37 +92,37 @@
           <span class="badge">SENKIRO</span>
           <h1>全周期开发进度总看板</h1>
           <div class="muted" style="margin-top:6px;">
-            線・記・路 — Every line, a story. · 集成线：<span class="mono">integration/phase-0@eb77275</span> · 主干：<span class="mono">main</span>（已合入 Exit Gate 0）
+            線・記・路 — Every line, a story. · 主干基线：<span class="mono">main@0f7b764</span> · 集成线：<span class="mono">integration/phase-1</span>
           </div>
         </div>
         <div style="text-align:right;">
           <div class="muted">当前所处项目坐标</div>
-          <div class="ok" style="font-weight:700;">Phase 0 · Exit Gate 0 已通过（待启动 Phase 1）</div>
-          <div class="muted mono">快照：2026-11-28 19:20 +08:00</div>
+          <div class="warn" style="font-weight:700;">Phase 1 · Wave 1 三路并行派单已就绪</div>
+          <div class="muted mono">快照：2026-11-28 22:00 +08:00</div>
         </div>
       </div>
 
       <div class="grid-4">
-        <div class="subcard">
-          <div class="muted">当前阶段完成度（Phase 0）</div>
-          <div class="kpi-row"><span class="kpi-num ok">100%</span><span class="muted mono">6 / 6 单元</span></div>
-          <div class="bar"><div style="width:100%;background:var(--success)"></div></div>
-          <div class="muted">Exit Gate 0 通过，已合并进 main</div>
+        <div class="subcard active">
+          <div class="muted">当前阶段完成度（Phase 1）</div>
+          <div class="kpi-row"><span class="kpi-num warn">20.0%</span><span class="muted mono">1 / 5 单元</span></div>
+          <div class="bar"><div style="width:20%;background:var(--warning)"></div></div>
+          <div class="muted">P1-Coord 完成，Wave 1 三路待启动</div>
         </div>
         <div class="subcard">
           <div class="muted">距离 Web MVP（Phase 0–3）</div>
-          <div class="kpi-row"><span class="kpi-num pri">33.3%</span><span class="muted mono">6 / 18 单元</span></div>
-          <div class="bar"><div style="width:33.3%;background:var(--primary)"></div></div>
-          <div class="muted">含京阪神图鉴、多社换乘与足迹闭环</div>
+          <div class="kpi-row"><span class="kpi-num pri">36.8%</span><span class="muted mono">7 / 19 单元</span></div>
+          <div class="bar"><div style="width:36.8%;background:var(--primary)"></div></div>
+          <div class="muted">Phase 0 筑基已完，推进京阪神图鉴</div>
         </div>
         <div class="subcard">
           <div class="muted">全路线图主线（Phase 0–6）</div>
-          <div class="kpi-row"><span class="kpi-num">19.4%</span><span class="muted mono">6 / 31 单元</span></div>
-          <div class="bar"><div style="width:19.4%;background:var(--accent)"></div></div>
-          <div class="muted">含 3 座已归档 Lab 为 9 / 34（26.5%）</div>
+          <div class="kpi-row"><span class="kpi-num">21.9%</span><span class="muted mono">7 / 32 单元</span></div>
+          <div class="bar"><div style="width:21.9%;background:var(--accent)"></div></div>
+          <div class="muted">含 3 座已归档 Lab 为 10 / 35（28.6%）</div>
         </div>
         <div class="subcard">
-          <div class="muted">已合入正式包 & 单测健康度</div>
+          <div class="muted">基线单测健康度（main@0f7b764）</div>
           <div class="kpi-row"><span class="kpi-num ok">307 / 307</span><span class="muted mono">8 个项目</span></div>
           <div class="bar"><div style="width:100%;background:var(--success)"></div></div>
           <div class="muted">Biome 201 文件 0 错 0 警 · E2E 10 / 10</div>
@@ -147,9 +147,9 @@
           <div class="muted">Exit Gate 0 通过：8 包全绿、槽位接线完成、E2E 10/10，已并入 main。</div>
         </div>
         <div class="subcard active">
-          <div style="display:flex;justify-content:space-between;"><strong>▶ Phase 1 · 京阪神 Atlas</strong><span class="mono warn">0/4 · 0%</span></div>
-          <div class="bar"><div style="width:0%"></div></div>
-          <div class="muted">下一站：P1-Coord 冻结关西 ID 与 PMTiles 规范，再派 8 社数据、Atlas UI 与京都 3D。</div>
+          <div style="display:flex;justify-content:space-between;"><strong>▶ Phase 1 · 京阪神 Atlas</strong><span class="mono warn">1/5 · 20%</span></div>
+          <div class="bar"><div style="width:20%;background:var(--warning)"></div></div>
+          <div class="muted">P1-Coord 冻结规范并直发 Wave 1 三路：8 社 PMTiles、Atlas UI、京都 4 社 3D。</div>
         </div>
         <div class="subcard">
           <div style="display:flex;justify-content:space-between;"><strong>Phase 2 · 换乘与关西运价</strong><span class="mono muted">0/4 · 0%</span></div>
@@ -181,16 +181,15 @@
 
     <div class="grid-2">
       <section class="card">
-        <h2>Phase 0 执行单元拆解（6 / 6 完成 · 100%）</h2>
+        <h2>Phase 1 执行单元拆解（1 / 5 完成 · 20%）</h2>
         <table>
-          <thead><tr><th>单元</th><th>交付范围</th><th>状态</th><th class="num">核验</th></tr></thead>
+          <thead><tr><th>单元</th><th>交付范围</th><th>状态</th><th class="num">模型 / 流水线</th></tr></thead>
           <tbody>
-            <tr><td class="mono"><strong>P0-Coord</strong></td><td>Lab 归档、契约 v1.0、交接规程与派单</td><td class="ok">已完成</td><td class="num">3 分支冻结</td></tr>
-            <tr><td class="mono"><strong>P0-W0</strong></td><td>根工程骨架 + <span class="mono">@senkiro/contracts</span></td><td class="ok">已合入</td><td class="num">75/75</td></tr>
-            <tr><td class="mono"><strong>P0-S1</strong></td><td><span class="mono">domain-core + fare-engine + local-db</span></td><td class="ok">已合入</td><td class="num">99/99</td></tr>
-            <tr><td class="mono"><strong>P0-S2</strong></td><td>命令式 <span class="mono">station-3d</span> + 梅田/新宿数据</td><td class="ok">已合入</td><td class="num">48/48</td></tr>
-            <tr><td class="mono"><strong>P0-S3</strong></td><td><span class="mono">ui-kit</span> + <span class="mono">apps/web</span> 三语全屏壳</td><td class="ok">已合入</td><td class="num">57/57</td></tr>
-            <tr><td class="mono"><strong>P0-W2</strong></td><td>契约上提、Web 槽位接线与 Exit Gate 0 E2E</td><td class="ok">已合入</td><td class="num">+28 · E2E 10/10</td></tr>
+            <tr><td class="mono"><strong>P1-Coord</strong></td><td>关西 ID / PMTiles / 许可矩阵冻结与 Wave 1–2 派单</td><td class="ok">已完成</td><td class="num">Gemini · 主控</td></tr>
+            <tr><td class="mono"><strong>P1-S1</strong></td><td><span class="mono">data-pipeline + data-kansai</span>（8 社、纯 TS PMTiles、关东预览）</td><td class="warn">▶ 待启动</td><td class="num">Gemini · [REP-02]</td></tr>
+            <tr><td class="mono"><strong>P1-S2</strong></td><td>MapLibre <span class="mono">Atlas UI</span> + <span class="mono">ui-kit/base.css</span> 与 Web 遗留修复</td><td class="warn">▶ 待启动</td><td class="num">Claude · 核心 UI</td></tr>
+            <tr><td class="mono"><strong>P1-S3</strong></td><td>京都站四社 3D/2D 数据包 + Worker / Engine 加固</td><td class="warn">▶ 待启动</td><td class="num">Codex · [REP-01]</td></tr>
+            <tr><td class="mono"><strong>P1-W2</strong></td><td>数据源与京都 3D 接线 + Exit Gate 1 多浏览器 E2E</td><td class="muted">⏸ 等 Wave 1</td><td class="num">Claude / Gemini</td></tr>
           </tbody>
         </table>
       </section>
@@ -216,16 +215,16 @@
     <section class="card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
         <h2 style="margin:0;">全产品 22 项核心需求（R-01 ～ R-22）阶段落位表</h2>
-        <span class="muted">对照 docs/plan-v1.0.md §4 · 底座就绪 4 项 / 后续 Phase 按期落地 18 项</span>
+        <span class="muted">对照 docs/plan-v1.0.md §4 · 底座就绪 4 项 / Phase 1 进行中 3 项 / 后续按期落地 15 项</span>
       </div>
       <div class="grid-3">
-        <div class="req-item"><span><strong class="mono">R-04</strong> 站内平面与 3D</span><span class="ok">Phase 0 引擎+双站已接入 Web</span></div>
+        <div class="req-item"><span><strong class="mono">R-04</strong> 站内平面与 3D</span><span class="ok">梅田+新宿已接入 · 京都 P1-S3</span></div>
         <div class="req-item"><span><strong class="mono">R-08</strong> 票价拆解器</span><span class="ok">Phase 0 内核+关东已入库</span></div>
         <div class="req-item"><span><strong class="mono">R-09</strong> 高级运价规则</span><span class="ok">Phase 0 内核已入库</span></div>
         <div class="req-item"><span><strong class="mono">R-13</strong> 足迹/铁路制霸</span><span class="pri">SQLite 底座已建 · Phase 3 UI</span></div>
-        <div class="req-item"><span><strong class="mono">R-01</strong> 铁路地图与百科</span><span class="muted">Phase 1（京阪神+东京）</span></div>
-        <div class="req-item"><span><strong class="mono">R-02</strong> 直通运营关系</span><span class="muted">Phase 1（关西 5 组）</span></div>
-        <div class="req-item"><span><strong class="mono">R-03</strong> 车站详情</span><span class="muted">Phase 1（京阪神）</span></div>
+        <div class="req-item"><span><strong class="mono">R-01</strong> 铁路地图与百科</span><span class="warn">Phase 1 进行中（P1-S1/S2）</span></div>
+        <div class="req-item"><span><strong class="mono">R-02</strong> 直通运营关系</span><span class="warn">Phase 1 进行中（关西 5 组）</span></div>
+        <div class="req-item"><span><strong class="mono">R-03</strong> 车站详情</span><span class="warn">Phase 1 进行中（防误并红线）</span></div>
         <div class="req-item"><span><strong class="mono">R-05</strong> 换乘案内</span><span class="muted">Phase 2（RAPTOR/CSA）</span></div>
         <div class="req-item"><span><strong class="mono">R-06</strong> 多策略路线比较</span><span class="muted">Phase 2（快/省/少换/电梯）</span></div>
         <div class="req-item"><span><strong class="mono">R-07</strong> 运行信息</span><span class="muted">Phase 1/2 占位 · Phase 5 授权</span></div>
