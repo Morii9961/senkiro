@@ -2,23 +2,22 @@
   "schema_version": "1.1",
   "project_id": "senkiro.main",
   "project_name": "SENKIRO",
-  "snapshot_at": "2026-11-28T16:58:00+08:00",
+  "snapshot_at": "2026-11-28T17:35:00+08:00",
   "source": {
     "branch": "integration/phase-0",
     "base_main_sha": "e3cba601be157bd0a2a1295e1e36d579c3369923",
     "tests_rerun": true,
     "basis": [
-      "2026-11-28 P0-S1 合入验证：在 integration/phase-0 绕过 Turbo 缓存实跑 pnpm install --offline --frozen-lockfile && pnpm check && pnpm build && pnpm test，Biome 125 文件 0 错误 0 警告，6 个包构建通过，22 个测试文件 222/222 通过（contracts 75, domain-core 47, fare-engine 40, local-db 12, station-3d 40, data-stations 8）",
-      "P0-S1 自报告包含无头 Chromium OPFS 持久化与 memory-fallback 冒烟输出（本次集成分支未重跑浏览器冒烟）",
-      "P0-S3 (feat/p0-ui-web-shell@e79424a) 维持 M1 ui-kit 27/27，待续跑 M2/M3（未重跑其分支测试）"
+      "2026-11-28 Wave 1 全量合入验证：在 integration/phase-0 绕过 Turbo 缓存实跑 pnpm install --offline --frozen-lockfile && pnpm check && pnpm build && pnpm test，Biome 194 文件 0 错误 0 警告，8 个项目构建通过，全仓 Vitest 279/279 通过（contracts 75, domain-core 47, fare-engine 40, local-db 12, station-3d 40, data-stations 8, ui-kit 27, web 30）",
+      "Playwright Exit Gate 0 E2E 与真实硬件 GPU 尚未在集成分支运行，归入 P0-W2 验收"
     ]
   },
   "reporter": {
     "agent": "gemini",
-    "note": "Chief Coordinator (P0-S1 & P0-S2 Merged)"
+    "note": "Chief Coordinator (Wave 1 Complete, P0-W2 Dispatched)"
   },
-  "stage": "phase_0_wave1_awaiting_s3",
-  "summary": "P0-S1 与 P0-S2 均已通过主控验证并增量合入 integration/phase-0（全仓 6 个包 222/222 测试全部通过）；Wave 1 仅余 P0-S3 (apps/web M2/M3) 待收口。",
+  "stage": "phase_0_wave2_ready",
+  "summary": "Wave 0 与 Wave 1 全部四条分支均已验收合入 integration/phase-0，8 个项目 279 项单测全绿通过，4 个旧工作树已清理。已发布 P0-W2 收官联调派单，完成后即达成 Exit Gate 0。",
   "overall_progress": null,
   "milestones": [
     {
@@ -29,18 +28,6 @@
       "evidence_refs": [
         "docs/dispatch/reports/p0-w0-contracts.md",
         "packages/contracts/src/index.ts"
-      ],
-      "human_acceptance": "done"
-    },
-    {
-      "id": "p0_s2_station_3d",
-      "title": "Wave 1 (P0-S2)：station-3d (40/40) + data-stations (8/8)",
-      "status": "done",
-      "evidence_level": "verified_test",
-      "evidence_refs": [
-        "docs/dispatch/reports/p0-s2-station-3d.md",
-        "packages/station-3d/src/index.ts",
-        "packages/data-stations/src/index.ts"
       ],
       "human_acceptance": "done"
     },
@@ -58,13 +45,36 @@
       "human_acceptance": "done"
     },
     {
-      "id": "p0_s3_ui_web_shell",
-      "title": "Wave 1 (P0-S3)：ui-kit (M1 27/27) + apps/web（等待续跑）",
-      "status": "in_progress",
-      "evidence_level": "existing_test",
+      "id": "p0_s2_station_3d",
+      "title": "Wave 1 (P0-S2)：station-3d (40/40) + data-stations (8/8)",
+      "status": "done",
+      "evidence_level": "verified_test",
       "evidence_refs": [
-        "feat/p0-ui-web-shell@e79424a",
-        "docs/dispatch/phase-0/p0-s3-ui-web-shell-brief.md"
+        "docs/dispatch/reports/p0-s2-station-3d.md",
+        "packages/station-3d/src/index.ts",
+        "packages/data-stations/src/index.ts"
+      ],
+      "human_acceptance": "done"
+    },
+    {
+      "id": "p0_s3_ui_web_shell",
+      "title": "Wave 1 (P0-S3)：ui-kit (27/27) + apps/web (30/30)",
+      "status": "done",
+      "evidence_level": "verified_test",
+      "evidence_refs": [
+        "docs/dispatch/reports/p0-s3-ui-web-shell.md",
+        "packages/ui-kit/src/index.ts",
+        "apps/web/src/main.tsx"
+      ],
+      "human_acceptance": "done"
+    },
+    {
+      "id": "p0_w2_exit_gate",
+      "title": "Wave 2 (P0-W2)：契约上提、apps/web 槽位接线与 Playwright Exit Gate 0 E2E",
+      "status": "not_started",
+      "evidence_level": "repository",
+      "evidence_refs": [
+        "docs/dispatch/phase-0/p0-w2-exit-gate-brief.md"
       ],
       "human_acceptance": "pending"
     }
@@ -72,22 +82,16 @@
   "blockers": [],
   "next_actions": [
     {
-      "id": "resume_and_merge_p0_s3",
-      "title": "完成 P0-S3 (apps/web M2/M3) 并回主控验收合入",
+      "id": "launch_p0_w2",
+      "title": "新建 feat/p0-w2-exit-gate 工作树并分发 P0-W2 收官联调派单",
       "priority": "P0",
-      "result": "ui-kit + apps/web 合入 integration/phase-0。"
-    },
-    {
-      "id": "p0_w2_wire_and_exit_gate_0",
-      "title": "执行 P0-W2-wire（上提 planNorth 与 fare-engine 契约、接线 StationExplorer 与 local-db）并验收 Exit Gate 0",
-      "priority": "P0",
-      "result": "全仓 check/build/test 与 E2E 通过。"
+      "result": "完成契约上提、StationExplorer/local-db 接线与 Playwright E2E 后达成 Exit Gate 0。"
     }
   ],
   "needs_morii": [
     {
-      "id": "decide_p0_s3_runner",
-      "decision": "确认 P0-S3 (E:/Workteree/SENKIRO/p0-ui-web-shell) 等待 Claude 配额恢复续跑，还是由主控生成 Codex 接力书。"
+      "id": "start_p0_w2",
+      "decision": "按 docs/dispatch/phase-0/p0-w2-exit-gate-brief.md 新建 feat/p0-w2-exit-gate 并启动 Phase 0 终极收官联调。"
     }
   ]
 }
