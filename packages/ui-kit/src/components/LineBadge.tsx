@@ -14,7 +14,7 @@ export interface LineBadgeProps {
   number?: string | null;
   lang: Locale;
   size?: 'sm' | 'md';
-  className?: string;
+  className?: string | undefined;
 }
 
 const HEX_COLOR = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i;

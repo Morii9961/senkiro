@@ -22,7 +22,7 @@ export interface DrawerPanelProps {
   /** Leading header content (e.g. a module code badge). */
   eyebrow?: ReactNode;
   footer?: ReactNode;
-  className?: string;
+  className?: string | undefined;
   /** Layout overrides such as `--sk-drawer-top` / `--sk-drawer-width`. */
   style?: CSSProperties;
   /** Portal target; defaults to `document.body`. */

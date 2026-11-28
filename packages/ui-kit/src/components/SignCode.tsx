@@ -4,7 +4,7 @@ export interface SignCodeProps {
   /** One to three characters, e.g. a module letter. Decorative: hidden from assistive tech. */
   code: string;
   active?: boolean;
-  className?: string;
+  className?: string | undefined;
 }
 
 /**

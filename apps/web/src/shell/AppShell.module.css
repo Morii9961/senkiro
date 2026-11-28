@@ -1,0 +1,27 @@
+.shell {
+  --sk-dock-width: 22rem;
+  position: relative;
+  min-height: 100dvh;
+  background: var(--sk-color-canvas);
+  color: var(--sk-color-text);
+  font-family: var(--sk-font-sans);
+}
+
+/* Portal target for drawers; inherits theme and layout variables from the shell. */
+.layer {
+  display: contents;
+}
+
+.modulePanel {
+  --sk-drawer-top: calc(var(--sk-dock-bottom) + var(--sk-space-3));
+  --sk-drawer-width: var(--sk-dock-width);
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sk-space-2);
+  color: var(--sk-color-text-subtle);
+  font-size: var(--sk-text-xs);
+  font-weight: 600;
+}

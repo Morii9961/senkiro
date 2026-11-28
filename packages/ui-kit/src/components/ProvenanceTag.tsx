@@ -20,7 +20,7 @@ export interface ProvenanceTagProps {
   schedulePrecision?: SchedulePrecision;
   /** Called when a source entry is activated (e.g. to open a source drawer). */
   onSourceSelect?: (sourceId: string) => void;
-  className?: string;
+  className?: string | undefined;
 }
 
 const TONE: Readonly<Record<DataNature, 'verified' | 'neutral' | 'synthetic' | 'unknown'>> = {

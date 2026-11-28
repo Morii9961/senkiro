@@ -19,7 +19,7 @@ export interface SegmentedControlProps<T extends string> {
   size?: 'sm' | 'md';
   /** Stretch segments to fill the container width. */
   block?: boolean;
-  className?: string;
+  className?: string | undefined;
 }
 
 /**

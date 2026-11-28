@@ -8,7 +8,7 @@ export interface UnknownValueProps {
   kind?: UnknownKind;
   /** What is unknown, already localised (e.g. "票价"). Improves the accessible name. */
   label?: string;
-  className?: string;
+  className?: string | undefined;
 }
 
 /**
