@@ -8,20 +8,40 @@ import type {
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import { buildIndoorGraph } from '../graph/build.ts';
 import { langTag, nameText, placeKindLabel, t } from '../i18n.ts';
-import { floorLabel, floorsTopDown } from '../plan2d/layout.ts';
+import {
+  floorForLevelParam,
+  floorLabel,
+  floorsTopDown,
+  levelParamForFloor,
+} from '../plan2d/layout.ts';
 import { StationPlan2D, type StationSelectionId } from '../plan2d/StationPlan2D.tsx';
 import { findStationRoute } from '../route/search.ts';
 import { StationSceneController } from '../scene/StationSceneController.ts';
 import { STATION_PALETTES, type StationTheme } from '../theme.ts';
 import { StationDetails } from './StationDetails.tsx';
 
+/**
+ * Every view-state prop pair is optional and works either way: leave the value `undefined`
+ * for internal state, or pass it (with its `on…Change` callback) to drive the view from the
+ * outside, e.g. from URL search params.
+ */
 export interface StationExplorerProps {
   dataset: StationHubDataset;
+  /** Overrides `dataset.planNorth`. */
   planNorth?: PlatformSide;
   locale?: Locale;
   theme?: StationTheme;
   selectedId?: string | null;
   onSelect?: (id: string | null) => void;
+  /**
+   * Active floor as a level ID or a floor label (`'B1F'`); `null` = all floors. Unknown or
+   * ambiguous values fall back to all floors.
+   */
+  level?: string | null;
+  /** Called with the floor label (or a level ID when the label is ambiguous), or `null`. */
+  onLevelChange?: (level: string | null) => void;
+  stepFree?: boolean;
+  onStepFreeChange?: (stepFree: boolean) => void;
   onNavigateExternalLine?: (lineId: SkId<'line'>) => void;
 }
 
@@ -100,22 +120,30 @@ function HubExplorer({
   theme = 'light',
   selectedId,
   onSelect,
+  level,
+  onLevelChange,
+  stepFree: stepFreeProp,
+  onStepFreeChange,
   onNavigateExternalLine,
 }: StationExplorerProps) {
   const sceneRef = useRef<StationSceneController>(null);
   const [view, setView] = useState<'3d' | '2d'>('3d');
   const [unavailable, setUnavailable] = useState(false);
-  const [ordinal, setOrdinal] = useState<number | null>(null);
-  const [exploded, setExploded] = useState(false);
+  const [internalOrdinal, setOrdinal] = useState<number | null>(null);
+  const [explodedState, setExploded] = useState(false);
   const [internalSelection, setInternalSelection] = useState<StationSelectionId | null>(null);
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
-  const [stepFree, setStepFree] = useState(false);
+  const [internalStepFree, setStepFree] = useState(false);
+  const stepFree = stepFreeProp ?? internalStepFree;
   const palette = STATION_PALETTES[theme];
   const sceneVisible = view === '3d' && !unavailable;
   const graph = useMemo(() => buildIndoorGraph(dataset), [dataset]);
   const floors = useMemo(() => floorsTopDown(dataset.levels), [dataset.levels]);
+  const ordinal = level !== undefined ? floorForLevelParam(dataset.levels, level) : internalOrdinal;
   const floor = ordinal !== null && floors.includes(ordinal) ? ordinal : null;
+  // The exploded view only exists with "all floors"; an external floor change closes it.
+  const exploded = explodedState && floor === null;
   const facilities = useMemo(
     () => new Map([...dataset.places, ...dataset.links].map((item) => [item.id as string, item])),
     [dataset],
@@ -141,9 +169,20 @@ function HubExplorer({
     }
     onSelect?.(id);
   };
-  const chooseFloor = (level: number | null, unfold: boolean) => {
-    setOrdinal(level);
+  const chooseFloor = (next: number | null, unfold: boolean) => {
+    if (level === undefined) {
+      setOrdinal(next);
+    }
     setExploded(unfold);
+    if (next !== floor) {
+      onLevelChange?.(levelParamForFloor(dataset.levels, next));
+    }
+  };
+  const chooseStepFree = (next: boolean) => {
+    if (stepFreeProp === undefined) {
+      setStepFree(next);
+    }
+    onStepFreeChange?.(next);
   };
   const focus =
     selected && sceneVisible
@@ -172,6 +211,8 @@ function HubExplorer({
   return (
     <section
       data-station-explorer=""
+      data-view={sceneVisible ? '3d' : '2d'}
+      data-active-level={levelParamForFloor(dataset.levels, floor) ?? ''}
       data-theme={theme}
       lang={langTag(locale)}
       aria-label={nameText(dataset.complex.names, locale) ?? t(locale, 'station')}
@@ -274,7 +315,7 @@ function HubExplorer({
               locale={locale}
               theme={theme}
               activeFloor={floor}
-              planNorth={planNorth ?? null}
+              planNorth={planNorth ?? dataset.planNorth ?? null}
               selectedId={selected?.id ?? null}
               onSelect={choose}
               route={found}
@@ -319,7 +360,7 @@ function HubExplorer({
               <input
                 type="checkbox"
                 checked={stepFree}
-                onChange={(event) => setStepFree(event.currentTarget.checked)}
+                onChange={(event) => chooseStepFree(event.currentTarget.checked)}
               />{' '}
               {t(locale, 'stepFreeMode')}
             </label>

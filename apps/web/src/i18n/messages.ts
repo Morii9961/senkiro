@@ -56,7 +56,7 @@ export interface Messages {
     sectionTitle: string;
     open: string;
     panelDescription: string;
-    status: { slotPending: string; phase1: string };
+    status: { slotPending: string; connected: string; phase1: string };
     slotPendingBody: string;
     phase1Body: string;
     slotError: string;
@@ -74,6 +74,25 @@ export interface Messages {
     localDb: string;
   };
   slots: { localDbPending: string };
+  /** `@senkiro/local-db` status probe (Profile / Journey). */
+  probe: {
+    opening: string;
+    failed: string;
+    mode: string;
+    modes: Record<'opfs-sahpool' | 'memory-fallback', string>;
+    modeNotes: Record<'opfs-sahpool' | 'memory-fallback', string>;
+    isolation: string;
+    yes: string;
+    no: string;
+    tables: string;
+    probeRows: string;
+    write: string;
+    clear: string;
+    exportJson: string;
+    exported: string;
+    download: string;
+    note: string;
+  };
   notFound: { title: string; back: string };
 }
 
@@ -154,7 +173,7 @@ const zhCN: Messages = {
     sectionTitle: '枢纽快速入口',
     open: '打开枢纽预览：{hub}',
     panelDescription: '站内 3D/2D 枢纽预览',
-    status: { slotPending: '待连接枢纽槽位', phase1: 'Phase 1 建设中' },
+    status: { slotPending: '待连接枢纽槽位', connected: '站内示意模型', phase1: 'Phase 1 建设中' },
     slotPendingBody: '待连接 @senkiro/station-3d 枢纽槽位。接线完成后在此显示站内 3D/2D 视图。',
     phase1Body: 'Phase 1 建设中（诚实占位）：京都站复合体的站内数据尚未录入，不显示任何推测结构。',
     slotError: '枢纽视图加载失败，未显示任何替代数据。',
@@ -191,6 +210,27 @@ const zhCN: Messages = {
     localDb: '本地数据库',
   },
   slots: { localDbPending: '待连接 @senkiro/local-db 本地数据库状态探针。' },
+  probe: {
+    opening: '正在打开本地数据库…',
+    failed: '本地数据库无法打开：{error}',
+    mode: '存储模式',
+    modes: { 'opfs-sahpool': 'OPFS sahpool', 'memory-fallback': '内存回退' },
+    modeNotes: {
+      'opfs-sahpool': '数据保存在本浏览器的源私有文件系统中，刷新后仍在。',
+      'memory-fallback': '此浏览器不支持 OPFS 同步访问句柄，数据只保留到页面关闭。',
+    },
+    isolation: '跨源隔离',
+    yes: '是',
+    no: '否',
+    tables: '数据表就绪',
+    probeRows: '自检记录',
+    write: '写入一条自检记录',
+    clear: '清空自检记录',
+    exportJson: '导出 JSON',
+    exported: '已导出 {bytes} 字节 JSON',
+    download: '下载 JSON 文件',
+    note: '自检记录是合成测试行（ID 前缀 sk:ride:local:probe-），不含车站或区间，只用来验证本地读写；可随时清空。数据只在本机，不会上传。',
+  },
   notFound: { title: '页面不存在', back: '返回地图' },
 };
 
@@ -272,7 +312,11 @@ const ja: Messages = {
     sectionTitle: 'ハブへの入口',
     open: 'ハブのプレビューを開く：{hub}',
     panelDescription: '駅構内 3D/2D ハブのプレビュー',
-    status: { slotPending: 'ハブ枠の接続待ち', phase1: 'Phase 1 で整備中' },
+    status: {
+      slotPending: 'ハブ枠の接続待ち',
+      connected: '駅構内の模式図',
+      phase1: 'Phase 1 で整備中',
+    },
     slotPendingBody:
       '@senkiro/station-3d のハブ枠への接続待ちです。接続後、ここに構内の 3D/2D 表示が入ります。',
     phase1Body:
@@ -313,6 +357,29 @@ const ja: Messages = {
     localDb: 'ローカルデータベース',
   },
   slots: { localDbPending: '@senkiro/local-db の状態プローブへの接続待ちです。' },
+  probe: {
+    opening: 'ローカルデータベースを開いています…',
+    failed: 'ローカルデータベースを開けません：{error}',
+    mode: '保存方式',
+    modes: { 'opfs-sahpool': 'OPFS sahpool', 'memory-fallback': 'メモリ（代替）' },
+    modeNotes: {
+      'opfs-sahpool':
+        'このブラウザのオリジン専用ファイルシステムに保存され、再読み込み後も残ります。',
+      'memory-fallback':
+        'このブラウザは OPFS の同期アクセスハンドルに対応していないため、ページを閉じるまでの保存です。',
+    },
+    isolation: 'クロスオリジン分離',
+    yes: 'はい',
+    no: 'いいえ',
+    tables: '準備済みのテーブル',
+    probeRows: '自己診断レコード',
+    write: '自己診断レコードを書き込む',
+    clear: '自己診断レコードを消去',
+    exportJson: 'JSON を書き出す',
+    exported: 'JSON を {bytes} バイト書き出しました',
+    download: 'JSON ファイルを保存',
+    note: '自己診断レコードは合成のテスト行（ID 接頭辞 sk:ride:local:probe-）で、駅や区間を含まず、ローカルの読み書き確認だけに使います。いつでも消去できます。データは端末内にとどまり、送信されません。',
+  },
   notFound: { title: 'ページが見つかりません', back: '地図に戻る' },
 };
 
@@ -402,7 +469,11 @@ const en: Messages = {
     sectionTitle: 'Hub quick entry',
     open: 'Open hub preview: {hub}',
     panelDescription: 'In-station 3D/2D hub preview',
-    status: { slotPending: 'Hub slot not connected', phase1: 'Building in Phase 1' },
+    status: {
+      slotPending: 'Hub slot not connected',
+      connected: 'Schematic in-station model',
+      phase1: 'Building in Phase 1',
+    },
     slotPendingBody:
       'Waiting for the @senkiro/station-3d hub slot. Once connected, the in-station 3D/2D view appears here.',
     phase1Body:
@@ -444,6 +515,28 @@ const en: Messages = {
     localDb: 'Local database',
   },
   slots: { localDbPending: 'Waiting for the @senkiro/local-db status probe.' },
+  probe: {
+    opening: 'Opening the local database…',
+    failed: 'The local database could not be opened: {error}',
+    mode: 'Storage mode',
+    modes: { 'opfs-sahpool': 'OPFS sahpool', 'memory-fallback': 'Memory fallback' },
+    modeNotes: {
+      'opfs-sahpool': "Stored in this browser's origin private file system; it survives a reload.",
+      'memory-fallback':
+        'This browser lacks OPFS sync access handles, so data lasts only until the page closes.',
+    },
+    isolation: 'Cross-origin isolated',
+    yes: 'yes',
+    no: 'no',
+    tables: 'Tables ready',
+    probeRows: 'Self-check rows',
+    write: 'Write a self-check row',
+    clear: 'Clear self-check rows',
+    exportJson: 'Export JSON',
+    exported: 'Exported {bytes} bytes of JSON',
+    download: 'Download the JSON file',
+    note: 'Self-check rows are synthetic test rows (ID prefix sk:ride:local:probe-) with no stations or segments; they only prove local reads and writes and can be cleared at any time. Data stays on this device and is never uploaded.',
+  },
   notFound: { title: 'Page not found', back: 'Back to the map' },
 };
 

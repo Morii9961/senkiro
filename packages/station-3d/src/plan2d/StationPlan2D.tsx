@@ -165,6 +165,7 @@ export function StationPlan2D(props: StationPlan2DProps) {
         data-kind={place.kind}
         role="button"
         tabIndex={0}
+        aria-pressed={selected}
         aria-label={nameText(place.names, locale) ?? placeKindLabel(locale, place.kind)}
         onClick={clickPlace(place.id)}
         onKeyDown={keySelect(place.id)}
@@ -286,6 +287,7 @@ export function StationPlan2D(props: StationPlan2DProps) {
         data-kind={link.kind}
         role="button"
         tabIndex={0}
+        aria-pressed={link.id === selectedId}
         aria-label={nameText(link.names, locale) ?? linkKindLabel(locale, link.kind)}
         onClick={clickPlace(link.id)}
         onKeyDown={keySelect(link.id)}
@@ -343,6 +345,7 @@ export function StationPlan2D(props: StationPlan2DProps) {
         data-kind={link.kind}
         role="button"
         tabIndex={0}
+        aria-pressed={link.id === selectedId}
         aria-label={nameText(link.names, locale) ?? linkKindLabel(locale, link.kind)}
         onClick={clickPlace(link.id)}
         onKeyDown={keySelect(link.id)}
@@ -398,6 +401,7 @@ export function StationPlan2D(props: StationPlan2DProps) {
         data-kind={place.kind}
         role="button"
         tabIndex={0}
+        aria-pressed={selected}
         aria-label={nameText(place.names, locale) ?? placeKindLabel(locale, place.kind)}
         onClick={clickPlace(place.id)}
         onKeyDown={keySelect(place.id)}

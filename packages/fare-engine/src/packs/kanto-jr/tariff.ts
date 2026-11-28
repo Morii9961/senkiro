@@ -1,9 +1,4 @@
-import type {
-  FareBillingContext,
-  FareEngineTariffProvider,
-  FareRejection,
-  FareSurcharge,
-} from '../../pack.ts';
+import type { FareBillingContext, SurchargeQuoteResult, TariffProvider } from '@senkiro/contracts';
 import { type JrOperatorScope, VERSIONS } from './rules.ts';
 
 const DISCLAIMER =
@@ -32,11 +27,11 @@ const brackets = [
   [160, 2640, 2820],
 ] as const;
 
-export function createSyntheticKantoTariffs(): FareEngineTariffProvider[] {
+export function createSyntheticKantoTariffs(): TariffProvider[] {
   const scopes: JrOperatorScope[] = ['jr-east', 'jr-central'];
   return VERSIONS.flatMap(({ ruleVersion, validFrom, validTo }, versionIndex) =>
     scopes.map(
-      (operatorScope): FareEngineTariffProvider => ({
+      (operatorScope): TariffProvider => ({
         id: `kanto-demo-${operatorScope}-${ruleVersion}`,
         operatorScope,
         ruleVersion,
@@ -67,7 +62,7 @@ export function createSyntheticKantoTariffs(): FareEngineTariffProvider[] {
 export function lookupSyntheticSurcharge({
   request,
   actualPath,
-}: FareBillingContext): FareSurcharge | FareRejection {
+}: FareBillingContext): SurchargeQuoteResult {
   const type = request.surchargeType;
   if (
     type === 'gran_class' &&

@@ -136,6 +136,11 @@ export interface StationHubDataset {
   externalLinks?: StationExternalLink[];
   sources: SourceRecord[];
   disclaimer: LocalizedNames;
+  /**
+   * Model axis that points north on the plan (`'x-'`: north is towards −x). Absent means
+   * the orientation has not been verified; consumers must not draw a north arrow then.
+   */
+  planNorth?: PlatformSide;
 }
 
 export type StationRouteMode = 'standard' | 'step_free';

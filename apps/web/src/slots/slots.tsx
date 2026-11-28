@@ -1,10 +1,10 @@
 /**
  * Mount points for packages built in parallel during Wave 1 (P0-S1 / P0-S2).
  *
- * `apps/web` may only depend on `@senkiro/contracts` and `@senkiro/ui-kit` in Wave 1, so
- * the shell exposes typed slots instead of importing `@senkiro/station-3d` or
- * `@senkiro/local-db`. The coordinator fills `DEFAULT_SHELL_SLOTS` in `registry.ts` on the
- * integration branch; until then every slot renders an honest "not connected" placeholder.
+ * The shell itself never imports `@senkiro/station-3d` or `@senkiro/local-db`: it exposes
+ * typed slots, and `registry.ts` fills them with lazily loaded adapters (P0-W2), so the
+ * heavy 3D and SQLite code stays out of the shell chunk. A missing slot renders an honest
+ * "not connected" placeholder, and tests can inject their own slots.
  */
 import type { AppHub, AppTheme, Locale } from '@senkiro/contracts';
 import {
@@ -29,6 +29,7 @@ export interface StationExplorerSlotProps {
   stepFree: boolean;
   onLevelChange: (level: string | null) => void;
   onSelectionChange: (selection: string | null) => void;
+  onStepFreeChange: (stepFree: boolean) => void;
 }
 
 /** Props for the local SQLite status probe from `@senkiro/local-db`. */

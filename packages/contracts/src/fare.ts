@@ -4,7 +4,7 @@
  */
 import type { BaseEntity, DataNature, Provenance } from './base.ts';
 import type { SkId } from './ids.ts';
-import type { LineClass } from './track.ts';
+import type { LineClass, Station } from './track.ts';
 
 export type FareRuleCategory =
   | 'base_fare'
@@ -218,6 +218,8 @@ export interface TariffProvider {
   readonly validTo: string | null;
   readonly isSynthetic: boolean;
   readonly disclaimer: string | null;
+  /** Source records attributing the tariff table itself; merged into quote provenance. */
+  readonly sourceIds?: readonly string[];
   lookupBaseFare(input: TariffLookupInput): TariffLookupResult;
 }
 
@@ -236,8 +238,97 @@ export interface FareRulePackOutcome {
 }
 
 /**
+ * An honest refusal returned by an optional rule-pack hook. It aborts pricing with the
+ * given non-`OK` status; it can never carry an amount.
+ */
+export interface FareRuleRejection {
+  status: UnpricedFareQuoteStatus;
+  reason: string;
+  steps?: FareExplanationStep[];
+}
+
+/** Input of {@link RegionalFareRulePack.precheck}: the request and its resolved endpoints. */
+export interface FarePrecheckContext {
+  request: FareQuoteRequest;
+  origin: Station;
+  destination: Station;
+}
+
+/**
+ * Contract-owned route-search guidance returned by
+ * {@link RegionalFareRulePack.resolveRoutePreference}. It deliberately uses plain IDs and
+ * flags rather than any engine search type, so `@senkiro/contracts` stays independent of
+ * `@senkiro/domain-core`; the engine translates it into its own path-search options.
+ */
+export interface FareRulePreferencePlan {
+  /** Ordered waypoints (used only when the request names no `viaStationIds`). */
+  viaStationIds?: readonly SkId<'station'>[];
+  /** Lines whose segments the search should favour. */
+  preferredLineIds?: readonly SkId<'line'>[];
+  /** Search weight factor for preferred lines (engine default when omitted). */
+  preferredLineWeightFactor?: number;
+  /** Segments whose every line is avoided are skipped. */
+  avoidedLineIds?: readonly SkId<'line'>[];
+  allowShinkansen?: boolean;
+  allowLocalLines?: boolean;
+  /** Every traversed segment must carry this fare-zone tag. */
+  requireFareZoneTag?: string;
+}
+
+/** Context handed to hooks that run once the billing path is known. */
+export interface FareBillingContext extends FareRulePackContext {
+  billedPath: ResolvedPath;
+}
+
+/** Result of {@link RegionalFareRulePack.computeValidityAndStopover}. `null` = not established. */
+export interface FareValidityResult {
+  validityDays: number | null;
+  stopoverAllowed: boolean | null;
+  rejection?: FareRuleRejection;
+}
+
+/** One distance unit priced against one operator scope's tariff. */
+export interface FarePricingUnit {
+  /** Must match a {@link TariffProvider.operatorScope}. */
+  operatorScope: string;
+  /** Operator shown on the breakdown line; `null` for a through (multi-operator) unit. */
+  operatorId: SkId<'operator'> | null;
+  operatingKm: number;
+  fareZoneTags: readonly string[];
+}
+
+/** A priced seat/limited-express charge with provenance. */
+export interface PricedSurchargeQuote {
+  status: 'OK';
+  item: FareBreakdownItem;
+  disclaimer: string | null;
+  steps?: FareExplanationStep[];
+  sourceIds?: readonly string[];
+}
+
+/** {@link RegionalFareRulePack.lookupSurcharge}: a priced charge or an honest refusal. */
+export type SurchargeQuoteResult = PricedSurchargeQuote | FareRuleRejection;
+
+/** Narrow any optional-hook result to its refusal branch. */
+export function isFareRuleRejection(value: unknown): value is FareRuleRejection {
+  if (typeof value !== 'object' || value === null || !('status' in value)) {
+    return false;
+  }
+  const { status, reason } = value as { status: unknown; reason?: unknown };
+  return (
+    typeof status === 'string' &&
+    status !== 'OK' &&
+    (FARE_QUOTE_STATUSES as readonly string[]).includes(status) &&
+    typeof reason === 'string'
+  );
+}
+
+/**
  * Region/operator plug-in carrying suburban-area, Article 69, specific-fare and seat
  * surcharge rules, so the fare engine itself contains no regional hard-coding.
+ *
+ * The hooks below `evaluate` are optional extensions (promoted from P0-S1); a pack written
+ * against the original v1.0 surface remains valid as-is.
  */
 export interface RegionalFareRulePack {
   readonly id: string;
@@ -251,6 +342,18 @@ export interface RegionalFareRulePack {
   readonly tariffProviders: readonly TariffProvider[];
   appliesTo(context: FareRulePackContext): boolean;
   evaluate(context: FareRulePackContext): FareRulePackOutcome;
+  /** Checks before path resolution (ticket type, coverage); `null` = proceed. */
+  precheck?(context: FarePrecheckContext): FareRuleRejection | null;
+  /** Resolve `pack:*` and default preferences; `null` = no special guidance. */
+  resolveRoutePreference?(
+    request: FareQuoteRequest,
+  ): FareRulePreferencePlan | FareRuleRejection | null;
+  /** Active rule version on the travel date within this registration; `null` = none in force. */
+  resolveRuleVersion?(travelDate: string): string | null;
+  computeValidityAndStopover?(context: FareBillingContext): FareValidityResult;
+  /** Through or per-operator distance units; the engine defaults to one unit per operator. */
+  pricingUnits?(context: FareBillingContext): readonly FarePricingUnit[];
+  lookupSurcharge?(context: FareBillingContext): SurchargeQuoteResult;
 }
 
 export interface PassProduct extends BaseEntity<'pass'> {

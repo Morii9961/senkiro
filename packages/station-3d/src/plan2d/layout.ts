@@ -344,3 +344,48 @@ export function panelProjection(
     },
   };
 }
+
+/**
+ * Resolve a deep-link `level` value (a level ID such as `sk:level:umeda:jr-b1f`, or a floor
+ * label such as `B1F`) to a floor ordinal. Unknown or ambiguous values give `null` (all
+ * floors), so a stale link never lands on a wrong floor.
+ */
+export function floorForLevelParam(
+  levels: readonly StationLevel[],
+  param: string | null | undefined,
+): number | null {
+  if (param === null || param === undefined || param === '') {
+    return null;
+  }
+  const byId = levels.find((level) => level.id === param);
+  if (byId) {
+    return byId.ordinal;
+  }
+  const floors = floorsTopDown(levels);
+  const byFloorLabel = floors.filter((ordinal) => floorLabel(levels, ordinal) === param);
+  if (byFloorLabel.length === 1) {
+    return byFloorLabel[0] ?? null;
+  }
+  const byAnyLabel = [
+    ...new Set(levels.filter((level) => level.label === param).map((level) => level.ordinal)),
+  ];
+  return byAnyLabel.length === 1 ? (byAnyLabel[0] ?? null) : null;
+}
+
+/**
+ * The `level` value to write for a floor: its printed label when that label maps back to the
+ * same floor, otherwise the ID of the first level record on it. `null` for all floors.
+ */
+export function levelParamForFloor(
+  levels: readonly StationLevel[],
+  ordinal: number | null,
+): string | null {
+  if (ordinal === null) {
+    return null;
+  }
+  const label = floorLabel(levels, ordinal);
+  if (label !== '' && floorForLevelParam(levels, label) === ordinal) {
+    return label;
+  }
+  return levels.find((level) => level.ordinal === ordinal)?.id ?? null;
+}

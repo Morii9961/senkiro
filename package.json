@@ -16,7 +16,8 @@
     "lint": "biome lint --error-on-warnings .",
     "format": "biome format --write .",
     "check": "biome check --error-on-warnings . && turbo run typecheck",
-    "test": "turbo run test"
+    "test": "turbo run test",
+    "test:e2e": "pnpm --filter @senkiro/web test:e2e"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.6.9",

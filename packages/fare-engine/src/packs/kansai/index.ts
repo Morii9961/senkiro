@@ -1,7 +1,7 @@
-import type { FareEngineRulePack } from '../../pack.ts';
+import type { RegionalFareRulePack } from '@senkiro/contracts';
 
 /** Phase 2 supplies the regional rules and tariff data. */
-export function createKansaiPlaceholderPack(): FareEngineRulePack {
+export function createKansaiPlaceholderPack(): RegionalFareRulePack {
   const status = 'UNSUPPORTED';
   const reason = 'Kansai fare rules and tariffs are unavailable until Phase 2.';
   return {
