@@ -82,19 +82,19 @@ function createGantryCraneGeometry(): THREE.BufferGeometry {
     b.translate(x, y, z);
     parts.push(b.toNonIndexed());
   };
-  // Four portal legs (height 34m)
-  for (const lx of [-5.5, 5.5]) {
-    for (const lz of [-7.5, 7.5]) {
-      push(1.4, 34, 1.4, lx, 17, lz);
+  // Four portal legs (height 38m)
+  for (const lx of [-6.0, 6.0]) {
+    for (const lz of [-8.0, 8.0]) {
+      push(1.8, 38, 1.8, lx, 19, lz);
     }
   }
   // Upper portal frame & machinery house
-  push(13, 3.2, 17, 0, 32, 0);
-  push(8.5, 5.5, 11, 0, 36.5, 0);
-  // Long cantilevered seaside + landside boom (48m span along +X)
-  push(48, 2.2, 4.2, 8, 28, 0);
+  push(15, 3.8, 18.5, 0, 35.5, 0);
+  push(9.5, 6.2, 12, 0, 40.5, 0);
+  // Long cantilevered seaside + landside boom (54m span along +X)
+  push(54, 2.8, 4.8, 9, 31, 0);
   // Top A-frame apex & stay tie beams
-  push(2.0, 12, 12, 0, 44, 0);
+  push(2.4, 13.5, 13.5, 0, 48.5, 0);
 
   const merged = mergeGeometries(parts, false)!;
   parts.forEach((p) => p.dispose());
@@ -180,21 +180,67 @@ export function buildTokyoBayWaterfront(
   if (cutawayUniforms) {
     injectRadialCutaway(forestParkMat, cutawayUniforms, 'terrain');
   }
-  const seaForestGeom = buildFlatWorldPoly(
-    [
-      [3150, 8850],
-      [4350, 8880],
-      [4360, 9840],
-      [3120, 9820],
-    ],
-    -0.60,
-  );
+  const seaForestPoly: [number, number][] = [
+    [3180, 8920],
+    [3460, 8860],
+    [3820, 8890],
+    [4180, 8870],
+    [4340, 9020],
+    [4370, 9340],
+    [4320, 9680],
+    [4120, 9820],
+    [3760, 9780],
+    [3420, 9830],
+    [3170, 9690],
+    [3120, 9320],
+  ];
+  const seaForestGeom = buildFlatWorldPoly(seaForestPoly, -0.60);
   if (seaForestGeom) {
     const seaForestMesh = new THREE.Mesh(seaForestGeom, forestParkMat);
     seaForestMesh.name = 'tokyo-bay-sea-forest-park';
     seaForestMesh.receiveShadow = true;
     seaForestMesh.renderOrder = 2;
     group.add(seaForestMesh);
+  }
+
+  const TREE_GREENS = [0x2e4a2b, 0x3a5a34, 0x456339, 0x294127] as const;
+  const forestTreeMat = new THREE.MeshStandardMaterial({
+    color: isDark ? 0x263b29 : 0xffffff,
+    roughness: 0.94,
+    metalness: 0.0,
+    clippingPlanes: clipPlanes,
+  });
+  if (lightingUniforms) {
+    injectBuildingLightingShader(forestTreeMat, lightingUniforms, {
+      isGlazed: false,
+      fadeWithDistance: false,
+    });
+  }
+  if (cutawayUniforms) {
+    injectRadialCutaway(forestTreeMat, cutawayUniforms, 'terrain');
+  }
+  const treeRecords: {
+    x: number;
+    z: number;
+    sx: number;
+    sy: number;
+    sz: number;
+    rotY: number;
+    color: number;
+  }[] = [];
+  for (let gx = 0; gx < 20 && treeRecords.length < 210; gx++) {
+    for (let gz = 0; gz < 15 && treeRecords.length < 210; gz++) {
+      const tx = 3145 + (gx + 0.15 + hashDet(gx * 47, gz * 61, 811) * 0.7) * 60;
+      const tz = 8885 + (gz + 0.15 + hashDet(gx * 53, gz * 71, 823) * 0.7) * 62;
+      if (!pointInPoly(tx, tz, seaForestPoly)) continue;
+      if (hashDet(tx, tz, 829) < 0.08) continue;
+      const sx = 8 + hashDet(tx, tz, 839) * 8;
+      const sy = 4.8 + hashDet(tx, tz, 853) * 4.7;
+      const sz = 8 + hashDet(tx, tz, 859) * 8;
+      const rotY = hashDet(tx, tz, 863) * Math.PI * 2;
+      const color = TREE_GREENS[Math.floor(hashDet(tx, tz, 877) * TREE_GREENS.length)]!;
+      treeRecords.push({ x: tx, z: tz, sx, sy, sz, rotY, color });
+    }
   }
 
   // ---- Materials for 3D Port & Depot Architecture ----
@@ -321,13 +367,13 @@ export function buildTokyoBayWaterfront(
 
       for (
         let x = minX + 24;
-        x < maxX - 24 && blockContainers < maxBlockContainers && containerRecords.length < 4200;
+        x < maxX - 24 && blockContainers < maxBlockContainers && containerRecords.length < 6800;
         x += stepX
       ) {
         if (Math.abs((x - minX) % 135) < 22) continue;
         for (
           let z = minZ + 20;
-          z < maxZ - 20 && blockContainers < maxBlockContainers && containerRecords.length < 4200;
+          z < maxZ - 20 && blockContainers < maxBlockContainers && containerRecords.length < 6800;
           z += stepZ
         ) {
           if (Math.abs((z - minZ) % 135) < 20) continue;
@@ -337,7 +383,7 @@ export function buildTokyoBayWaterfront(
           const r = hashDet(x, z, bi + 7);
           if (r < 0.26) continue; // realistic truck aisles
           placedPortCells.add(ck);
-          if (r > 0.87 && depotHallRecords.length < 380) {
+          if (r > 0.87 && depotHallRecords.length < 520) {
             // Port logistics warehouse shed
             depotHallRecords.push({
               x,
@@ -397,7 +443,7 @@ export function buildTokyoBayWaterfront(
         for (let z = minZ + 70; z < maxZ - 70; z += stepZ) {
           if (!pointInPoly(x, z, blk.pts)) continue;
           const r = hashDet(x, z, bi + 91);
-          if (r < 0.36 && depotHallRecords.length < 380) {
+          if (r < 0.36 && depotHallRecords.length < 520) {
             // Long-span railway maintenance inspection shed
             depotHallRecords.push({
               x,
@@ -438,19 +484,23 @@ export function buildTokyoBayWaterfront(
       rowAngle: number;
       warehouseProb: number;
       maxContainers: number;
+      reverseX?: boolean;
       skipPredicate?: (x: number, z: number) => boolean;
     },
   ) => {
     let addedContainers = 0;
+    const xStep = opts.reverseX ? -opts.stepX : opts.stepX;
     for (
-      let x = bounds.x0;
-      x <= bounds.x1 && addedContainers < opts.maxContainers && containerRecords.length < 4200;
-      x += opts.stepX
+      let x = opts.reverseX ? bounds.x1 : bounds.x0;
+      (opts.reverseX ? x >= bounds.x0 : x <= bounds.x1) &&
+      addedContainers < opts.maxContainers &&
+      containerRecords.length < 6800;
+      x += xStep
     ) {
       if (Math.abs((x - bounds.x0) % 140) < opts.stepX * 0.8) continue;
       for (
         let z = bounds.z0;
-        z <= bounds.z1 && addedContainers < opts.maxContainers && containerRecords.length < 4200;
+        z <= bounds.z1 && addedContainers < opts.maxContainers && containerRecords.length < 6800;
         z += opts.stepZ
       ) {
         if (Math.abs((z - bounds.z0) % 140) < opts.stepZ * 0.8) continue;
@@ -463,7 +513,7 @@ export function buildTokyoBayWaterfront(
         if (r < 0.24) continue;
         placedPortCells.add(ck);
 
-        if (r > 1.0 - opts.warehouseProb && depotHallRecords.length < 380) {
+        if (r > 1.0 - opts.warehouseProb && depotHallRecords.length < 520) {
           depotHallRecords.push({
             x,
             z,
@@ -512,11 +562,12 @@ export function buildTokyoBayWaterfront(
       oiIsl.pts,
       { x0: -1400, x1: 620, z0: 4120, z1: 10720 },
       {
-        stepX: 32,
-        stepZ: 24,
+        reverseX: true,
+        stepX: 30,
+        stepZ: 22,
         rowAngle: Math.PI * 0.5,
-        warehouseProb: 0.14,
-        maxContainers: 650,
+        warehouseProb: 0.16,
+        maxContainers: 1150,
         skipPredicate: (x, z) => x <= -620 && z >= 7000,
       },
     );
@@ -538,17 +589,17 @@ export function buildTokyoBayWaterfront(
       aomiIsl.pts,
       { x0: 550, x1: 2650, z0: 6450, z1: 8750 },
       {
-        stepX: 34,
-        stepZ: 24,
+        stepX: 30,
+        stepZ: 22,
         rowAngle: Math.PI * 0.5,
-        warehouseProb: 0.15,
-        maxContainers: 580,
+        warehouseProb: 0.16,
+        maxContainers: 950,
       },
     );
     // Northern Odaiba commercial & Big Sight/exhibition waterfront masses
     let odaibaBlocksAdded = 0;
-    for (let x = 200; x <= 2500 && odaibaBlocksAdded < 14 && depotHallRecords.length < 380; x += 210) {
-      for (let z = 5350; z <= 6250 && odaibaBlocksAdded < 14 && depotHallRecords.length < 380; z += 195) {
+    for (let x = 200; x <= 2500 && odaibaBlocksAdded < 22 && depotHallRecords.length < 520; x += 210) {
+      for (let z = 5350; z <= 6250 && odaibaBlocksAdded < 22 && depotHallRecords.length < 520; z += 195) {
         const jx = x + (hashDet(x, z, 631) - 0.5) * 65;
         const jz = z + (hashDet(x, z, 643) - 0.5) * 55;
         if (!pointInPoly(jx, jz, aomiIsl.pts as [number, number][])) continue;
@@ -579,16 +630,16 @@ export function buildTokyoBayWaterfront(
       cbIsl.pts,
       { x0: 2400, x1: 4250, z0: 7680, z1: 8450 },
       {
-        stepX: 32,
-        stepZ: 24,
+        stepX: 30,
+        stepZ: 22,
         rowAngle: 0,
-        warehouseProb: 0.10,
-        maxContainers: 420,
+        warehouseProb: 0.12,
+        maxContainers: 650,
       },
     );
     // Logistics sheds behind container terminal (west of Sea Forest Park)
-    for (let x = 2380; x <= 3040 && depotHallRecords.length < 380; x += 145) {
-      for (let z = 8560; z <= 9150 && depotHallRecords.length < 380; z += 110) {
+    for (let x = 2380; x <= 3040 && depotHallRecords.length < 520; x += 145) {
+      for (let z = 8560; z <= 9150 && depotHallRecords.length < 520; z += 110) {
         if (!pointInPoly(x, z, cbIsl.pts as [number, number][])) continue;
         depotHallRecords.push({
           x,
@@ -696,6 +747,29 @@ export function buildTokyoBayWaterfront(
     group.add(parkedTrainInst);
   }
 
+  // Instanced coastal tree canopies inside Sea Forest Park (1 draw call)
+  let seaForestTreesInst: THREE.InstancedMesh | null = null;
+  if (treeRecords.length > 0) {
+    const geom = new THREE.IcosahedronGeometry(1, 0);
+    seaForestTreesInst = new THREE.InstancedMesh(geom, forestTreeMat, treeRecords.length);
+    seaForestTreesInst.name = 'tokyo-bay-sea-forest-trees';
+    seaForestTreesInst.receiveShadow = true;
+    for (let i = 0; i < treeRecords.length; i++) {
+      const tr = treeRecords[i]!;
+      dummy.position.set(tr.x, -0.55 + tr.sy * 0.42, tr.z);
+      dummy.rotation.set(0, tr.rotY, 0);
+      dummy.scale.set(tr.sx, tr.sy, tr.sz);
+      dummy.updateMatrix();
+      seaForestTreesInst.setMatrixAt(i, dummy.matrix);
+      tmpColor.setHex(tr.color);
+      seaForestTreesInst.setColorAt(i, tmpColor);
+    }
+    seaForestTreesInst.instanceMatrix.needsUpdate = true;
+    if (seaForestTreesInst.instanceColor) seaForestTreesInst.instanceColor.needsUpdate = true;
+    seaForestTreesInst.computeBoundingSphere();
+    group.add(seaForestTreesInst);
+  }
+
   return {
     group,
     setTheme(nextDark: boolean): void {
@@ -703,9 +777,10 @@ export function buildTokyoBayWaterfront(
       craneMat.color.setHex(nextDark ? 0x7a3430 : 0xa84840);
       depotHallMat.color.setHex(nextDark ? 0x475569 : 0xc8cfd8);
       forestParkMat.color.setHex(nextDark ? 0x16241b : 0x46633d);
+      forestTreeMat.color.setHex(nextDark ? 0x263b29 : 0xffffff);
     },
     setOpacity(opacity: number, isTranslucent: boolean): void {
-      for (const m of [...detailMaterials, forestParkMat]) {
+      for (const m of [...detailMaterials, forestParkMat, forestTreeMat]) {
         const need = m.transparent !== isTranslucent;
         m.transparent = isTranslucent;
         m.opacity = opacity;
@@ -718,11 +793,13 @@ export function buildTokyoBayWaterfront(
       craneInst?.dispose();
       depotInst?.dispose();
       parkedTrainInst?.dispose();
+      seaForestTreesInst?.dispose();
       group.traverse((o) => {
         if (o instanceof THREE.Mesh) o.geometry.dispose();
       });
       for (const m of detailMaterials) m.dispose();
       forestParkMat.dispose();
+      forestTreeMat.dispose();
     },
   };
 }

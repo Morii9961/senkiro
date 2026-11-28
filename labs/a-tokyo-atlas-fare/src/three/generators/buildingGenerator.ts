@@ -1409,7 +1409,7 @@ export class CityChunkManager {
     }
 
     const combined = sourceBuildings.slice();
-    const targetCount = Math.round((meta.hub ? 1580 : 1320) * (0.22 + 0.78 * chunkFade));
+    const targetCount = Math.round((meta.hub ? 2250 : 1950) * (0.14 + 0.86 * chunkFade));
     if (combined.length >= targetCount) {
       return { meta, buildings: sourceBuildings };
     }
@@ -1421,10 +1421,10 @@ export class CityChunkManager {
     // Stratified shuffled candidate sampling across the entire 2km x 2km chunk (eliminates strip/cluster bands!)
     const cellM =
       chunkProfile.typology === 'cbd_highrise'
-        ? 30
+        ? 26
         : chunkProfile.typology === 'commercial_hub'
-          ? 26
-          : 22;
+          ? 22
+          : 18;
     const gridN = Math.floor((chunkSize - 24) / cellM);
     const totalCells = gridN * gridN;
 
@@ -1467,7 +1467,7 @@ export class CityChunkManager {
           Math.sin(cx * 0.0029 + Math.cos(cz * 0.0023) * 2.2) *
           Math.cos(cz * 0.0026 - Math.sin(cx * 0.0019) * 1.8);
       const rFade = hashInfill(gx, gz, salt ^ 11);
-      const keepProb = ptFade * (0.68 + 0.52 * clusterNoise) * (1.0 - profile.courtyardVoidProb * 0.85);
+      const keepProb = ptFade * (0.76 + 0.44 * clusterNoise) * (1.0 - profile.courtyardVoidProb * 0.65);
       if (rFade > keepProb) continue;
 
       const baseAngle = this.infillMask.sampleRoadAngle(cx, cz);

@@ -277,17 +277,30 @@ function lerp(a: number, b: number, t: number): number {
  * Smooth, domain-warped organic density falloff around Tokyo 23 wards (avoids rectangular cutoff).
  */
 export function sample23WardFade(x: number, z: number): number {
-  const dx = (x + 1600) / 11400;
-  const dz = (z + 200) / 10600;
+  const dx = (x + 1400) / 11200;
+  const dz = (z + 500) / 11000;
   const ang = Math.atan2(dz, dx);
   const warp =
     1.0 +
-    0.09 * Math.sin(ang * 2.0 + 0.6) +
-    0.06 * Math.cos(ang * 3.0 - 0.9) +
-    0.04 * Math.sin(ang * 5.0 + 1.4);
+    0.055 * Math.sin(ang * 2.0 - 0.8) +
+    0.040 * Math.cos(ang * 3.0 + 0.4) +
+    0.025 * Math.sin(ang * 5.0 - 1.1);
   const normR = Math.hypot(dx, dz) / warp;
-  const t = clamp01((normR - 0.72) / 0.40);
-  return 1.0 - t * t * (3 - 2 * t);
+  const radT = clamp01((normR - 0.78) / 0.34);
+  const radialFade = 1.0 - radT * radT * (3 - 2 * radT);
+
+  // Soft wavy margin guard strictly inside actual OSM chunk bbox ([-13323..10507] x [-12121..11219])
+  // Guarantees fade hits 0.0 strictly before ANY compass data edge even at negative edgeWave troughs.
+  const edgeDistX = Math.min(x + 13200, 9850 - x);
+  const edgeDistZ = Math.min(z + 12000, 11000 - z);
+  const edgeDist = Math.min(edgeDistX, edgeDistZ);
+  const edgeWave =
+    360 * Math.sin(x * 0.00055 + z * 0.00043) +
+    220 * Math.cos(x * 0.00083 - z * 0.00067);
+  const edgeT = clamp01((edgeDist - (620 + edgeWave)) / 2400);
+  const edgeFade = edgeT * edgeT * (3 - 2 * edgeT);
+
+  return radialFade * edgeFade;
 }
 
 /**
