@@ -6,7 +6,7 @@
 
 | 项目 | 值 |
 | --- | --- |
-| 位置 | 原件 `E:\senkiro-lab-c\新宿駅_全列車時刻表.csv`（未跟踪）；构建用副本 `data/raw/legacy/`（gitignored） |
+| 位置 | `data/raw/legacy/新宿駅_全列車時刻表.csv`（gitignored，未跟踪；审计时原件位于 worktree 根目录，现已不在该处，此副本哈希与下方一致） |
 | SHA-256 | `075a0a51e52f7fa6d020be1487d0bab76b170e3be3d780720d238c3a1af94e57` |
 | 编码 | UTF-8，无 BOM，LF |
 | 记录数 | **8,567**（另有表头 1 行） |
