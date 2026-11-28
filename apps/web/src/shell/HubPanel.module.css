@@ -1,0 +1,48 @@
+.panel {
+  --sk-drawer-width: min(32rem, calc(100vw - var(--sk-dock-width, 22rem) - 3rem));
+}
+
+.eyebrow {
+  color: var(--sk-color-text-subtle);
+  font-size: var(--sk-text-2xs);
+  font-weight: 700;
+  letter-spacing: var(--sk-tracking-sign);
+}
+
+.status {
+  display: inline-block;
+  margin: 0 0 var(--sk-space-3);
+  padding: 2px var(--sk-space-2);
+  border: var(--sk-hairline) dashed var(--sk-color-unknown-border);
+  border-radius: var(--sk-radius-sm);
+  color: var(--sk-color-unknown);
+  font-size: var(--sk-text-xs);
+  font-weight: 600;
+}
+
+.stage {
+  display: grid;
+  place-items: center;
+  min-height: 16rem;
+  border: var(--sk-hairline) solid var(--sk-color-hairline);
+  border-radius: var(--sk-radius-md);
+  background:
+    linear-gradient(var(--sk-color-grid-minor) 1px, transparent 1px) 0 0 / 24px 24px,
+    linear-gradient(90deg, var(--sk-color-grid-minor) 1px, transparent 1px) 0 0 / 24px 24px,
+    var(--sk-color-surface-sunken);
+}
+
+.placeholder {
+  max-width: 24rem;
+  margin: 0;
+  padding: var(--sk-space-4);
+  color: var(--sk-color-text-muted);
+  font-size: var(--sk-text-sm);
+  text-align: center;
+}
+
+@media (max-width: 767px) {
+  .stage {
+    min-height: 12rem;
+  }
+}
