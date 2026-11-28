@@ -100,6 +100,25 @@ importers:
         specifier: ^4.6.7
         version: 4.6.7
 
+  packages/data-pipeline:
+    dependencies:
+      '@senkiro/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@senkiro/domain-core':
+        specifier: workspace:*
+        version: link:../domain-core
+      geojson-vt:
+        specifier: ^4.0.2
+        version: 4.0.3
+      pmtiles:
+        specifier: ^4.3.0
+        version: 4.5.0
+    devDependencies:
+      '@types/node':
+        specifier: ^24.19.4
+        version: 24.19.4
+
   packages/data-stations:
     dependencies:
       '@senkiro/contracts':
@@ -1234,6 +1253,9 @@ packages:
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
     os: [darwin]
 
+  geojson-vt@4.0.3:
+    resolution: {integrity: sha512-jR1MwkLaZGa8Zftct9ZFruyWFrdl9ZyD2OliXNy9Qq5bBPeg5wHVpBQF9p5GjnicSDQqvBVpysxTPKmWdsfWMA==}
+
   get-nonce@1.0.1:
     resolution: {integrity: sha512-FJhYRoDaiatfEkUK8HKlicmu/3SGFD51q3itKDGoSTysQJBnfOcxU5GxnhE1E6soB76MbT0MBtnKJuXyAx+96Q==}
     engines: {node: '>=6'}
@@ -1403,6 +1425,9 @@ packages:
     resolution: {integrity: sha512-HCrVhHr5QQuwYoswEUGTb7gGp522yflbv/ST8nF4sFWGuLjQCt17Q/EubpGGSNKYn1tsTCPZxqHhHCfVURu7UA==}
     engines: {node: '>=20'}
     hasBin: true
+
+  pmtiles@4.5.0:
+    resolution: {integrity: sha512-CBeD4SoUluFziGdy/8k7FOjQxQy486n+929W/tWophauvMICpkZ26vGBWhDt/6b1FZQWNaf4jFdT/5+q0Wii5w==}
 
   postcss@8.5.34:
     resolution: {integrity: sha512-P1Qzj0XXZjMda74C7qiVnBG90UKNbyNUAOeQRBW8X63RsIMV57gevRqjnkELdwtZ/S2/uQFksJhmwuN8xShLPw==}
@@ -2405,6 +2430,8 @@ snapshots:
   fsevents@2.3.3:
     optional: true
 
+  geojson-vt@4.0.3: {}
+
   get-nonce@1.0.1: {}
 
   html-encoding-sniffer@7.0.0:
@@ -2538,6 +2565,10 @@ snapshots:
   playwright@1.64.1:
     dependencies:
       playwright-core: 1.64.1
+
+  pmtiles@4.5.0:
+    dependencies:
+      fflate: 0.8.3
 
   postcss@8.5.34:
     dependencies:
