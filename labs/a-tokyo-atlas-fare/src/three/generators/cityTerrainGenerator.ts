@@ -314,6 +314,9 @@ export class CityTerrainLayer {
         roughnessMap: this.textures.parcel.roughnessMap,
         bumpMap: this.textures.parcel.bumpMap,
         bumpScale: 0.16,
+        emissiveMap: this.textures.parcel.emissiveMap ?? null,
+        emissive: new THREE.Color(isDark ? 0xffffff : 0x000000),
+        emissiveIntensity: isDark ? 0.34 : 0.0,
         roughness: 1.0,
         metalness: 0.01,
       },
@@ -357,6 +360,9 @@ export class CityTerrainLayer {
         roughnessMap: this.textures.parcel.roughnessMap,
         bumpMap: this.textures.parcel.bumpMap,
         bumpScale: 0.14,
+        emissiveMap: this.textures.parcel.emissiveMap ?? null,
+        emissive: new THREE.Color(isDark ? 0xffffff : 0x000000),
+        emissiveIntensity: isDark ? 0.44 : 0.0,
         color: 0xffffff,
         roughness: 1.0,
         metalness: 0.01,
@@ -370,6 +376,8 @@ export class CityTerrainLayer {
         roughnessMap: this.textures.industrialPort.roughnessMap,
         bumpMap: this.textures.industrialPort.bumpMap,
         bumpScale: 0.16,
+        emissive: new THREE.Color(isDark ? 0xffcb8c : 0x000000),
+        emissiveIntensity: isDark ? 0.12 : 0.0,
         color: 0xffffff,
         roughness: 1.0,
         metalness: 0.04,
@@ -383,6 +391,9 @@ export class CityTerrainLayer {
         roughnessMap: this.textures.commercialHardscape.roughnessMap,
         bumpMap: this.textures.commercialHardscape.bumpMap,
         bumpScale: 0.14,
+        emissiveMap: this.textures.commercialHardscape.emissiveMap ?? null,
+        emissive: new THREE.Color(isDark ? 0xffffff : 0x000000),
+        emissiveIntensity: isDark ? 0.78 : 0.0,
         color: 0xffffff,
         roughness: 1.0,
         metalness: 0.03,
@@ -1138,26 +1149,36 @@ export class CityTerrainLayer {
     this.landuseResidentialMat.color.setHex(0xffffff);
     this.landuseCommercialMat.color.setHex(0xffffff);
 
-    // Arterial, expressway, intersection & sidewalk streetlamp glow ramp during Golden Hour -> Blue Hour -> Night
-    const lampT = Math.max(0, Math.min(1, (nf - 0.20) / 0.62));
+    // Arterial, expressway, intersection, sidewalk, plaza & neighborhood night lighting ramp
+    const lampT = Math.max(0, Math.min(1, (nf - 0.16) / 0.66));
     const lampGlow = lampT * lampT * (3 - 2 * lampT);
     const lampCol = lampGlow > 0.002 ? 0xffffff : 0x000000;
     this.trunkRoadMaterial.emissive.setHex(lampCol);
-    this.trunkRoadMaterial.emissiveIntensity = lampGlow * 0.64;
+    this.trunkRoadMaterial.emissiveIntensity = lampGlow * 1.35;
     this.elevatedRoadMaterial.emissive.setHex(lampCol);
-    this.elevatedRoadMaterial.emissiveIntensity = lampGlow * 0.58;
+    this.elevatedRoadMaterial.emissiveIntensity = lampGlow * 1.20;
     this.primaryRoadMaterial.emissive.setHex(lampCol);
-    this.primaryRoadMaterial.emissiveIntensity = lampGlow * 0.50;
+    this.primaryRoadMaterial.emissiveIntensity = lampGlow * 1.15;
     this.secondaryRoadMaterial.emissive.setHex(lampCol);
-    this.secondaryRoadMaterial.emissiveIntensity = lampGlow * 0.36;
+    this.secondaryRoadMaterial.emissiveIntensity = lampGlow * 0.88;
     this.tertiaryRoadMaterial.emissive.setHex(lampCol);
-    this.tertiaryRoadMaterial.emissiveIntensity = lampGlow * 0.22;
+    this.tertiaryRoadMaterial.emissiveIntensity = lampGlow * 0.58;
     this.intersectionRoadMaterial.emissive.setHex(lampCol);
-    this.intersectionRoadMaterial.emissiveIntensity = lampGlow * 0.48;
+    this.intersectionRoadMaterial.emissiveIntensity = lampGlow * 1.30;
     this.sidewalkPlazaMaterial.emissive.setHex(lampCol);
-    this.sidewalkPlazaMaterial.emissiveIntensity = lampGlow * 0.22;
+    this.sidewalkPlazaMaterial.emissiveIntensity = lampGlow * 0.95;
     this.urbanPlazaMaterial.emissive.setHex(lampCol);
-    this.urbanPlazaMaterial.emissiveIntensity = lampGlow * 0.28;
+    this.urbanPlazaMaterial.emissiveIntensity = lampGlow * 0.92;
+    this.landuseCommercialMat.emissive.setHex(lampCol);
+    this.landuseCommercialMat.emissiveIntensity = lampGlow * 0.78;
+    this.landuseResidentialMat.emissive.setHex(lampCol);
+    this.landuseResidentialMat.emissiveIntensity = lampGlow * 0.44;
+    this.groundMaterial.emissive.setHex(lampCol);
+    this.groundMaterial.emissiveIntensity = lampGlow * 0.34;
+    this.landuseIndustrialMat.emissive.setHex(lampGlow > 0.002 ? 0xffcb8c : 0x000000);
+    this.landuseIndustrialMat.emissiveIntensity = lampGlow * 0.12;
+    this.railYardMaterial.emissive.setHex(lampGlow > 0.002 ? 0xdce8f8 : 0x000000);
+    this.railYardMaterial.emissiveIntensity = lampGlow * 0.14;
     this.streetLightNetwork?.setNightFactor(nf);
     this.imperialPalaceDetails?.setNightFactor(nf);
     this.airportComplexes?.setNightFactor(nf);
@@ -1234,11 +1255,8 @@ export class CityTerrainLayer {
     bindSurface(this.secondaryRoadMaterial, this.textures.roadSecondary);
     bindSurface(this.tertiaryRoadMaterial, this.textures.roadTertiary);
 
-    this.landuseResidentialMat.map = this.textures.parcel.map;
-    this.landuseResidentialMat.roughnessMap = this.textures.parcel.roughnessMap;
-    this.landuseResidentialMat.bumpMap = this.textures.parcel.bumpMap;
+    bindSurface(this.landuseResidentialMat, this.textures.parcel);
     this.landuseResidentialMat.color.setHex(0xffffff);
-    this.landuseResidentialMat.needsUpdate = true;
 
     this.landuseIndustrialMat.map = this.textures.industrialPort.map;
     this.landuseIndustrialMat.roughnessMap = this.textures.industrialPort.roughnessMap;
@@ -1246,11 +1264,8 @@ export class CityTerrainLayer {
     this.landuseIndustrialMat.color.setHex(0xffffff);
     this.landuseIndustrialMat.needsUpdate = true;
 
-    this.landuseCommercialMat.map = this.textures.commercialHardscape.map;
-    this.landuseCommercialMat.roughnessMap = this.textures.commercialHardscape.roughnessMap;
-    this.landuseCommercialMat.bumpMap = this.textures.commercialHardscape.bumpMap;
+    bindSurface(this.landuseCommercialMat, this.textures.commercialHardscape);
     this.landuseCommercialMat.color.setHex(0xffffff);
-    this.landuseCommercialMat.needsUpdate = true;
 
     this.bayMaterial.roughnessMap = this.textures.water.roughnessMap;
     this.bayMaterial.bumpMap = this.textures.water.bumpMap;
