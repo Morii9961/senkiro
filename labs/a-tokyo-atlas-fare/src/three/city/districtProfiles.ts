@@ -274,6 +274,23 @@ function lerp(a: number, b: number, t: number): number {
 }
 
 /**
+ * Smooth, domain-warped organic density falloff around Tokyo 23 wards (avoids rectangular cutoff).
+ */
+export function sample23WardFade(x: number, z: number): number {
+  const dx = (x + 1600) / 11400;
+  const dz = (z + 200) / 10600;
+  const ang = Math.atan2(dz, dx);
+  const warp =
+    1.0 +
+    0.09 * Math.sin(ang * 2.0 + 0.6) +
+    0.06 * Math.cos(ang * 3.0 - 0.9) +
+    0.04 * Math.sin(ang * 5.0 + 1.4);
+  const normR = Math.hypot(dx, dz) / warp;
+  const t = clamp01((normR - 0.72) / 0.40);
+  return 1.0 - t * t * (3 - 2 * t);
+}
+
+/**
  * Samples a smoothly blended Tokyo District Profile at world `(x, z)` in meters.
  * Correlates real district anchors, railway station proximity, and OSM landuse blocks
  * without hard chunk-boundary jumps.
@@ -365,8 +382,7 @@ export function sampleDistrictProfile(
   }
 
   // Radial density falloff from Greater Tokyo core (prevents sudden rectangular cutoff)
-  const coreDist = Math.hypot(x + 2200, z - 400);
-  const urbanDensityFactor = clamp01(1.0 - Math.max(0, coreDist - 8500) / 8500);
+  const urbanDensityFactor = sample23WardFade(x, z);
 
   const isResidential = bestTypology === 'residential_lowrise';
   const isIndustrial = bestTypology === 'industrial_bayfront';

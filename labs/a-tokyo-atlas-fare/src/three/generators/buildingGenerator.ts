@@ -34,6 +34,7 @@ import { injectRadialCutaway, type CutawayUniforms } from '../materials/cutawayS
 import type { CityLightingUniforms } from '../materials/groundShader.js';
 import {
   buildIrregularFootprintPoly,
+  sample23WardFade,
   sampleDistrictProfile,
 } from '../city/districtProfiles.js';
 import {
@@ -830,11 +831,11 @@ function hashInfill(a: number, b: number, salt: number): number {
  * landmarks, or the Imperial Palace protected green enclosure.
  */
 class UrbanInfillExclusionMask {
-  private readonly cellSize = 8;
-  private readonly minX = -11500;
-  private readonly maxX = 11500;
-  private readonly minZ = -10500;
-  private readonly maxZ = 10500;
+  private readonly cellSize = 10;
+  private readonly minX = -15500;
+  private readonly maxX = 14500;
+  private readonly minZ = -13500;
+  private readonly maxZ = 14500;
   private readonly cols: number;
   private readonly rows: number;
   private readonly blocked: Uint8Array;
@@ -1073,7 +1074,7 @@ class UrbanInfillExclusionMask {
         }
       }
     }
-    return 0;
+    return Math.sin(x * 0.00068 + z * 0.00052) * 0.58 + Math.cos(x * 0.00041 - z * 0.00073) * 0.24;
   }
 }
 
@@ -1339,10 +1340,11 @@ export class CityChunkManager {
     if (!this.infillMask) {
       return { meta, buildings: sourceBuildings };
     }
-    const chunkProfile = sampleDistrictProfile(meta.centerX, meta.centerZ);
-    if (chunkProfile.urbanDensityFactor < 0.06) {
+    const chunkFade = sample23WardFade(meta.centerX, meta.centerZ);
+    if (chunkFade < 0.03) {
       return { meta, buildings: sourceBuildings };
     }
+    const chunkProfile = sampleDistrictProfile(meta.centerX, meta.centerZ);
 
     const chunkSize = this.manifest?.chunkSizeMeters ?? 2000;
     const half = chunkSize * 0.5;
@@ -1352,14 +1354,6 @@ export class CityChunkManager {
     const maxX = meta.centerX + half - 12;
     const minZ = chunkMinZ + 12;
     const maxZ = meta.centerZ + half - 12;
-
-    const subCellSize = chunkSize / 4;
-    const subCounts = new Uint16Array(16);
-    const getSubIdx = (x: number, z: number): number => {
-      const sc = Math.max(0, Math.min(3, Math.floor((x - chunkMinX) / subCellSize)));
-      const sr = Math.max(0, Math.min(3, Math.floor((z - chunkMinZ) / subCellSize)));
-      return sr * 4 + sc;
-    };
 
     const occCell = 4;
     const occCols = Math.ceil((chunkSize + 64) / occCell);
@@ -1412,13 +1406,10 @@ export class CityChunkManager {
 
     for (const b of sourceBuildings) {
       checkOrMarkRect(b.cx, b.cz, b.w, b.d, b.a, 1.5, true);
-      subCounts[getSubIdx(b.cx, b.cz)]!++;
     }
 
     const combined = sourceBuildings.slice();
-    const targetCount = Math.round(
-      650 + chunkProfile.urbanDensityFactor * (meta.hub ? 1150 : 850),
-    );
+    const targetCount = Math.round((meta.hub ? 1580 : 1320) * (0.22 + 0.78 * chunkFade));
     if (combined.length >= targetCount) {
       return { meta, buildings: sourceBuildings };
     }
@@ -1427,85 +1418,105 @@ export class CityChunkManager {
     let nextId = 900_000_000 + Math.abs(chunkSalt % 80_000_000);
     let added = 0;
 
-    // Road-oriented variable parcel strips per 250m urban block cell (eliminates rigid world grid!)
-    const blockSize = 250;
-    const bxCount = Math.floor((maxX - minX) / blockSize);
-    const bzCount = Math.floor((maxZ - minZ) / blockSize);
+    // Stratified shuffled candidate sampling across the entire 2km x 2km chunk (eliminates strip/cluster bands!)
+    const cellM =
+      chunkProfile.typology === 'cbd_highrise'
+        ? 30
+        : chunkProfile.typology === 'commercial_hub'
+          ? 26
+          : 22;
+    const gridN = Math.floor((chunkSize - 24) / cellM);
+    const totalCells = gridN * gridN;
 
-    for (let bz = 0; bz < bzCount && combined.length < targetCount; bz++) {
-      for (let bx = 0; bx < bxCount && combined.length < targetCount; bx++) {
-        const bcx = minX + (bx + 0.5) * blockSize;
-        const bcz = minZ + (bz + 0.5) * blockSize;
-        const angle = this.infillMask.sampleRoadAngle(bcx, bcz);
-        const profile = sampleDistrictProfile(bcx, bcz);
-        if (profile.urbanDensityFactor < 0.08) continue;
-
-        const cosA = Math.cos(angle);
-        const sinA = Math.sin(angle);
-        const stepU = (profile.parcelWidthMin + profile.parcelWidthMax) * 0.52 + profile.buildingGapM;
-        const stepV = (profile.parcelDepthMin + profile.parcelDepthMax) * 0.52 + profile.buildingGapM + 2.5;
-
-        for (let lv = -110; lv <= 110 && combined.length < targetCount; lv += stepV) {
-          for (let lu = -110; lu <= 110 && combined.length < targetCount; lu += stepU) {
-            const salt = chunkSalt ^ Math.imul(bx * 31 + Math.round(lu), 19349663) ^ Math.imul(bz * 17 + Math.round(lv), 83492791);
-            const rVoid = hashInfill(bx, bz, salt ^ 11);
-            if (rVoid < profile.courtyardVoidProb) continue;
-
-            const rJitU = hashInfill(bx, bz, salt ^ 29);
-            const rJitV = hashInfill(bx, bz, salt ^ 53);
-            const rW = hashInfill(bx, bz, salt ^ 97);
-            const rD = hashInfill(bx, bz, salt ^ 149);
-            const rH = hashInfill(bx, bz, salt ^ 191);
-            const rShape = hashInfill(bx, bz, salt ^ 239);
-
-            const u = lu + (rJitU - 0.5) * 4.5;
-            const v = lv + (rJitV - 0.5) * 4.5;
-            const cx = bcx + u * cosA - v * sinA;
-            const cz = bcz + u * sinA + v * cosA;
-            if (cx < minX || cx > maxX || cz < minZ || cz > maxZ) continue;
-
-            const subIdx = getSubIdx(cx, cz);
-            if (subCounts[subIdx]! >= 125) continue;
-
-            const w = profile.parcelWidthMin + rW * (profile.parcelWidthMax - profile.parcelWidthMin);
-            const d = profile.parcelDepthMin + rD * (profile.parcelDepthMax - profile.parcelDepthMin);
-
-            if (!checkOrMarkRect(cx, cz, w, d, angle, profile.buildingGapM * 0.65, false)) continue;
-            if (!this.infillMask.isFootprintClear(cx, cz, w, d, angle)) continue;
-
-            const rawH =
-              profile.heightMin +
-              Math.pow(rH, profile.heightExponent) * (profile.heightMax - profile.heightMin);
-            const typology: 'c' | 'r' | 'o' =
-              rVoid < profile.commercialRatio
-                ? rawH >= 44 && rShape < profile.officeShare
-                  ? 'o'
-                  : 'c'
-                : 'r';
-            const h = Math.round(Math.max(6.2, Math.min(72, rawH)) * 10) / 10;
-            const irregularPoly =
-              rShape < profile.irregularFootprintProb && w >= 10 && d >= 9
-                ? buildIrregularFootprintPoly(w, d, angle, rShape * 11.3)
-                : undefined;
-
-            combined.push({
-              id: nextId++,
-              cx: Math.round(cx * 10) / 10,
-              cz: Math.round(cz * 10) / 10,
-              w: Math.round(w * 10) / 10,
-              d: Math.round(d * 10) / 10,
-              a: Math.round(angle * 1000) / 1000,
-              h,
-              hb: 'p',
-              t: typology,
-              ...(irregularPoly ? { p: irregularPoly } : {}),
-            });
-            checkOrMarkRect(cx, cz, w, d, angle, profile.buildingGapM * 0.65, true);
-            subCounts[subIdx]!++;
-            added++;
-          }
-        }
+    const gcd = (a: number, b: number): number => {
+      let x = a;
+      let y = b;
+      while (y !== 0) {
+        const t = x % y;
+        x = y;
+        y = t;
       }
+      return x;
+    };
+    let stride = Math.max(1, Math.floor(totalCells * 0.61803398875) | 1);
+    while (gcd(stride, totalCells) !== 1) {
+      stride += 2;
+    }
+    const startIdx = Math.abs(chunkSalt) % totalCells;
+
+    for (let step = 0; step < totalCells && combined.length < targetCount; step++) {
+      const idx = (startIdx + step * stride) % totalCells;
+      const gx = idx % gridN;
+      const gz = Math.floor(idx / gridN);
+      const salt =
+        chunkSalt ^
+        Math.imul(gx * 73 + 11, 19349663) ^
+        Math.imul(gz * 137 + 29, 83492791);
+
+      const cx = minX + (gx + 0.08 + hashInfill(gx, gz, salt ^ 29) * 0.84) * cellM;
+      const cz = minZ + (gz + 0.08 + hashInfill(gx, gz, salt ^ 53) * 0.84) * cellM;
+      if (cx < minX || cx > maxX || cz < minZ || cz > maxZ) continue;
+
+      const ptFade = sample23WardFade(cx, cz);
+      if (ptFade < 0.02) continue;
+
+      const profile = sampleDistrictProfile(cx, cz);
+      const clusterNoise =
+        0.5 +
+        0.5 *
+          Math.sin(cx * 0.0029 + Math.cos(cz * 0.0023) * 2.2) *
+          Math.cos(cz * 0.0026 - Math.sin(cx * 0.0019) * 1.8);
+      const rFade = hashInfill(gx, gz, salt ^ 11);
+      const keepProb = ptFade * (0.68 + 0.52 * clusterNoise) * (1.0 - profile.courtyardVoidProb * 0.85);
+      if (rFade > keepProb) continue;
+
+      const baseAngle = this.infillMask.sampleRoadAngle(cx, cz);
+      const rAng = hashInfill(gx, gz, salt ^ 71);
+      const cornerRot = rAng > 0.74 ? Math.PI * 0.5 : 0;
+      const angle = baseAngle + cornerRot + (hashInfill(gx, gz, salt ^ 83) - 0.5) * 0.14;
+
+      const rW = hashInfill(gx, gz, salt ^ 97);
+      const rD = hashInfill(gx, gz, salt ^ 149);
+      const rH = hashInfill(gx, gz, salt ^ 191);
+      const rShape = hashInfill(gx, gz, salt ^ 239);
+
+      const w = profile.parcelWidthMin + rW * (profile.parcelWidthMax - profile.parcelWidthMin);
+      const d = profile.parcelDepthMin + rD * (profile.parcelDepthMax - profile.parcelDepthMin);
+
+      if (!checkOrMarkRect(cx, cz, w, d, angle, Math.max(1.8, profile.buildingGapM * 0.65), false)) {
+        continue;
+      }
+      if (!this.infillMask.isFootprintClear(cx, cz, w, d, angle)) continue;
+
+      const rawH =
+        (profile.heightMin + Math.pow(rH, profile.heightExponent) * (profile.heightMax - profile.heightMin)) *
+        (0.64 + 0.36 * ptFade);
+      const typology: 'c' | 'r' | 'o' =
+        rFade < profile.commercialRatio * ptFade
+          ? rawH >= 42 && rShape < profile.officeShare
+            ? 'o'
+            : 'c'
+          : 'r';
+      const h = Math.round(Math.max(5.8, Math.min(68, rawH)) * 10) / 10;
+      const irregularPoly =
+        rShape < profile.irregularFootprintProb && w >= 9.5 && d >= 8.5
+          ? buildIrregularFootprintPoly(w, d, angle, rShape * 11.3)
+          : undefined;
+
+      combined.push({
+        id: nextId++,
+        cx: Math.round(cx * 10) / 10,
+        cz: Math.round(cz * 10) / 10,
+        w: Math.round(w * 10) / 10,
+        d: Math.round(d * 10) / 10,
+        a: Math.round(angle * 1000) / 1000,
+        h,
+        hb: 'p',
+        t: typology,
+        ...(irregularPoly ? { p: irregularPoly } : {}),
+      });
+      checkOrMarkRect(cx, cz, w, d, angle, Math.max(1.8, profile.buildingGapM * 0.65), true);
+      added++;
     }
 
     if (added === 0) return { meta, buildings: sourceBuildings };
@@ -1529,7 +1540,16 @@ export class CityChunkManager {
       const res = await fetch(`./data/urban-chunks/${meta.file}`);
       if (!res.ok) return;
       const data = (await res.json()) as UrbanChunkData;
-      const filteredBuildings = data.buildings.filter((b) => !this.isRuntimeWaterOrExclusion(b));
+      const filteredBuildings = data.buildings.filter((b) => {
+        if (this.isRuntimeWaterOrExclusion(b)) return false;
+        const ptFade = sample23WardFade(b.cx, b.cz);
+        if (b.t !== 's' && ptFade < 0.85) {
+          const clusterN = 0.5 + 0.5 * Math.sin(b.cx * 0.0025 + b.cz * 0.0019);
+          const keepP = Math.max(0, Math.min(1, (ptFade / 0.85) * (0.72 + 0.45 * clusterN)));
+          if (hashInfill(b.id, Math.round(b.cx), 77) > keepP) return false;
+        }
+        return true;
+      });
       const enriched = this.synthesizeChunkInfill(meta, filteredBuildings);
       const built = this.buildChunkLod1(enriched.meta, enriched.buildings);
       this.loaded.set(meta.key, built);

@@ -8,8 +8,10 @@
 
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { injectBuildingLightingShader } from '../materials/buildingLightingShader.js';
 import { injectInstancedFacadeUv, injectRadialCutaway, type CutawayUniforms } from '../materials/cutawayShader.js';
 import { generateInstancedFacadeSet } from '../materials/facadeLibrary.js';
+import type { CityLightingUniforms } from '../materials/groundShader.js';
 import type { UrbanBaseEnvironment } from '../types.js';
 import { getEffectiveRiverWidth, isSurfaceRiverVisible, pointInPoly } from './cityGeometryHelpers.js';
 import {
@@ -436,6 +438,7 @@ export function buildTokyoAirportComplexes(
   clipPlanes: THREE.Plane[],
   waterMaterial: THREE.MeshStandardMaterial,
   cutawayUniforms?: CutawayUniforms,
+  lightingUniforms?: CityLightingUniforms,
 ): AirportComplexesHandle {
   const group = new THREE.Group();
   group.name = 'tokyo-haneda-narita-airports';
@@ -540,6 +543,12 @@ export function buildTokyoAirportComplexes(
     clippingPlanes: clipPlanes,
   });
   injectInstancedFacadeUv(districtBuildingMat, nightUniform);
+  if (lightingUniforms) {
+    injectBuildingLightingShader(districtBuildingMat, lightingUniforms, {
+      isGlazed: false,
+      fadeWithDistance: false,
+    });
+  }
 
   const terrainMats = [runwayMat, apronMat, taxiwayMat, turfMat];
   const buildingMats = [
@@ -1018,18 +1027,23 @@ export function buildTokyoAirportComplexes(
       if (z < minZ) minZ = z;
       if (z > maxZ) maxZ = z;
     }
-    for (let x = minX + 55; x < maxX - 55; x += 105) {
-      for (let z = minZ + 55; z < maxZ - 55; z += 95) {
-        if (islId === 'jonanjima-keihinjima' && x > 1120) continue; // Keep Seaside Park open
-        if (!pointInPoly(x, z, isl.pts as [number, number][])) continue;
+    const stepX = 128;
+    const stepZ = 92;
+    for (let x = minX + 60; x < maxX - 60; x += stepX) {
+      for (let z = minZ + 55; z < maxZ - 55; z += stepZ) {
+        const jx = x + (hashDet(x, z, 307) - 0.5) * 36;
+        const jz = z + (hashDet(x, z, 311) - 0.5) * 36;
+        if (islId === 'jonanjima-keihinjima' && jx > 1080) continue; // Keep Seaside Park open
+        if (!pointInPoly(jx, jz, isl.pts as [number, number][])) continue;
         const r = hashDet(x, z, 313);
-        if (r < 0.22) continue;
-        const w = 52 + r * 32;
-        const d = 38 + hashDet(x, z, 337) * 26;
-        const h = 11 + hashDet(x, z, 353) * 10;
-        hangarGeoms.push(makeOrientedBox(x, z, w, h, d, -0.5, 0.09));
+        if (r < 0.38) continue; // 38% open staging-yard voids
+        const w = 42 + r * 78;
+        const d = 24 + hashDet(x, z, 337) * 30;
+        const h = 9 + hashDet(x, z, 353) * 11;
+        const rot = hashDet(x, z, 367) > 0.5 ? 0.09 : 0.09 + Math.PI * 0.5;
+        hangarGeoms.push(makeOrientedBox(jx, jz, w, h, d, -0.5, rot));
         if (r > 0.72) {
-          pushLight(x, h + 1.5, z, 0xffdfb2, 10.0, 0.72);
+          pushLight(jx, h + 1.5, jz, 0xffdfb2, 10.0, 0.72);
         }
       }
     }
@@ -1100,45 +1114,51 @@ export function buildTokyoAirportComplexes(
     [-3415, 14084, 34], // Kojiya
   ];
 
-  const otaStep = 44;
-  for (let gx = -1250; gx >= -7600 && buildingRecords.length < 11_500; gx -= otaStep) {
-    for (let gz = 10040; gz <= 17800 && buildingRecords.length < 11_500; gz += otaStep) {
+  const otaStep = 62;
+  for (let gx = -1250; gx >= -7400 && buildingRecords.length < 2_200; gx -= otaStep) {
+    for (let gz = 10050; gz <= 17600 && buildingRecords.length < 2_200; gz += otaStep) {
       const r0 = hashDet(gx, gz, 509);
-      if (r0 < 0.14) continue;
-      const cx = gx + (hashDet(gx, gz, 521) - 0.5) * 14;
-      const cz = gz + (hashDet(gx, gz, 541) - 0.5) * 14;
+      const cx = gx + (hashDet(gx, gz, 521) - 0.5) * 48;
+      const cz = gz + (hashDet(gx, gz, 541) - 0.5) * 48;
       if (isWaterBlocked(cx, cz) || isPointOnHanedaAirport(cx, cz) || isPointOnTokyoBayPort(cx, cz)) {
         continue;
       }
       if (isNearAnyPolyline(cx, cz, clearanceLines)) continue;
 
+      let minDHub = Infinity;
       let hubH = 0;
       for (const [hx, hz, maxH] of hubBoostCenters) {
         const d = Math.hypot(cx - hx, cz - hz);
+        if (d < minDHub) minDHub = d;
         if (d < 680) {
           hubH = Math.max(hubH, maxH * Math.max(0, 1 - d / 680));
         }
       }
 
+      const corridorFade = Math.exp(-Math.pow(minDHub / 1850, 2.2));
+      if (corridorFade < 0.08) continue;
+      const cl = 0.5 + 0.5 * Math.sin(cx * 0.0028 + cz * 0.0021);
+      if (r0 > corridorFade * (0.58 + 0.42 * cl)) continue;
+
       const r1 = hashDet(gx, gz, 563);
       const r2 = hashDet(gx, gz, 587);
-      const isCluster = hubH > 12;
-      const w = isCluster ? 18 + r1 * 18 : 13 + r1 * 14;
-      const d = isCluster ? 16 + r2 * 14 : 12 + r2 * 12;
-      const h = Math.round(7.5 + r0 * 14 + hubH * (0.45 + r1 * 0.55));
-      const angle = cx > -4500 ? -0.22 : 0.32;
+      const w = 14 + r1 * 18;
+      const d = 12 + r2 * 14;
+      const h = Math.max(7, Math.min(42, Math.round((7 + r0 * 14 + hubH * (0.45 + r1 * 0.55)) * (0.65 + 0.35 * corridorFade))));
+      const angle = -0.22 + (hashDet(gx, gz, 599) - 0.5) * 0.35 + (r0 > 0.7 ? Math.PI * 0.5 : 0);
       const hex = activePal[Math.floor(hashDet(gx, gz, 607) * activePal.length)]!;
       buildingRecords.push({ cx, cz, w, d, h, a: angle, hex });
     }
   }
 
   // Narita Western Approach Hotel, Logistics & Airport Town Corridor (x: 52200..54500, z: -11200..-7400)
-  for (let gx = 52200; gx <= 54480 && buildingRecords.length < 12_500; gx += 62) {
-    for (let gz = -11100; gz <= -7450 && buildingRecords.length < 12_500; gz += 58) {
+  for (let gx = 52200; gx <= 54480 && buildingRecords.length < 3_200; gx += 62) {
+    for (let gz = -11100; gz <= -7450 && buildingRecords.length < 3_200; gz += 58) {
       const r0 = hashDet(gx, gz, 701);
-      if (r0 < 0.28) continue;
       const cx = gx + (hashDet(gx, gz, 719) - 0.5) * 20;
       const cz = gz + (hashDet(gx, gz, 733) - 0.5) * 20;
+      const radialDist = Math.hypot((cx - 53500) / 1400, (cz + 9450) / 1700);
+      if (r0 > Math.exp(-radialDist * radialDist * 1.1) * 0.72) continue;
       if (isNearAnyPolyline(cx, cz, clearanceLines)) continue;
 
       const r1 = hashDet(gx, gz, 743);
