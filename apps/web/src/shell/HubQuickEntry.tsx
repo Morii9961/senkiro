@@ -2,6 +2,7 @@ import { resolveLocalizedName } from '@senkiro/contracts';
 import { FloatingCard } from '@senkiro/ui-kit';
 import { useAppSearch, useMessages, useUpdateSearch } from '../app/hooks.ts';
 import { HUBS } from '../data/hubs.ts';
+import { useShellSlots } from '../slots/slots.tsx';
 import styles from './HubQuickEntry.module.css';
 
 /**
@@ -13,6 +14,7 @@ export function HubQuickEntry() {
   const search = useAppSearch();
   const m = useMessages();
   const update = useUpdateSearch();
+  const explorerConnected = useShellSlots().stationExplorer !== undefined;
   const ordered = [...HUBS].sort(
     (a, b) => Number(b.region === search.region) - Number(a.region === search.region),
   );
@@ -31,7 +33,11 @@ export function HubQuickEntry() {
           const name = resolveLocalizedName(hub.names, search.lang);
           const active = search.hub === hub.id;
           const statusText =
-            hub.status === 'phase-1-placeholder' ? m.hubs.status.phase1 : m.hubs.status.slotPending;
+            hub.status === 'phase-1-placeholder'
+              ? m.hubs.status.phase1
+              : explorerConnected
+                ? m.hubs.status.connected
+                : m.hubs.status.slotPending;
           return (
             <li key={hub.id}>
               <button

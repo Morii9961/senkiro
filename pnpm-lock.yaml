@@ -19,13 +19,22 @@ importers:
         version: 7.0.2
       vitest:
         specifier: ^5.1.2
-        version: 5.1.2(vite@8.4.0)
+        version: 5.1.2(@types/node@24.19.4)(jsdom@31.0.1)(vite@8.4.0(@types/node@24.19.4))
 
   apps/web:
     dependencies:
       '@senkiro/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@senkiro/data-stations':
+        specifier: workspace:*
+        version: link:../../packages/data-stations
+      '@senkiro/local-db':
+        specifier: workspace:*
+        version: link:../../packages/local-db
+      '@senkiro/station-3d':
+        specifier: workspace:*
+        version: link:../../packages/station-3d
       '@senkiro/ui-kit':
         specifier: workspace:*
         version: link:../../packages/ui-kit
@@ -38,19 +47,22 @@ importers:
       react-dom:
         specifier: ^19.3.1
         version: 19.3.1(react@19.3.1)
+      three:
+        specifier: 0.187.0
+        version: 0.187.0
       zod:
         specifier: ^4.6.7
         version: 4.6.7
       zustand:
         specifier: ^5.1.0
-        version: 5.1.0(@types/react@19.3.3)(react@19.3.1)
+        version: 5.1.0(@types/react@19.3.3)(react@19.3.1)(use-sync-external-store@1.7.0(react@19.3.1))
     devDependencies:
       '@testing-library/dom':
         specifier: ^10.4.2
         version: 10.4.2
       '@testing-library/jest-dom':
         specifier: ^8.0.0
-        version: 8.0.0(@testing-library/dom@10.4.2)(vitest@5.1.2(vite@8.4.0))
+        version: 8.0.0(@testing-library/dom@10.4.2)(vitest@5.1.2(@types/node@24.19.4)(jsdom@31.0.1)(vite@8.4.0(@types/node@24.19.4)))
       '@testing-library/react':
         specifier: ^16.3.3
         version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.3))(@types/react@19.3.3)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -66,6 +78,9 @@ importers:
       '@types/react-dom':
         specifier: ^19.3.0
         version: 19.3.0(@types/react@19.3.3)
+      '@types/three':
+        specifier: 0.187.0
+        version: 0.187.0
       '@vitejs/plugin-react':
         specifier: ^6.3.0
         version: 6.3.0(vite@8.4.0(@types/node@24.19.4))
@@ -170,7 +185,7 @@ importers:
         version: 10.4.2
       '@testing-library/jest-dom':
         specifier: ^8.0.0
-        version: 8.0.0(@testing-library/dom@10.4.2)(vitest@5.1.2(vite@8.4.0))
+        version: 8.0.0(@testing-library/dom@10.4.2)(vitest@5.1.2(@types/node@24.19.4)(jsdom@31.0.1)(vite@8.4.0(@types/node@24.19.4)))
       '@testing-library/react':
         specifier: ^16.3.3
         version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.3))(@types/react@19.3.3)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -2138,7 +2153,7 @@ snapshots:
       picocolors: 1.1.1
       pretty-format: 27.5.1
 
-  '@testing-library/jest-dom@8.0.0(@testing-library/dom@10.4.2)(vitest@5.1.2(vite@8.4.0))':
+  '@testing-library/jest-dom@8.0.0(@testing-library/dom@10.4.2)(vitest@5.1.2(@types/node@24.19.4)(jsdom@31.0.1)(vite@8.4.0(@types/node@24.19.4)))':
     dependencies:
       '@adobe/css-tools': 4.5.0
       '@testing-library/dom': 10.4.2
@@ -2148,7 +2163,7 @@ snapshots:
       picocolors: 1.1.1
       redent: 3.0.0
     optionalDependencies:
-      vitest: 5.1.2(vite@8.4.0)
+      vitest: 5.1.2(@types/node@24.19.4)(jsdom@31.0.1)(vite@8.4.0(@types/node@24.19.4))
 
   '@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.3))(@types/react@19.3.3)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)':
     dependencies:
@@ -2285,7 +2300,7 @@ snapshots:
       '@rolldown/pluginutils': 1.1.1
       vite: 8.4.0(@types/node@24.19.4)
 
-  '@vitest/mocker@5.1.2(vite@8.4.0)':
+  '@vitest/mocker@5.1.2(vite@8.4.0(@types/node@24.19.4))':
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
       '@vitest/spy': 5.1.2
@@ -2687,10 +2702,10 @@ snapshots:
       fsevents: 2.3.3
       napi-windows-process-start-time: 0.1.0
 
-  vitest@5.1.2(vite@8.4.0):
+  vitest@5.1.2(@types/node@24.19.4)(jsdom@31.0.1)(vite@8.4.0(@types/node@24.19.4)):
     dependencies:
       '@types/chai': 5.2.3
-      '@vitest/mocker': 5.1.2(vite@8.4.0)
+      '@vitest/mocker': 5.1.2(vite@8.4.0(@types/node@24.19.4))
       chai: 6.3.0
       es-module-lexer: 2.3.2
       expect-type: 1.4.0
@@ -2703,6 +2718,9 @@ snapshots:
       tinyglobby: 0.2.17
       vite: 8.4.0(@types/node@24.19.4)
       why-is-node-running: 3.2.1
+    optionalDependencies:
+      '@types/node': 24.19.4
+      jsdom: 31.0.1
     transitivePeerDependencies:
       - msw
 
@@ -2730,7 +2748,8 @@ snapshots:
 
   zod@4.6.7: {}
 
-  zustand@5.1.0(@types/react@19.3.3)(react@19.3.1):
+  zustand@5.1.0(@types/react@19.3.3)(react@19.3.1)(use-sync-external-store@1.7.0(react@19.3.1)):
     optionalDependencies:
       '@types/react': 19.3.3
       react: 19.3.1
+      use-sync-external-store: 1.7.0(react@19.3.1)

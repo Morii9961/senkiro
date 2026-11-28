@@ -3,8 +3,8 @@
  *
  * Only place names live here; no station, platform or structure facts. `status` records
  * honestly whether in-station data can be shown in Phase 0:
- * - `slot-pending`: data exists in the Lab baselines and arrives through the
- *   `@senkiro/station-3d` slot once the coordinator wires it.
+ * - `station-3d`: a schematic in-station dataset is published in `@senkiro/data-stations`
+ *   and shown through the `stationExplorer` slot (wired in P0-W2).
  * - `phase-1-placeholder`: no data yet (Kyoto is built in Phase 1).
  */
 import {
@@ -16,7 +16,7 @@ import {
   makeLocalizedNames,
 } from '@senkiro/contracts';
 
-export type HubStatus = 'slot-pending' | 'phase-1-placeholder';
+export type HubStatus = 'station-3d' | 'phase-1-placeholder';
 
 export interface HubEntry {
   id: AppHub;
@@ -32,9 +32,9 @@ const NAMES: Readonly<Record<AppHub, LocalizedNames>> = {
 };
 
 const STATUS: Readonly<Record<AppHub, HubStatus>> = {
-  umeda: 'slot-pending',
+  umeda: 'station-3d',
   kyoto: 'phase-1-placeholder',
-  shinjuku: 'slot-pending',
+  shinjuku: 'station-3d',
 };
 
 export const HUBS: readonly HubEntry[] = APP_HUBS.map((id) => ({

@@ -128,3 +128,14 @@
   color: var(--sk-color-text-muted);
   font-size: var(--sk-text-sm);
 }
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sk-space-2);
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}

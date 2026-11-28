@@ -2,6 +2,10 @@
   --sk-drawer-width: min(32rem, calc(100vw - var(--sk-dock-width, 22rem) - 3rem));
 }
 
+.panelWide {
+  --sk-drawer-width: min(56rem, calc(100vw - var(--sk-dock-width, 22rem) - 3rem));
+}
+
 .eyebrow {
   color: var(--sk-color-text-subtle);
   font-size: var(--sk-text-2xs);
@@ -30,6 +34,13 @@
     linear-gradient(var(--sk-color-grid-minor) 1px, transparent 1px) 0 0 / 24px 24px,
     linear-gradient(90deg, var(--sk-color-grid-minor) 1px, transparent 1px) 0 0 / 24px 24px,
     var(--sk-color-surface-sunken);
+}
+
+.stageMounted {
+  min-width: 0;
+  overflow: hidden;
+  border: var(--sk-hairline) solid var(--sk-color-hairline);
+  border-radius: var(--sk-radius-md);
 }
 
 .placeholder {

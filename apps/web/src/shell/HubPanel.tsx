@@ -25,8 +25,13 @@ export function HubPanel({ container }: HubPanelProps) {
   }
   const hub = getHub(search.hub);
   const name = resolveLocalizedName(hub.names, search.lang);
+  const connected = hub.status !== 'phase-1-placeholder' && StationExplorer !== undefined;
   const statusText =
-    hub.status === 'phase-1-placeholder' ? m.hubs.status.phase1 : m.hubs.status.slotPending;
+    hub.status === 'phase-1-placeholder'
+      ? m.hubs.status.phase1
+      : connected
+        ? m.hubs.status.connected
+        : m.hubs.status.slotPending;
 
   let body: ReactNode;
   if (hub.status === 'phase-1-placeholder') {
@@ -48,6 +53,7 @@ export function HubPanel({ container }: HubPanelProps) {
           stepFree={search.stepFree === true}
           onLevelChange={(level) => update({ level: level ?? undefined })}
           onSelectionChange={(selection) => update({ selection: selection ?? undefined })}
+          onStepFreeChange={(stepFree) => update({ stepFree: stepFree ? true : undefined })}
         />
       </SlotBoundary>
     );
@@ -64,16 +70,20 @@ export function HubPanel({ container }: HubPanelProps) {
       side="right"
       lang={search.lang}
       container={container}
-      className={styles.panel}
+      className={connected ? `${styles.panel} ${styles.panelWide}` : styles.panel}
       eyebrow={<span className={styles.eyebrow}>HUB · {m.regions[hub.region].name}</span>}
       title={name.text}
       description={m.hubs.panelDescription}
       footer={m.brand.notOfficial}
     >
-      <p className={styles.status} data-status={hub.status}>
+      <p className={styles.status} data-status={hub.status} data-connected={connected}>
         {statusText}
       </p>
-      <div className={styles.stage} data-slot="station-explorer" data-hub={hub.id}>
+      <div
+        className={connected ? styles.stageMounted : styles.stage}
+        data-slot="station-explorer"
+        data-hub={hub.id}
+      >
         {body}
       </div>
     </DrawerPanel>
