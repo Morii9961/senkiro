@@ -29,7 +29,7 @@ flowchart LR
 | 波次 | Session | 推荐模型 | 分支（Base: `integration/phase-1`） | 建议工作树路径 | 独占路径 `ownedPaths` | 状态 | 派单书 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | **Wave 0** | **P1-Coord** | Gemini（主控） | `integration/phase-1` | `E:\SENKIRO\worktrees\integration-phase-1` | `docs/**`（仅文档与调度） | **✅ 已就绪** | [02-phase1-atlas-spec.md](../../02-phase1-atlas-spec.md) |
-| **Wave 1** | **P1-S1** `[REP-02]` | Gemini | `feat/p1-data-kansai` | `E:\Workteree\SENKIRO\p1-data-kansai` | `packages/data-pipeline/**`, `packages/data-kansai/**`, `pnpm-lock.yaml`, `docs/dispatch/reports/p1-s1-data-kansai.md` | **⏳ 已交付，待主控核验** | [p1-s1-data-kansai-brief.md](./p1-s1-data-kansai-brief.md) |
+| **Wave 1** | **P1-S1** `[REP-02]` | Gemini | `feat/p1-data-kansai` | `E:\Workteree\SENKIRO\p1-data-kansai` | `packages/data-pipeline/**`, `packages/data-kansai/**`, `pnpm-lock.yaml`, `docs/dispatch/reports/p1-s1-data-kansai.md` | **✅ 已合并验收**（`0f1e70e`，全仓 `384/384` + E2E `20/20`） | [p1-s1-data-kansai-brief.md](./p1-s1-data-kansai-brief.md) · [报告](../reports/p1-s1-data-kansai.md) |
 | **Wave 1** | **P1-S2** | Claude | `feat/p1-atlas-ui` | `E:\Workteree\SENKIRO\p1-atlas-ui` | `packages/ui-kit/**`, `apps/web/**`, `pnpm-lock.yaml`, `docs/dispatch/reports/p1-s2-atlas-ui.md` | **✅ 已合并验收**（`82ea02a`，全仓 `364/364` + E2E `20/20`） | [p1-s2-atlas-ui-brief.md](./p1-s2-atlas-ui-brief.md) · [报告](../reports/p1-s2-atlas-ui.md) |
 | **Wave 1** | **P1-S3** `[REP-01]` | GPT / Codex | `feat/p1-station-kyoto` | `E:\Workteree\SENKIRO\p1-station-kyoto` | `packages/data-stations/**`, `packages/station-3d/**`, `packages/local-db/**`, `packages/fare-engine/**`, `docs/dispatch/reports/p1-s3-station-kyoto.md` | **▶ 二期精修中** | [p1-s3-station-kyoto-brief.md](./p1-s3-station-kyoto-brief.md) · [Sol 深度指南](./p1-s3-sol-master-guide.md) |
 | **Wave 2** | **P1-W2** | Claude / Gemini | `feat/p1-w2-exit-gate` | `E:\Workteree\SENKIRO\p1-w2-exit-gate` | `apps/web/**`, `packages/data-kansai/**`, `docs/dispatch/reports/p1-w2-exit-gate.md` | **⏸ 等 Wave 1 合入** | [p1-w2-exit-gate-brief.md](./p1-w2-exit-gate-brief.md) |
@@ -81,11 +81,28 @@ flowchart LR
 - 主控在合入点清缓存复跑：Biome 220 文件 0 错 0 警，8 个项目 typecheck / build 全部通过，全仓 **364/364** 单测（`ui-kit` 31、`web` 94，其余与基线相同），Playwright **20/20**（硬件 GPU：ANGLE / RTX 4080 Laptop D3D11）。生产入口 + 静态依赖 172.7 kB gzip（预算 200 kB）。
 - 主控目视 E2E 截图：MapLibre 无字体 / 图标 / 底图服务器时离线绘出线、站、站号与 “3D” 徽章；预览夹具在地图状态栏与 Atlas 面板均标为合成数据；京都复合体条目醒目列出“不含（防误并）”。
 
-### 5.2 移交 `P1-W2` 的接线与收尾事项
+### 5.2 `P1-S1` 合入核验（2026-11-28 · 主控 Claude）
 
-1. **正式数据源接线**：按 [p1-s2 报告 §6](../reports/p1-s2-atlas-ui.md) 在 `registry.ts` 挂 `@senkiro/data-kansai` provider（导出名以 `P1-S1` 实际为准），`.pmtiles` 放 `apps/web/public/tiles/`；接线后改写或删除 `atlas.spec.ts` 中“无数据源时不加载 MapLibre chunk”一条。
+- 合入点 `0f1e70e`（`--no-ff`，来源 `feat/p1-data-kansai@1eba383`）。50 个改动文件全部落在 `ownedPaths`；无密钥、`.env`、`raw/` 或 `.zip` 入库。入库的生成物为 `packages/data-kansai/src/**/generated/*.ts`（约 3.8 MB）与 `packages/data-kansai/tiles/*.pmtiles`（共 3.6 MB），属规范 §3.1 / 派单书 M2.4 约定的随包产物。`pnpm-lock.yaml` 新增仅 `geojson-vt@4.0.3`、`pmtiles@4.5.0` 与两个新包条目，与 `P1-S2` 的改动自动合并无冲突，并通过 `pnpm install --offline --frozen-lockfile`。
+- 数据核对（主控直接加载 `@senkiro/data-kansai` 导出）：
+  - `sk:complex:kansai:kyoto` 严格为 JR西日本 / JR東海 / 近鉄 / 烏丸線 4 站；`explicitlyExcluded` 覆盖京都河原町、祇園四条、烏丸、四条、七条。`osaka-umeda` 7 站 ID 与 `data-stations/umeda` 一致；`kanto:shinjuku` 10 站。16 个关西复合体与规范 §2.3 一一对应，5 组直通 ID 与边界站与 §2.4 一致；`takeda` 排除播但线竹田。
+  - 诚实性：908 个区段 `operatingKm` 全为 `null`；32 个换乘 `walkingMinutes` 全为 `null`，6 个 `in_gate`（京都 JR西↔JR東海、新大阪 JR西↔JR東海、大阪難波 近鉄↔阪神、天神橋筋六丁目、竹田、御陵）其余 `out_of_gate`。878 站中仅 54 站带人工核对的简中 / 英文 / 假名，43 站带站号，其余为 `null`（界面回退日文原名）。
+  - 许可：关西主图只引用 KSJ N02-24（CC BY 4.0 互换）、人工核对参照（CC0）与各社官网事实（`redistribution: no`，仅事实）；ODbL 仅出现在 `kantoVerticalLayer` 与 `kanto-rail-vertical.odbl.pmtiles`，两张主图均通过 `assertOdbLIsolation`。
+- 主控在合入点清缓存复跑：Biome 265 文件 0 错 0 警，10 个项目 typecheck / build 全部通过，全仓 **384/384** 单测（新增 `data-pipeline` 8、`data-kansai` 12），Playwright **20/20**（硬件 GPU）。另以只读 KSJ 原包重跑 `pnpm --filter @senkiro/data-kansai data:build`，生成的 TS 与三个 `.pmtiles` 与入库版本**逐字节一致**（`git status` 无变化）。
+
+### 5.3 移交 `P1-W2` 的接线与收尾事项
+
+1. **正式数据源接线**：按 [p1-s2 报告 §6](../reports/p1-s2-atlas-ui.md) 在 `registry.ts` 挂 provider，`regions: ['kansai', 'kanto']`：关西懒加载 `@senkiro/data-kansai` 的 `kansaiAtlasBundle`，关东懒加载 `@senkiro/data-kansai/kanto-preview` 的 `kantoPreviewAtlasBundle`。两者的 `pmtilesUrl` / `verticalPmtilesUrl` 已写为 `/tiles/kansai-rail.pmtiles`、`/tiles/kanto-rail.pmtiles`、`/tiles/kanto-rail-vertical.odbl.pmtiles`，需把 `packages/data-kansai/tiles/*.pmtiles`（包导出 `./tiles/*.pmtiles`）复制或映射到 `apps/web` 的 `/tiles/`。接线后改写或删除 `atlas.spec.ts` 中“无数据源时不加载 MapLibre chunk”一条。
 2. **预览注入口**：`window.__SENKIRO_ATLAS_PREVIEW__` 目前在生产构建中同样生效（注入数据一律标为预览）。正式 provider 接入后决定：保留为带标注的测试入口，或限定为非生产构建。
 3. **真实瓦片与地图点击**：补浏览器内加载真实 `kansai-rail.pmtiles` 的 E2E，以及地图画布点击拾取（徽章 → `hub + complex`，站 → `station`，线 → `line`）的端到端断言。Wave 1 只跑过内联 GeoJSON 路径，点击拾取只有单测。
 4. **OPFS 回退原因**：`P1-S3` 合入后，把 `exit-gate-0.spec.ts` 内存回退用例从接受 `'unreported' | 'unsupported'` 收紧为只接受 `'unsupported'`，并完成双标签页 `pool-busy` E2E。
 5. **地图字形抽查**：截图中简中站名 `京都站（JR西日本）` 的全角括号疑似未正确绘制（MapLibre 未设 `glyphs` 时由本地 TinySDF 绘字）。接入真实数据后在三语下各截一张图复核，必要时调整标签文本或字体栈。
-6. **防误并说明的语言**：契约 `StationComplex.explicitlyExcluded[].reason` 是单语 `string`，简中界面会直接显示数据中的原文（夹具为英文）。待 `P1-S1` 核验时确认其 `reason` 的书写语言；若需三语，由主控评估是否在契约 §7 增补可选的 `reasonNames?: LocalizedNames`。
+6. **防误并说明的语言（待主控决定）**：契约 `StationComplex.explicitlyExcluded[].reason` 是单语 `string`。`P1-S1` 数据中的 `reason` 全部用简体中文书写，因此日文 / 英文界面会显示中文说明。可选方案：在契约 §7 增补可选的 `reasonNames?: LocalizedNames`（需 `P1-W2` 前由主控升级 `packages/contracts`），或 Phase 1 接受单语并在非中文界面标注“说明仅提供中文”。
+7. **关东预览区单站“复合体”**：`kantoTrackGraph` 有 401 个复合体，其中 342 个只含 1 站（沿用 Lab A 结构）。Atlas 搜索会把这些普通站归入“车站复合体”分组。`P1-W2` 在界面隐藏单站复合体，或在 `packages/data-kansai` 的关东迁移中只保留 ≥2 站的复合体（该包在 `P1-W2` 的 `ownedPaths` 内）。
+8. **两套搜索实现**：`@senkiro/data-kansai` 导出 `searchAtlasEntities`，`apps/web` 另有自己的 `features/atlas/atlas-index.ts`。`P1-W2` 以 Web 侧为准（已过防误并 E2E），并确认 Exit Gate 1 的五个搜索词在真实数据上同样区分正确。
+9. **数据块体积**：`data-kansai` 生成源码约 3.8 MB。接线后必须留在懒加载 chunk，`bundle.spec.ts` 的 200 kB 入口预算会拦截误入主块。
+
+### 5.4 不阻断、留给后续阶段的事项
+
+- `packages/data-pipeline/src/ksj-reader.ts` 的 `DEFAULT_LOCAL_RAW_DIR` 写死本机路径 `E:/SENKIRO/.local-raw-backup/...`。`data:build` 不在 CI 中运行，暂不影响；Phase 2 起改为必须提供 `SENKIRO_RAW_DIR` 或使用仓库相对的 gitignored 默认目录。
+- 关西 878 站中仅 54 站有核对过的简中 / 英文 / 假名站名，按 D-05 诚实回退日文。站名三语扩充随 `[REP-02]` 后续批次推进。

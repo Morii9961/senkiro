@@ -2,23 +2,23 @@
   "schema_version": "1.1",
   "project_id": "senkiro.main",
   "project_name": "SENKIRO",
-  "snapshot_at": "2026-11-28T23:16:00+08:00",
+  "snapshot_at": "2026-11-28T23:21:00+08:00",
   "source": {
     "branch": "integration/phase-1",
     "base_main_sha": "0f7b764f7243c864fd056844fe8f2a357bd2f662",
-    "integration_sha": "82ea02a",
+    "integration_sha": "0f1e70e",
     "tests_rerun": true,
     "basis": [
-      "integration/phase-1@82ea02a（合入 P1-S2 后）主控清缓存复跑：Biome 220 文件 0 错 0 警，8 个项目 typecheck / build 通过，Vitest 364/364",
-      "Playwright E2E 20/20（Chromium，硬件 GPU：ANGLE / RTX 4080 Laptop D3D11）；生产入口 + 静态依赖 172.7 kB gzip（预算 200 kB）"
+      "integration/phase-1@0f1e70e（合入 P1-S1、P1-S2 后）主控清缓存复跑：Biome 265 文件 0 错 0 警，10 个项目 typecheck / build 通过，Vitest 384/384",
+      "Playwright E2E 20/20（Chromium，硬件 GPU）；以只读 KSJ 原包重跑 data:build，生成的 TS 与 3 个 .pmtiles 与入库版本逐字节一致"
     ]
   },
   "reporter": {
     "agent": "claude",
-    "note": "Chief Coordinator (P1-Coord), taking over from Gemini — P1-S2 verified and merged into integration/phase-1"
+    "note": "Chief Coordinator (P1-Coord), taking over from Gemini — P1-S1 and P1-S2 verified and merged into integration/phase-1"
   },
   "stage": "phase_1_wave_1_merging",
-  "summary": "P1-S2（SENKIRO Atlas MapLibre UI、三语搜索与百科条目、ui-kit/base.css 与 P0-W2 Web 遗留修复）已核验并 --no-ff 合入 integration/phase-1@82ea02a；P1-S1 已交付待核验，P1-S3 京都站二期精修进行中。",
+  "summary": "P1-S1（京阪神 8 社 TrackGraph、关东预览、纯 TS PMTiles v3）与 P1-S2（SENKIRO Atlas UI）已核验并 --no-ff 合入 integration/phase-1@0f1e70e；P1-S3 京都站二期精修进行中。",
   "overall_progress": null,
   "milestones": [
     {
@@ -46,12 +46,13 @@
     {
       "id": "p1_s1_data_kansai",
       "title": "Wave 1 (P1-S1 · [REP-02])：data-pipeline + data-kansai（8 社、纯 TS PMTiles、关东预览）",
-      "status": "delivered_pending_review",
-      "evidence_level": "self_report",
+      "status": "done",
+      "evidence_level": "verified_test",
       "evidence_refs": [
-        "docs/dispatch/phase-1/p1-s1-data-kansai-brief.md"
+        "docs/dispatch/reports/p1-s1-data-kansai.md",
+        "docs/dispatch/phase-1/README.md"
       ],
-      "human_acceptance": "pending"
+      "human_acceptance": "done"
     },
     {
       "id": "p1_s2_atlas_ui",
@@ -89,22 +90,22 @@
   "blockers": [],
   "next_actions": [
     {
-      "id": "merge_p1_s1",
-      "title": "核验并合入 feat/p1-data-kansai（P1-S1）",
-      "priority": "P0",
-      "result": "ownedPaths 与开源合规核验通过后 --no-ff 合入；如 pnpm-lock.yaml 与 P1-S2 冲突，在集成分支执行 pnpm install --lockfile-only。"
-    },
-    {
       "id": "finish_p1_s3",
       "title": "P1-S3 按 Sol 指南完成 Step A–E 并交付 READY_FOR_MERGE",
       "priority": "P0",
       "result": "主控核验三站截图、全对寻路穷举与全仓回归后合入。"
     },
     {
+      "id": "decide_exclusion_reason_i18n",
+      "title": "决定 explicitlyExcluded 说明的三语方案（契约增补 reasonNames 或 Phase 1 接受单语）",
+      "priority": "P1",
+      "result": "在启动 P1-W2 前落定；若增补契约，由主控升级 packages/contracts 与 docs/01-domain-contract-v1.0.md §7。"
+    },
+    {
       "id": "launch_p1_w2",
       "title": "Wave 1 三路合入后启动 P1-W2 完成接线与 Exit Gate 1（含 Firefox/WebKit/软件渲染路径）",
       "priority": "P1",
-      "result": "含 README §5.2 的 6 项 P1-S2 接线与收尾事项；全量通过后以 --no-ff 合并进 main 并推送 origin。"
+      "result": "含 README §5.3 的 9 项接线与收尾事项；全量通过后以 --no-ff 合并进 main 并推送 origin。"
     },
     {
       "id": "probe_synthetic_rides",
@@ -115,8 +116,8 @@
   ],
   "needs_morii": [
     {
-      "id": "send_p1_s1_handoff",
-      "decision": "把 P1-S1 的交接信息转给主控，以便核验合入。"
+      "id": "p1_s3_handoff",
+      "decision": "P1-S3 完成后把交接信息转给主控，以便核验合入。"
     }
   ]
 }
