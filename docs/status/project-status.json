@@ -2,178 +2,137 @@
   "schema_version": "1.1",
   "project_id": "senkiro.main",
   "project_name": "SENKIRO",
-  "snapshot_at": "2026-11-21T10:38:17+08:00",
+  "snapshot_at": "2026-11-28T12:20:00+08:00",
   "source": {
-    "branch": "main",
-    "commit_sha": "2e3a52b19c5c13c1e6c5c4990a7a2a5f546b5a32",
+    "branch": "integration/phase-0",
+    "base_main_sha": "e3cba601be157bd0a2a1295e1e36d579c3369923",
     "tests_rerun": false,
     "basis": [
-      "2026-11-21 生成首份快照：只读 Git、GitHub 和仓库文档；不重跑测试、构建或真实验收",
-      "main@2e3a52b（仓库初始化），与 origin/main 一致；GitHub 无 PR",
-      "README.md、docs/plan-v0.1.md、docs/brand-v1.0.md、docs/00-shared-contract.md、labs/README.md",
-      "原型 C 分支：claude/nice-mendeleev-234068@4c8d3dc、claude/shinjuku-3d-indoor-nav-3f3cce@f07cd03、claude/plan2d-layout-fe79d9@206a0ab，均未合并",
-      "labs/c-shinjuku-3d/REPORT.md（V1/V2）与 V3-REPORT.md：2026-11-20 记录 vitest 260 项通过、e2e 34 项中 31 项通过（1 项基准提交上同样失败）。本次未重跑",
-      "lab/a-tokyo-atlas、lab/b-fare 与 main 相同，没有提交；lab/c-shinjuku-3d 本机另有 1 个未推送提交和 2 个未提交文件，未计入"
+      "2026-11-28 Phase 0 主控归档与派单快照：基于 Git 树核对与各原型自报告，未重跑原型测试",
+      "main@e3cba60（Master Plan v1.0 与多智能体路线图已合入）",
+      "lab/a-tokyo-atlas-fare@9244196（含 integration/atlas-v2@14dd5af 及后续城市景观/遥测提交）",
+      "lab/b-umeda-3d@b2ed773（含 d6cc1df、c994f93 及三语/官方时刻表外链更新）",
+      "lab/c-shinjuku-3d@19b2daa（已零冲突合入 claude/shinjuku-3d-indoor-nav-3f3cce@603492f 与 e44e0e1）",
+      "docs/01-domain-contract-v1.0.md、docs/lab-reports/scores.md、docs/dispatch/HANDOFF_PROTOCOL.md、docs/dispatch/phase-0/*"
     ]
   },
   "reporter": {
-    "agent": "claude",
-    "note": "Claude Opus 5.5"
+    "agent": "gemini",
+    "note": "Chief Coordinator (Phase 0 Dispatch)"
   },
-  "stage": "planning",
-  "summary": "立项与原型实验阶段，尚无可用产品。三个原型只有 C（新宿站 3D）在推进：V1、V2 完成，V3 已接入新宿三丁目、新宿西口、真实时刻表和 2D 平面图，约 70 个提交仍在 claude/ 分支上未合并。原型 A、B 尚未开始，数据许可待定。",
+  "stage": "phase_0_dispatched",
+  "summary": "Master Plan v1.0 与 Gate 0 决策已锁定；三座 Lab 原型已归档至三条只读基准分支并完成评审；全域领域契约 v1.0 与 Phase 0 Wave 0/Wave 1 四张自包含派单书已落盘就绪。",
   "overall_progress": null,
   "milestones": [
     {
       "id": "project_setup",
-      "title": "立项：仓库、AGPL 许可、品牌命名 v1.0、开发规划 v0.1 与原型共享契约",
+      "title": "立项与 Master Plan v1.0（Gate 0 五大决策锁定）",
       "status": "done",
       "evidence_level": "repository",
       "evidence_refs": [
-        "README.md",
+        "docs/plan-v1.0.md",
         "docs/brand-v1.0.md",
-        "docs/plan-v0.1.md",
         "docs/00-shared-contract.md"
       ],
       "human_acceptance": "not_required"
     },
     {
-      "id": "lab_a_tokyo_atlas",
-      "title": "原型 A：东京线路地图",
-      "status": "not_started",
-      "evidence_level": "repository",
-      "evidence_refs": [
-        "labs/README.md",
-        "分支 lab/a-tokyo-atlas（无提交）"
-      ],
-      "human_acceptance": "pending"
-    },
-    {
-      "id": "lab_b_fare",
-      "title": "原型 B：JR 运价规则实验室",
-      "status": "not_started",
-      "evidence_level": "repository",
-      "evidence_refs": [
-        "labs/README.md",
-        "分支 lab/b-fare（无提交）"
-      ],
-      "human_acceptance": "pending"
-    },
-    {
-      "id": "lab_c_v1_v2",
-      "title": "原型 C 新宿站 3D：V1、V2（7 站 23 层模型、全部运营方、站内路线导航）",
+      "id": "lab_a_archive",
+      "title": "Lab A 归档：东京 40 线地图 + JR 运价 + 3D 都市地下网",
       "status": "done",
       "evidence_level": "existing_test",
       "evidence_refs": [
-        "labs/c-shinjuku-3d/REPORT.md"
+        "lab/a-tokyo-atlas-fare@9244196",
+        "docs/lab-reports/scores.md"
       ],
-      "human_acceptance": "pending"
+      "human_acceptance": "done"
     },
     {
-      "id": "lab_c_v3",
-      "title": "原型 C V3：新宿三丁目/新宿西口、Busta 细化、建筑精修、列车模拟、2D 平面图",
-      "status": "in_progress",
+      "id": "lab_b_archive",
+      "title": "Lab B 归档：大阪・梅田 7 站 3D/2D + 9 款关西车型",
+      "status": "done",
       "evidence_level": "existing_test",
       "evidence_refs": [
-        "labs/c-shinjuku-3d/V3-REPORT.md（分支 claude/plan2d-layout-fe79d9）"
+        "lab/b-umeda-3d@b2ed773",
+        "docs/lab-reports/scores.md"
       ],
-      "human_acceptance": "pending"
+      "human_acceptance": "done"
     },
     {
-      "id": "lab_c_timetable",
-      "title": "原型 C 真实时刻表：都营两线入库，JR 只在本机，其余运营方无公开数据",
-      "status": "in_progress",
+      "id": "lab_c_archive",
+      "title": "Lab C 归档：新宿 10 层 3D/2D + 大新宿时刻表管线合入",
+      "status": "done",
       "evidence_level": "existing_test",
       "evidence_refs": [
-        "labs/c-shinjuku-3d/V3-REPORT.md（分支 claude/plan2d-layout-fe79d9） 第 23～25 节",
-        "labs/c-shinjuku-3d/data/timetable/README.md"
+        "lab/c-shinjuku-3d@19b2daa",
+        "docs/lab-reports/scores.md"
+      ],
+      "human_acceptance": "done"
+    },
+    {
+      "id": "lab_scores",
+      "title": "三原型归档评审与资产迁移映射（docs/lab-reports/scores.md）",
+      "status": "done",
+      "evidence_level": "repository",
+      "evidence_refs": [
+        "docs/lab-reports/scores.md"
       ],
       "human_acceptance": "not_required"
     },
     {
-      "id": "lab_c_merge",
-      "title": "原型 C 的三条 claude/ 分支收拢并通过 PR 合并",
+      "id": "phase0_contract_and_dispatch",
+      "title": "全域领域契约 v1.0、交接规程与 Phase 0 四路派单体系",
+      "status": "done",
+      "evidence_level": "repository",
+      "evidence_refs": [
+        "docs/01-domain-contract-v1.0.md",
+        "docs/dispatch/HANDOFF_PROTOCOL.md",
+        "docs/dispatch/phase-0/README.md"
+      ],
+      "human_acceptance": "not_required"
+    },
+    {
+      "id": "p0_w0_contracts",
+      "title": "Wave 0：Monorepo 根骨架与 @senkiro/contracts",
       "status": "not_started",
       "evidence_level": "repository",
       "evidence_refs": [
-        "labs/README.md",
-        "labs/c-shinjuku-3d/REPORT.md 第 7 节"
+        "docs/dispatch/phase-0/p0-w0-contracts-brief.md"
       ],
       "human_acceptance": "pending"
     },
     {
-      "id": "lab_scores",
-      "title": "三个原型的人工评分（docs/lab-reports/scores.md）",
+      "id": "p0_wave1_parallel",
+      "title": "Wave 1 三路并行：P0-S1 / P0-S2 / P0-S3",
       "status": "not_started",
       "evidence_level": "repository",
       "evidence_refs": [
-        "docs/lab-reports/README.md"
-      ],
-      "human_acceptance": "pending"
-    },
-    {
-      "id": "stage0_discovery",
-      "title": "Stage 0：大阪—京都最小数据包、来源与许可清单、ID 规范",
-      "status": "not_started",
-      "evidence_level": "repository",
-      "evidence_refs": [
-        "docs/plan-v0.1.md 第 6 节"
+        "docs/dispatch/phase-0/p0-s1-domain-sqlite-brief.md",
+        "docs/dispatch/phase-0/p0-s2-station-3d-brief.md",
+        "docs/dispatch/phase-0/p0-s3-ui-web-shell-brief.md"
       ],
       "human_acceptance": "pending"
     }
   ],
-  "blockers": [
-    {
-      "id": "data_licensing",
-      "title": "数据许可没有定",
-      "impact": "ODPT 挑战赛限定数据、JR 东日本和京王网站条款是否允许公开使用都未确认；JR 时刻表只能本机抓取，原型 C 的数据暂不能公开发布。"
-    },
-    {
-      "id": "lab_c_unmerged",
-      "title": "原型 C 停在分支上",
-      "impact": "三条 claude/ 分支约 70 个提交、没有 PR，main 只有初始化提交；合并目标（lab/c-shinjuku-3d 还是 main）没定。"
-    }
-  ],
+  "blockers": [],
   "next_actions": [
     {
-      "id": "merge_lab_c",
-      "title": "收拢原型 C 分支并开 PR",
-      "priority": "P1",
-      "result": "定下合并目标后把平面图和公开版两条分支合成一个可评审的 PR。"
+      "id": "start_p0_w0",
+      "title": "新建工作树并启动 P0-W0（feat/p0-w0-contracts）",
+      "priority": "P0",
+      "result": "建立 pnpm+Turborepo+Biome+TS strict 骨架并实现 @senkiro/contracts 全量契约与单测。"
     },
     {
-      "id": "start_lab_a_b",
-      "title": "启动原型 A、B",
-      "priority": "P1",
-      "result": "东京线路地图与 JR 运价实验室各有可运行切片和 REPORT.md，三个原型可以一起评分。"
-    },
-    {
-      "id": "gpu_perf",
-      "title": "在真实显卡上测原型 C 帧率",
-      "priority": "P2",
-      "result": "验证任务书 60 / 30 FPS 目标；目前只有软件渲染数字。"
+      "id": "merge_p0_w0_and_launch_wave1",
+      "title": "合入 P0-W0 后同时拉起 P0-S1 / P0-S2 / P0-S3",
+      "priority": "P0",
+      "result": "三路并行完成三图+运价+OPFS SQLite、命令式 3D 车站引擎与三语全屏 Web 壳。"
     }
   ],
   "needs_morii": [
     {
-      "id": "lab_c_merge_target",
-      "decision": "原型 C 合并到 lab/c-shinjuku-3d 还是 main？三条 claude/ 分支怎么收拢？"
-    },
-    {
-      "id": "data_terms",
-      "decision": "ODPT 挑战赛限定数据用不用、以什么身份用？JR 东日本和京王网站上的事实能否用于公开产品？"
-    },
-    {
-      "id": "data_reviewer",
-      "decision": "原型 C 的数据公开展示前由谁复核？"
-    },
-    {
-      "id": "labs_ab_when",
-      "decision": "原型 A、B 何时开始？"
-    },
-    {
-      "id": "plan_questions",
-      "decision": "规划第 10 节剩下的问题（目标用户、首批地区是否仍是大阪—京都、地图走地理精度还是示意图）何时决定？"
+      "id": "launch_p0_w0_worktree",
+      "decision": "按 docs/dispatch/phase-0/p0-w0-contracts-brief.md 新建 feat/p0-w0-contracts 工作树并分发执行。"
     }
   ]
 }

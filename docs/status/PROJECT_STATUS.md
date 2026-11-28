@@ -1,51 +1,37 @@
 # SENKIRO 项目状态
 
-快照时间：2026-11-21T10:38:17+08:00 · 协议 1.1 · 项目 ID `senkiro.main` · 报告：Claude
+快照时间：2026-11-28T12:20:00+08:00 · 协议 1.1 · 项目 ID `senkiro.main` · 报告：Gemini（主控）
 
-代码基线：`main@2e3a52b`。阶段：规划中（`planning`）。整体进度不估算。
+代码基线：`main@e3cba60` · 集成线：`integration/phase-0`（挂载于独立主控工作树 `worktrees/integration-phase-0`）。阶段：正式开发启动（`phase_0_dispatched`）。整体进度不估算。
 
-立项与原型实验阶段，尚无可用产品。三个原型只有 C（新宿站 3D）在推进：V1、V2 完成，V3 已接入新宿三丁目、新宿西口、真实时刻表和 2D 平面图，约 70 个提交仍在 claude/ 分支上未合并。原型 A、B 尚未开始，数据许可待定。
+Gate 0 五大立项决策（`D-01` ～ `D-05`）与 `Master Plan v1.0` 已在 `main@e3cba60` 锁定。SENKIRO Lab A / B / C 三座先行原型已分别收拢归档至 `lab/a-tokyo-atlas-fare`、`lab/b-umeda-3d`、`lab/c-shinjuku-3d`（已完成归档评审 `docs/lab-reports/scores.md`），冗余 Lab A/C 临时工作树已清理并完成本地原始数据备份。`docs/01-domain-contract-v1.0.md` 与 Phase 0 Wave 0 / Wave 1 四份自包含派单书已全部落盘就绪，等待手动新建工作树启动 `P0-W0`。
 
 ## 里程碑
 
 | ID | 事项 | 状态 | 证据 | 人工验收 |
 | --- | --- | --- | --- | --- |
-| `project_setup` | 立项：仓库、AGPL 许可、品牌命名 v1.0、开发规划 v0.1 与原型共享契约 | 完成 | 仓库证据 | 不需要 |
-| `lab_a_tokyo_atlas` | 原型 A：东京线路地图 | 未开始 | 仓库证据 | 待验收 |
-| `lab_b_fare` | 原型 B：JR 运价规则实验室 | 未开始 | 仓库证据 | 待验收 |
-| `lab_c_v1_v2` | 原型 C 新宿站 3D：V1、V2（7 站 23 层模型、全部运营方、站内路线导航） | 完成 | 已有测试 | 待验收 |
-| `lab_c_v3` | 原型 C V3：新宿三丁目/新宿西口、Busta 细化、建筑精修、列车模拟、2D 平面图 | 进行中 | 已有测试 | 待验收 |
-| `lab_c_timetable` | 原型 C 真实时刻表：都营两线入库，JR 只在本机，其余运营方无公开数据 | 进行中 | 已有测试 | 不需要 |
-| `lab_c_merge` | 原型 C 的三条 claude/ 分支收拢并通过 PR 合并 | 未开始 | 仓库证据 | 待验收 |
-| `lab_scores` | 三个原型的人工评分（docs/lab-reports/scores.md） | 未开始 | 仓库证据 | 待验收 |
-| `stage0_discovery` | Stage 0：大阪—京都最小数据包、来源与许可清单、ID 规范 | 未开始 | 仓库证据 | 待验收 |
+| `project_setup` | 立项与 Master Plan v1.0（Gate 0 D-01～D-05 决策锁定） | 完成 | 仓库证据（`main@e3cba60`） | 不需要 |
+| `lab_a_archive` | Lab A 归档：东京 40 线地图 + 双版本 6 态 JR 运价 + 3D 都市地下网（`lab/a-tokyo-atlas-fare@9244196`） | 完成 | 仓库证据 + 自报告（注：主目录另有并发视觉微调未入此次快照） | 已收口归档 |
+| `lab_b_archive` | Lab B 归档：大阪・梅田 7 站 3D/2D + 9 款关西车型 + 三语外链（`lab/b-umeda-3d@b2ed773`） | 完成 | 仓库证据 + 自报告（保留 `umeda-b`/`umeda-sol`/`umeda-handoff` 未动） | 已收口归档 |
+| `lab_c_archive` | Lab C 归档：新宿 10 层 3D/2D + 大新宿时刻表管线合入（`lab/c-shinjuku-3d@19b2daa`） | 完成 | 仓库证据 + 自报告 | 已收口归档 |
+| `lab_scores` | 三原型归档评审与迁移映射报告（`docs/lab-reports/scores.md`） | 完成 | 仓库证据 | 不需要 |
+| `phase0_contract_and_dispatch` | 全域领域契约 `v1.0`、交接规程与 Phase 0 四路派单体系 | 完成 | 仓库证据（`integration/phase-0`） | 待执行派单 |
+| `p0_w0_contracts` | Wave 0：Monorepo 根骨架（pnpm + Turborepo + Biome + TS strict）与 `@senkiro/contracts` | 未开始 | 派单就绪（`p0-w0-contracts-brief.md`） | 待验收 |
+| `p0_wave1_parallel` | Wave 1 三路并行：`P0-S1`（领域+SQLite）、`P0-S2`（命令式 3D）、`P0-S3`（UI-Kit+Web 壳） | 未开始 | 待 `P0-W0` 合入后并行启动 | 待验收 |
 
-## 当前卡点
+## 当前卡点与并发工作区提醒
 
-- **数据许可没有定**：ODPT 挑战赛限定数据、JR 东日本和京王网站条款是否允许公开使用都未确认；JR 时刻表只能本机抓取，原型 C 的数据暂不能公开发布。
-- **原型 C 停在分支上**：三条 claude/ 分支约 70 个提交、没有 PR，main 只有初始化提交；合并目标（lab/c-shinjuku-3d 还是 main）没定。
+- **主目录并发会话隔离**：`E:\SENKIRO` 主目录当前处于 `lab/a-tokyo-atlas-fare` 分支进行额外城市海岸线微调，故 `integration/phase-0` 独立挂载于 `E:\SENKIRO\worktrees\integration-phase-0` 避免干扰。
+- **Lab B 保留目录未触碰**：`labs/_worktrees/umeda-b`、`labs/_worktrees/umeda-sol`、`E:\Workteree\SENKIRO\umeda-handoff-ab4a62` 保持原样未改动。
+- **商业数据许可边界（已按 D-03 锁定）**：Phase 1–5 零商业 API 订阅，仅使用公开可再分发数据与人工核对官方规则条文；受限网页时刻表仅本地 `.gitignore` 隔离，商业 API 统一在 Phase 6 引入。
 
-## 下一步（本次不执行）
+## 下一步（Wave 0 → Wave 1）
 
-1. **P1 收拢原型 C 分支并开 PR**：定下合并目标后把平面图和公开版两条分支合成一个可评审的 PR。
-2. **P1 启动原型 A、B**：东京线路地图与 JR 运价实验室各有可运行切片和 REPORT.md，三个原型可以一起评分。
-3. **P2 在真实显卡上测原型 C 帧率**：验证任务书 60 / 30 FPS 目标；目前只有软件渲染数字。
-
-## 需要 Morii 决定
-
-- 原型 C 合并到 lab/c-shinjuku-3d 还是 main？三条 claude/ 分支怎么收拢？
-- ODPT 挑战赛限定数据用不用、以什么身份用？JR 东日本和京王网站上的事实能否用于公开产品？
-- 原型 C 的数据公开展示前由谁复核？
-- 原型 A、B 何时开始？
-- 规划第 10 节剩下的问题（目标用户、首批地区是否仍是大阪—京都、地图走地理精度还是示意图）何时决定？
+1. **立即启动 `P0-W0`**：手动创建工作树 `feat/p0-w0-contracts`（基于 `integration/phase-0`），粘贴 `docs/dispatch/phase-0/p0-w0-contracts-brief.md` 提示词启动执行。
+2. **合入 `P0-W0` 后并发启动 Wave 1**：回主控合入 `feat/p0-w0-contracts` 后，同时新建 `P0-S1`、`P0-S2`、`P0-S3` 三个工作树并行推进。
+3. **完成 Exit Gate 0**：三路均合入 `integration/phase-0` 后由主控联调接线并全量验收 `pnpm check && pnpm build && pnpm test`。
 
 ## 依据与验证范围
 
-- 2026-11-21 生成首份快照：只读 Git、GitHub 和仓库文档；不重跑测试、构建或真实验收
-- main@2e3a52b（仓库初始化），与 origin/main 一致；GitHub 无 PR
-- README.md、docs/plan-v0.1.md、docs/brand-v1.0.md、docs/00-shared-contract.md、labs/README.md
-- 原型 C 分支：claude/nice-mendeleev-234068@4c8d3dc、claude/shinjuku-3d-indoor-nav-3f3cce@f07cd03、claude/plan2d-layout-fe79d9@206a0ab，均未合并
-- labs/c-shinjuku-3d/REPORT.md（V1/V2）与 V3-REPORT.md：2026-11-20 记录 vitest 260 项通过、e2e 34 项中 31 项通过（1 项基准提交上同样失败）。本次未重跑
-- lab/a-tokyo-atlas、lab/b-fare 与 main 相同，没有提交；lab/c-shinjuku-3d 本机另有 1 个未推送提交和 2 个未提交文件，未计入
-
-证据位置见 [project-status.json](./project-status.json) 的 `evidence_refs`。本次只整理已有记录，`tests_rerun=false`；人工验收只转述有记录的结论，不把合并、分支或 CI 当作通过。
+- 2026-11-28 生成 Phase 0 启动快照：核对 Git 分支拓扑、工作树状态、开源合规文件索引与各原型既有自报告；**未重跑各原型的构建或测试（`tests_rerun=false`）**。
+- 证据路径见 [project-status.json](./project-status.json) 的 `evidence_refs`。
