@@ -528,6 +528,7 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
       this.isDark = solar.isDark;
       this.terrainLayer.setTheme(solar.isDark);
       this.buildingManager.setTheme(solar.isDark);
+      this.lastChunkUpdateTime = 0;
       this.cutawayVisuals.setTheme(solar.isDark);
       this.tunnelLayer.setTheme(solar.isDark);
     }
@@ -565,7 +566,9 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
     this.subFillLight.intensity = isDark ? 0.48 : 0.34;
     this.rendererBundle.setNightFactor(this.currentNightFactor);
     this.terrainLayer.setTheme(isDark);
+    this.terrainLayer.setTimeOfDay(this.currentTimeOfDayHour, this.currentNightFactor);
     this.buildingManager.setTheme(isDark);
+    this.lastChunkUpdateTime = 0;
     this.buildingManager.setNightFactor(this.currentNightFactor);
     this.cutawayVisuals.setTheme(isDark);
     this.tunnelLayer.setTheme(isDark);
@@ -1214,7 +1217,7 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
     const targetNear = isCloseOrInterior
       ? 0.25
       : Math.max(4, Math.min(75, camDist * 0.012));
-    const targetFar = Math.max(28_000, camDist * 8.5);
+    const targetFar = Math.max(65_000, camDist * 9.0);
     if (
       Math.abs(targetNear - this.camera.near) / this.camera.near > 0.1 ||
       Math.abs(targetFar - this.camera.far) / this.camera.far > 0.15
@@ -1229,7 +1232,8 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
     this.viaductLayer.updateLod(camDist);
     this.tunnelLayer.updateLod(camDist, this.camera.position);
 
-    this.skyEnv.updateForCamera(this.camera.position);
+    this.skyEnv.updateForCamera(this.camera.position, this.camera.far);
+    this.skyEnv.updateTime(now * 0.001);
     this.terrainLayer.updateAnimation(now * 0.001);
 
     // Smoothly track cutaway pit center onto camera focus target unless pinned (P5)

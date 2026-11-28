@@ -94,7 +94,7 @@ const TUNNEL_SPEED_MPS: Record<CameraMoveSpeed, number> = {
   fast: 96,
 };
 
-const MAX_EXTENT_XZ = 26_000;
+const MAX_EXTENT_XZ = 72_000;
 const MAX_ALTITUDE = 15_500;
 
 function headingToCardinal(deg: number): CameraOrientationInfo['cardinal'] {

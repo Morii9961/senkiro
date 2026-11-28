@@ -12,6 +12,7 @@ export interface SurfaceTextureSet {
   map: THREE.CanvasTexture;
   roughnessMap: THREE.CanvasTexture;
   bumpMap: THREE.CanvasTexture;
+  emissiveMap?: THREE.CanvasTexture;
 }
 
 export interface WaterTextureSet {
@@ -119,8 +120,11 @@ export function createAsphaltRoadTextureSet(
   const [cAlb, a] = makeCanvas(w, h);
   const [cRgh, r] = makeCanvas(w, h);
   const [cBmp, b] = makeCanvas(w, h);
+  const [cEmi, e] = makeCanvas(w, h);
 
   paintAsphaltAggregate(a, r, b, w, h, isDark, true);
+  e.fillStyle = '#000000';
+  e.fillRect(0, 0, w, h);
 
   const whitePaint = isDark ? 'rgba(218,226,236,0.72)' : 'rgba(244,244,240,0.88)';
   const amberPaint = isDark ? 'rgba(217,155,46,0.78)' : 'rgba(232,168,48,0.92)';
@@ -177,6 +181,61 @@ export function createAsphaltRoadTextureSet(
     paintLine(0.905, 9, whitePaint, false);
   }
 
+  // Realistic Tokyo streetlamp curb spill pools & arterial vehicle light glints across all road classes
+  const drawLampPool = (lx: number, ly: number, rad: number, innerCol: string, midCol: string) => {
+    const grad = e.createRadialGradient(lx, ly, 2, lx, ly, rad);
+    grad.addColorStop(0, innerCol);
+    grad.addColorStop(0.42, midCol);
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+    e.fillStyle = grad;
+    e.fillRect(lx - rad, ly - rad, rad * 2, rad * 2);
+  };
+
+  if (roadClass === 'trunk') {
+    e.fillStyle = 'rgba(255,180,96,0.12)';
+    e.fillRect(0, 0, w, h);
+    for (const ly of [64, 192, 320, 448]) {
+      drawLampPool(26, ly, 128, 'rgba(255,196,112,0.88)', 'rgba(255,168,78,0.34)');
+      drawLampPool(w - 26, (ly + 64) % h, 128, 'rgba(255,196,112,0.88)', 'rgba(255,168,78,0.34)');
+    }
+    drawLampPool(Math.round(w * 0.5), 128, 108, 'rgba(255,204,124,0.68)', 'rgba(255,172,82,0.24)');
+    drawLampPool(Math.round(w * 0.5), 384, 108, 'rgba(255,204,124,0.68)', 'rgba(255,172,82,0.24)');
+
+    // Crisp warm-white headlight & ruby-red taillight dashes along arterial lanes
+    e.fillStyle = 'rgba(255,246,232,0.45)';
+    e.fillRect(Math.round(w * 0.27), 64, 6, 26);
+    e.fillRect(Math.round(w * 0.34), 310, 6, 26);
+    e.fillStyle = 'rgba(255,72,58,0.48)';
+    e.fillRect(Math.round(w * 0.66), 190, 6, 24);
+    e.fillRect(Math.round(w * 0.72), 420, 6, 24);
+  } else if (roadClass === 'primary') {
+    e.fillStyle = 'rgba(240,214,172,0.09)';
+    e.fillRect(0, 0, w, h);
+    for (const ly of [80, 240, 400]) {
+      drawLampPool(28, ly, 118, 'rgba(255,220,164,0.78)', 'rgba(232,198,148,0.28)');
+      drawLampPool(w - 28, (ly + 80) % h, 118, 'rgba(255,220,164,0.78)', 'rgba(232,198,148,0.28)');
+    }
+  } else if (roadClass === 'secondary') {
+    for (const ly of [96, 352]) {
+      drawLampPool(32, ly, 102, 'rgba(232,232,220,0.54)', 'rgba(195,204,220,0.16)');
+      drawLampPool(w - 32, (ly + 128) % h, 102, 'rgba(232,232,220,0.54)', 'rgba(195,204,220,0.16)');
+    }
+  } else {
+    for (const ly of [112, 368]) {
+      drawLampPool(38, ly, 86, 'rgba(218,226,242,0.32)', 'rgba(175,188,210,0.09)');
+      drawLampPool(w - 38, (ly + 128) % h, 86, 'rgba(218,226,242,0.32)', 'rgba(175,188,210,0.09)');
+    }
+  }
+
+  const emissiveMap = finalizeSurfaceTexture(
+    cEmi,
+    true,
+    THREE.ClampToEdgeWrapping,
+    THREE.RepeatWrapping,
+    1,
+    1,
+  );
+
   return {
     map: finalizeSurfaceTexture(cAlb, true, THREE.ClampToEdgeWrapping, THREE.RepeatWrapping, 1, 1),
     roughnessMap: finalizeSurfaceTexture(
@@ -188,6 +247,7 @@ export function createAsphaltRoadTextureSet(
       1,
     ),
     bumpMap: finalizeSurfaceTexture(cBmp, false, THREE.ClampToEdgeWrapping, THREE.RepeatWrapping, 1, 1),
+    emissiveMap,
   };
 }
 
@@ -200,8 +260,19 @@ export function createIntersectionAsphaltTextureSet(isDark: boolean): SurfaceTex
   const [cAlb, a] = makeCanvas(w, h);
   const [cRgh, r] = makeCanvas(w, h);
   const [cBmp, b] = makeCanvas(w, h);
+  const [cEmi, e] = makeCanvas(w, h);
 
   paintAsphaltAggregate(a, r, b, w, h, isDark, false);
+  e.fillStyle = '#000000';
+  e.fillRect(0, 0, w, h);
+  e.fillStyle = 'rgba(255,224,180,0.24)';
+  e.fillRect(0, 0, w, h);
+  const juncGrad = e.createRadialGradient(w * 0.5, h * 0.5, 16, w * 0.5, h * 0.5, w * 0.48);
+  juncGrad.addColorStop(0, 'rgba(255,236,204,0.62)');
+  juncGrad.addColorStop(0.55, 'rgba(245,214,172,0.22)');
+  juncGrad.addColorStop(1, 'rgba(0,0,0,0)');
+  e.fillStyle = juncGrad;
+  e.fillRect(0, 0, w, h);
 
   return {
     map: finalizeSurfaceTexture(cAlb, true, THREE.RepeatWrapping, THREE.RepeatWrapping, 0.06, 0.06),
@@ -221,6 +292,14 @@ export function createIntersectionAsphaltTextureSet(isDark: boolean): SurfaceTex
       0.06,
       0.06,
     ),
+    emissiveMap: finalizeSurfaceTexture(
+      cEmi,
+      true,
+      THREE.RepeatWrapping,
+      THREE.RepeatWrapping,
+      0.06,
+      0.06,
+    ),
   };
 }
 
@@ -232,6 +311,7 @@ export function createSidewalkPaverTextureSet(isDark: boolean): SurfaceTextureSe
   const [cAlb, a] = makeCanvas(size, size);
   const [cRgh, r] = makeCanvas(size, size);
   const [cBmp, b] = makeCanvas(size, size);
+  const [cEmi, e] = makeCanvas(size, size);
 
   a.fillStyle = isDark ? '#28313e' : '#d5d0c7';
   a.fillRect(0, 0, size, size);
@@ -239,6 +319,20 @@ export function createSidewalkPaverTextureSet(isDark: boolean): SurfaceTextureSe
   r.fillRect(0, 0, size, size);
   b.fillStyle = '#b4b4b4';
   b.fillRect(0, 0, size, size);
+  e.fillStyle = '#1d1a16';
+  e.fillRect(0, 0, size, size);
+
+  for (let i = 0; i < 16; i++) {
+    const px = hash2(i, 1, 313) * size;
+    const py = hash2(i, 2, 313) * size;
+    const rad = 42 + hash2(i, 3, 313) * 58;
+    const isCool = hash2(i, 4, 313) > 0.62;
+    const grad = e.createRadialGradient(px, py, 2, px, py, rad);
+    grad.addColorStop(0, isCool ? 'rgba(220,236,255,0.16)' : 'rgba(255,224,182,0.24)');
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+    e.fillStyle = grad;
+    e.fillRect(px - rad, py - rad, rad * 2, rad * 2);
+  }
 
   const cell = 16; // 32x32 tiles in 512px; repeat=0.075 => ~0.42m stone pavers
   for (let gy = 0; gy < size / cell; gy++) {
@@ -293,6 +387,14 @@ export function createSidewalkPaverTextureSet(isDark: boolean): SurfaceTextureSe
       0.075,
       0.075,
     ),
+    emissiveMap: finalizeSurfaceTexture(
+      cEmi,
+      true,
+      THREE.RepeatWrapping,
+      THREE.RepeatWrapping,
+      0.075,
+      0.075,
+    ),
   };
 }
 
@@ -306,7 +408,7 @@ export function createUrbanParcelTextureSet(isDark: boolean): SurfaceTextureSet 
   const [cRgh, r] = makeCanvas(size, size);
   const [cBmp, b] = makeCanvas(size, size);
 
-  a.fillStyle = isDark ? '#18212d' : '#cbc6bd';
+  a.fillStyle = isDark ? '#18212d' : '#bab5ac';
   a.fillRect(0, 0, size, size);
   r.fillStyle = '#e8e8e8';
   r.fillRect(0, 0, size, size);
@@ -319,18 +421,38 @@ export function createUrbanParcelTextureSet(isDark: boolean): SurfaceTextureSet 
     for (let x = 0; x < size; x += step) {
       const rnd = hash2(x, y, 811);
       const tone = hash2(x + 7, y + 3, 919);
-      if (tone > 0.88) {
-        a.fillStyle = isDark ? 'rgba(30,54,42,0.35)' : 'rgba(154,168,142,0.24)';
+      if (tone > 0.86) {
+        a.fillStyle = isDark ? 'rgba(30,54,42,0.38)' : 'rgba(138,154,126,0.28)';
       } else if (rnd > 0.5) {
-        a.fillStyle = isDark ? 'rgba(34,44,58,0.24)' : 'rgba(222,218,210,0.24)';
+        a.fillStyle = isDark ? 'rgba(34,44,58,0.26)' : 'rgba(204,199,191,0.24)';
       } else {
-        a.fillStyle = isDark ? 'rgba(17,24,34,0.24)' : 'rgba(176,171,163,0.16)';
+        a.fillStyle = isDark ? 'rgba(17,24,34,0.26)' : 'rgba(162,157,149,0.20)';
       }
       a.fillRect(x + 1, y + 1, step - 2, step - 2);
 
-      r.fillStyle = tone > 0.88 ? '#f2f2f2' : rnd > 0.5 ? '#d8d8d8' : '#eaeaea';
+      // Tiny inner Tokyo alleyways & courtyard tree speckles
+      if (tone > 0.91) {
+        a.fillStyle = isDark ? 'rgba(22,46,34,0.45)' : 'rgba(116,138,104,0.32)';
+        a.fillRect(x + 4, y + 4, 6, 6);
+      }
+
+      r.fillStyle = tone > 0.86 ? '#f2f2f2' : rnd > 0.5 ? '#d8d8d8' : '#eaeaea';
       r.fillRect(x + 1, y + 1, step - 2, step - 2);
     }
+  }
+
+  // Fine Tokyo lot & roji alleyway grain
+  a.strokeStyle = isDark ? 'rgba(10,16,24,0.18)' : 'rgba(98,94,88,0.10)';
+  a.lineWidth = 1;
+  for (let i = 8; i < size; i += 32) {
+    a.beginPath();
+    a.moveTo(i, 0);
+    a.lineTo(i, size);
+    a.stroke();
+    a.beginPath();
+    a.moveTo(0, i);
+    a.lineTo(size, i);
+    a.stroke();
   }
 
   // Soft expansion joints
@@ -407,8 +529,8 @@ export function createWaterTextureSet(isDark: boolean): WaterTextureSet {
       imgB.data[idx + 2] = bumpVal;
       imgB.data[idx + 3] = 255;
 
-      const baseRgh = isDark ? 42 : 48;
-      const rghVal = Math.max(20, Math.min(110, Math.round(baseRgh + wave * 14)));
+      const baseRgh = isDark ? 68 : 78;
+      const rghVal = Math.max(48, Math.min(130, Math.round(baseRgh + wave * 14)));
       imgR.data[idx] = rghVal;
       imgR.data[idx + 1] = rghVal;
       imgR.data[idx + 2] = rghVal;

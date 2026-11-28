@@ -106,6 +106,8 @@ const TOKYO_DISTRICT_ANCHORS: {
   { id: 'dist-roppongi', ja: '六本木・赤坂', zh: '六本木・赤坂', en: 'Roppongi', lon: 139.731, lat: 35.6628, priority: 280 },
   { id: 'dist-ginza', ja: '銀座・日比谷', zh: '银座・日比谷', en: 'Ginza / Hibiya', lon: 139.765, lat: 35.6717, priority: 290 },
   { id: 'dist-oshiage', ja: '押上・スカイツリー', zh: '押上・晴空塔', en: 'Oshiage / Skytree', lon: 139.8107, lat: 35.7101, priority: 285 },
+  { id: 'dist-haneda', ja: '羽田空港 (HND)', zh: '羽田机场 (HND)', en: 'Haneda Airport', lon: 139.7798, lat: 35.5494, priority: 295 },
+  { id: 'dist-narita', ja: '成田空港 (NRT)', zh: '成田机场 (NRT)', en: 'Narita Airport', lon: 140.3863, lat: 35.7647, priority: 295 },
 ];
 
 export class SpatialLabelRegistry {

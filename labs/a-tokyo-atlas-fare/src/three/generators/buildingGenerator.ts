@@ -20,9 +20,11 @@ import {
   isSurfaceRiverVisible,
   pointInPoly,
 } from '../city/cityGeometryHelpers.js';
+import { isPointInImperialExclusion } from '../city/imperialPalace.js';
 import {
   isPointInTokyoBayWater,
   isPointOnHanedaAirport,
+  isPointOnTokyoBayPort,
 } from '../city/tokyoBayWaterfront.js';
 import {
   SHIBUYA_SHOWCASE_ZONE,
@@ -332,6 +334,36 @@ function appendBuildingToBuckets(
     const eqRaw = makeOrientedBoxRaw(b.cx + ox, b.cz + oz, eqW, eqD, b.a, baseY, eqH);
     pushSplit(eqRaw, 'roofEquipment', 'roofEquipment', { tintOverride: 0xe6eaef });
   };
+
+  // Streamlined single-mass (or pitched low-rise) geometry for schematic infill (hb === 'p')
+  // so high-density 2000-building chunks generate LOD0 rapidly while preserving multi-part
+  // architectural massing for all real OSM buildings.
+  if (b.hb === 'p') {
+    const wantInfillPitched =
+      b.t === 'r' &&
+      b.h < 13 &&
+      b.w <= 22 &&
+      b.d <= 22 &&
+      (Math.abs(b.id) % 11) < 6;
+    if (wantInfillPitched) {
+      const wallH = Math.max(4.0, b.h * 0.86);
+      const ridgeH = Math.min(3.2, Math.max(1.4, Math.min(b.w, b.d) * 0.24));
+      pushSplit(makeMassPart(b, -1.25, wallH + 1.25, 1.0), variant, 'roof', { discardRoof: true });
+      const gableRaw = makeGableRoofRaw(
+        b.cx,
+        b.cz,
+        b.w + 0.4,
+        b.d + 0.4,
+        b.a,
+        wallH,
+        ridgeH,
+      );
+      pushSplit(gableRaw, variant, 'roofPitched', { tintOverride: 0xd8dce0 });
+    } else {
+      pushSplit(makeMassPart(b, -1.25, b.h + 1.25, 1.0), variant, 'roof');
+    }
+    return;
+  }
 
   // Typology-specific architectural massing; lowest base starts at y = -1.25m for watertight grounding
   if (b.t === 'o' && b.h >= 40) {
@@ -769,17 +801,17 @@ function hashInfill(a: number, b: number, salt: number): number {
 }
 
 /**
- * Lightweight 10m-resolution Uint8Array spatial exclusion mask & 80m street-orientation field
- * covering inner Tokyo ([-10500..10500] x [-10000..10000]). Prevents runtime procedural infill
+ * Lightweight 8m-resolution Uint8Array spatial exclusion mask & 80m street-orientation field
+ * covering Tokyo 23-ward core ([-11500..11500] x [-10500..10500]). Prevents runtime procedural infill
  * buildings from ever overlapping roads, rivers, Tokyo Bay, parks, rail corridors, plazas,
  * landmarks, or the Imperial Palace protected green enclosure.
  */
 class UrbanInfillExclusionMask {
-  private readonly cellSize = 10;
-  private readonly minX = -10500;
-  private readonly maxX = 10500;
-  private readonly minZ = -10000;
-  private readonly maxZ = 10000;
+  private readonly cellSize = 8;
+  private readonly minX = -11500;
+  private readonly maxX = 11500;
+  private readonly minZ = -10500;
+  private readonly maxZ = 10500;
   private readonly cols: number;
   private readonly rows: number;
   private readonly blocked: Uint8Array;
@@ -798,22 +830,22 @@ class UrbanInfillExclusionMask {
     this.angleRows = Math.ceil((this.maxZ - this.minZ) / this.angleCellSize);
     this.roadAngleQ = new Int16Array(this.angleCols * this.angleRows);
 
-    // 1. Surface roads with generous sidewalk/curb clearance + street orientation field
+    // 1. Surface roads with tight sidewalk/curb clearance + street orientation field
     for (const r of env.roads) {
       if (r.el === 1 || r.pts.length < 2) continue;
-      const clearance = r.w * 0.5 + 5.5;
+      const clearance = r.w * 0.5 + 2.2;
       this.markPolyline(r.pts, clearance, true);
     }
 
     // 2. Road intersections
     for (const [ix, iz, rad] of env.intersections) {
-      this.markDisc(ix, iz, rad + 5.0);
+      this.markDisc(ix, iz, rad + 3.0);
     }
 
     // 3. Surface rivers & canals
     for (const rv of env.riverLines) {
       if (!isSurfaceRiverVisible(rv.name) || rv.pts.length < 2) continue;
-      const halfW = getEffectiveRiverWidth(rv.name, rv.width) * 0.5 + 8.0;
+      const halfW = getEffectiveRiverWidth(rv.name, rv.width) * 0.5 + 5.5;
       this.markPolyline(rv.pts, halfW, false);
     }
 
@@ -821,30 +853,34 @@ class UrbanInfillExclusionMask {
     if (env.railCorridors) {
       for (const c of env.railCorridors) {
         if (c.pts.length < 2) continue;
-        this.markPolyline(c.pts, c.width * 0.5 + 6.5, false);
+        this.markPolyline(c.pts, c.width * 0.5 + 5.0, false);
       }
     }
 
     // 5. Station forecourt plazas & hero landmarks
     if (env.stationPlazas) {
       for (const sp of env.stationPlazas) {
-        this.markDisc(sp.x, sp.z, Math.max(sp.rx, sp.rz) + 5.0);
+        this.markDisc(sp.x, sp.z, Math.max(sp.rx, sp.rz) + 3.5);
       }
     }
     for (const lm of env.landmarks) {
-      const footprintR = Math.max(lm.width ?? 56, lm.depth ?? 56) * 0.65 + 14.0;
+      const footprintR = Math.max(lm.width ?? 56, lm.depth ?? 56) * 0.58 + 8.0;
       this.markDisc(lm.x, lm.z, footprintR);
     }
 
     // 6. Water bodies, parks, pedestrian plazas & railway yards
-    for (const wp of env.waterPolygons) this.markPolygon(wp.pts, 10);
-    for (const pk of env.parkPolygons) this.markPolygon(pk.pts, 8);
+    for (const wp of env.waterPolygons) this.markPolygon(wp.pts, 5);
+    for (const pk of env.parkPolygons) this.markPolygon(pk.pts, 4);
     if (env.plazaPolygons) {
-      for (const pl of env.plazaPolygons) this.markPolygon(pl.pts, 6);
+      for (const pl of env.plazaPolygons) this.markPolygon(pl.pts, 4);
     }
     if (env.landuseBlocks) {
       for (const blk of env.landuseBlocks) {
-        if (blk.kind === 'railway') this.markPolygon(blk.pts, 6);
+        if (blk.kind === 'railway') {
+          this.markPolygon(blk.pts, 4);
+        } else if (blk.kind === 'industrial' && blk.pts.some(([, z]) => z > 4200)) {
+          this.markPolygon(blk.pts, 4);
+        }
       }
     }
   }
@@ -966,11 +1002,12 @@ class UrbanInfillExclusionMask {
   }
 
   isPointClear(x: number, z: number): boolean {
-    // Imperial Palace protected green enclosure
-    if (x >= -1950 && x <= -300 && z >= -1400 && z <= 200) return false;
-    // Accurate Tokyo Bay open water & Haneda Airport runways exclusion
+    // Accurate 12-vertex Imperial Palace + Kitanomaru + Kokyo Gaien moat-bounded enclosure
+    if (isPointInImperialExclusion(x, z)) return false;
+    // Accurate Tokyo Bay open water, Haneda Airport runways & container port zones exclusion
     if (isPointInTokyoBayWater(x, z)) return false;
     if (isPointOnHanedaAirport(x, z)) return false;
+    if (isPointOnTokyoBayPort(x, z)) return false;
 
     if (x < this.minX || x >= this.maxX || z < this.minZ || z >= this.maxZ) return false;
     const c = Math.floor((x - this.minX) / this.cellSize);
@@ -980,8 +1017,8 @@ class UrbanInfillExclusionMask {
 
   isFootprintClear(cx: number, cz: number, w: number, d: number, angle: number): boolean {
     if (!this.isPointClear(cx, cz)) return false;
-    const hw = w * 0.5 + 2.0;
-    const hd = d * 0.5 + 2.0;
+    const hw = w * 0.5 + 0.8;
+    const hd = d * 0.5 + 0.8;
     const cosA = Math.cos(angle);
     const sinA = Math.sin(angle);
     const corners: [number, number][] = [
@@ -1222,9 +1259,9 @@ export class CityChunkManager {
   }
 
   /**
-   * Deterministically fills sparse inner-Tokyo urban chunks (< 720 buildings) with road-aligned
-   * low-rise & mid-rise Japanese infill buildings (`hb: 'p'`, `h = 7..22m`) strictly clear of
-   * roads, rivers, Tokyo Bay, parks, rail corridors, landmarks, Imperial Palace, and existing OSM buildings.
+   * Deterministically fills sparse Tokyo street-block sub-cells with road-aligned low-rise
+   * and mid-rise Japanese infill buildings (`hb: 'p'`, `h = 7..28m`) strictly clear of roads,
+   * rivers, Tokyo Bay, parks, rail corridors, landmarks, Imperial Palace, and existing OSM buildings.
    */
   private synthesizeChunkInfill(
     meta: UrbanChunkMeta,
@@ -1232,62 +1269,95 @@ export class CityChunkManager {
   ): { meta: UrbanChunkMeta; buildings: UrbanBuildingRecord[] } {
     if (
       !this.infillMask ||
-      sourceBuildings.length >= 720 ||
-      Math.abs(meta.centerX) >= 9000 ||
-      Math.abs(meta.centerZ) >= 8500
+      Math.abs(meta.centerX) >= 11_500 ||
+      Math.abs(meta.centerZ) >= 10_500
     ) {
       return { meta, buildings: sourceBuildings };
     }
 
     const chunkSize = this.manifest?.chunkSizeMeters ?? 2000;
     const half = chunkSize * 0.5;
-    const minX = meta.centerX - half + 18;
-    const maxX = meta.centerX + half - 18;
-    const minZ = meta.centerZ - half + 18;
-    const maxZ = meta.centerZ + half - 18;
+    const chunkMinX = meta.centerX - half;
+    const chunkMinZ = meta.centerZ - half;
+    const minX = chunkMinX + 12;
+    const maxX = meta.centerX + half - 12;
+    const minZ = chunkMinZ + 12;
+    const maxZ = meta.centerZ + half - 12;
 
-    // Fast 8m local occupancy grid for existing OSM buildings in this chunk
-    const occCell = 8;
-    const occCols = Math.ceil((chunkSize + 64) / occCell);
-    const occRows = Math.ceil((chunkSize + 64) / occCell);
-    const occOriginX = meta.centerX - half - 32;
-    const occOriginZ = meta.centerZ - half - 32;
-    const occupied = new Uint8Array(occCols * occRows);
-
-    const markOcc = (cx: number, cz: number, radM: number) => {
-      const c0 = Math.max(0, Math.floor((cx - radM - occOriginX) / occCell));
-      const c1 = Math.min(occCols - 1, Math.floor((cx + radM - occOriginX) / occCell));
-      const r0 = Math.max(0, Math.floor((cz - radM - occOriginZ) / occCell));
-      const r1 = Math.min(occRows - 1, Math.floor((cz + radM - occOriginZ) / occCell));
-      for (let r = r0; r <= r1; r++) {
-        const off = r * occCols;
-        for (let c = c0; c <= c1; c++) {
-          occupied[off + c] = 1;
-        }
-      }
+    // 4x4 sub-block (500m x 500m) density counters so dense OSM hubs stay untouched
+    // while sparse halves of boundary chunks get cohesive urban street-block infill
+    const subCellSize = chunkSize / 4;
+    const subCounts = new Uint16Array(16);
+    const getSubIdx = (x: number, z: number): number => {
+      const sc = Math.max(0, Math.min(3, Math.floor((x - chunkMinX) / subCellSize)));
+      const sr = Math.max(0, Math.min(3, Math.floor((z - chunkMinZ) / subCellSize)));
+      return sr * 4 + sc;
     };
 
-    const isOccFree = (cx: number, cz: number, radM: number): boolean => {
-      const c0 = Math.max(0, Math.floor((cx - radM - occOriginX) / occCell));
-      const c1 = Math.min(occCols - 1, Math.floor((cx + radM - occOriginX) / occCell));
-      const r0 = Math.max(0, Math.floor((cz - radM - occOriginZ) / occCell));
-      const r1 = Math.min(occRows - 1, Math.floor((cz + radM - occOriginZ) / occCell));
+    // Fast 4m local occupancy grid using oriented rectangular footprints
+    const occCell = 4;
+    const occCols = Math.ceil((chunkSize + 64) / occCell);
+    const occRows = Math.ceil((chunkSize + 64) / occCell);
+    const occOriginX = chunkMinX - 32;
+    const occOriginZ = chunkMinZ - 32;
+    const occupied = new Uint8Array(occCols * occRows);
+
+    const checkOrMarkRect = (
+      cx: number,
+      cz: number,
+      w: number,
+      d: number,
+      angle: number,
+      margin: number,
+      mark: boolean,
+    ): boolean => {
+      const hw = w * 0.5 + margin;
+      const hd = d * 0.5 + margin;
+      const cosA = Math.cos(angle);
+      const sinA = Math.sin(angle);
+      const aabbHalfX = Math.abs(hw * cosA) + Math.abs(hd * sinA);
+      const aabbHalfZ = Math.abs(hw * sinA) + Math.abs(hd * cosA);
+
+      const c0 = Math.max(0, Math.floor((cx - aabbHalfX - occOriginX) / occCell));
+      const c1 = Math.min(occCols - 1, Math.floor((cx + aabbHalfX - occOriginX) / occCell));
+      const r0 = Math.max(0, Math.floor((cz - aabbHalfZ - occOriginZ) / occCell));
+      const r1 = Math.min(occRows - 1, Math.floor((cz + aabbHalfZ - occOriginZ) / occCell));
+
       for (let r = r0; r <= r1; r++) {
-        const off = r * occCols;
+        const wz = occOriginZ + (r + 0.5) * occCell;
+        const dz = wz - cz;
+        const rowOff = r * occCols;
         for (let c = c0; c <= c1; c++) {
-          if (occupied[off + c] !== 0) return false;
+          const wx = occOriginX + (c + 0.5) * occCell;
+          const dx = wx - cx;
+          // Transform cell center into oriented building local frame
+          const lx = dx * cosA + dz * sinA;
+          const lz = -dx * sinA + dz * cosA;
+          if (Math.abs(lx) <= hw && Math.abs(lz) <= hd) {
+            if (mark) {
+              occupied[rowOff + c] = 1;
+            } else if (occupied[rowOff + c] !== 0) {
+              return false;
+            }
+          }
         }
       }
       return true;
     };
 
     for (const b of sourceBuildings) {
-      markOcc(b.cx, b.cz, Math.hypot(b.w * 0.5, b.d * 0.5) + 3.0);
+      checkOrMarkRect(b.cx, b.cz, b.w, b.d, b.a, 1.5, true);
+      subCounts[getSubIdx(b.cx, b.cz)]!++;
     }
 
     const combined = sourceBuildings.slice();
-    const targetCount = 780;
-    const step = 28;
+    const distChunk = Math.hypot(meta.centerX, meta.centerZ);
+    const targetCount = distChunk < 7500 ? 2050 : 1450;
+    if (combined.length >= targetCount) {
+      return { meta, buildings: sourceBuildings };
+    }
+
+    const step = 19;
     const chunkSalt = Math.imul(meta.cx + 512, 73856093) ^ Math.imul(meta.cz + 512, 19349663);
     let nextId = 900_000_000 + Math.abs(chunkSalt % 80_000_000);
     let added = 0;
@@ -1296,7 +1366,7 @@ export class CityChunkManager {
     const cols = Math.floor((maxX - minX) / step);
     const rows = Math.floor((maxZ - minZ) / step);
     const totalSlots = Math.max(1, cols * rows);
-    const primeStride = 37;
+    const primeStride = 43;
 
     for (let s = 0; s < totalSlots && combined.length < targetCount; s++) {
       const slot = (s * primeStride) % totalSlots;
@@ -1304,31 +1374,36 @@ export class CityChunkManager {
       const gz = Math.floor(slot / Math.max(1, cols));
 
       const r1 = hashInfill(gx, gz, chunkSalt ^ 11);
-      // Leave ~14% natural courtyards / alleyways for authentic urban breathing room
-      if (r1 < 0.14) continue;
+      // Leave ~8% natural courtyards / pocket parks for Tokyo breathing room
+      if (r1 < 0.08) continue;
 
       const r2 = hashInfill(gx, gz, chunkSalt ^ 29);
       const r3 = hashInfill(gx, gz, chunkSalt ^ 53);
       const r4 = hashInfill(gx, gz, chunkSalt ^ 97);
       const r5 = hashInfill(gx, gz, chunkSalt ^ 149);
 
-      const cx = minX + (gx + 0.5) * step + (r2 - 0.5) * 10;
-      const cz = minZ + (gz + 0.5) * step + (r3 - 0.5) * 10;
+      const cx = minX + (gx + 0.5) * step + (r2 - 0.5) * 7;
+      const cz = minZ + (gz + 0.5) * step + (r3 - 0.5) * 7;
+      const subIdx = getSubIdx(cx, cz);
+      if (subCounts[subIdx]! >= 135) continue;
+
       const angle = this.infillMask.sampleRoadAngle(cx, cz);
+      const distFromCore = Math.hypot(cx, cz);
+      const coreFactor = Math.max(0, 1 - distFromCore / 10_500);
 
-      const w = 10 + r4 * 10; // 10..20m
-      const d = 9 + r5 * 9; // 9..18m
-      const radius = Math.hypot(w * 0.5, d * 0.5) + 2.5;
+      const isMidBlock = coreFactor > 0.35 && r4 > 0.72;
+      const w = isMidBlock ? 18 + r4 * 10 : 11 + r4 * 12; // 18..28m or 11..23m
+      const d = isMidBlock ? 14 + r5 * 8 : 10 + r5 * 10; // 14..22m or 10..20m
 
-      if (!isOccFree(cx, cz, radius)) continue;
+      if (!checkOrMarkRect(cx, cz, w, d, angle, 1.6, false)) continue;
       if (!this.infillMask.isFootprintClear(cx, cz, w, d, angle)) continue;
 
-      // Realistic Tokyo mid/low-rise height (7..22m), slightly taller in central wards
-      const distFromCore = Math.hypot(cx, cz);
-      const coreFactor = Math.max(0, 1 - distFromCore / 9500);
-      const h = Math.round((7 + Math.pow(r1, 1.35) * (10 + coreFactor * 5)) * 10) / 10;
+      // Realistic Tokyo urban height profile: 7..28m in central wards, 7..18m in mid-ring wards
+      const maxBoost = distFromCore < 7500 ? 11 + coreFactor * 10 : 11;
+      const rawH = 7 + Math.pow(r1, 1.25) * maxBoost;
       const typology: 'c' | 'r' =
-        h >= 15.5 || (coreFactor > 0.45 && r4 > 0.55) ? 'c' : 'r';
+        rawH >= 15.0 || (coreFactor > 0.42 && r4 > 0.52) ? 'c' : 'r';
+      const h = Math.round((typology === 'c' ? Math.max(rawH, 11.5) : rawH) * 10) / 10;
 
       combined.push({
         id: nextId++,
@@ -1337,11 +1412,12 @@ export class CityChunkManager {
         w: Math.round(w * 10) / 10,
         d: Math.round(d * 10) / 10,
         a: Math.round(angle * 1000) / 1000,
-        h: Math.min(22, Math.max(7, h)),
+        h: Math.min(28, Math.max(7, h)),
         hb: 'p',
         t: typology,
       });
-      markOcc(cx, cz, radius);
+      checkOrMarkRect(cx, cz, w, d, angle, 1.6, true);
+      subCounts[subIdx]!++;
       added++;
     }
 
@@ -1555,6 +1631,11 @@ export class CityChunkManager {
 
     const color = new THREE.Color();
     for (const chunk of this.loaded.values()) {
+      if (chunk.lod0Group) {
+        this.disposeLod0(chunk);
+        chunk.activeLod = 1;
+        chunk.lod1Mesh.visible = this.buildingsVisible;
+      }
       for (let i = 0; i < chunk.buildings.length; i++) {
         const b = chunk.buildings[i]!;
         color.setHex(getBuildingTintHex(b.id, b.t, isDark));

@@ -27,6 +27,15 @@ import {
   showcaseZoneBounds,
   TERRAIN_ELEVATION_LEVELS,
 } from '../city/cityGeometryHelpers.js';
+import {
+  buildImperialPalaceModel,
+  IMPERIAL_PALACE_ARCHITECTURAL_FOOTPRINTS,
+  IMPERIAL_PALACE_INNER_POLY,
+  IMPERIAL_PALACE_PLATEAU_Y,
+  isPointInImperialMoat,
+  isPointOnImperialPlateau,
+  type ImperialPalaceHandle,
+} from '../city/imperialPalace.js';
 import { ShibuyaStreetscapeLayer } from '../city/streetscapeGenerator.js';
 import { registerStreetscapeForCutaway } from '../city/streetscapeRegistry.js';
 import {
@@ -41,10 +50,18 @@ import {
   type WaterTextureSet,
 } from '../city/surfaceTextures.js';
 import {
+  buildTokyoAirportComplexes,
+  type AirportComplexesHandle,
+} from '../city/airportComplexes.js';
+import {
   buildTokyoBayWaterfront,
   TOKYO_BAY_OCEAN_POLYGON,
   type BayfrontDetailHandle,
 } from '../city/tokyoBayWaterfront.js';
+import {
+  buildTokyoStreetLightNetwork,
+  type StreetLightNetworkHandle,
+} from '../city/streetLights.js';
 import { injectRadialCutaway, type CutawayUniforms } from '../materials/cutawayShader.js';
 import { createParkCanopyTexture } from '../materials/facadeLibrary.js';
 import type { UrbanBaseEnvironment } from '../types.js';
@@ -307,6 +324,9 @@ export class CityTerrainLayer {
   private readonly cutawayUniforms?: CutawayUniforms;
   private readonly undergroundReferenceGrid: THREE.GridHelper;
   private bayfrontDetails: BayfrontDetailHandle | null = null;
+  private airportComplexes: AirportComplexesHandle | null = null;
+  private imperialPalaceDetails: ImperialPalaceHandle | null = null;
+  private streetLightNetwork: StreetLightNetworkHandle | null = null;
   private treeTrunkMesh: THREE.InstancedMesh | null = null;
   private treeCanopyMesh: THREE.InstancedMesh | null = null;
   private treePaletteIndices: Uint8Array | null = null;
@@ -359,7 +379,7 @@ export class CityTerrainLayer {
         roughnessMap: this.textures.water.roughnessMap,
         bumpMap: this.textures.water.bumpMap,
         bumpScale: 0.28,
-        roughness: 0.14,
+        roughness: 0.55,
         metalness: 0.34,
         envMapIntensity: 1.75,
       },
@@ -377,7 +397,7 @@ export class CityTerrainLayer {
         roughnessMap: this.textures.water.roughnessMap,
         bumpMap: this.textures.water.bumpMap,
         bumpScale: 0.24,
-        roughness: 0.14,
+        roughness: 0.55,
         metalness: 0.34,
         envMapIntensity: 1.75,
       },
@@ -390,7 +410,7 @@ export class CityTerrainLayer {
         roughnessMap: this.textures.parcel.roughnessMap,
         bumpMap: this.textures.parcel.bumpMap,
         bumpScale: 0.12,
-        color: isDark ? 0xd9e2ec : 0xf6f3ec,
+        color: isDark ? 0xd9e2ec : 0xe6e1d8,
         roughness: 0.95,
         metalness: 0.01,
       },
@@ -416,7 +436,7 @@ export class CityTerrainLayer {
         roughnessMap: this.textures.parcel.roughnessMap,
         bumpMap: this.textures.parcel.bumpMap,
         bumpScale: 0.12,
-        color: isDark ? 0xcad4df : 0xeae5dc,
+        color: isDark ? 0xcad4df : 0xd9d4cb,
         roughness: 0.92,
         metalness: 0.02,
       },
@@ -452,6 +472,9 @@ export class CityTerrainLayer {
         roughnessMap: this.textures.sidewalk.roughnessMap,
         bumpMap: this.textures.sidewalk.bumpMap,
         bumpScale: 0.14,
+        emissiveMap: this.textures.sidewalk.emissiveMap ?? null,
+        emissive: new THREE.Color(isDark ? 0xffffff : 0x000000),
+        emissiveIntensity: isDark ? 0.34 : 0.0,
         roughness: 0.9,
         metalness: 0.02,
       },
@@ -464,6 +487,9 @@ export class CityTerrainLayer {
         roughnessMap: this.textures.roadTertiary.roughnessMap,
         bumpMap: this.textures.roadTertiary.bumpMap,
         bumpScale: 0.1,
+        emissiveMap: this.textures.roadTertiary.emissiveMap ?? null,
+        emissive: new THREE.Color(isDark ? 0xffffff : 0x000000),
+        emissiveIntensity: isDark ? 0.42 : 0.0,
         roughness: 0.88,
         metalness: 0.04,
       },
@@ -476,6 +502,9 @@ export class CityTerrainLayer {
         roughnessMap: this.textures.roadSecondary.roughnessMap,
         bumpMap: this.textures.roadSecondary.bumpMap,
         bumpScale: 0.1,
+        emissiveMap: this.textures.roadSecondary.emissiveMap ?? null,
+        emissive: new THREE.Color(isDark ? 0xffffff : 0x000000),
+        emissiveIntensity: isDark ? 0.66 : 0.0,
         roughness: 0.86,
         metalness: 0.04,
       },
@@ -488,6 +517,9 @@ export class CityTerrainLayer {
         roughnessMap: this.textures.roadPrimary.roughnessMap,
         bumpMap: this.textures.roadPrimary.bumpMap,
         bumpScale: 0.1,
+        emissiveMap: this.textures.roadPrimary.emissiveMap ?? null,
+        emissive: new THREE.Color(isDark ? 0xffffff : 0x000000),
+        emissiveIntensity: isDark ? 0.92 : 0.0,
         roughness: 0.85,
         metalness: 0.05,
       },
@@ -500,6 +532,9 @@ export class CityTerrainLayer {
         roughnessMap: this.textures.roadTrunk.roughnessMap,
         bumpMap: this.textures.roadTrunk.bumpMap,
         bumpScale: 0.1,
+        emissiveMap: this.textures.roadTrunk.emissiveMap ?? null,
+        emissive: new THREE.Color(isDark ? 0xffffff : 0x000000),
+        emissiveIntensity: isDark ? 1.15 : 0.0,
         roughness: 0.84,
         metalness: 0.05,
       },
@@ -512,6 +547,9 @@ export class CityTerrainLayer {
         roughnessMap: this.textures.intersection.roughnessMap,
         bumpMap: this.textures.intersection.bumpMap,
         bumpScale: 0.1,
+        emissiveMap: this.textures.intersection.emissiveMap ?? null,
+        emissive: new THREE.Color(isDark ? 0xffffff : 0x000000),
+        emissiveIntensity: isDark ? 0.92 : 0.0,
         roughness: 0.86,
         metalness: 0.04,
       },
@@ -519,7 +557,14 @@ export class CityTerrainLayer {
     );
 
     this.elevatedRoadMaterial = new THREE.MeshStandardMaterial({
-      color: isDark ? 0x394557 : 0x9ca2aa,
+      color: 0xffffff,
+      map: this.textures.roadTrunk.map,
+      roughnessMap: this.textures.roadTrunk.roughnessMap,
+      bumpMap: this.textures.roadTrunk.bumpMap,
+      bumpScale: 0.1,
+      emissiveMap: this.textures.roadTrunk.emissiveMap ?? null,
+      emissive: new THREE.Color(isDark ? 0xffffff : 0x000000),
+      emissiveIntensity: isDark ? 1.10 : 0.0,
       roughness: 0.82,
       metalness: 0.07,
       transparent: false,
@@ -576,8 +621,8 @@ export class CityTerrainLayer {
       injectRadialCutaway(this.treeCanopyMaterial, cutawayUniforms, 'building');
     }
 
-    // Base metropolitan ground plane at y = -1.25 with world-meter UVs
-    const baseGeom = new THREE.PlaneGeometry(110_000, 110_000);
+    // Base metropolitan ground plane at y = -1.25 (covers 23 wards + Narita NRT at +56km)
+    const baseGeom = new THREE.PlaneGeometry(180_000, 180_000);
     baseGeom.rotateX(-Math.PI / 2);
     baseGeom.translate(0, levelY('baseGround'), 0);
     const normalizedBase = normalizeFlatGeometry(baseGeom, 'world');
@@ -628,6 +673,7 @@ export class CityTerrainLayer {
       s.map.dispose();
       s.roughnessMap.dispose();
       s.bumpMap.dispose();
+      s.emissiveMap?.dispose();
     }
     bundle.water.roughnessMap.dispose();
     bundle.water.bumpMap.dispose();
@@ -683,6 +729,33 @@ export class CityTerrainLayer {
       this.cutawayUniforms,
     );
     this.group.add(this.bayfrontDetails.group);
+
+    // 1b-2. Haneda (HND) & Narita (NRT) 3D Airport Complexes, Fleet & Surrounding Urban/Port Districts
+    if (this.airportComplexes) {
+      this.group.remove(this.airportComplexes.group);
+      this.airportComplexes.dispose();
+    }
+    this.airportComplexes = buildTokyoAirportComplexes(
+      env,
+      this.isDark,
+      this.clipPlanes,
+      this.waterMaterial,
+      this.cutawayUniforms,
+    );
+    this.group.add(this.airportComplexes.group);
+
+    // 1c. 3D Imperial Palace Complex (plateau, stone ishigaki walls, Kyuden, Nijubashi, Yagura & Budokan)
+    if (this.imperialPalaceDetails) {
+      this.group.remove(this.imperialPalaceDetails.group);
+      this.imperialPalaceDetails.dispose();
+    }
+    this.imperialPalaceDetails = buildImperialPalaceModel(
+      this.isDark,
+      this.clipPlanes,
+      this.waterMaterial,
+      this.cutawayUniforms,
+    );
+    this.group.add(this.imperialPalaceDetails.group);
 
     // 2. Real OSM Urban Landuse Districts & Railway Yards
     if (env.landuseBlocks && env.landuseBlocks.length > 0) {
@@ -767,19 +840,10 @@ export class CityTerrainLayer {
     this.addMergedLayer(quayGeoms, this.quayMaterial, 'osm-river-quays', 2);
     this.addMergedLayer(waterGeoms, this.waterMaterial, 'osm-water-layer', 3);
 
-    // 4. Real OSM Parks & Botanical Forests (+ Imperial Palace Inner Forest Sanctuary)
-    const imperialPalaceInnerPts: [number, number][] = [
-      [-1720, -1040],
-      [-1260, -1160],
-      [-760, -1020],
-      [-580, -480],
-      [-660, 40],
-      [-1280, 90],
-      [-1740, -260],
-    ];
+    // 4. Real OSM Parks & Botanical Forests (+ Imperial Palace base green under-skirt)
     const parkGeoms: THREE.BufferGeometry[] = [];
     const palaceGeom = buildPolygonGeometryXZ(
-      imperialPalaceInnerPts,
+      IMPERIAL_PALACE_INNER_POLY as [number, number][],
       levelY('parks') - 0.008,
       'world',
     );
@@ -848,7 +912,7 @@ export class CityTerrainLayer {
           r.pts,
           r.w * 0.85,
           SURFACE_ELEVATION_LAYERS.elevatedExpresswayY + (i % 3) * 0.04,
-          'none',
+          'road',
         );
         if (g) elevatedRoadGeoms.push(g);
         continue;
@@ -966,6 +1030,12 @@ export class CityTerrainLayer {
     );
     this.addMergedLayer(elevatedRoadGeoms, this.elevatedRoadMaterial, 'osm-elevated-roads', 10, false);
     this.populateInstancedTrees(env);
+    if (this.streetLightNetwork) {
+      this.group.remove(this.streetLightNetwork.group);
+      this.streetLightNetwork.dispose();
+    }
+    this.streetLightNetwork = buildTokyoStreetLightNetwork(env, this.isDark, this.clipPlanes);
+    this.group.add(this.streetLightNetwork.group);
     this.streetscapeLayer.populate(env);
   }
 
@@ -974,13 +1044,23 @@ export class CityTerrainLayer {
    * in strictly 2 InstancedMesh draw calls (trunks + multi-lobe canopies) with natural green variation.
    */
   private populateInstancedTrees(env: UrbanBaseEnvironment): void {
-    const maxTrees = 8500;
-    const parkBudget = 5200;
+    const maxTrees = 22_000;
+    const parkBudget = 17_500;
     const trees: TreeInstanceRecord[] = [];
     const seenCells = new Set<number>();
 
     const cellKey = (x: number, z: number) =>
-      (Math.floor(x / 10) + 4096) * 8192 + (Math.floor(z / 10) + 4096);
+      (Math.floor(x / 8) + 4096) * 8192 + (Math.floor(z / 8) + 4096);
+
+    const isInsideImperialArchitecture = (x: number, z: number): boolean => {
+      // Keep compact Kokyo Gaien ceremonial gravel forecourt & Gyoko-dori axis clear while allowing outer lawn black pines
+      if (x >= -1165 && x <= -895 && z >= 120 && z <= 325) return true;
+      if (x >= -920 && x <= -575 && z >= -25 && z <= 85) return true;
+      for (const fp of IMPERIAL_PALACE_ARCHITECTURAL_FOOTPRINTS) {
+        if (Math.hypot(x - fp.x, z - fp.z) < fp.r) return true;
+      }
+      return false;
+    };
 
     // Quick AABB-filtered water polygon check so park/boulevard trees stay on dry land
     const waterBounds = env.waterPolygons.map((wp) => {
@@ -998,6 +1078,7 @@ export class CityTerrainLayer {
     });
 
     const isInWater = (x: number, z: number): boolean => {
+      if (isPointInImperialMoat(x, z)) return true;
       for (let i = 0; i < waterBounds.length; i++) {
         const wb = waterBounds[i]!;
         if (x < wb.minX || x > wb.maxX || z < wb.minZ || z > wb.maxZ) continue;
@@ -1053,9 +1134,19 @@ export class CityTerrainLayer {
       }
     }
 
-    // 1. OSM Park groves (natural dense canopies inside Tokyo's parks & Imperial Palace gardens)
-    for (let pi = 0; pi < env.parkPolygons.length && trees.length < parkBudget; pi++) {
-      const pts = env.parkPolygons[pi]!.pts;
+    // 1. Imperial Palace Fukiage & East Gardens Forest + all OSM Park groves
+    const forestPolys: { name: string | null; pts: [number, number][]; isImperial?: boolean }[] = [
+      {
+        name: '皇居内苑・吹上御苑',
+        pts: IMPERIAL_PALACE_INNER_POLY as [number, number][],
+        isImperial: true,
+      },
+      ...env.parkPolygons,
+    ];
+
+    for (let pi = 0; pi < forestPolys.length && trees.length < parkBudget; pi++) {
+      const polyEntry = forestPolys[pi]!;
+      const pts = polyEntry.pts;
       if (pts.length < 3) continue;
       let minX = Infinity;
       let maxX = -Infinity;
@@ -1073,28 +1164,40 @@ export class CityTerrainLayer {
       if (Math.abs((minX + maxX) * 0.5) > 16500 || Math.abs((minZ + maxZ) * 0.5) > 16500) continue;
 
       const approxArea = spanX * spanZ;
-      const spacing = approxArea > 280_000 ? 28 : approxArea > 60_000 ? 22 : 17;
+      const spacing = polyEntry.isImperial
+        ? 16
+        : approxArea > 280_000
+          ? 18
+          : approxArea > 60_000
+            ? 15
+            : 13;
       let parkAdded = 0;
-      const parkCap = approxArea > 300_000 ? 340 : 120;
+      const parkCap = polyEntry.isImperial
+        ? 2200
+        : Math.min(1800, Math.max(120, Math.floor(approxArea / 360)));
 
       for (let gx = minX + spacing * 0.4; gx < maxX && parkAdded < parkCap && trees.length < parkBudget; gx += spacing) {
         for (let gz = minZ + spacing * 0.4; gz < maxZ && parkAdded < parkCap && trees.length < parkBudget; gz += spacing) {
           const ix = Math.round(gx);
           const iz = Math.round(gz);
           const r0 = hashTree(ix, iz, pi * 17 + 3);
-          if (r0 < 0.24) continue; // Natural park clearings & lawns
+          const jx = gx + (hashTree(ix, iz, 31) - 0.5) * spacing * 0.65;
+          const jz = gz + (hashTree(ix, iz, 57) - 0.5) * spacing * 0.65;
 
-          const jx = gx + (hashTree(ix, iz, 31) - 0.5) * spacing * 0.68;
-          const jz = gz + (hashTree(ix, iz, 57) - 0.5) * spacing * 0.68;
+          // Organic grove clearings & lawns via low-frequency smooth wave
+          const clearingWave = Math.sin(jx * 0.017 + pi) * Math.cos(jz * 0.019 - pi * 0.7);
+          if ((clearingWave > 0.62 && r0 < 0.72) || r0 < 0.12) continue;
+
           if (!pointInPoly(jx, jz, pts)) continue;
+          if (isInsideImperialArchitecture(jx, jz)) continue;
           if (isInWater(jx, jz) || isRoadSideBlocked(jx, jz)) continue;
 
           const ck = cellKey(jx, jz);
           if (seenCells.has(ck)) continue;
           seenCells.add(ck);
 
-          const scaleXZ = 0.85 + hashTree(ix, iz, 83) * 0.72;
-          const scaleY = 0.85 + hashTree(ix, iz, 107) * 0.65;
+          const scaleXZ = 1.25 + hashTree(ix, iz, 83) * 1.1;
+          const scaleY = 1.15 + hashTree(ix, iz, 107) * 1.0;
           trees.push({
             x: jx,
             z: jz,
@@ -1200,7 +1303,8 @@ export class CityTerrainLayer {
 
     for (let i = 0; i < trees.length; i++) {
       const tr = trees[i]!;
-      dummy.position.set(tr.x, 0, tr.z);
+      const baseY = isPointOnImperialPlateau(tr.x, tr.z) ? IMPERIAL_PALACE_PLATEAU_Y : 0;
+      dummy.position.set(tr.x, baseY, tr.z);
       dummy.rotation.set(0, tr.rotY, 0);
       dummy.scale.set(tr.scaleXZ, tr.scaleY, tr.scaleXZ);
       dummy.updateMatrix();
@@ -1231,52 +1335,89 @@ export class CityTerrainLayer {
     const w = this.textures.water;
     w.bumpMap.offset.set((elapsedSec * 0.012) % 1, (elapsedSec * 0.008) % 1);
     w.roughnessMap.offset.set((-elapsedSec * 0.007) % 1, (elapsedSec * 0.011) % 1);
+    this.streetLightNetwork?.updateAnimation(elapsedSec);
   }
 
   /**
-   * Smoothly tints Tokyo Bay, rivers, foliage canopies, and terrain ambiance across
-   * dawn, noon, golden hour sunset, blue hour twilight, and night.
+   * Smoothly tints Tokyo Bay, rivers, arterial streetlamp glow, foliage canopies, and ground
+   * ambiance across dawn, noon, golden hour, sunset, blue hour twilight, and night.
    */
   setTimeOfDay(hour: number, rawNightFactor: number): void {
     const h = ((hour % 24) + 24) % 24;
     const nf = Math.max(0, Math.min(1, rawNightFactor));
 
-    // Golden-hour / dawn warmth peaks around 6.0h and 17.3h
-    const sunsetWarm = Math.exp(-Math.pow((h - 17.3) / 1.15, 2));
-    const dawnWarm = Math.exp(-Math.pow((h - 6.0) / 1.1, 2));
+    // Golden-hour / dawn warmth peaks around 5.8h and 17.35h
+    const sunsetWarm = Math.exp(-Math.pow((h - 17.35) / 0.85, 2));
+    const dawnWarm = Math.exp(-Math.pow((h - 5.85) / 0.85, 2));
     const goldenWarmth = Math.min(1, Math.max(sunsetWarm, dawnWarm * 0.85));
 
-    const bayDay = new THREE.Color(0x4f84ad);
-    const bayGolden = new THREE.Color(0x886c68);
-    const bayNight = new THREE.Color(0x10283f);
+    const bayDay = new THREE.Color(0x427aa8);
+    const bayGolden = new THREE.Color(0x9c7262);
+    const bayNight = new THREE.Color(0x0c1e36);
     this.bayMaterial.color
       .copy(bayDay)
       .lerp(bayNight, nf)
-      .lerp(bayGolden, goldenWarmth * 0.45);
-    this.bayMaterial.envMapIntensity = 1.75 + goldenWarmth * 0.35 - nf * 0.25;
+      .lerp(bayGolden, goldenWarmth * 0.42);
+    this.bayMaterial.envMapIntensity = 1.75 + goldenWarmth * 0.45 - nf * 0.2;
 
-    const riverDay = new THREE.Color(0x5990b8);
-    const riverGolden = new THREE.Color(0x96776e);
-    const riverNight = new THREE.Color(0x153654);
+    const riverDay = new THREE.Color(0x4c85b2);
+    const riverGolden = new THREE.Color(0xa67a68);
+    const riverNight = new THREE.Color(0x102744);
     this.waterMaterial.color
       .copy(riverDay)
       .lerp(riverNight, nf)
-      .lerp(riverGolden, goldenWarmth * 0.45);
-    this.waterMaterial.envMapIntensity = 1.75 + goldenWarmth * 0.35 - nf * 0.25;
+      .lerp(riverGolden, goldenWarmth * 0.42);
+    this.waterMaterial.envMapIntensity = 1.75 + goldenWarmth * 0.45 - nf * 0.2;
+
+    // Smooth dusk ground dimming before dark textures swap in at deep blue hour
+    const duskMul = this.isDark ? 1.0 : 1.0 - nf * 0.54;
+    this.groundMaterial.color.setRGB(duskMul, duskMul * (this.isDark ? 1.0 : 1.0 + nf * 0.03), duskMul * (this.isDark ? 1.0 : 1.0 + nf * 0.08));
+    if (this.isDark) {
+      this.landuseResidentialMat.color.setHex(0xd9e2ec);
+      this.landuseCommercialMat.color.setHex(0xcad4df);
+    } else {
+      const resDay = new THREE.Color(0xe6e1d8);
+      const comDay = new THREE.Color(0xd9d4cb);
+      const duskTint = new THREE.Color(0x6b788e);
+      this.landuseResidentialMat.color.copy(resDay).lerp(duskTint, nf * 0.72);
+      this.landuseCommercialMat.color.copy(comDay).lerp(duskTint, nf * 0.72);
+    }
+
+    // Arterial, expressway, intersection & sidewalk streetlamp glow ramp during dusk -> night
+    const lampT = Math.max(0, Math.min(1, (nf - 0.22) / 0.62));
+    const lampGlow = lampT * lampT * (3 - 2 * lampT);
+    const lampCol = lampGlow > 0.002 ? 0xffffff : 0x000000;
+    this.trunkRoadMaterial.emissive.setHex(lampCol);
+    this.trunkRoadMaterial.emissiveIntensity = lampGlow * 1.15;
+    this.elevatedRoadMaterial.emissive.setHex(lampCol);
+    this.elevatedRoadMaterial.emissiveIntensity = lampGlow * 1.10;
+    this.primaryRoadMaterial.emissive.setHex(lampCol);
+    this.primaryRoadMaterial.emissiveIntensity = lampGlow * 0.92;
+    this.secondaryRoadMaterial.emissive.setHex(lampCol);
+    this.secondaryRoadMaterial.emissiveIntensity = lampGlow * 0.66;
+    this.tertiaryRoadMaterial.emissive.setHex(lampCol);
+    this.tertiaryRoadMaterial.emissiveIntensity = lampGlow * 0.42;
+    this.intersectionRoadMaterial.emissive.setHex(lampCol);
+    this.intersectionRoadMaterial.emissiveIntensity = lampGlow * 0.92;
+    this.sidewalkPlazaMaterial.emissive.setHex(lampCol);
+    this.sidewalkPlazaMaterial.emissiveIntensity = lampGlow * 0.34;
+    this.streetLightNetwork?.setNightFactor(nf);
+    this.imperialPalaceDetails?.setNightFactor(nf);
+    this.airportComplexes?.setNightFactor(nf);
 
     // Subtle atmospheric canopy & park lighting tint
     const canopyDay = new THREE.Color(0xffffff);
-    const canopyGolden = new THREE.Color(0xffdfbf);
-    const canopyNight = new THREE.Color(0x88a4c2);
+    const canopyGolden = new THREE.Color(0xffcfa6);
+    const canopyNight = new THREE.Color(0x6e8cb0);
     this.treeCanopyMaterial.color
       .copy(canopyDay)
-      .lerp(canopyNight, nf * 0.45)
-      .lerp(canopyGolden, goldenWarmth * 0.22);
+      .lerp(canopyNight, nf * 0.55)
+      .lerp(canopyGolden, goldenWarmth * 0.24);
 
     this.parkMaterial.color
       .copy(canopyDay)
-      .lerp(canopyNight, nf * 0.25)
-      .lerp(canopyGolden, goldenWarmth * 0.16);
+      .lerp(canopyNight, nf * 0.35)
+      .lerp(canopyGolden, goldenWarmth * 0.18);
   }
 
   setSurfaceOpacity(opacity: number, undergroundActive: boolean): void {
@@ -1306,6 +1447,9 @@ export class CityTerrainLayer {
     }
 
     this.bayfrontDetails?.setOpacity(clamped, isTranslucent);
+    this.airportComplexes?.setOpacity(clamped, isTranslucent);
+    this.imperialPalaceDetails?.setOpacity(clamped, isTranslucent);
+    this.streetLightNetwork?.setOpacity(clamped, isTranslucent);
     // Keep ghost-surface view spotless without legacy cyan grid clutter
     this.undergroundReferenceGrid.visible = false;
     this.streetscapeLayer.setVisibilityAndOpacity(true, clamped, undergroundActive);
@@ -1322,6 +1466,9 @@ export class CityTerrainLayer {
       mat.map = set.map;
       mat.roughnessMap = set.roughnessMap;
       mat.bumpMap = set.bumpMap;
+      if (set.emissiveMap !== undefined) {
+        mat.emissiveMap = set.emissiveMap ?? null;
+      }
       mat.needsUpdate = true;
     };
 
@@ -1336,7 +1483,7 @@ export class CityTerrainLayer {
     this.landuseResidentialMat.map = this.textures.parcel.map;
     this.landuseResidentialMat.roughnessMap = this.textures.parcel.roughnessMap;
     this.landuseResidentialMat.bumpMap = this.textures.parcel.bumpMap;
-    this.landuseResidentialMat.color.setHex(isDark ? 0xd9e2ec : 0xf6f3ec);
+    this.landuseResidentialMat.color.setHex(isDark ? 0xd9e2ec : 0xe6e1d8);
     this.landuseResidentialMat.needsUpdate = true;
 
     this.landuseIndustrialMat.map = this.textures.industrialPort.map;
@@ -1348,7 +1495,7 @@ export class CityTerrainLayer {
     this.landuseCommercialMat.map = this.textures.parcel.map;
     this.landuseCommercialMat.roughnessMap = this.textures.parcel.roughnessMap;
     this.landuseCommercialMat.bumpMap = this.textures.parcel.bumpMap;
-    this.landuseCommercialMat.color.setHex(isDark ? 0xcad4df : 0xeae5dc);
+    this.landuseCommercialMat.color.setHex(isDark ? 0xcad4df : 0xd9d4cb);
     this.landuseCommercialMat.needsUpdate = true;
 
     this.bayMaterial.roughnessMap = this.textures.water.roughnessMap;
@@ -1371,8 +1518,12 @@ export class CityTerrainLayer {
     this.railYardMaterial.bumpMap = this.textures.railYard.bumpMap;
     this.railYardMaterial.color.setHex(0xffffff);
     this.railYardMaterial.needsUpdate = true;
-    this.elevatedRoadMaterial.color.setHex(isDark ? 0x394557 : 0x9ca2aa);
+    bindSurface(this.elevatedRoadMaterial, this.textures.roadTrunk);
+    this.elevatedRoadMaterial.color.setHex(0xffffff);
     this.bayfrontDetails?.setTheme(isDark);
+    this.airportComplexes?.setTheme(isDark);
+    this.imperialPalaceDetails?.setTheme(isDark);
+    this.streetLightNetwork?.setNightFactor(isDark ? 1.0 : 0.0);
 
     this.treeTrunkMaterial.color.setHex(isDark ? 0x2a231e : 0x5c4b3c);
     this.treeCanopyMaterial.color.setHex(0xffffff);
@@ -1397,6 +1548,21 @@ export class CityTerrainLayer {
       this.group.remove(this.bayfrontDetails.group);
       this.bayfrontDetails.dispose();
       this.bayfrontDetails = null;
+    }
+    if (this.airportComplexes) {
+      this.group.remove(this.airportComplexes.group);
+      this.airportComplexes.dispose();
+      this.airportComplexes = null;
+    }
+    if (this.imperialPalaceDetails) {
+      this.group.remove(this.imperialPalaceDetails.group);
+      this.imperialPalaceDetails.dispose();
+      this.imperialPalaceDetails = null;
+    }
+    if (this.streetLightNetwork) {
+      this.group.remove(this.streetLightNetwork.group);
+      this.streetLightNetwork.dispose();
+      this.streetLightNetwork = null;
     }
     this.group.traverse((obj) => {
       if (obj instanceof THREE.Mesh) {

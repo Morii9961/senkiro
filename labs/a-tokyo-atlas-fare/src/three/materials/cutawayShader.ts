@@ -55,21 +55,33 @@ float senkiroBayer4x4(vec2 fragCoord) {
 
 /**
  * Injects per-instance world-meter wall UVs, architectural concrete rooftop shading (no windows
- * on rooftops!), vertical ground-contact AO darkening, and roof emissive suppression into an
- * instanced LOD1 building MeshStandardMaterial rendered on BoxGeometry(1, 1, 1).
+ * on rooftops!), vertical ground-contact AO darkening, Tokyo night occupancy/height hierarchy,
+ * rooftop red aviation obstruction beacons on skyscrapers, and smooth dusk/night albedo grading
+ * into an instanced LOD1 building MeshStandardMaterial rendered on BoxGeometry(1, 1, 1).
  */
-export function injectInstancedFacadeUv(material: THREE.MeshStandardMaterial): void {
-  const userData = material.userData as { __senkiroInstancedUv?: boolean };
+export function injectInstancedFacadeUv(
+  material: THREE.MeshStandardMaterial,
+  nightFactorUniform?: { value: number },
+): void {
+  const userData = material.userData as {
+    __senkiroInstancedUv?: boolean;
+    __senkiroNightUniform?: { value: number };
+  };
+  if (nightFactorUniform) {
+    userData.__senkiroNightUniform = nightFactorUniform;
+  }
   if (userData.__senkiroInstancedUv) return;
   userData.__senkiroInstancedUv = true;
 
-  const cacheTag = 'senkiro-instanced-world-uv-v2';
+  const uNight = userData.__senkiroNightUniform ?? { value: 0.0 };
+  const cacheTag = 'senkiro-instanced-world-uv-v3';
   const prevKey = material.customProgramCacheKey?.bind(material);
   material.customProgramCacheKey = () => `${prevKey ? prevKey() : ''}:${cacheTag}`;
 
   const prevCompile = material.onBeforeCompile;
   material.onBeforeCompile = (shader, renderer) => {
     if (prevCompile) prevCompile(shader, renderer);
+    shader.uniforms.uInstNightFactor = uNight;
 
     shader.vertexShader = shader.vertexShader
       .replace(
@@ -77,7 +89,11 @@ export function injectInstancedFacadeUv(material: THREE.MeshStandardMaterial): v
         `#include <common>
 varying float vInstRoofMask;
 varying float vInstWallShade;
-varying vec2 vInstRoofWorldXz;`,
+varying vec2 vInstRoofWorldXz;
+varying vec2 vInstRoofUv;
+varying float vInstNightGain;
+varying float vInstCoolShift;
+varying float vInstHeightM;`,
       )
       .replace(
         '#include <uv_vertex>',
@@ -85,19 +101,43 @@ varying vec2 vInstRoofWorldXz;`,
 vInstRoofMask = 0.0;
 vInstWallShade = 1.0;
 vInstRoofWorldXz = vec2(0.0);
+vInstRoofUv = uv;
+vInstNightGain = 0.65;
+vInstCoolShift = 0.0;
+vInstHeightM = 15.0;
 #ifdef USE_INSTANCING
   {
     float instSx = length(instanceMatrix[0].xyz);
     float instSy = length(instanceMatrix[1].xyz);
     float instSz = length(instanceMatrix[2].xyz);
+    vInstHeightM = instSy;
     float isRoof = step(0.5, normal.y);
     vInstRoofMask = isRoof;
     float wallW = abs(normal.x) > 0.5 ? instSz : instSx;
-    float instPhase = fract(sin(dot(instanceMatrix[3].xz, vec2(12.9898, 78.233))) * 43758.5453) * 2.0;
+    vec2 bWorldXz = instanceMatrix[3].xz;
+    float bHash = fract(sin(dot(bWorldXz, vec2(12.9898, 78.233))) * 43758.5453);
+    float bHash2 = fract(sin(dot(bWorldXz, vec2(39.346, 11.135))) * 24634.6345);
+    float instPhase = bHash * 2.0;
     vec2 worldWallUv = isRoof > 0.5
       ? vec2(uv.x * instSx * 0.04, uv.y * instSz * 0.04)
       : vec2(uv.x * wallW * 0.042 + instPhase, uv.y * instSy * 0.042);
     vInstRoofWorldXz = vec2(uv.x * instSx, uv.y * instSz);
+    vInstRoofUv = uv;
+
+    // Tokyo night urban hierarchy: tall office hubs glow crisply, low residential stays quiet & sparse
+    float dShinjuku = length(bWorldXz - vec2(-6050.0, -930.0));
+    float dShibuya = length(bWorldXz - vec2(-5940.0, 2580.0));
+    float dTokyo = length(bWorldXz - vec2(-100.0, 150.0));
+    float dRoppongi = length(bWorldXz - vec2(-3430.0, 2300.0));
+    float dIkebukuro = length(bWorldXz - vec2(-5080.0, -5370.0));
+    float dShinagawa = length(bWorldXz - vec2(-2540.0, 5860.0));
+    float minHubDist = min(min(dShinjuku, dShibuya), min(min(dTokyo, dRoppongi), min(dIkebukuro, dShinagawa)));
+    float hubBoost = 1.0 + smoothstep(1400.0, 250.0, minHubDist) * 0.45;
+
+    float occ = bHash < 0.26 ? 0.14 : (0.58 + bHash2 * 0.55);
+    float heightWeight = instSy > 45.0 ? 1.15 : instSy > 22.0 ? 0.68 : 0.28;
+    vInstNightGain = occ * heightWeight * hubBoost;
+    vInstCoolShift = smoothstep(18.0, 55.0, instSy);
 
     // Ground-contact AO darkening near base + subtle cardinal facet shading
     float heightM = clamp(position.y + 0.5, 0.0, 1.0) * instSy;
@@ -125,9 +165,14 @@ vInstRoofWorldXz = vec2(0.0);
       .replace(
         '#include <common>',
         `#include <common>
+uniform float uInstNightFactor;
 varying float vInstRoofMask;
 varying float vInstWallShade;
-varying vec2 vInstRoofWorldXz;`,
+varying vec2 vInstRoofWorldXz;
+varying vec2 vInstRoofUv;
+varying float vInstNightGain;
+varying float vInstCoolShift;
+varying float vInstHeightM;`,
       )
       .replace(
         '#include <map_fragment>',
@@ -141,10 +186,14 @@ if (vInstRoofMask > 0.5) {
   // Clean architectural concrete parapet roof (zero window texture on rooftops)
   vec2 roofTile = abs(fract(vInstRoofWorldXz * 0.125) - 0.5);
   float seam = smoothstep(0.46, 0.5, max(roofTile.x, roofTile.y));
-  vec3 concreteRoof = vec3(0.67, 0.69, 0.72) * (1.0 - seam * 0.08);
-  diffuseColor.rgb = concreteRoof * instTint;
+  vec3 dayRoof = vec3(0.67, 0.69, 0.72) * (1.0 - seam * 0.08);
+  vec3 nightRoof = vec3(0.14, 0.17, 0.22) * (1.0 - seam * 0.08);
+  diffuseColor.rgb = mix(dayRoof, nightRoof, smoothstep(0.30, 0.88, uInstNightFactor)) * instTint;
 } else {
-  diffuseColor.rgb *= vInstWallShade;
+  // Smooth twilight-to-midnight albedo cool-down so dusk doesn't pop abruptly
+  float nightDarken = smoothstep(0.32, 0.90, uInstNightFactor);
+  vec3 wallTint = mix(vec3(1.0), vec3(0.54, 0.59, 0.68), nightDarken);
+  diffuseColor.rgb *= vInstWallShade * wallTint;
 }`,
       )
       .replace(
@@ -155,7 +204,19 @@ roughnessFactor = mix(roughnessFactor, 0.92, vInstRoofMask);`,
       .replace(
         '#include <emissivemap_fragment>',
         `#include <emissivemap_fragment>
-totalEmissiveRadiance *= (1.0 - vInstRoofMask);`,
+if (vInstRoofMask > 0.5) {
+  totalEmissiveRadiance = vec3(0.0);
+  if (vInstHeightM > 68.0 && uInstNightFactor > 0.35) {
+    vec2 cornerDist = abs(vInstRoofUv - 0.5);
+    float cornerBeacon = smoothstep(0.42, 0.485, cornerDist.x) * smoothstep(0.42, 0.485, cornerDist.y);
+    float beaconFade = smoothstep(0.35, 0.78, uInstNightFactor);
+    totalEmissiveRadiance = vec3(1.85, 0.14, 0.10) * cornerBeacon * beaconFade;
+  }
+} else {
+  // Modulate window glow per building occupancy/height and shift tall towers slightly cooler white
+  vec3 coolBalance = mix(vec3(1.0, 0.97, 0.92), vec3(0.90, 0.96, 1.06), vInstCoolShift);
+  totalEmissiveRadiance *= vInstNightGain * coolBalance;
+}`,
       );
   };
   material.needsUpdate = true;

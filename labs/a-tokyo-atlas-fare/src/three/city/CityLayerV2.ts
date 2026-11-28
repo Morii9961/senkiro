@@ -153,7 +153,7 @@ export class CityLayerV2 implements CityLayerAdapter {
     this.elapsedSec += Math.max(0, dtSec);
     this.terrainLayer.updateAnimation(this.elapsedSec);
     this.buildingManager.updateForCamera(camera, focusTarget);
-    this.skyEnv?.updateForCamera(camera.position);
+    this.skyEnv?.updateForCamera(camera.position, camera.far);
   }
 
   getStats(): CityRenderStats {

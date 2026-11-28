@@ -1,11 +1,7 @@
 /**
  * Accurate Tokyo Bay Waterfront Coastline, Reclaimed Islands, Seawall Quays,
- * Port Container Terminals (Odaiba / Aomi / Oi Wharf), Oi Shinkansen Rail Yard Depots,
- * and Haneda Airport (HND) Procedural Architecture.
- *
- * Replaces the legacy 5-vertex straight-line ocean backdrop with realistic Tokyo Bay
- * reclaimed island landmasses and lightweight instanced/merged maritime & railway depot details
- * (~6 draw calls total).
+ * Port Container Terminals (Odaiba / Aomi / Oi Wharf) & Oi Shinkansen Rail Yard Depots.
+ * (Detailed Haneda & Narita airport complexes live in `airportComplexes.ts`.)
  */
 
 import * as THREE from 'three';
@@ -215,6 +211,22 @@ export function isPointOnHanedaAirport(x: number, z: number): boolean {
   return false;
 }
 
+/**
+ * Returns true if `(x, z)` lies on Tokyo Bay container port terminals or Breakwater port islands
+ * (protects container yards & reclaimed port aprons from suburban residential infill).
+ */
+export function isPointOnTokyoBayPort(x: number, z: number): boolean {
+  if (z < 3950 || z > 13000 || x < -2100 || x > 4600) return false;
+  for (const isl of TOKYO_BAY_ISLANDS) {
+    if (isl.kind !== 'port') continue;
+    if (isl.id === 'odaiba-aomi' && z < 6200) continue;
+    if (pointInPoly(x, z, isl.pts as [number, number][])) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function hashDet(x: number, z: number, salt = 31): number {
   const h = Math.sin(x * 0.0173 + z * 0.0291 + salt * 43.17) * 43758.5453123;
   return h - Math.floor(h);
@@ -287,52 +299,15 @@ function createGantryCraneGeometry(): THREE.BufferGeometry {
   return merged;
 }
 
-function createRunwayStripeTexture(isDark: boolean): THREE.CanvasTexture {
-  const w = 128;
-  const h = 512;
-  const canvas = document.createElement('canvas');
-  canvas.width = w;
-  canvas.height = h;
-  const ctx = canvas.getContext('2d');
-  if (ctx) {
-    ctx.fillStyle = isDark ? '#1d232c' : '#3a4048';
-    ctx.fillRect(0, 0, w, h);
-
-    // Side edge lines
-    ctx.fillStyle = isDark ? 'rgba(226,232,240,0.72)' : 'rgba(248,250,252,0.88)';
-    ctx.fillRect(10, 0, 4, h);
-    ctx.fillRect(w - 14, 0, 4, h);
-
-    // Centerline dashes
-    for (let y = 18; y < h; y += 64) {
-      ctx.fillRect(w / 2 - 2, y, 4, 34);
-    }
-
-    // Touchdown zone piano-key threshold markings near ends
-    for (let x = 22; x < w - 22; x += 12) {
-      if (Math.abs(x - w / 2) < 9) continue;
-      ctx.fillRect(x, 12, 6, 36);
-      ctx.fillRect(x, h - 48, 6, 36);
-    }
-  }
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = THREE.ClampToEdgeWrapping;
-  tex.wrapT = THREE.RepeatWrapping;
-  tex.repeat.set(1, 3);
-  tex.anisotropy = 8;
-  tex.colorSpace = THREE.SRGBColorSpace;
-  return tex;
-}
-
 const CONTAINER_PALETTE = [
-  0xb91c1c, // Maritime crimson (K-Line / Hamburg)
-  0x0369a1, // Ocean blue (Maersk)
-  0xd9468f, // ONE magenta (Japan Ocean Network Express!)
-  0x15803d, // Evergreen green
-  0xc2410c, // Hapag-Lloyd orange
-  0x1e3a5f, // Deep navy (NYK / MOL)
-  0xdbe3ec, // Reefer white
-  0xb45309, // Ochre brown
+  0x4b5c6e, // Weathered steel slate blue
+  0x5d6975, // Cool maritime grey
+  0x7a544e, // Muted rust oxide
+  0x4d6261, // Seafoam industrial teal
+  0xb8c0c8, // Reefer off-white
+  0x74695c, // Drab khaki cargo
+  0x464e57, // Charcoal iron
+  0x684e50, // Dark terracotta
 ];
 
 export interface BayfrontDetailHandle {
@@ -394,15 +369,15 @@ export function buildTokyoBayWaterfront(
 
   // ---- Materials for 3D Port & Depot Architecture ----
   const containerMat = new THREE.MeshStandardMaterial({
-    color: 0xffffff,
-    roughness: 0.62,
-    metalness: 0.28,
+    color: isDark ? 0x5c6878 : 0xffffff,
+    roughness: 0.72,
+    metalness: 0.22,
     clippingPlanes: clipPlanes,
   });
   const craneMat = new THREE.MeshStandardMaterial({
-    color: isDark ? 0xb83b32 : 0xd64538,
-    roughness: 0.48,
-    metalness: 0.35,
+    color: isDark ? 0x7a3430 : 0xa84840,
+    roughness: 0.56,
+    metalness: 0.30,
     clippingPlanes: clipPlanes,
   });
   const depotHallMat = new THREE.MeshStandardMaterial({
@@ -417,37 +392,17 @@ export function buildTokyoBayWaterfront(
     metalness: 0.42,
     clippingPlanes: clipPlanes,
   });
-  let runwayTex = createRunwayStripeTexture(isDark);
-  const runwayMat = new THREE.MeshStandardMaterial({
-    map: runwayTex,
-    roughness: 0.86,
-    metalness: 0.04,
-    polygonOffset: true,
-    polygonOffsetFactor: -4,
-    polygonOffsetUnits: -4,
-    clippingPlanes: clipPlanes,
-  });
-  const terminalMat = new THREE.MeshStandardMaterial({
-    color: isDark ? 0x52657a : 0xdde4ec,
-    roughness: 0.38,
-    metalness: 0.35,
-    emissive: new THREE.Color(isDark ? 0xffe4b5 : 0x000000),
-    emissiveIntensity: isDark ? 0.35 : 0.0,
-    clippingPlanes: clipPlanes,
-  });
 
   const detailMaterials = [
     containerMat,
     craneMat,
     depotHallMat,
     parkedTrainMat,
-    terminalMat,
   ];
   if (cutawayUniforms) {
     for (const m of detailMaterials) {
       injectRadialCutaway(m, cutawayUniforms, 'building');
     }
-    injectRadialCutaway(runwayMat, cutawayUniforms, 'terrain');
   }
 
   // ---- 1. Port Container Stacks, Warehouses & Quay Gantry Cranes inside Bayfront Industrial Blocks ----
@@ -488,14 +443,16 @@ export function buildTokyoBayWaterfront(
         }
       }
 
-      // Place container yard rows + logistics warehouses
-      const stepX = 34;
+      // Place orderly maritime bay rows + logistics warehouses (clear crane/truck avenues every ~135m)
+      const stepX = 28;
       const stepZ = 22;
       for (let x = minX + 24; x < maxX - 24 && containerRecords.length < 1800; x += stepX) {
+        if (Math.abs((x - minX) % 135) < 22) continue;
         for (let z = minZ + 20; z < maxZ - 20 && containerRecords.length < 1800; z += stepZ) {
+          if (Math.abs((z - minZ) % 135) < 20) continue;
           if (!pointInPoly(x, z, blk.pts)) continue;
           const r = hashDet(x, z, bi + 7);
-          if (r < 0.28) continue; // leave realistic truck aisles
+          if (r < 0.26) continue; // realistic truck aisles
           if (r > 0.87 && depotHallRecords.length < 220) {
             // Port logistics warehouse shed
             depotHallRecords.push({
@@ -507,9 +464,11 @@ export function buildTokyoBayWaterfront(
               a: rowAngle,
             });
           } else {
-            // Intermodal container stack (2..4 containers high -> 5.2m..10.4m)
+            // Intermodal container stack (2..4 containers high -> 5.2m..10.4m), bay-grouped color
             const tiers = 2 + Math.floor(hashDet(x, z, 41) * 3);
-            const colIdx = Math.floor(hashDet(x, z, 53) * CONTAINER_PALETTE.length);
+            const bayX = Math.floor(x / 84);
+            const bayZ = Math.floor(z / 44);
+            const colIdx = Math.floor(hashDet(bayX, bayZ, 53) * CONTAINER_PALETTE.length);
             containerRecords.push({
               x,
               z,
@@ -678,65 +637,15 @@ export function buildTokyoBayWaterfront(
     group.add(parkedTrainInst);
   }
 
-  // ---- 2. Haneda International Airport (HND): 4 Marked Runways + Terminals 1, 2, 3 & Control Tower ----
-  const runwayGeoms: THREE.BufferGeometry[] = [];
-  const runways: { cx: number; cz: number; len: number; wid: number; rotY: number }[] = [
-    // Runway A (16R/34L) — west side NNW-SSE
-    { cx: 520, cz: 14720, len: 2950, wid: 66, rotY: 0.42 },
-    // Runway C (16L/34R) — east side parallel NNW-SSE
-    { cx: 2150, cz: 14880, len: 3180, wid: 66, rotY: 0.42 },
-    // Runway B (04/22) — northern crosswind ENE-WSW
-    { cx: 880, cz: 13640, len: 2420, wid: 62, rotY: -1.16 },
-    // Runway D (05/23) — reclaimed offshore pier ENE-WSW
-    { cx: 3820, cz: 15840, len: 2450, wid: 62, rotY: -1.14 },
-  ];
-  for (const rw of runways) {
-    const g = new THREE.PlaneGeometry(rw.wid, rw.len);
-    g.rotateX(-Math.PI / 2);
-    g.rotateY(rw.rotY);
-    g.translate(rw.cx, -0.42, rw.cz);
-    runwayGeoms.push(g.index ? g.toNonIndexed() : g);
-  }
-  addMerged(runwayGeoms, runwayMat, 'haneda-airport-runways', 3);
-
-  const terminalGeoms: THREE.BufferGeometry[] = [];
-  const pushTerminal = (w: number, h: number, d: number, x: number, z: number, rotY: number) => {
-    const g = new THREE.BoxGeometry(w, h, d);
-    g.rotateY(rotY);
-    g.translate(x, h * 0.5 - 0.5, z);
-    terminalGeoms.push(g.toNonIndexed());
-  };
-  // Terminal 1 (West domestic concourse)
-  pushTerminal(90, 22, 560, 1080, 14840, 0.42);
-  // Terminal 2 (East domestic concourse)
-  pushTerminal(90, 22, 620, 1520, 14720, 0.42);
-  // Terminal 3 (International terminal, west of Runway A)
-  pushTerminal(120, 24, 420, -180, 15120, 0.42);
-  // Haneda Air Traffic Control Tower (116m icon)
-  const towerShaft = new THREE.CylinderGeometry(7, 11, 106, 12);
-  towerShaft.translate(1280, 52, 14780);
-  terminalGeoms.push(towerShaft.toNonIndexed());
-  const towerCab = new THREE.CylinderGeometry(16, 12, 14, 12);
-  towerCab.translate(1280, 109, 14780);
-  terminalGeoms.push(towerCab.toNonIndexed());
-  addMerged(terminalGeoms, terminalMat, 'haneda-airport-terminals', 4, true);
-
   return {
     group,
     setTheme(nextDark: boolean): void {
-      craneMat.color.setHex(nextDark ? 0xb83b32 : 0xd64538);
+      containerMat.color.setHex(nextDark ? 0x5c6878 : 0xffffff);
+      craneMat.color.setHex(nextDark ? 0x7a3430 : 0xa84840);
       depotHallMat.color.setHex(nextDark ? 0x475569 : 0xc8cfd8);
-      terminalMat.color.setHex(nextDark ? 0x52657a : 0xdde4ec);
-      terminalMat.emissive.setHex(nextDark ? 0xffe4b5 : 0x000000);
-      terminalMat.emissiveIntensity = nextDark ? 0.35 : 0.0;
-      const oldTex = runwayTex;
-      runwayTex = createRunwayStripeTexture(nextDark);
-      runwayMat.map = runwayTex;
-      runwayMat.needsUpdate = true;
-      oldTex.dispose();
     },
     setOpacity(opacity: number, isTranslucent: boolean): void {
-      for (const m of [...detailMaterials, runwayMat]) {
+      for (const m of detailMaterials) {
         const need = m.transparent !== isTranslucent;
         m.transparent = isTranslucent;
         m.opacity = opacity;
@@ -752,8 +661,6 @@ export function buildTokyoBayWaterfront(
       group.traverse((o) => {
         if (o instanceof THREE.Mesh) o.geometry.dispose();
       });
-      runwayTex.dispose();
-      runwayMat.dispose();
       for (const m of detailMaterials) m.dispose();
     },
   };

@@ -105,6 +105,39 @@ export function configureHighQualitySunShadow(
 }
 
 /**
+ * Sanitizes HalfFloat HDR render buffer pixels before UnrealBloomPass so any Inf/NaN
+ * from extreme grazing GGX specular highlights cannot poison the Gaussian bloom pyramid.
+ */
+const HDR_SANITIZE_SHADER = {
+  uniforms: {
+    tDiffuse: { value: null },
+  },
+  vertexShader: /* glsl */ `
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  `,
+  fragmentShader: /* glsl */ `
+    uniform sampler2D tDiffuse;
+    varying vec2 vUv;
+    float sanitizeChannel(float v) {
+      return (v >= 0.0 && v <= 65000.0) ? min(v, 6.0) : 0.0;
+    }
+    void main() {
+      vec4 tex = texture2D(tDiffuse, vUv);
+      gl_FragColor = vec4(
+        sanitizeChannel(tex.r),
+        sanitizeChannel(tex.g),
+        sanitizeChannel(tex.b),
+        1.0
+      );
+    }
+  `,
+};
+
+/**
  * Creates a maximally configured Three.js renderer with optional multisampled HDR bloom
  * post-processing and hardware WebGPU capability detection.
  */
@@ -158,6 +191,7 @@ export function createOptimalRenderer(
   // WebGL2 MSAA+HalfFloat+UnrealBloomPass write-back tile/white-screen corruption on resize)
   let composer: EffectComposer | null = null;
   let renderPass: RenderPass | null = null;
+  let sanitizePass: ShaderPass | null = null;
   let bloomPass: UnrealBloomPass | null = null;
   let outputPass: OutputPass | null = null;
   let fxaaPass: ShaderPass | null = null;
@@ -166,7 +200,7 @@ export function createOptimalRenderer(
   let lastSceneCalls = 0;
   let lastSceneTriangles = 0;
 
-  const computeBloomStrength = (nf: number): number => 0.10 + nf * 0.18; // 0.10 day -> 0.28 night
+  const computeBloomStrength = (nf: number): number => 0.10 + nf * 0.18; // 0.10 dusk -> 0.28 night
 
   const syncFxaaResolution = (): void => {
     if (!fxaaPass) return;
@@ -201,16 +235,18 @@ export function createOptimalRenderer(
         lastSceneCalls = r.info.render.calls;
         lastSceneTriangles = r.info.render.triangles;
       };
+      sanitizePass = new ShaderPass(HDR_SANITIZE_SHADER);
       bloomPass = new UnrealBloomPass(
         new THREE.Vector2(rtWidth, rtHeight),
         computeBloomStrength(nightFactor),
-        0.42, // subtle soft architectural glow radius
-        0.88 - nightFactor * 0.14,
+        0.38, // crisp architectural halation radius
+        0.92 - nightFactor * 0.10,
       );
       outputPass = new OutputPass();
       fxaaPass = new ShaderPass(FXAAShader);
 
       composer.addPass(renderPass);
+      composer.addPass(sanitizePass);
       composer.addPass(bloomPass);
       composer.addPass(outputPass);
       composer.addPass(fxaaPass);
@@ -273,8 +309,8 @@ export function createOptimalRenderer(
       nightFactor = Math.max(0, Math.min(1, nf));
       if (bloomPass) {
         bloomPass.strength = computeBloomStrength(nightFactor);
-        // Slightly lower threshold at night so subtle amber office windows catch soft bloom
-        bloomPass.threshold = 0.88 - nightFactor * 0.14;
+        // Only genuine HDR highlights (skyscraper windows, beacons, headlights) bloom cleanly
+        bloomPass.threshold = 0.92 - nightFactor * 0.10;
       }
     },
 
@@ -288,6 +324,7 @@ export function createOptimalRenderer(
 
     dispose(): void {
       fxaaPass?.dispose();
+      sanitizePass?.dispose();
       bloomPass?.dispose();
       outputPass?.dispose();
       composer?.dispose();
