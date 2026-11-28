@@ -12,9 +12,9 @@ import type {
   StationPlace,
   StationRouteFound,
 } from '@senkiro/contracts';
-import { useMemo } from 'react';
+import { type KeyboardEvent, useMemo } from 'react';
 import { isVerticalLinkKind } from '../graph/build.ts';
-import { linkKindLabel, nameText, t } from '../i18n.ts';
+import { linkKindLabel, nameText, placeKindLabel, t } from '../i18n.ts';
 import { STATION_PALETTES, type StationTheme, zoneFill } from '../theme.ts';
 import { UnknownValue } from '../ui/UnknownValue.tsx';
 import {
@@ -145,24 +145,35 @@ export function StationPlan2D(props: StationPlan2DProps) {
     onSelect?.(id);
   };
 
+  const keySelect = (id: StationSelectionId) => (event: KeyboardEvent<SVGGElement>) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      clickPlace(id)(event);
+    }
+  };
+
   const drawArea = (place: StationPlace, projection: PanelProjection) => {
     const selected = place.id === selectedId;
     const onRoute = sets.places.has(place.id);
     const label = nameText(place.names, locale);
     const isPlatform = place.kind === 'platform';
     return (
+      // biome-ignore lint/a11y/useSemanticElements: SVG groups need button semantics without HTML children.
       <g
         key={place.id}
         data-place-id={place.id}
         data-kind={place.kind}
+        role="button"
+        tabIndex={0}
+        aria-label={nameText(place.names, locale) ?? placeKindLabel(locale, place.kind)}
         onClick={clickPlace(place.id)}
+        onKeyDown={keySelect(place.id)}
       >
-        {place.footprint.map((r, i) => {
+        {place.footprint.map((r) => {
           const q = projection.rect(r);
           return (
             <rect
-              // biome-ignore lint/suspicious/noArrayIndexKey: footprint rectangles have no id of their own
-              key={i}
+              key={`${place.id}-rect-${r.x0}-${r.z0}-${r.x1}-${r.z1}`}
               x={q.x}
               y={q.y}
               width={Math.max(q.width, 1)}
@@ -199,7 +210,7 @@ export function StationPlan2D(props: StationPlan2DProps) {
     if (r === undefined) {
       return null;
     }
-    const lines = (place.tracks ?? []).flatMap((track, i) => {
+    const lines = (place.tracks ?? []).flatMap((track) => {
       const side = track.side;
       if (side === undefined || side === null) {
         return [];
@@ -214,7 +225,7 @@ export function StationPlan2D(props: StationPlan2DProps) {
       const doors = track.platformDoors?.status === 'installed';
       return [
         <line
-          key={`track-${track.number}-${i}`}
+          key={`${place.id}-track-${track.number}-${side}`}
           x1={pa.x}
           y1={pa.y}
           x2={pb.x}
@@ -268,7 +279,17 @@ export function StationPlan2D(props: StationPlan2DProps) {
         ? projection.point(link.position)
         : { x: (pa.x + pb.x) / 2, y: (pa.y + pb.y) / 2 };
     return (
-      <g key={link.id} data-link-id={link.id} data-kind={link.kind} onClick={clickPlace(link.id)}>
+      // biome-ignore lint/a11y/useSemanticElements: SVG groups need button semantics without HTML children.
+      <g
+        key={link.id}
+        data-link-id={link.id}
+        data-kind={link.kind}
+        role="button"
+        tabIndex={0}
+        aria-label={nameText(link.names, locale) ?? linkKindLabel(locale, link.kind)}
+        onClick={clickPlace(link.id)}
+        onKeyDown={keySelect(link.id)}
+      >
         <line
           x1={pa.x}
           y1={pa.y}
@@ -315,7 +336,17 @@ export function StationPlan2D(props: StationPlan2DProps) {
         ? VERTICAL_GLYPH[link.kind]
         : '?';
     return (
-      <g key={link.id} data-link-id={link.id} data-kind={link.kind} onClick={clickPlace(link.id)}>
+      // biome-ignore lint/a11y/useSemanticElements: SVG groups need button semantics without HTML children.
+      <g
+        key={link.id}
+        data-link-id={link.id}
+        data-kind={link.kind}
+        role="button"
+        tabIndex={0}
+        aria-label={nameText(link.names, locale) ?? linkKindLabel(locale, link.kind)}
+        onClick={clickPlace(link.id)}
+        onKeyDown={keySelect(link.id)}
+      >
         <circle cx={p.x} cy={p.y} r={5} fill={onRoute ? palette.route : palette.vertical} />
         <text
           x={p.x}
@@ -360,11 +391,16 @@ export function StationPlan2D(props: StationPlan2DProps) {
     const isEntrance = place.kind === 'entrance';
     const fill = onRoute ? palette.route : isEntrance ? palette.entrance : palette.vertical;
     return (
+      // biome-ignore lint/a11y/useSemanticElements: SVG groups need button semantics without HTML children.
       <g
         key={place.id}
         data-place-id={place.id}
         data-kind={place.kind}
+        role="button"
+        tabIndex={0}
+        aria-label={nameText(place.names, locale) ?? placeKindLabel(locale, place.kind)}
         onClick={clickPlace(place.id)}
+        onKeyDown={keySelect(place.id)}
         style={{ cursor: 'pointer' }}
       >
         {isEntrance ? (
@@ -446,13 +482,19 @@ export function StationPlan2D(props: StationPlan2DProps) {
           ))}
         </div>
       )}
+      {/* biome-ignore lint/a11y/useSemanticElements: The SVG must expose its interactive descendants. */}
       <svg
-        role="img"
+        role="group"
         aria-label={`${t(locale, 'floor')} ${label}`}
         viewBox={`0 0 ${width} ${height}`}
         width="100%"
         style={{ display: 'block' }}
         onClick={() => onSelect?.(null)}
+        onKeyDown={(event) => {
+          if (event.key === 'Escape') {
+            onSelect?.(null);
+          }
+        }}
       >
         <rect x={0} y={0} width={width} height={height} fill={palette.background} />
         {grid.panels.map((box) => {
@@ -497,7 +539,7 @@ export function StationPlan2D(props: StationPlan2DProps) {
           color: palette.mutedText,
         }}
       >
-        <span data-compass={north === null ? 'unknown' : 'known'} aria-label={t(locale, 'north')}>
+        <span data-compass={north === null ? 'unknown' : 'known'}>
           {north === null ? (
             <UnknownValue locale={locale} kind="unverified" />
           ) : (
