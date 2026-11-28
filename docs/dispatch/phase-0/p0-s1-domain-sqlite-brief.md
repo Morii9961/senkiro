@@ -9,6 +9,7 @@
 > - `packages/domain-core/**`
 > - `packages/fare-engine/**`
 > - `packages/local-db/**`
+> - `pnpm-lock.yaml`（仅限上述 3 个包安装依赖时由 pnpm 自动更新；**严禁修改根 `package.json` 与其他根配置文件**）
 > - `docs/dispatch/reports/p0-s1-domain-sqlite.md`
 
 ---
@@ -24,10 +25,15 @@
 4. `packages/contracts/src/` 下的实际 TypeScript 定义
 
 ### 你的边界铁律
-- **当前分支**：确认基于合入 `P0-W0` 后的 `integration/phase-0` 切出 `feat/p0-domain-sqlite`。
-- **独占修改范围 `ownedPaths`**：仅允许创建/修改 `packages/domain-core/**`、`packages/fare-engine/**`、`packages/local-db/**`、`docs/dispatch/reports/p0-s1-domain-sqlite.md`。严禁修改根 `package.json`、`packages/contracts` 或他人包目录！
+- **当前分支**：确认基于合入 `P0-W0` 后的 `integration/phase-0` 切出 `feat/p0-domain-sqlite`（先运行 `pnpm install --frozen-lockfile` 继承 Wave 0 锁定环境）。
+- **独占修改范围 `ownedPaths`**：仅允许创建/修改 `packages/domain-core/**`、`packages/fare-engine/**`、`packages/local-db/**`、`docs/dispatch/reports/p0-s1-domain-sqlite.md`，以及本包依赖安装自动触发的 `pnpm-lock.yaml`。严禁修改根 `package.json`、`tsconfig.base.json`、`biome.json`、`packages/contracts/**` 或他人包目录！
+- **Wave 0 工具链与 TS 配置对齐（必读）**：
+  - 根锁文件已锁定 `TypeScript 7.0.2`、`Biome 2.6.9`、`Vitest 5.1.2`、`Zod 4.6.7`。
+  - `tsconfig.base.json` 已开启 `strict: true`、`noUncheckedIndexedAccess: true`、`exactOptionalPropertyTypes: true`、`verbatimModuleSyntax: true`、`rewriteRelativeImportExtensions: true`、`lib: ["ES2023"]`：写内部相对导入使用 `.ts` 后缀；若 `packages/local-db` 的 Web Worker 子模块需要 `Worker` / `navigator.storage` 类型，请在该子模块或专属 `tsconfig` 中补充 `"lib": ["ES2023", "WebWorker"]`（不要污染纯领域包 `domain-core` 与 `fare-engine`）。
+  - 每个包目录下必须放置 `tsconfig.json`、`tsconfig.build.json`、`vitest.config.ts`（参考 `packages/contracts/` 写法），以便接入根 `vitest.config.ts` 与 Turborepo。
+  - 直接复用 `@senkiro/contracts` 已落地的类型与守卫：`FareQuoteDraft`、`createUnpricedFareQuote`、`assertHonestFareQuote`、`FareRoutePreference`（关东旁路用 `'pack:saikyo_bypass'` 等前缀）、`RegionalFareRulePack`（通过闭包工厂如 `createKantoJrRulePack({ trackGraph, fareRuleGraph })` 传入图实例即可，若确需扩展契约钩子请写入交接报告 `## Contract Requests` 而勿私改 `packages/contracts`）、`COUNTABLE_VISIT_SQL_PREDICATE`、`isCountableVisit`、`computeLineCoverage`、`SyncOpLogEntry`。
 - **提取 Lab A 资产方式**：仅通过 `git show lab/a-tokyo-atlas-fare:labs/a-tokyo-atlas-fare/src/domain/<file>` 只读读取；严禁修改 `labs/` 或切换分支。
-- **需要新增根共享依赖或契约字段时**：不要直接改根文件，写入交接报告 `## Contract Requests` 后停下交由主控处理（各包自身的 `packages/<pkg>/package.json` 可按需声明各自依赖）。
+- **需要新增根共享依赖或契约字段时**：不要直接改根文件，写入交接报告 `## Contract Requests` 后停下交由主控处理（各包自身的 `packages/<pkg>/package.json` 可声明各自依赖，如 `drizzle-orm`、`@sqlite.org/sqlite-wasm`、`better-sqlite3` 或内存 sqlite 测试依赖）。
 - **Git 提交署名**：每次 `git commit` 末尾必须包含：
   `Co-authored-by: gemini-code-assist[bot] <176961590+gemini-code-assist[bot]@users.noreply.github.com>`
 
@@ -51,7 +57,7 @@
     - Web 浏览器适配器：基于 `@sqlite.org/sqlite-wasm`（OPFS `sahpool` VFS + Dedicated Web Worker 封装），并在无痕模式/无 OPFS 环境下自动安全降级至内存 SQLite 并标记持久化状态提示；
     - 移动端预留适配器接口槽位（`expo-sqlite` Driver Contract，Phase 5 接入）；
     - Node/Vitest 内存/本地测试驱动（确保 Vitest 下可直接执行真实 SQL 建表、CRUD、事务、四维防误计查询、`.sqlite` 导出导入及 `json` 备份恢复测试）。
-  - 编写完整单测并运行 `pnpm --filter @senkiro/domain-core --filter @senkiro/fare-engine --filter @senkiro/local-db check && pnpm ... build && pnpm ... test` 全部通过。
+  - 编写完整单测并在工作树根目录运行 `pnpm check && pnpm build && pnpm test`（全仓 Biome + TS + Build + Vitest），确认全部通过、0 错误 0 警告。
   - 按 `docs/dispatch/HANDOFF_PROTOCOL.md` 撰写并提交 `docs/dispatch/reports/p0-s1-domain-sqlite.md`（`READY_FOR_MERGE`）。
 ````
 

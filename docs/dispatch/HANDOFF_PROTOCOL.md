@@ -24,7 +24,8 @@
 
 ## 2. 并行隔离五大铁律（Zero Cross-Zone Edits）
 
-1. **严禁越界改文件**：子工作树只能修改派单书 `ownedPaths` 范围内的文件。严禁顺手修改 `docs/01-domain-contract-v1.0.md`、他人负责的 `packages/*` 或根 `package.json`（`P0-W0` 除外）。
+1. **严禁越界改文件**：子工作树只能修改派单书 `ownedPaths` 范围内的文件。严禁顺手修改 `docs/01-domain-contract-v1.0.md`、他人负责的 `packages/*` 或根 `package.json`、`tsconfig.base.json`、`biome.json`、`turbo.json`、`vitest.config.ts`。
+   - **`pnpm-lock.yaml` 并行更新规则**：当子工作树在**自己独占的包/应用**的 `package.json` 中增删依赖并执行 `pnpm install` 时，允许连带更新根 `pnpm-lock.yaml`（但**严禁**手动改动根 `package.json`）；多路并行汇合阶段若出现 `pnpm-lock.yaml` 文本冲突，由主控在集成分支执行 `pnpm install --lockfile-only` 统一重新锁定消解。
 2. **契约变更申请走报告通道**：若实现中发现 `packages/contracts` 缺少字段或根 `package.json` 需要增补共享依赖，**不得擅自修改**，必须写入交接报告 `docs/dispatch/reports/<session-id>.md` 的 `## Contract Requests` 小节并停下，交由主控统一升级契约并合入 `integration/phase-X` 后再 `git merge integration/phase-X`。
 3. **只读读取历史 Lab 基准**：迁入 Lab A/B/C 资产时，仅使用 `git show <lab-branch>:<path>` 只读查看或复制提取至正式 `packages/*`；**严禁切分支、严禁修改 `labs/` 或 `labs/_worktrees/*` 内任何文件**。
 4. **Zero-Codegen（零代码生成）红线**：禁止引入需要生成临时源码文件才能通过 `typecheck` 的工具链（如 GraphQL/Prisma/路由文件生成器）；所有依赖安装后必须直接通过 `pnpm check && pnpm build && pnpm test`。

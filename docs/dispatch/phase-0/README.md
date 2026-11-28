@@ -26,29 +26,25 @@ flowchart LR
 
 ---
 
-## 2. Phase 0 四张派单书索引与订阅推荐
+## 2. Phase 0 四张派单书索引与当前状态
 
-| 顺序 | Session | 推荐模型 | 新建分支（基于 `integration/phase-0`） | 独占路径 `ownedPaths` | 派单书（内含一键复制提示词） |
-| --- | --- | --- | --- | --- | --- |
-| **第 1 步（Wave 0）** | **P0-W0** | **GPT / Codex** 或 **Gemini** | `feat/p0-w0-contracts` | 根工程配置文件 + `packages/contracts/**` + 报告 | [p0-w0-contracts-brief.md](./p0-w0-contracts-brief.md) |
-| **第 2 步（Wave 1 并行）** | **P0-S1** | **GPT / Codex** | `feat/p0-domain-sqlite` | `packages/{domain-core,fare-engine,local-db}/**` + 报告 | [p0-s1-domain-sqlite-brief.md](./p0-s1-domain-sqlite-brief.md) |
-| **第 2 步（Wave 1 并行）** | **P0-S2** | **GPT / Codex** 或 **Gemini** | `feat/p0-station-3d` | `packages/{station-3d,data-stations}/**` + 报告 | [p0-s2-station-3d-brief.md](./p0-s2-station-3d-brief.md) |
-| **第 2 步（Wave 1 并行）** | **P0-S3** | **Claude** | `feat/p0-ui-web-shell` | `packages/ui-kit/**` + `apps/web/**` + 报告 | [p0-s3-ui-web-shell-brief.md](./p0-s3-ui-web-shell-brief.md) |
+| 顺序 | Session | 当前状态 | 推荐模型 | 新建分支（基于 `integration/phase-0`） | 独占路径 `ownedPaths` | 派单书 |
+| --- | --- | --- | --- | --- | --- | --- |
+| **第 1 步（Wave 0）** | **P0-W0** | **✅ 已合并验收**（`75/75` 通过） | Claude / GPT | `feat/p0-w0-contracts` | 根工程配置 + `packages/contracts/**` + 报告 | [p0-w0-contracts-brief.md](./p0-w0-contracts-brief.md) |
+| **第 2 步（Wave 1 并行）** | **P0-S1** | **🚀 可立即启动** | **GPT / Codex** | `feat/p0-domain-sqlite` | `packages/{domain-core,fare-engine,local-db}/**` + `pnpm-lock.yaml` + 报告 | [p0-s1-domain-sqlite-brief.md](./p0-s1-domain-sqlite-brief.md) |
+| **第 2 步（Wave 1 并行）** | **P0-S2** | **🚀 可立即启动** | **GPT / Codex** 或 **Gemini** | `feat/p0-station-3d` | `packages/{station-3d,data-stations}/**` + `pnpm-lock.yaml` + 报告 | [p0-s2-station-3d-brief.md](./p0-s2-station-3d-brief.md) |
+| **第 2 步（Wave 1 并行）** | **P0-S3** | **🚀 可立即启动** | **Claude** | `feat/p0-ui-web-shell` | `packages/ui-kit/**` + `apps/web/**` + `pnpm-lock.yaml` + 报告 | [p0-s3-ui-web-shell-brief.md](./p0-s3-ui-web-shell-brief.md) |
 
 ---
 
-## 3. Morii 手动启动操作四步曲
+## 3. 当前执行步骤（Wave 1 三路并行启动）
 
-1. **打开 `P0-W0` 派单书**，用以下指令从最新的 `integration/phase-0` 新建工作树：
-   ```powershell
-   git -C "E:\SENKIRO" worktree add -b feat/p0-w0-contracts "E:\Workteree\SENKIRO\p0-w0-contracts" integration/phase-0
-   ```
-2. **在新工作树打开编码 Agent**，直接全选复制 `p0-w0-contracts-brief.md` 顶部的「📋 一键复制启动提示词」粘贴发送。
-3. **`P0-W0` 提交报告后，回到本主控 Session** 告知合并；主控核验并 `--no-ff` 合入 `integration/phase-0`。
-4. **同时新建 Wave 1 三个工作树**（务必基于合入 `P0-W0` 后的 `integration/phase-0`）：
-   ```powershell
-   git -C "E:\SENKIRO" worktree add -b feat/p0-domain-sqlite "E:\Workteree\SENKIRO\p0-domain-sqlite" integration/phase-0
-   git -C "E:\SENKIRO" worktree add -b feat/p0-station-3d "E:\Workteree\SENKIRO\p0-station-3d" integration/phase-0
-   git -C "E:\SENKIRO" worktree add -b feat/p0-ui-web-shell "E:\Workteree\SENKIRO\p0-ui-web-shell" integration/phase-0
-   ```
-   分别粘贴 `p0-s1`、`p0-s2`、`p0-s3` 提示词并发推进，完成后依次回主控合入并执行 `Exit Gate 0` 全仓验收！
+`P0-W0` 已合入 `integration/phase-0` 并通过主控验证。请立即基于最新 `integration/phase-0` 同时创建以下 3 个独立工作树：
+
+```powershell
+git -C "E:\SENKIRO" worktree add -b feat/p0-domain-sqlite "E:\Workteree\SENKIRO\p0-domain-sqlite" integration/phase-0
+git -C "E:\SENKIRO" worktree add -b feat/p0-station-3d "E:\Workteree\SENKIRO\p0-station-3d" integration/phase-0
+git -C "E:\SENKIRO" worktree add -b feat/p0-ui-web-shell "E:\Workteree\SENKIRO\p0-ui-web-shell" integration/phase-0
+```
+
+分别复制对应派单书顶部的「📋 一键复制启动提示词」并发分发；三路全部完成后依次回主控合入并执行 `Exit Gate 0` 全仓联调验收！

@@ -2,26 +2,24 @@
   "schema_version": "1.1",
   "project_id": "senkiro.main",
   "project_name": "SENKIRO",
-  "snapshot_at": "2026-11-28T12:20:00+08:00",
+  "snapshot_at": "2026-11-28T12:54:00+08:00",
   "source": {
     "branch": "integration/phase-0",
     "base_main_sha": "e3cba601be157bd0a2a1295e1e36d579c3369923",
-    "tests_rerun": false,
+    "tests_rerun": true,
     "basis": [
-      "2026-11-28 Phase 0 主控归档与派单快照：基于 Git 树核对与各原型自报告，未重跑原型测试",
+      "2026-11-28 Wave 0 合入验证：在 integration/phase-0 绕过 Turbo 缓存实跑 pnpm install --frozen-lockfile && pnpm check && pnpm build && pnpm test，@senkiro/contracts 8 文件 75/75 通过",
       "main@e3cba60（Master Plan v1.0 与多智能体路线图已合入）",
-      "lab/a-tokyo-atlas-fare@9244196（含 integration/atlas-v2@14dd5af 及后续城市景观/遥测提交）",
-      "lab/b-umeda-3d@b2ed773（含 d6cc1df、c994f93 及三语/官方时刻表外链更新）",
-      "lab/c-shinjuku-3d@19b2daa（已零冲突合入 claude/shinjuku-3d-indoor-nav-3f3cce@603492f 与 e44e0e1）",
-      "docs/01-domain-contract-v1.0.md、docs/lab-reports/scores.md、docs/dispatch/HANDOFF_PROTOCOL.md、docs/dispatch/phase-0/*"
+      "lab/a-tokyo-atlas-fare@9244196、lab/b-umeda-3d@b2ed773、lab/c-shinjuku-3d@19b2daa（三座原型只读归档，未重跑原型测试）",
+      "docs/01-domain-contract-v1.0.md、docs/dispatch/reports/p0-w0-contracts.md、docs/dispatch/phase-0/*"
     ]
   },
   "reporter": {
     "agent": "gemini",
-    "note": "Chief Coordinator (Phase 0 Dispatch)"
+    "note": "Chief Coordinator (Phase 0 Wave 1 Release)"
   },
-  "stage": "phase_0_dispatched",
-  "summary": "Master Plan v1.0 与 Gate 0 决策已锁定；三座 Lab 原型已归档至三条只读基准分支并完成评审；全域领域契约 v1.0 与 Phase 0 Wave 0/Wave 1 四张自包含派单书已落盘就绪。",
+  "stage": "phase_0_wave1_ready",
+  "summary": "Wave 0（P0-W0 Monorepo 根骨架与 @senkiro/contracts）已通过主控验证并合入 integration/phase-0（75/75 测试通过）。契约文档与三份 Wave 1 派单书已同步对齐，正式放行 P0-S1 / P0-S2 / P0-S3 三路并行。",
   "overall_progress": null,
   "milestones": [
     {
@@ -93,13 +91,14 @@
     },
     {
       "id": "p0_w0_contracts",
-      "title": "Wave 0：Monorepo 根骨架与 @senkiro/contracts",
-      "status": "not_started",
-      "evidence_level": "repository",
+      "title": "Wave 0：Monorepo 根骨架（TS 7.0.2/Biome/Turbo）与 @senkiro/contracts（75/75 单测）",
+      "status": "done",
+      "evidence_level": "verified_test",
       "evidence_refs": [
-        "docs/dispatch/phase-0/p0-w0-contracts-brief.md"
+        "docs/dispatch/reports/p0-w0-contracts.md",
+        "packages/contracts/src/index.ts"
       ],
-      "human_acceptance": "pending"
+      "human_acceptance": "done"
     },
     {
       "id": "p0_wave1_parallel",
@@ -117,22 +116,22 @@
   "blockers": [],
   "next_actions": [
     {
-      "id": "start_p0_w0",
-      "title": "新建工作树并启动 P0-W0（feat/p0-w0-contracts）",
-      "priority": "P0",
-      "result": "建立 pnpm+Turborepo+Biome+TS strict 骨架并实现 @senkiro/contracts 全量契约与单测。"
-    },
-    {
-      "id": "merge_p0_w0_and_launch_wave1",
-      "title": "合入 P0-W0 后同时拉起 P0-S1 / P0-S2 / P0-S3",
+      "id": "launch_wave1_parallel",
+      "title": "基于 integration/phase-0 同时新建并派发 P0-S1 / P0-S2 / P0-S3",
       "priority": "P0",
       "result": "三路并行完成三图+运价+OPFS SQLite、命令式 3D 车站引擎与三语全屏 Web 壳。"
+    },
+    {
+      "id": "exit_gate_0",
+      "title": "三路依次合入 integration/phase-0 并执行 Exit Gate 0 全仓联调与验收",
+      "priority": "P0",
+      "result": "apps/web 接入 <StationExplorer /> 与 local-db 探针，全仓 check/build/test 与 E2E 通过。"
     }
   ],
   "needs_morii": [
     {
-      "id": "launch_p0_w0_worktree",
-      "decision": "按 docs/dispatch/phase-0/p0-w0-contracts-brief.md 新建 feat/p0-w0-contracts 工作树并分发执行。"
+      "id": "launch_p0_wave1_worktrees",
+      "decision": "按 docs/dispatch/phase-0/README.md 同时新建 feat/p0-domain-sqlite、feat/p0-station-3d、feat/p0-ui-web-shell 三个工作树并粘贴对应提示词启动并行执行。"
     }
   ]
 }

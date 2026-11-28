@@ -8,6 +8,7 @@
 > **独占路径 `ownedPaths`**：
 > - `packages/ui-kit/**`
 > - `apps/web/**`
+> - `pnpm-lock.yaml`（仅限上述包/应用安装依赖时由 pnpm 自动更新；**严禁修改根 `package.json` 与其他根配置文件**）
 > - `docs/dispatch/reports/p0-s3-ui-web-shell.md`
 
 ---
@@ -24,8 +25,12 @@
 5. `packages/contracts/src/` 下的实际 TypeScript 定义
 
 ### 你的边界铁律
-- **当前分支**：确认基于合入 `P0-W0` 后的 `integration/phase-0` 切出 `feat/p0-ui-web-shell`。
-- **独占修改范围 `ownedPaths`**：仅允许创建/修改 `packages/ui-kit/**`、`apps/web/**`、`docs/dispatch/reports/p0-s3-ui-web-shell.md`。严禁修改根 `package.json`、`packages/contracts`、`packages/station-3d` 等他人目录！
+- **当前分支**：确认基于合入 `P0-W0` 后的 `integration/phase-0` 切出 `feat/p0-ui-web-shell`（先运行 `pnpm install --frozen-lockfile` 继承 Wave 0 锁定环境）。
+- **独占修改范围 `ownedPaths`**：仅允许创建/修改 `packages/ui-kit/**`、`apps/web/**`、`docs/dispatch/reports/p0-s3-ui-web-shell.md`，以及本包/应用依赖安装自动触发的 `pnpm-lock.yaml`。严禁修改根 `package.json`、`tsconfig.base.json`、`biome.json`、`packages/contracts/**`、`packages/station-3d/**` 等他人目录！
+- **Wave 0 工具链与 TS 配置对齐（必读）**：
+  - 根锁文件已锁定 `TypeScript 7.0.2`、`Biome 2.6.9`、`Vitest 5.1.2`、`Zod 4.6.7`。
+  - `tsconfig.base.json` 已开启 `strict`、`noUncheckedIndexedAccess`、`exactOptionalPropertyTypes`、`verbatimModuleSyntax`、`rewriteRelativeImportExtensions` 且默认 `lib: ["ES2023"]`：请为 `packages/ui-kit/tsconfig.json` 与 `apps/web/tsconfig.json` 显式补充 `"lib": ["ES2023", "DOM", "DOM.Iterable"]` 与 `"jsx": "react-jsx"`，写内部相对导入使用 `.ts`/`.tsx` 后缀，并各自配备 `vitest.config.ts` 以接入根 `vitest.config.ts`。
+  - 直接复用 `@senkiro/contracts` 已落地的导出：`appSearchParamsSchema`、`createAppSearchParamsSchema`、`parseAppSearchParams`（永不抛错且自动修正 `hub ↔ region` 冲突）、`serializeAppSearchParams`、`resolveLocalizedName`、`requiresSyntheticDisclosure`。
 - **禁止导入未合入的同波次包**：由于本任务与 `P0-S1`/`P0-S2` 并行，你在 Wave 1 阶段**只能依赖 `@senkiro/contracts` 和 `@senkiro/ui-kit`**；在 `apps/web` 中通过清晰的槽位接口（Slot / Lazy Panel）预留 `StationExplorer` 与 `LocalDbStatusProbe` 挂载点，最终联调接线由主控在集成分支统一完成！
 - **Zero-Codegen 约束**：使用 `@tanstack/react-router` 时**必须使用纯代码路由树（`createRootRoute` / `createRoute`）**，严禁引入 `@tanstack/router-plugin` 或路由文件自动生成器！
 - **品牌与版权铁律**：UI 署名严格使用 `SENKIRO`（及子模块 `Atlas / Route / Tickets / Journey / Profile`）；严禁复制 JR/私铁/地铁官方 Logo、官方地图图片或站内图。
@@ -47,7 +52,7 @@
   - 绿灯 `git commit`（M2）。
 - **M3（组件与路由测试、构建验收与交付报告）**：
   - 编写 Vitest + Testing Library 单测：覆盖 `zh-CN / ja / en` 三语切换、浅色/深色主题切换、`kansai / kanto` 区域切换、`AppSearchParams` Zod 校验与异常参数安全回退、五大模块路由切换及桌面/窄屏布局无报错。
-  - 运行 `pnpm --filter @senkiro/ui-kit --filter @senkiro/web check && pnpm ... build && pnpm ... test` 全部零警告通过。
+  - 在工作树根目录运行 `pnpm check && pnpm build && pnpm test`，确认全部通过、0 错误 0 警告。
   - 按 `docs/dispatch/HANDOFF_PROTOCOL.md` 撰写并提交 `docs/dispatch/reports/p0-s3-ui-web-shell.md`（`READY_FOR_MERGE`）。
 ````
 

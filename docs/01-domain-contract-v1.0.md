@@ -83,7 +83,10 @@ sk:<entity>:<scope>:<slug>
 ### 3.2 正则与 Lab 历史三段式兼容
 
 - 正式校验正则：`^sk:(operator|line|segment|station|complex|interchange|level|place|gate|link|service|trip|stoptime|through|rule|product|quote|pass|vehicle|ride|ticket|municipality|source):[a-z0-9-]+:[a-z0-9-]+$`
-- **向后兼容辅助器**：`packages/contracts` 提供 `parseLegacyLabId(rawId, defaultScope)`，用于从 Lab A/B/C 三段式 ID（`sk:<type>:<slug>`）平滑规范化迁移至 v1.0 四段式，新写入主库与 SQLite 的数据一律只允许 v1.0 四段式 `SkId`。
+- **向后兼容辅助器**：`packages/contracts` 提供 `parseLegacyLabId(rawId, defaultScope, options?)`，用于从 Lab A/B/C 三段式 ID（`sk:<type>:<slug>`）平滑规范化迁移至 v1.0 四段式，新写入主库与 SQLite 的数据一律只允许 v1.0 四段式 `SkId`：
+  - **无歧义别名映射（`LEGACY_ENTITY_ALIASES`）**：`platform | concourse | landing | entrance | area` → `place`；`vertical | elevator | escalator | stairs` → `link`。
+  - **歧义或非实体前缀拒绝自动猜测**：`passage`（在不同 Lab 中有时表示区域 `place`、有时表示连接 `link`）、`physical_track`、`direction`、`context`、`update`、`block` 必须由调用方显式传入 `options.entity`，否则抛 `SkIdError`。
+  - **严格保留原大小写**：不静默将 slug 转小写或改写标点，防止误合并不同原型实体（校验仍要求 `[a-z0-9-]+`）。
 
 ---
 
@@ -164,8 +167,13 @@ export interface BaseEntity<T extends EntityIdPrefix = EntityIdPrefix> {
 - **`StationPlace`**（`BaseEntity<'place'>`）：`complexId`、`levelId: SkId<'level'>`、`stationId: SkId<'station'> | null`、`kind: 'platform' | 'concourse' | 'passage' | 'entrance' | 'landing'`、`fareZone: FareZone`、`manager: 'railway' | 'commercial' | 'public-road' | 'unknown' | null`、`footprint: PlanRect[]`、`anchor: PlanPoint`、`existence: ExistenceConfidence`、`geometryConfidence: GeometryConfidence`、`asOf: string | null`、`tracks?: PlatformTrack[]`、`terminus?: SourcedFact<{ end: 'x-' | 'x+' | 'z-' | 'z+' }>`、`leadsTo?: LocalizedNames`。
   - `PlatformTrack`：`number: string`、`services: Array<{ railLineId: SkId<'line'>; towards: LocalizedNames }>`、`side?: 'z-' | 'z+' | 'x-' | 'x+' | null`、`platformDoors?: SourcedFact<{ status: 'installed' | 'planned' | 'none'; since: string | null }>`。
 - **`StationLink`**（`BaseEntity<'link'>`）：`complexId`、`kind: 'passage' | 'gate' | 'stairs' | 'escalator' | 'elevator'`、`fromPlaceId: SkId<'place'>`、`toPlaceId: SkId<'place'>`、`direction: 'both' | 'forward' | 'unknown'`、`connection: ConnectionConfidence`、`stepFree: StepFree`、`hasSteps: boolean | null`、`gateKind?: 'ticket' | 'transfer'`、`position?: PlanPoint`、`hoursNote?: string | null`、`declaredSpan?: [SkId<'level'>, SkId<'level'>] | null`。
-- **`StationHubDataset`**：打包导出某枢纽的完整自包含数据结构：`{ complex, operators, lines, stations, levels, places, links, externalLinks?, sources, disclaimer }`。
-- **寻路策略与结果（`StationRouteQuery / StationRouteResult`）**：支持 `mode: 'standard' | 'step_free'`；不可达时明确返回 `{ reachable: false, reason, steps: [] }`，绝不穿过 `'roadway'` 或未核实的跨社闸内连接。
+- **`StationExternalLink`**：`{ kind: 'official_floor_map' | 'official_timetable' | 'operator_info' | 'accessibility_info' | 'other'; label: LocalizedNames; url: string; operatorId: SkId<'operator'> | null; stationId: SkId<'station'> | null; sourceId: string | null }`（只指向官方页面外链，不复制原文内容）。
+- **`StationHubDataset`**：打包导出某枢纽的完整自包含数据结构：`{ complex, operators, lines, stations, levels, places, links, externalLinks?: StationExternalLink[], sources, disclaimer: LocalizedNames }`。
+- **寻路策略与结果（`StationRouteQuery / StationRouteResult`）**：
+  - `StationRouteQuery`：`{ complexId, fromPlaceId, toPlaceId, mode: 'standard' | 'step_free', allowInferred?: boolean }`。
+  - `StationRouteStep`：`{ index, linkId, kind, fromPlaceId, toPlaceId, fromLevelId, toLevelId, stepFree, connection }`。
+  - `StationRouteFound`：`{ reachable: true, mode, steps: StationRouteStep[], levelSequence: SkId<'level'>[], gatePasses, levelChanges, inferredLinkCount, unconfirmedStepFreeCount, distanceMeters: number | null, durationMinutes: number | null }`（尚无实测距离与耗时来源前，`distanceMeters` 与 `durationMinutes` 恒为 `null`）。
+  - `StationRouteNotFound`：`{ reachable: false, mode, reason: 'unknown-place' | 'unreachable' | 'step-free-unavailable', detail: string, steps: [] }`，绝不穿过 `'roadway'` 或未核实的跨社闸内连接。
 
 ### 5.3 图 3 · 运营服务图（`ServiceGraph`）
 
@@ -180,12 +188,14 @@ export interface BaseEntity<T extends EntityIdPrefix = EntityIdPrefix> {
 - **`FareRule`**（`BaseEntity<'rule'>`）：`ruleId`、`operatorScope`（如 `'jr-west'`、`'jr-east'`、`'kansai-private'`）、`articleRef`、`officialUrl`、`category`（`'base_fare' | 'specific_section' | 'suburban_area' | 'shinkansen_equivalence' | 'local_line_conversion' | 'cross_company' | 'surcharge' | 'pass'`）、`summary`、`preconditions[]`、`exceptions[]`。
 - **`TicketType`**：`'ordinary_paper' | 'ic_card'`。
 - **`SurchargeType`**：`'none' | 'limited_express_non_reserved' | 'limited_express_reserved' | 'green_car' | 'gran_class' | 'privace' | 'premium_car' | 'kintetsu_limited_express' | 'hinotori'`。
-- **6 态结果与解释树（`FareQuote`）**：
-  - `status: 'OK' | 'NOT_APPLICABLE' | 'MISSING_DATA' | 'UNSUPPORTED' | 'STALE_RULE' | 'ERROR'`
-  - `totalAmountYen: number | null`（非 `OK` 状态**强制类型与运行时双锁为 `null`**）
-  - `actualPath: ResolvedPath | null`、`billedPath: ResolvedPath | null`、`pathsDiffer: boolean`、`pathDiffSummary: string | null`
-  - `breakdown: FareBreakdownItem[]`、`explanation: FareExplanationStep[]`、`ruleVersionUsed: string | null`、`isSyntheticTariff: boolean`、`tariffDisclaimer: string | null`。
-- **区域插件化接口**：`TariffProvider`（提供里程费率查表）与 `RegionalFareRulePack`（按区域/运营商挂载近郊区间、第69条、特定运賃与座席附加规则，彻底消除引擎内的地域硬编码）。
+- **6 态结果与可辨识联合（`FareQuote = PricedFareQuote | UnpricedFareQuote`）**：
+  - `PricedFareQuote`：`status: 'OK'`、`totalAmountYen: number`、`breakdown: FareBreakdownItem[]`（非空且各明细求和等于 `totalAmountYen`）；
+  - `UnpricedFareQuote`：`status: 'NOT_APPLICABLE' | 'MISSING_DATA' | 'UNSUPPORTED' | 'STALE_RULE' | 'ERROR'`、`totalAmountYen: null`、`breakdown: []`（编译期与运行时双锁，可通过 `createUnpricedFareQuote()` 与 `assertHonestFareQuote(draft)` 校验）；
+  - 未校验草稿使用 `FareQuoteDraft`；公共字段含 `actualPath: ResolvedPath | null`、`billedPath: ResolvedPath | null`、`pathsDiffer: boolean`、`pathDiffSummary: string | null`、`explanation: FareExplanationStep[]`、`ruleVersionUsed: string | null`、`isSyntheticTariff: boolean`、`tariffDisclaimer: string | null`。
+  - `ResolvedPath` 以 `commonFareZoneTags: string[]` 替代旧东京布尔字段；`FareQuoteRequest.routePreference` 为 `'shortest' | 'shinkansen' | \`pack:${string}\``，禁止在核心契约硬编码地域旁路名。
+- **区域插件化接口**：
+  - `TariffProvider`：`{ id, operatorScope, ruleVersion, validFrom, validTo, isSynthetic, disclaimer, lookupBaseFare(input: TariffLookupInput): TariffLookupResult }`（返回 `{ status: 'OK', amountYen, ruleId } | { status: UnpricedFareQuoteStatus, amountYen: null, reason }`）。
+  - `RegionalFareRulePack`：`{ id, region, operatorScopes, ruleVersion, validFrom, validTo, rules, fareZoneTags, tariffProviders, appliesTo(context: FareRulePackContext): boolean, evaluate(context: FareRulePackContext): FareRulePackOutcome }`（按区域/运营商挂载近郊区间、第69条、特定运賃与座席附加规则，彻底消除引擎内的地域硬编码）。
 - **`PassProduct` & `PassEligibility`**（`BaseEntity<'pass'>`）：`issuerOperatorId`、`validityDays`、`coveredSegmentIds` / `coveredLineIds`、`excludedTrainCategories[]`（如 Nozomi/Mizuho 限制）、`requiresSupplementFor[]`、`officialPriceYen: number | null`、`rulesSummary`。
 
 ### 5.5 图 5 · 个人旅程与同构同步图（`JourneyGraph`）
