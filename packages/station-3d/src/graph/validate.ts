@@ -344,3 +344,5 @@ export function assertValidHubDataset(dataset: StationHubDataset): void {
     throw new HubDatasetValidationError(dataset.complex.id, issues);
   }
 }
+
+export { validateHubDataset as validateStationHubDataset };

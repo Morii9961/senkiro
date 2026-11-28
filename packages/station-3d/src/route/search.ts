@@ -205,6 +205,10 @@ function shortestPathTree(
   const prev = new Map<string, { edge: GraphEdge; from: string }>();
   const done = new Set<string>();
   const bestState = new Map<SkId<'place'>, string>();
+  const node = graph.nodes.get(origin);
+  if (!node || node.zone === 'roadway') {
+    return { dist, prev, bestState };
+  }
   const heap = new StateHeap();
   const start: State = { key: stateKey(origin, 'none'), place: origin, ride: 'none' };
   dist.set(start.key, ZERO);
@@ -349,45 +353,58 @@ export function routesFrom(
   };
 }
 
-/**
- * Contract entry point: `StationRouteQuery` → `StationRouteResult`. Unknown places and a
- * mismatching hub fail as `'unknown-place'`; a step-free query that only a route with steps
- * could satisfy fails as `'step-free-unavailable'`.
- */
-export function findStationRoute(graph: IndoorGraph, query: StationRouteQuery): StationRouteResult {
-  const { mode } = query;
-  const allowInferred = query.allowInferred ?? true;
-  if (query.complexId !== graph.complexId) {
-    return notFound(
+/** Reuse one search tree for all queries with the same origin, mode and inference policy. */
+export function findStationRoutesFrom(
+  graph: IndoorGraph,
+  query: Omit<StationRouteQuery, 'toPlaceId'>,
+): (toPlaceId: SkId<'place'>) => StationRouteResult {
+  const { complexId, fromPlaceId, mode, allowInferred = true } = query;
+  if (complexId !== graph.complexId) {
+    const failure = notFound(
       mode,
       'unknown-place',
-      `query is for ${query.complexId}, graph is ${graph.complexId}`,
+      `query is for ${complexId}, graph is ${graph.complexId}`,
     );
+    return () => failure;
   }
-  for (const placeId of [query.fromPlaceId, query.toPlaceId]) {
-    if (!graph.nodes.has(placeId)) {
-      return notFound(mode, 'unknown-place', `${placeId} is not a place of ${graph.complexId}`);
-    }
-  }
-  const found = routesFrom(graph, query.fromPlaceId, mode, allowInferred).to(query.toPlaceId);
-  if (found !== null) {
-    return found;
-  }
-  if (mode === 'step_free') {
-    const standard = routesFrom(graph, query.fromPlaceId, 'standard', allowInferred).to(
-      query.toPlaceId,
+  if (!graph.nodes.has(fromPlaceId)) {
+    const failure = notFound(
+      mode,
+      'unknown-place',
+      `${fromPlaceId} is not a place of ${graph.complexId}`,
     );
-    if (standard !== null) {
-      return notFound(
-        mode,
-        'step-free-unavailable',
-        'Reachable only by stairs, escalators or links known to have steps.',
-      );
-    }
+    return () => failure;
   }
-  return notFound(
-    mode,
-    'unreachable',
-    'No route in the verified model (roadways and unverified cross-operator links are never used).',
-  );
+
+  const tree = routesFrom(graph, fromPlaceId, mode, allowInferred);
+  let standard: RoutesFrom | undefined;
+  return (toPlaceId) => {
+    if (!graph.nodes.has(toPlaceId)) {
+      return notFound(mode, 'unknown-place', `${toPlaceId} is not a place of ${graph.complexId}`);
+    }
+    const found = tree.to(toPlaceId);
+    if (found) {
+      return found;
+    }
+    if (mode === 'step_free') {
+      standard ??= routesFrom(graph, fromPlaceId, 'standard', allowInferred);
+      if (standard.reachable().has(toPlaceId)) {
+        return notFound(
+          mode,
+          'step-free-unavailable',
+          'Reachable only by stairs, escalators or links known to have steps.',
+        );
+      }
+    }
+    return notFound(
+      mode,
+      'unreachable',
+      'No route in the verified model (roadways and unverified cross-operator links are never used).',
+    );
+  };
+}
+
+/** Contract entry point for one pair of places. */
+export function findStationRoute(graph: IndoorGraph, query: StationRouteQuery): StationRouteResult {
+  return findStationRoutesFrom(graph, query)(query.toPlaceId);
 }

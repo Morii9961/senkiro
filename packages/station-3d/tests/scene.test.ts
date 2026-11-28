@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { BoxGeometry, InstancedMesh, MeshLambertMaterial } from 'three';
+import { BoxGeometry, InstancedMesh, MeshLambertMaterial, type Scene } from 'three';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { StationSceneController } from '../src/scene/StationSceneController.ts';
 import { fixtureHub, pl } from './fixtures.ts';
@@ -26,7 +26,7 @@ vi.mock('three', async (importOriginal) => ({
   },
 }));
 
-function setup() {
+function setup(onSelect = vi.fn()) {
   vi.stubGlobal('WebGL2RenderingContext', class {});
   vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({} as WebGL2RenderingContext);
   const raf = new Map<number, FrameRequestCallback>();
@@ -48,8 +48,8 @@ function setup() {
   };
   const host = document.createElement('div');
   Object.defineProperties(host, { clientWidth: { value: 800 }, clientHeight: { value: 600 } });
-  const scene = new StationSceneController(host);
-  return { scene, raf, tick, host };
+  const scene = new StationSceneController(host, { onSelect });
+  return { scene, raf, tick, host, onSelect };
 }
 
 afterEach(() => {
@@ -97,8 +97,46 @@ describe('StationSceneController', () => {
     expect(host.querySelector('canvas')?.getAttribute('aria-label')).toBe('Test hub · 3D');
     tick(1000);
     expect(gpu.render).toHaveBeenCalledTimes(1);
+    const world = gpu.render.mock.calls[0]?.[0] as Scene;
+    const meshes = world.children.filter((object) => object instanceof InstancedMesh);
+    expect(meshes).toHaveLength(1);
+    expect(meshes[0]?.count).toBe(scene.getStats().instances);
     scene.setSelection(pl('hall'));
     expect(raf.size).toBe(0);
+    scene.dispose();
+  });
+
+  it('picks an instance by ray and ignores a drag', () => {
+    const { scene, host, tick, onSelect } = setup();
+    const hub = fixtureHub();
+    hub.places = hub.places.filter((place) => place.id === pl('hall'));
+    hub.links = [];
+    scene.setDataset(hub);
+    tick(0);
+    const canvas = host.querySelector('canvas');
+    if (!canvas) {
+      throw new Error('Missing scene canvas');
+    }
+    canvas.setPointerCapture = () => {};
+    canvas.releasePointerCapture = () => {};
+    vi.spyOn(canvas, 'getBoundingClientRect').mockReturnValue(new DOMRect(0, 0, 800, 600));
+    const pointer = (type: string, clientX: number) =>
+      canvas.dispatchEvent(
+        new PointerEvent(type, {
+          button: 0,
+          pointerId: 1,
+          pointerType: 'mouse',
+          isPrimary: true,
+          clientX,
+          clientY: 300,
+        }),
+      );
+    pointer('pointerdown', 400);
+    pointer('pointerup', 400);
+    expect(onSelect).toHaveBeenCalledExactlyOnceWith(pl('hall'));
+    pointer('pointerdown', 400);
+    pointer('pointerup', 470);
+    expect(onSelect).toHaveBeenCalledTimes(1);
     scene.dispose();
   });
 

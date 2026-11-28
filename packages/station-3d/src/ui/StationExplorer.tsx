@@ -1,5 +1,3 @@
-'use dom';
-
 import type {
   Locale,
   PlatformSide,
@@ -90,6 +88,7 @@ function StationViewport({
   );
 }
 
+/** Render on the web or inside an Expo DOM entry component. */
 export function StationExplorer(props: StationExplorerProps) {
   return <HubExplorer key={props.dataset.complex.id} {...props} />;
 }
@@ -176,7 +175,12 @@ function HubExplorer({
       data-theme={theme}
       lang={langTag(locale)}
       aria-label={nameText(dataset.complex.names, locale) ?? t(locale, 'station')}
-      style={{ background: palette.background, color: palette.text, padding: '1rem' }}
+      style={{
+        background: palette.background,
+        color: palette.text,
+        colorScheme: theme,
+        padding: '1rem',
+      }}
     >
       <header
         style={{

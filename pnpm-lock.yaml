@@ -19,13 +19,23 @@ importers:
         version: 7.0.2
       vitest:
         specifier: ^5.1.2
-        version: 5.1.2(jsdom@31.0.1)(vite@8.4.0)
+        version: 5.1.2(vite@8.4.0)
 
   packages/contracts:
     dependencies:
       zod:
         specifier: ^4.6.7
         version: 4.6.7
+
+  packages/data-stations:
+    dependencies:
+      '@senkiro/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+    devDependencies:
+      '@senkiro/station-3d':
+        specifier: workspace:*
+        version: link:../station-3d
 
   packages/station-3d:
     dependencies:
@@ -1348,7 +1358,7 @@ snapshots:
       fsevents: 2.3.3
       napi-windows-process-start-time: 0.1.0
 
-  vitest@5.1.2(jsdom@31.0.1)(vite@8.4.0):
+  vitest@5.1.2(vite@8.4.0):
     dependencies:
       '@types/chai': 5.2.3
       '@vitest/mocker': 5.1.2(vite@8.4.0)
@@ -1364,8 +1374,6 @@ snapshots:
       tinyglobby: 0.2.17
       vite: 8.4.0
       why-is-node-running: 3.2.1
-    optionalDependencies:
-      jsdom: 31.0.1
     transitivePeerDependencies:
       - msw
 
