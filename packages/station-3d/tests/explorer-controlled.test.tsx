@@ -159,3 +159,22 @@ describe('StationExplorer controlled view state', () => {
     override.unmount();
   });
 });
+
+describe('plan selection semantics', () => {
+  it('marks the selected facility with aria-pressed', () => {
+    const { container, unmount } = render(
+      <StationExplorer dataset={fixtureHub()} locale="en" selectedId={pl('a-hall')} />,
+    );
+    expect(
+      container.querySelector(`[data-place-id="${pl('a-hall')}"]`)?.getAttribute('aria-pressed'),
+    ).toBe('true');
+    const others = [...container.querySelectorAll('[data-place-id], [data-link-id]')].filter(
+      (node) => node.getAttribute('data-place-id') !== pl('a-hall'),
+    );
+    expect(others.length).toBeGreaterThan(0);
+    for (const node of others) {
+      expect(node.getAttribute('aria-pressed')).toBe('false');
+    }
+    unmount();
+  });
+});
