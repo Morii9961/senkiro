@@ -100,4 +100,5 @@
 1. 核验 `git diff --name-only integration/phase-0...feat/<slug>` 是否 100% 落于 `ownedPaths`；
 2. 检查 `git ls-tree` 开源合规性（无密钥/无受限 raw 数据）；
 3. 在 `integration/phase-0` 执行 `git merge --no-ff feat/<slug>` 并运行全量验证命令；
-4. 若为 `P0-W0` 完成，正式放行 Wave 1 三路工作树从更新后的 `integration/phase-0` 切出并同步启动！
+4. 每次合入波次并更新 `docs/status/PROJECT_STATUS.md` 与 `project-status.json` 时，**同步刷新 [docs/status/dashboard.html](../status/dashboard.html) 中的客观计数进度与最新基线 SHA**；
+5. 若为 `P0-W0` 完成，正式放行 Wave 1 三路工作树从更新后的 `integration/phase-0` 切出并同步启动！

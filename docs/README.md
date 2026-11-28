@@ -9,6 +9,7 @@
 | [brand-v1.0.md](brand-v1.0.md) | SENKIRO 品牌命名与名称规范 | v1.0 |
 | [lab-reports/](lab-reports/README.md) | 原型归档评审记录（含 [scores.md](lab-reports/scores.md)） | — |
 | [dispatch/](dispatch/HANDOFF_PROTOCOL.md) | 多工作树人工分发与交接规程及 [Phase 0 派单作战图](dispatch/phase-0/README.md) | v1.0 |
+| [status/dashboard.html](status/dashboard.html) | **自用纯静态开发进度总看板（Phase 0–6 全局坐标、分阶段百分比与包明细，离线双击即用）** | — |
 
 ## 说明
 
