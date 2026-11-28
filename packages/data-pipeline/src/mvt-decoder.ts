@@ -21,13 +21,13 @@ export interface DecodedMvtTile {
 class ProtobufReader {
   private pos = 0;
   private readonly view: DataView;
+  private readonly bytes: Uint8Array;
+  private readonly end: number;
 
-  constructor(
-    private readonly bytes: Uint8Array,
-    start = 0,
-    private readonly end = bytes.length,
-  ) {
+  constructor(bytes: Uint8Array, start = 0, end = bytes.length) {
+    this.bytes = bytes;
     this.pos = start;
+    this.end = end;
     this.view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   }
 
