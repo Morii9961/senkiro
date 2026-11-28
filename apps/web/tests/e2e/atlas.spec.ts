@@ -92,6 +92,7 @@ test.describe('Atlas map engine', () => {
     ).toContainText('四条河原町');
     await complex.click();
     await expect.poll(() => search(page).get('complex')).toBe('sk:complex:kansai:kyoto');
+    await expect(page.locator('[data-atlas-entry="complex"]')).toContainText('阪急 京都河原町駅');
     await page.waitForTimeout(1200);
     await page.screenshot({ path: testInfo.outputPath('atlas-kyoto-complex.png') });
     await page.reload();

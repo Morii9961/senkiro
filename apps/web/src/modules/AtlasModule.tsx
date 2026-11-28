@@ -1,6 +1,7 @@
 import { formatTemplate, UnknownValue } from '@senkiro/ui-kit';
 import { Fragment } from 'react';
 import { useAppSearch, useMessages } from '../app/hooks.ts';
+import { AtlasEncyclopedia } from '../features/atlas/AtlasEncyclopedia.tsx';
 import { AtlasSearch } from '../features/atlas/AtlasSearch.tsx';
 import { OperatorFilter } from '../features/atlas/OperatorFilter.tsx';
 import { useAtlasBundle } from '../features/atlas/use-atlas-bundle.ts';
@@ -8,11 +9,13 @@ import styles from './modules.module.css';
 
 /**
  * SENKIRO Atlas panel: region overview, trilingual search, operator filter and data
- * status. Without an `atlasDataSource` slot (Wave 1 default) it stays an honest
+ * status; when the URL names a station, complex or line, its encyclopedia entry takes the
+ * place of search and filter. Without an `atlasDataSource` slot (Wave 1 default) it stays an honest
  * placeholder; every count is shown as "not yet available" rather than guessed.
  */
 export function AtlasModule() {
-  const { lang, region } = useAppSearch();
+  const { lang, region, station, complex, line } = useAppSearch();
+  const entity = station ?? complex ?? line;
   const m = useMessages();
   const state = useAtlasBundle(region);
   const ready = state.status === 'ready' ? state : null;
@@ -38,8 +41,14 @@ export function AtlasModule() {
               {m.atlas.previewNotice}
             </p>
           ) : null}
-          <AtlasSearch index={ready.index} region={region} />
-          <OperatorFilter index={ready.index} region={region} />
+          {entity === undefined ? (
+            <>
+              <AtlasSearch index={ready.index} region={region} />
+              <OperatorFilter index={ready.index} region={region} />
+            </>
+          ) : (
+            <AtlasEncyclopedia index={ready.index} />
+          )}
         </>
       )}
       <section className={styles.section}>
