@@ -1,4 +1,4 @@
-import type { FareExplanationStep, ResolvedPath } from '@senkiro/contracts';
+import type { FareExplanationStep, PathLeg, ResolvedPath } from '@senkiro/contracts';
 import type { GraphStep, TrackGraphIndex } from '@senkiro/domain-core';
 import type { FareRejection } from '../../pack.ts';
 import { explain, line, SLICE, station } from './rules.ts';
@@ -6,6 +6,19 @@ import { explain, line, SLICE, station } from './rules.ts';
 export const TOHOKU_SHINKANSEN = line('jr-east-tohoku-shinkansen');
 export const TOKAIDO_SHINKANSEN = line('jr-central-tokaido-shinkansen');
 const SHIN_YOKOHAMA = station('jr-central-shin-yokohama');
+const ATAMI_AND_WEST_IN_SLICE = new Set([
+  station('jr-central-atami'),
+  station('jr-central-mishima'),
+]);
+
+function isSeparateAfterRevision(leg: PathLeg): boolean {
+  return (
+    leg.railLineId === TOKAIDO_SHINKANSEN &&
+    !(
+      ATAMI_AND_WEST_IN_SLICE.has(leg.fromStationId) && ATAMI_AND_WEST_IN_SLICE.has(leg.toStationId)
+    )
+  );
+}
 
 export function applyShinkansenEquivalence(
   graph: TrackGraphIndex,
@@ -54,10 +67,15 @@ export function applyShinkansenEquivalence(
       continue;
     }
 
+    const separate = revised && isSeparateAfterRevision(leg);
     const run: GraphStep[] = [];
     let end = from;
     for (const next of path.legs.slice(legIndex)) {
-      if (next.railLineId !== leg.railLineId || next.fromStationId !== end) {
+      if (
+        next.railLineId !== leg.railLineId ||
+        next.fromStationId !== end ||
+        (revised && isSeparateAfterRevision(next) !== separate)
+      ) {
         break;
       }
       const edge = graph.edgesFrom(end).find(({ segment }) => segment.id === next.segmentId);
@@ -70,12 +88,9 @@ export function applyShinkansenEquivalence(
     legIndex += run.length;
     stationIndex += run.length;
     const isTokaido = leg.railLineId === TOKAIDO_SHINKANSEN;
-    const touchesException = isTokaido && (from === SHIN_YOKOHAMA || end === SHIN_YOKOHAMA);
-    if (
-      touchesException ||
-      (isTokaido && revised) ||
-      (!isTokaido && leg.railLineId !== TOHOKU_SHINKANSEN)
-    ) {
+    const touchesException =
+      !revised && isTokaido && (from === SHIN_YOKOHAMA || end === SHIN_YOKOHAMA);
+    if (touchesException || separate || (!isTokaido && leg.railLineId !== TOHOKU_SHINKANSEN)) {
       const step = explain(
         ruleId,
         'REJECTED',

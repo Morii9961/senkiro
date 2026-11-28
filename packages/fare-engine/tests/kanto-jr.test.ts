@@ -489,4 +489,49 @@ describe('JR Fare Engine — Rule Verification Suite (≥25 assertions)', () => 
     expect(qConv.status).toBe('NOT_APPLICABLE');
     expect(qConv.totalAmountYen).toBeNull();
   });
+
+  it.each([
+    ['sk:station:kanto:jr-central-atami', 'sk:station:kanto:jr-central-mishima'],
+    ['sk:station:kanto:jr-central-mishima', 'sk:station:kanto:jr-central-atami'],
+  ] as const)(
+    'continues to treat the two lines as equivalent west of Atami (%s to %s)',
+    (originStationId, destinationStationId) => {
+      const q = calculateFareQuote(
+        {
+          originStationId,
+          destinationStationId,
+          preferShinkansen: true,
+          travelDate: '2026-03-14',
+          ticketType: 'ordinary_paper',
+        },
+        ctx,
+      );
+      expect(q.status).toBe('OK');
+      expect(q.actualPath?.usesShinkansen).toBe(true);
+      expect(q.billedPath?.usesShinkansen).toBe(false);
+      expect(q.explanation).toContainEqual(
+        expect.objectContaining({ ruleId: 'JR-ART16-2-V2026', status: 'APPLIED' }),
+      );
+    },
+  );
+
+  it('splits a post-revision Tokaido Shinkansen run at Atami', () => {
+    const q = calculateFareQuote(
+      {
+        originStationId: 'sk:station:kanto:jr-east-tokyo',
+        destinationStationId: 'sk:station:kanto:jr-central-mishima',
+        preferShinkansen: true,
+        travelDate: '2026-03-14',
+        ticketType: 'ordinary_paper',
+      },
+      ctx,
+    );
+    expect(q.status).toBe('OK');
+    expect(q.billedPath?.legs.at(-1)?.isShinkansen).toBe(false);
+    expect(
+      q.explanation
+        .filter(({ ruleId }) => ruleId === 'JR-ART16-2-V2026')
+        .map(({ status }) => status),
+    ).toEqual(['REJECTED', 'APPLIED']);
+  });
 });
