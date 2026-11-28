@@ -31,18 +31,17 @@ flowchart LR
 | 顺序 | Session | 当前状态 | 推荐 / 接力模型 | 工作树与分支（基于 `integration/phase-0`） | 独占路径 `ownedPaths` | 派单书 / 接力书 |
 | --- | --- | --- | --- | --- | --- | --- |
 | **第 1 步（Wave 0）** | **P0-W0** | **✅ 已合并验收**（`75/75` 通过） | Claude | `feat/p0-w0-contracts` | 根工程配置 + `packages/contracts/**` + 报告 | [p0-w0-contracts-brief.md](./p0-w0-contracts-brief.md) |
-| **第 2 步（Wave 1 并行）** | **P0-S1** | **🔄 M1/M2 完成 · Codex 推进 M3 中** | Claude → **Codex** | `E:\Workteree\SENKIRO\p0-domain-sqlite`<br>`feat/p0-domain-sqlite@6eadf35` | `packages/{domain-core,fare-engine,local-db}/**` + `pnpm-lock.yaml` + 报告 | [p0-s1-codex-relay.md](./p0-s1-codex-relay.md)（原：[p0-s1-domain-sqlite-brief.md](./p0-s1-domain-sqlite-brief.md)） |
-| **第 2 步（Wave 1 并行）** | **P0-S2** | **✅ 已合并验收**（`123/123` 全仓通过 · 601,364 节点对寻路核验） | Claude → **Codex** | `feat/p0-station-3d@a6b2970`（已合入） | `packages/{station-3d,data-stations}/**` + `pnpm-lock.yaml` + 报告 | [p0-s2-codex-relay.md](./p0-s2-codex-relay.md)（报告：[p0-s2-station-3d.md](../reports/p0-s2-station-3d.md)） |
-| **第 2 步（Wave 1 并行）** | **P0-S3** | **⏸ M1 (`ui-kit` 27/27) 完成 · 等 Claude 续跑** | **Claude** | `E:\Workteree\SENKIRO\p0-ui-web-shell`<br>`feat/p0-ui-web-shell@e79424a` | `packages/ui-kit/**` + `apps/web/**` + `pnpm-lock.yaml` + 报告 | [p0-s3-ui-web-shell-brief.md](./p0-s3-ui-web-shell-brief.md) |
+| **第 2 步（Wave 1 并行）** | **P0-S1** | **✅ 已合并验收**（全仓 6 包 `222/222` 通过） | Claude → **Codex** | `feat/p0-domain-sqlite@48224a6`（已合入） | `packages/{domain-core,fare-engine,local-db}/**` + `pnpm-lock.yaml` + 报告 | [p0-s1-codex-relay.md](./p0-s1-codex-relay.md)（报告：[p0-s1-domain-sqlite.md](../reports/p0-s1-domain-sqlite.md)） |
+| **第 2 步（Wave 1 并行）** | **P0-S2** | **✅ 已合并验收**（`123/123` → 并入后 `222/222` 通过） | Claude → **Codex** | `feat/p0-station-3d@a6b2970`（已合入） | `packages/{station-3d,data-stations}/**` + `pnpm-lock.yaml` + 报告 | [p0-s2-codex-relay.md](./p0-s2-codex-relay.md)（报告：[p0-s2-station-3d.md](../reports/p0-s2-station-3d.md)） |
+| **第 2 步（Wave 1 并行）** | **P0-S3** | **⏸ M1 (`ui-kit` 27/27) 完成 · 等续跑** | **Claude**（或转接力） | `E:\Workteree\SENKIRO\p0-ui-web-shell`<br>`feat/p0-ui-web-shell@e79424a` | `packages/ui-kit/**` + `apps/web/**` + `pnpm-lock.yaml` + 报告 | [p0-s3-ui-web-shell-brief.md](./p0-s3-ui-web-shell-brief.md) |
 
-> **契约上提队列（归入 `P0-W2-wire` Exit Gate 0 联调窗口一并升级，避免打断在途 Wave 1）**：
+> **契约上提队列（归入 `P0-W2-wire` Exit Gate 0 联调窗口一并升级，避免打断 `P0-S3`）**：
 > - `StationHubDataset.planNorth?: PlatformSide`（来自 `P0-S2`）
-> - `FareEngineRulePack` 附加钩子评估（待 `P0-S1` M3 完成提交后一并汇总）
+> - `RegionalFareRulePack` 可选扩展钩子（`precheck`、`resolveRoutePreference`、`resolveRuleVersion`、`computeValidityAndStopover`、`pricingUnits`、`lookupSurcharge`）及 `TariffProvider.sourceIds`（来自 `P0-S1`）
 
 ---
 
 ## 3. 当前执行进度与下一步操作
 
-1. **`P0-S2` 已合入 `integration/phase-0` 并通过全仓验证**（`contracts` 75 + `station-3d` 40 + `data-stations` 8 = **123/123** 通过）。
-2. **`P0-S1`（`E:\Workteree\SENKIRO\p0-domain-sqlite`）** 已完成 M2 `@senkiro/fare-engine`，正在推进 M3 `@senkiro/local-db`，待其报 `READY_FOR_MERGE` 后回主控合入。
-3. **`P0-S3`（`E:\Workteree\SENKIRO\p0-ui-web-shell`）** 待 Claude 续跑完成 M2/M3 `apps/web` 后回主控合入；三路齐聚后立即执行 `P0-W2-wire` 契约上提与 `Exit Gate 0` 全仓联调验收！
+1. **Wave 1 已收口 2/3**：`P0-S1`（`domain-core` 47 + `fare-engine` 40 + `local-db` 12）与 `P0-S2`（`station-3d` 40 + `data-stations` 8）均已合入 `integration/phase-0`，全仓 6 个包 **22 个测试文件 222/222 项全部通过**！
+2. **仅剩 `P0-S3`（`E:\Workteree\SENKIRO\p0-ui-web-shell`）**：完成 M2/M3 `apps/web` 后回主控合入；随后立即执行 `P0-W2-wire` 契约上提与 `Exit Gate 0` 全仓联调验收！

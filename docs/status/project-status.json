@@ -2,24 +2,23 @@
   "schema_version": "1.1",
   "project_id": "senkiro.main",
   "project_name": "SENKIRO",
-  "snapshot_at": "2026-11-28T16:53:00+08:00",
+  "snapshot_at": "2026-11-28T16:58:00+08:00",
   "source": {
     "branch": "integration/phase-0",
     "base_main_sha": "e3cba601be157bd0a2a1295e1e36d579c3369923",
     "tests_rerun": true,
     "basis": [
-      "2026-11-28 P0-S2 合入验证：在 integration/phase-0 绕过 Turbo 缓存实跑 pnpm install --offline --frozen-lockfile && pnpm check && pnpm build && pnpm test，3 个包构建通过，14 个测试文件 123/123 通过（contracts 75, station-3d 40, data-stations 8）",
-      "真实 GPU、浏览器画面与 Expo WebView 尚未实测",
-      "P0-S1 (feat/p0-domain-sqlite@6eadf35) 观测已完成 M2 fare-engine，正在进行 M3 local-db（未重跑其分支测试）",
-      "P0-S3 (feat/p0-ui-web-shell@e79424a) 维持 M1 ui-kit 27/27，待 Claude 续跑 M2/M3（未重跑其分支测试）"
+      "2026-11-28 P0-S1 合入验证：在 integration/phase-0 绕过 Turbo 缓存实跑 pnpm install --offline --frozen-lockfile && pnpm check && pnpm build && pnpm test，Biome 125 文件 0 错误 0 警告，6 个包构建通过，22 个测试文件 222/222 通过（contracts 75, domain-core 47, fare-engine 40, local-db 12, station-3d 40, data-stations 8）",
+      "P0-S1 自报告包含无头 Chromium OPFS 持久化与 memory-fallback 冒烟输出（本次集成分支未重跑浏览器冒烟）",
+      "P0-S3 (feat/p0-ui-web-shell@e79424a) 维持 M1 ui-kit 27/27，待续跑 M2/M3（未重跑其分支测试）"
     ]
   },
   "reporter": {
     "agent": "gemini",
-    "note": "Chief Coordinator (P0-S2 Merged)"
+    "note": "Chief Coordinator (P0-S1 & P0-S2 Merged)"
   },
-  "stage": "phase_0_wave1_partial_merged",
-  "summary": "P0-S2（@senkiro/station-3d 与 @senkiro/data-stations 梅田/新宿）已通过主控验证并增量合入 integration/phase-0（全仓 123/123 测试通过，601,364 节点对不变量核验）；P0-S1 M3 进行中，P0-S3 待续跑。",
+  "stage": "phase_0_wave1_awaiting_s3",
+  "summary": "P0-S1 与 P0-S2 均已通过主控验证并增量合入 integration/phase-0（全仓 6 个包 222/222 测试全部通过）；Wave 1 仅余 P0-S3 (apps/web M2/M3) 待收口。",
   "overall_progress": null,
   "milestones": [
     {
@@ -35,7 +34,7 @@
     },
     {
       "id": "p0_s2_station_3d",
-      "title": "Wave 1 (P0-S2)：命令式 Three.js station-3d (40/40) + 梅田/新宿 data-stations (8/8)",
+      "title": "Wave 1 (P0-S2)：station-3d (40/40) + data-stations (8/8)",
       "status": "done",
       "evidence_level": "verified_test",
       "evidence_refs": [
@@ -47,18 +46,20 @@
     },
     {
       "id": "p0_s1_domain_sqlite",
-      "title": "Wave 1 (P0-S1)：domain-core + fare-engine + local-db（M2 已提交，M3 进行中）",
-      "status": "in_progress",
-      "evidence_level": "repository",
+      "title": "Wave 1 (P0-S1)：domain-core (47/47) + fare-engine (40/40) + local-db (12/12)",
+      "status": "done",
+      "evidence_level": "verified_test",
       "evidence_refs": [
-        "feat/p0-domain-sqlite@6eadf35",
-        "docs/dispatch/phase-0/p0-s1-codex-relay.md"
+        "docs/dispatch/reports/p0-s1-domain-sqlite.md",
+        "packages/domain-core/src/index.ts",
+        "packages/fare-engine/src/index.ts",
+        "packages/local-db/src/index.ts"
       ],
-      "human_acceptance": "pending"
+      "human_acceptance": "done"
     },
     {
       "id": "p0_s3_ui_web_shell",
-      "title": "Wave 1 (P0-S3)：ui-kit (M1 27/27) + apps/web（等待 Claude 续跑）",
+      "title": "Wave 1 (P0-S3)：ui-kit (M1 27/27) + apps/web（等待续跑）",
       "status": "in_progress",
       "evidence_level": "existing_test",
       "evidence_refs": [
@@ -71,28 +72,22 @@
   "blockers": [],
   "next_actions": [
     {
-      "id": "merge_p0_s1",
-      "title": "等待 Codex 完成 P0-S1 M3 local-db 并回主控验收合入",
-      "priority": "P0",
-      "result": "domain-core + fare-engine + local-db 合入 integration/phase-0。"
-    },
-    {
       "id": "resume_and_merge_p0_s3",
-      "title": "等待 Claude 续跑完成 P0-S3 apps/web 并回主控验收合入",
+      "title": "完成 P0-S3 (apps/web M2/M3) 并回主控验收合入",
       "priority": "P0",
       "result": "ui-kit + apps/web 合入 integration/phase-0。"
     },
     {
       "id": "p0_w2_wire_and_exit_gate_0",
-      "title": "执行 P0-W2-wire（上提 planNorth 等契约、接线 StationExplorer 与 local-db）并验收 Exit Gate 0",
+      "title": "执行 P0-W2-wire（上提 planNorth 与 fare-engine 契约、接线 StationExplorer 与 local-db）并验收 Exit Gate 0",
       "priority": "P0",
       "result": "全仓 check/build/test 与 E2E 通过。"
     }
   ],
   "needs_morii": [
     {
-      "id": "await_p0_s1_and_p0_s3",
-      "decision": "P0-S1 完成后发回交接即可；Claude 额度恢复后可继续 E:/Workteree/SENKIRO/p0-ui-web-shell 完成 P0-S3。"
+      "id": "decide_p0_s3_runner",
+      "decision": "确认 P0-S3 (E:/Workteree/SENKIRO/p0-ui-web-shell) 等待 Claude 配额恢复续跑，还是由主控生成 Codex 接力书。"
     }
   ]
 }
