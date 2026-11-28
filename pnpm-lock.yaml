@@ -100,6 +100,28 @@ importers:
         specifier: ^4.6.7
         version: 4.6.7
 
+  packages/data-kansai:
+    dependencies:
+      '@senkiro/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@senkiro/domain-core':
+        specifier: workspace:*
+        version: link:../domain-core
+      pmtiles:
+        specifier: ^4.3.0
+        version: 4.5.0
+    devDependencies:
+      '@senkiro/data-pipeline':
+        specifier: workspace:*
+        version: link:../data-pipeline
+      '@senkiro/data-stations':
+        specifier: workspace:*
+        version: link:../data-stations
+      '@types/node':
+        specifier: ^24.19.4
+        version: 24.19.4
+
   packages/data-pipeline:
     dependencies:
       '@senkiro/contracts':

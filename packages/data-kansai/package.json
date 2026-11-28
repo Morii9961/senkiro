@@ -1,0 +1,58 @@
+{
+  "name": "@senkiro/data-kansai",
+  "version": "0.1.0",
+  "private": true,
+  "description": "SENKIRO Phase 1 Kansai 8-operator TrackGraph + Kanto preview region with physically isolated ODbL layers and PMTiles v3 vector tiles.",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./kanto-preview": {
+      "types": "./src/kanto-preview/index.ts",
+      "default": "./src/kanto-preview/index.ts"
+    },
+    "./tiles/*.pmtiles": "./tiles/*.pmtiles",
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./kanto-preview": {
+        "types": "./dist/kanto-preview/index.d.ts",
+        "default": "./dist/kanto-preview/index.js"
+      },
+      "./tiles/*.pmtiles": "./tiles/*.pmtiles",
+      "./package.json": "./package.json"
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "tiles"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "biome lint --error-on-warnings .",
+    "check": "biome check --error-on-warnings .",
+    "test": "vitest run",
+    "data:build": "node scripts/build-datasets.ts && pnpm exec biome format --write src/kansai/generated src/kanto-preview/generated"
+  },
+  "dependencies": {
+    "@senkiro/contracts": "workspace:*",
+    "@senkiro/domain-core": "workspace:*",
+    "pmtiles": "^4.3.0"
+  },
+  "devDependencies": {
+    "@senkiro/data-pipeline": "workspace:*",
+    "@senkiro/data-stations": "workspace:*",
+    "@types/node": "^24.19.4"
+  }
+}

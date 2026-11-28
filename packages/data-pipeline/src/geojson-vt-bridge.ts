@@ -1,3 +1,4 @@
+/// <reference path="./geojson-vt.d.ts" />
 import geojsonvtRaw from 'geojson-vt';
 
 export interface GeoJsonVtFeatureCompat {
