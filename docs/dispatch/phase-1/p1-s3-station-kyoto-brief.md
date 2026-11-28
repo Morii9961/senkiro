@@ -5,6 +5,7 @@
 > **基准分支**：`integration/phase-1`  
 > **新建分支**：`feat/p1-station-kyoto`  
 > **建议工作树路径**：`E:\Workteree\SENKIRO\p1-station-kyoto`  
+> **二期视觉/数据深度精修指南（必读）**：[p1-s3-sol-master-guide.md](./p1-s3-sol-master-guide.md) & [02-phase1-atlas-spec.md §6](../../02-phase1-atlas-spec.md#6-枢纽室内-3d2d-统一建筑与导视视觉规范lab-b--lab-c--senkiroui-kit-定案)  
 > **独占路径 `ownedPaths`**：
 > - `packages/data-stations/**`
 > - `packages/station-3d/**`

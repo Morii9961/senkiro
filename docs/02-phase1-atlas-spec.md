@@ -293,3 +293,54 @@ export interface RegionalAtlasBundle {
   `persistenceFallbackReason?: 'unsupported' | 'pool-busy' | 'unknown'`（`open` 成功走 `opfs-sahpool` 时为 `undefined`）。
 - 当 `installOpfsSAHPoolVfs` 因 `navigator.storage?.getDirectory` / `FileSystemSyncAccessHandle` 不可用失败时返回 `'unsupported'`；因同源另一标签页持有 SAH pool 锁 / `AccessHandle` / `NoModificationAllowedError` 失败时返回 `'pool-busy'`；其余异常返回 `'unknown'`。
 - `apps/web/src/slots/adapters/local-db-probe.tsx` 与 `messages.ts` 据此在 `zh-CN / ja / en` 三语下准确区分展示文案。
+
+
+---
+
+## 6. 枢纽室内 3D/2D 统一建筑与导视视觉规范（Lab B × Lab C × `@senkiro/ui-kit` 定案）
+
+> 本节冻结 `@senkiro/station-3d` 与 `@senkiro/data-stations` 的统一视觉与交互基准，综合 Lab B（梅田命令式合批、世界尺度微接缝质感、1px 标签引线）与 Lab C（和纸/石墨沙盘光照、按运营商着色的低饱和付费区、规则建筑构件、2D 独立分栏与 `scaleCap`），并与 `@senkiro/ui-kit` 设计令牌保持 100% 一致，适用于梅田、京都、新宿及所有后续枢纽。
+
+### 6.1 统一枢纽示意坐标尺度规范（禁止 2D 分栏碎裂与构件微观化）
+
+| 规范项 | 强制数值 / 规则 | 依据与防踩坑说明 |
+| --- | --- | --- |
+| **枢纽总包络跨度** | **`~90–150` 示意单位**（东西/南北均在此量级） | 对齐梅田（`118.7 × 112.5`）与新宿（`148.6 × 166.3`）。超过 `220` 单位会导致相距较远的同站站台在 2D 自动拆碎、闸机/楼梯退化为黑点。 |
+| **同站平行站台间距** | **`2.5–4.5` 单位**（必须 `< DEFAULT_JOIN_GAP = 6`） | 保证同一车站的相邻股道/站台在 `floorLayout()` 中自然聚为同一连通块，**禁止 `1F` 或 `3F` 站台被拆成 3–4 个孤立散条**。 |
+| **楼层垂直间距** | **`4.0–5.0` 单位/层**（例如 `B2F=-8, B1F=-4, 1F=0, 2F=4, 3F=8`） | 保持紧凑沙盘比例；配合「分层展开」时视觉分离明显而不飘出画框。 |
+| **`kind` 几何语义** | `concourse` / `passage` / `platform` 才有楼板体块；`entrance` / `landing` 仅作点位/落脚区标示 | 严禁把整个地面大广场或地下走廊建成无楼板的 `landing`/`entrance` 孤点（会导致该区域在 3D/2D 中消失为悬空虚空）。 |
+| **同层零重叠** | 同一 `level.ordinal` 下任意两个 `place` 的 `footprint` 矩形**交集面积必须为 `0`** | 从数据层彻底消灭 3D `Z-fighting` 闪烁与 2D 标签互压。 |
+
+### 6.2 统一 3D 建筑风格：「和纸与石墨建筑剖切沙盘（Washi & Graphite Cutaway Maquette）」
+
+1. **相机与构图**：
+   - 使用 `PerspectiveCamera`（`fov: 40°–42°`），`resetView()` 按透视投影包围球居中并贴合视口（模型主体占画布宽度 **65%–75%**，严禁缩成角落 `20%` 小块）；左键旋转、**中键/右键平移**、滚轮缩放；聚焦动效 `320ms` cubic-out（尊重 `prefers-reduced-motion`）。
+2. **三灯无阴影光棚 + 按需渲染**：
+   - 采用 Lab C 三灯体系：天/地半球补光 + 主暖方向光（`[-45, 90, 60]`）+ 弱冷对向补光（`[60, 40, -70]`）；浅色用 `NoToneMapping`，深色用 `NeutralToneMapping`。
+   - **严禁启用实时阴影贴图（`shadowMap`）**：多层高架/地下叠放时，实时阴影会把下层站台罩黑；改用设备脚下的轻量烘焙接地阴影垫（contact shadow）。
+   - 保持 `requestAnimationFrame` 按需渲染（仅相机移动、状态变更或焦点动画时出帧）。
+3. **语义低饱和色板 + Lab B 世界空间微接缝质感**：
+   - 背景色与 `--sk-color-canvas` 严格同步（浅色 `#f4f1ea` 和纸白、深色 `#181c22` 深石墨；深色模式通过更换桌面与灯光适配，绝不用全局半透明遮罩压暗模型）。
+   - `unpaid`：暖石灰石（浅 `#e6dfd3` / 深 `#383f4a`）。
+   - `paid:<operator>`：**按运营商 `operatorId` 区分的低饱和建筑色（饱和度 ≤ 22%）**，通过换乘检票口时可一眼分辨所属公司（如 JR西日本 灰蓝、JR東海 暖砂褐、近鉄 浅陶红、京都市営地下鉄 青瓷绿、Osaka Metro 湖蓝、阪急 浅梅灰、京阪 苔绿、阪神 靛灰等）。
+   - `platform`：冷混凝土（浅 `#cbd3dc` / 深 `#434d59`）+ 浅色安全缘 + 柔和盲道黄条（`#dfb842`，仅在 `tracks[].side` 声明的一侧绘制）。
+   - `roadway`：哑光深沥青（浅 `#c2c0ba` / 深 `#2c313a`），与步行区域明显区分。
+   - **世界空间微接缝着色器（Lab B 精髓）**：通过 `MeshStandardMaterial.onBeforeCompile` 单批次为地面/站台注入抗锯齿（`fwidth`）拼缝网格与侧面根部渐变明暗，零外部贴图、总 Draw Call 控制在 **≤ 6 次**。
+   - **品牌信号色对齐 `@senkiro/ui-kit`**：
+     - 选中态：**暖琥珀**（浅 `#d97706` / 深 `#fbbf24`）；
+     - 路线高亮：**SENKIRO 朱红**（浅 `#b8432a` / 深 `#ff8a65`，替代刺眼洋红）；
+     - 检票口：深灰机箱，普通票闸为珊瑚红扇叶、**跨社换乘闸为青碧色（`#18808a` / `#58c7cf`）**。
+4. **规则建筑细部与连续 3D 路线（彻底消灭蜘蛛网细线与整块涂红）**：
+   - 沿 `concourse` / `passage` 外轮廓生成 `0.85m` 矮墙与付费区边界线，并在相邻区域、`gate`、`entrance` 接口处自动开口（必须有单测证明开口处无墙挡路）；
+   - `gate` 按 `link.position` 生成 4 通道 5 机身闸机阵列；`elevator` 生成带门洞的半透明玻璃井道；`stairs` / `escalator` 在两端点间生成踏步/斜坡及上层楼板开口护栏；
+   - **禁止生成跨大跨度区中心的对角连线（`anchor → anchor` 蜘蛛网细线）**：同层相邻区以实体相邻与矮墙开口表达连通，竖向设施只连各自真实上下端口坐标；
+   - **连续 3D 路线折线（`depthTest: false` 最后绘制）+ 柔和描边 + 起终点标柱**：选中路线时不再把整块百米站台涂成实心色，而是在通道与竖向设施上方绘制连续朱红路线带并保留其它楼层 `opacity: 0.16` 幽灵轮廓作为空间参照。
+5. **明确禁令（沿用 `transit-station-3d` 血泪教训）**：
+   - 严禁画楼层间辅助虚线、全层半透明背景板、扶梯踏步箭头、模型外外部铁轨、无依据的开阔地面柱网、专属遮挡视线的巨型屋盖（如 `osakaShed`），以及在 Phase 1 塞入粗陋方块列车。
+
+### 6.3 统一导视 UI 与 2D 平面图风格（「SENKIRO 日式铁道导视界面」）
+
+1. **CSS Modules + 内置 `--sk-*` 回退令牌**：`<StationExplorer />`、`<StationDetails />` 与 `<StationPlan2D />` 必须拥有自包含 `.module.css`，并在 `[data-station-explorer][data-station-theme="dark" | "light"]` 声明与 `packages/ui-kit/src/styles/tokens.css` 完全对齐的 `--sk-*` 回退变量，保证独立预览与嵌入 `apps/web` 视觉 100% 统一；`[aria-pressed="true"]` 必须有高对比朱红/反色选中态；`<dialog>` 来源弹窗必须有不透明表面背景、半透明遮罩与自动换行（`overflow-wrap: anywhere`）。
+2. **3D 分级 DOM 标签 + 1px SVG 引线**：`pointer-events: none` 叠层，按 `pxPerModelUnit` 分 `far / mid / near` 三级显示（单层查看自动降一级），贪心避让 + `7%` 防抖回差 + `240px` 同义去重；发生 `12–44px` 偏移时画 `1px` 细引线连接锚点；站台标签带所属线路 4px 色条。
+3. **2D 横向独立分栏 SVG**：2D 模式固定单层浏览（默认 `1F` 或沿用当前单层）；每个不连通块拥有独立圆角卡片、**站名归属（去重后 `·` 连接）+ 随转向旋转的指北针（`↑ 北` / `← 北`）**标题栏、**独立拖移/滚轮缩放**与全局 `＋ / − / 重置` 工具条；单块楼层施加 `scaleCap` 防止小楼层被过度放大；竖向符号严禁飘出所在楼层面板之外。
+4. **乘客导向信息架构**：右侧栏默认紧凑分组——路线起终点（站台带线路标识、三语下去重零重名）→ 可点击跳转镜头的步骤卡（含楼层徽章 + 设施类型徽章）→ 乘客可读详情卡（隐去内部 UUID/schema 字段，保留番线去向、站台门、营业时间、外部线路芯片、`查看来源` 按钮与官方外链）。
