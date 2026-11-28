@@ -2,22 +2,23 @@
   "schema_version": "1.1",
   "project_id": "senkiro.main",
   "project_name": "SENKIRO",
-  "snapshot_at": "2026-11-28T22:00:00+08:00",
+  "snapshot_at": "2026-11-28T23:16:00+08:00",
   "source": {
     "branch": "integration/phase-1",
     "base_main_sha": "0f7b764f7243c864fd056844fe8f2a357bd2f662",
-    "tests_rerun": false,
+    "integration_sha": "82ea02a",
+    "tests_rerun": true,
     "basis": [
-      "继承 main@0f7b764（Exit Gate 0）：Biome 201 文件 0 错 0 警，8 个项目构建与 Vitest 307/307 全绿，Playwright E2E 10/10 通过",
-      "本轮 P1-Coord 仅新增与更新 docs/** 主控规范、派单书与看板，未修改任何工程代码或依赖"
+      "integration/phase-1@82ea02a（合入 P1-S2 后）主控清缓存复跑：Biome 220 文件 0 错 0 警，8 个项目 typecheck / build 通过，Vitest 364/364",
+      "Playwright E2E 20/20（Chromium，硬件 GPU：ANGLE / RTX 4080 Laptop D3D11）；生产入口 + 静态依赖 172.7 kB gzip（预算 200 kB）"
     ]
   },
   "reporter": {
-    "agent": "gemini",
-    "note": "Chief Coordinator (P1-Coord) — Phase 1 spec & 3-way Wave 1 briefs published on integration/phase-1"
+    "agent": "claude",
+    "note": "Chief Coordinator (P1-Coord), taking over from Gemini — P1-S2 verified and merged into integration/phase-1"
   },
-  "stage": "phase_1_wave_1_dispatched",
-  "summary": "已基于 main@0f7b764 创建 integration/phase-1 并清理 Phase 0 已合并工作树；冻结关西 8 社/线路/复合体/5 组直通 SkId、PMTiles v3 图层规范与 ODbL 隔离矩阵，发布 P1-S1 / P1-S2 / P1-S3 三路零冲突 Wave 1 派单书与 P1-W2 收官派单书。",
+  "stage": "phase_1_wave_1_merging",
+  "summary": "P1-S2（SENKIRO Atlas MapLibre UI、三语搜索与百科条目、ui-kit/base.css 与 P0-W2 Web 遗留修复）已核验并 --no-ff 合入 integration/phase-1@82ea02a；P1-S1 已交付待核验，P1-S3 京都站二期精修进行中。",
   "overall_progress": null,
   "milestones": [
     {
@@ -45,8 +46,8 @@
     {
       "id": "p1_s1_data_kansai",
       "title": "Wave 1 (P1-S1 · [REP-02])：data-pipeline + data-kansai（8 社、纯 TS PMTiles、关东预览）",
-      "status": "pending",
-      "evidence_level": "planned",
+      "status": "delivered_pending_review",
+      "evidence_level": "self_report",
       "evidence_refs": [
         "docs/dispatch/phase-1/p1-s1-data-kansai-brief.md"
       ],
@@ -55,20 +56,22 @@
     {
       "id": "p1_s2_atlas_ui",
       "title": "Wave 1 (P1-S2)：SENKIRO Atlas MapLibre UI + ui-kit/base.css 与 Web 遗留修复",
-      "status": "pending",
-      "evidence_level": "planned",
+      "status": "done",
+      "evidence_level": "verified_test",
       "evidence_refs": [
-        "docs/dispatch/phase-1/p1-s2-atlas-ui-brief.md"
+        "docs/dispatch/reports/p1-s2-atlas-ui.md",
+        "docs/dispatch/phase-1/README.md"
       ],
-      "human_acceptance": "pending"
+      "human_acceptance": "done"
     },
     {
       "id": "p1_s3_station_kyoto",
       "title": "Wave 1 (P1-S3 · [REP-01])：京都站四社复合体 3D/2D + Worker/Engine 加固",
-      "status": "pending",
+      "status": "in_progress",
       "evidence_level": "planned",
       "evidence_refs": [
-        "docs/dispatch/phase-1/p1-s3-station-kyoto-brief.md"
+        "docs/dispatch/phase-1/p1-s3-station-kyoto-brief.md",
+        "docs/dispatch/phase-1/p1-s3-sol-master-guide.md"
       ],
       "human_acceptance": "pending"
     },
@@ -86,16 +89,22 @@
   "blockers": [],
   "next_actions": [
     {
-      "id": "launch_p1_wave_1",
-      "title": "基于 integration/phase-1 创建 3 个 Wave 1 独立工作树并并行启动 P1-S1 / P1-S2 / P1-S3",
+      "id": "merge_p1_s1",
+      "title": "核验并合入 feat/p1-data-kansai（P1-S1）",
       "priority": "P0",
-      "result": "各工作树按 M1→M2→M3 绿灯推进，完成后提交交接报告并回主控 --no-ff 增量合入。"
+      "result": "ownedPaths 与开源合规核验通过后 --no-ff 合入；如 pnpm-lock.yaml 与 P1-S2 冲突，在集成分支执行 pnpm install --lockfile-only。"
+    },
+    {
+      "id": "finish_p1_s3",
+      "title": "P1-S3 按 Sol 指南完成 Step A–E 并交付 READY_FOR_MERGE",
+      "priority": "P0",
+      "result": "主控核验三站截图、全对寻路穷举与全仓回归后合入。"
     },
     {
       "id": "launch_p1_w2",
       "title": "Wave 1 三路合入后启动 P1-W2 完成接线与 Exit Gate 1（含 Firefox/WebKit/软件渲染路径）",
       "priority": "P1",
-      "result": "全量通过后以 --no-ff 合并进 main 并推送 origin。"
+      "result": "含 README §5.2 的 6 项 P1-S2 接线与收尾事项；全量通过后以 --no-ff 合并进 main 并推送 origin。"
     },
     {
       "id": "probe_synthetic_rides",
@@ -106,8 +115,8 @@
   ],
   "needs_morii": [
     {
-      "id": "create_wave_1_worktrees",
-      "decision": "使用主控提供的 PowerShell 命令创建 p1-data-kansai / p1-atlas-ui / p1-station-kyoto 三个工作树，并将各派单书启动提示词分别粘贴至 Gemini / Claude / GPT(Codex)。"
+      "id": "send_p1_s1_handoff",
+      "decision": "把 P1-S1 的交接信息转给主控，以便核验合入。"
     }
   ]
 }

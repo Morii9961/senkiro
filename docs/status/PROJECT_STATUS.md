@@ -1,10 +1,10 @@
 # SENKIRO 项目状态
 
-快照时间：2026-11-28T22:00:00+08:00 · 协议 1.1 · 项目 ID `senkiro.main` · 报告：Gemini（`P1-Coord` 总控调度）
+快照时间：2026-11-28T23:16:00+08:00 · 协议 1.1 · 项目 ID `senkiro.main` · 报告：Claude（`P1-Coord` 总控调度，接替 Gemini）
 
-代码基线：`main@0f7b764`（Exit Gate 0 合入点）→ `integration/phase-1`。阶段：**Phase 1 Wave 1 三路并行派单已就绪**（`phase_1_wave_1_dispatched`）。整体进度不估算。
+代码基线：`main@0f7b764`（Exit Gate 0 合入点）→ `integration/phase-1@82ea02a`。阶段：**Phase 1 Wave 1 合入中**（`phase_1_wave_1_merging`）。整体进度不估算。
 
-**Phase 1 Wave 0（`P1-Coord`）已完成并发布至 `integration/phase-1`。** 经核验 `@senkiro/contracts` v1.0（含 `P0-W2` 上提字段）与 `@senkiro/station-3d` 已覆盖 Phase 1 全部接口，**跳过冗余的 `P1-W0` 代码前置波次**，直接放行 `P1-S1`（京阪神 8 社空间管线 + `.pmtiles` + 关东预览区）、`P1-S2`（MapLibre `SENKIRO Atlas` UI + `ui-kit/base.css` 与 Web 遗留修复）、`P1-S3`（京都站四社复合体 3D/2D + Worker/Engine 加固）三路零冲突并行开发；P0-W2 遗留全部 3 项必修与 10 项小改进已按 `ownedPaths` 精确分拣写入对应派单书。
+**`P1-S2`（SENKIRO Atlas UI）已核验并以 `--no-ff` 合入 `integration/phase-1`（`82ea02a`）。** 主控在合入点清缓存复跑：Biome 220 文件 0 错 0 警，8 个项目 typecheck / build 全部通过，全仓 364/364 单测，Playwright 20/20（硬件 GPU）。交付内容：`ui-kit/base.css` 进入生产构建；本地数据库探针区分“不支持”与“被其他标签页占用”；P0-W2 遗留 #2、#4–#10 清零；MapLibre 5 + PMTiles 独立懒加载地图引擎（离线绘制、深浅双主题）；运营商筛选；三语 / 假名 / 站号搜索（“京都”“河原町”不混同）；线路、车站、复合体、直通四类百科条目。`P1-S1` 已交付待核验，`P1-S3` 京都站二期精修进行中。
 
 ## 里程碑
 
@@ -16,25 +16,20 @@
 | `lab_c_archive` | Lab C 归档：`lab/c-shinjuku-3d@19b2daa` | 完成 | 仓库证据 + 自报告 | 已收口归档 |
 | `lab_scores` | 三原型归档评审（`docs/lab-reports/scores.md`） | 完成 | 仓库证据 | 不需要 |
 | `exit_gate_0` | Exit Gate 0：Phase 0 全部五分支合入 `main@0f7b764`（307/307 单测 + 10/10 E2E） | 完成 | 主控复跑验证 | 已验收 |
-| `p1_coord_spec_dispatch` | Phase 1 Wave 0 (`P1-Coord`)：冻结关西 ID / PMTiles / 许可规范并发布 Wave 1/2 派单体系 | **完成** | `docs/02-phase1-atlas-spec.md` + `docs/dispatch/phase-1/README.md` | 不需要 |
-| `p1_s1_data_kansai` | Wave 1 (`P1-S1`)：`data-pipeline` + `data-kansai`（8 社 + `.pmtiles` + 关东预览） | 待启动 | [p1-s1-data-kansai-brief.md](../dispatch/phase-1/p1-s1-data-kansai-brief.md) | 待交付 |
-| `p1_s2_atlas_ui` | Wave 1 (`P1-S2`)：`SENKIRO Atlas` MapLibre UI + `ui-kit/base.css` 与 Web 修复 | 待启动 | [p1-s2-atlas-ui-brief.md](../dispatch/phase-1/p1-s2-atlas-ui-brief.md) | 待交付 |
-| `p1_s3_station_kyoto` | Wave 1 (`P1-S3`)：京都四社复合体 3D/2D 数据包 + Worker/Engine 加固 | 待启动 | [p1-s3-station-kyoto-brief.md](../dispatch/phase-1/p1-s3-station-kyoto-brief.md) | 待交付 |
+| `p1_coord_spec_dispatch` | Phase 1 Wave 0 (`P1-Coord`)：冻结关西 ID / PMTiles / 许可规范并发布 Wave 1/2 派单体系 | 完成 | `docs/02-phase1-atlas-spec.md` + `docs/dispatch/phase-1/README.md` | 不需要 |
+| `p1_s1_data_kansai` | Wave 1 (`P1-S1`)：`data-pipeline` + `data-kansai`（8 社 + `.pmtiles` + 关东预览） | 已交付，待主控核验 | 用户告知已完工；交接报告待转交 | 待验收 |
+| `p1_s2_atlas_ui` | Wave 1 (`P1-S2`)：`SENKIRO Atlas` MapLibre UI + `ui-kit/base.css` 与 Web 修复 | **完成**（`82ea02a`） | 主控复跑：364/364 单测 + 20/20 E2E；[报告](../dispatch/reports/p1-s2-atlas-ui.md) | 已验收（E2E 截图目视） |
+| `p1_s3_station_kyoto` | Wave 1 (`P1-S3`)：京都四社复合体 3D/2D 数据包 + Worker/Engine 加固 | 二期精修中 | [Sol 深度指南](../dispatch/phase-1/p1-s3-sol-master-guide.md)；工作树有未提交的 Step A 改动 | 待交付 |
 | `p1_w2_exit_gate_1` | Wave 2 (`P1-W2`)：跨包接线、京都激活与 Exit Gate 1 多浏览器 E2E | 待汇合 | [p1-w2-exit-gate-brief.md](../dispatch/phase-1/p1-w2-exit-gate-brief.md) | 待验收 |
-
-## Phase 1 启动要点（`P1-Coord` 冻结决策）
-
-- **跳过 `P1-W0`**：`packages/contracts` 无需改码；`apps/web` 新增 `AtlasDataSourceSlot` 解耦数据源，Wave 1 三路 `ownedPaths` 零重叠。
-- **锁定技术边界**：`maplibre-gl@^5.4.0`（独立懒加载 chunk）+ `pmtiles@^4.3.0`；Windows 无 `tippecanoe`/`duckdb`，由 `packages/data-pipeline` 使用 `geojson-vt` + 纯 TS MVT v2.1 / PMTiles v3 编码器 100% 离线打包；严格遵守 `TypeScript 7.0.2` 与 `Biome 2.6.9`。
-- **复合体硬边界**：`sk:complex:kansai:kyoto` 严格仅含 JR西日本 / JR東海 / 近鉄 / 地下鉄烏丸線 4 站；`阪急京都河原町` 与 `京阪祇園四条` 独立归入 `sk:complex:kansai:shijo-kawaramachi` 并写入 `explicitlyExcluded`。
-- **Phase 0 工作树清理**：已安全注销并清理 `integration-phase-0` 与 `p0-w2-exit-gate`（及本地已合并分支 `integration/phase-0`、`feat/p0-w2-exit-gate`）；`p0-w0-contracts` 空目录被本机外部进程占用句柄保留未强删。
 
 ## 下一步
 
-1. Morii 基于 `integration/phase-1` 创建三个 Wave 1 工作树（`E:\Workteree\SENKIRO\p1-data-kansai`、`p1-atlas-ui`、`p1-station-kyoto`）并粘贴各自派单书启动提示词并行推进。
-2. 任一分支报告 `READY_FOR_MERGE` 后回主控执行 `ownedPaths` + 开源合规核验与 `--no-ff` 增量合入；三路全合入后开启 `P1-W2`（Exit Gate 1）。
+1. 主控核验 `P1-S1`（`feat/p1-data-kansai`）并合入。该分支同样改动 `pnpm-lock.yaml`，若与 `P1-S2` 冲突，由主控在集成分支执行 `pnpm install --lockfile-only` 消解。
+2. `P1-S3` 按 Sol 指南完成 Step A–E 后交付，主控核验合入。
+3. Wave 1 三路全部合入后启动 `P1-W2`。`P1-S2` 合入时发现的 6 项接线与收尾事项已写入 [Phase 1 README §5.2](../dispatch/phase-1/README.md)。
 
 ## 依据与验证范围
 
-- 继承 `main@0f7b764` 的 Exit Gate 0 实跑基线：8 个项目 `pnpm check && pnpm build && pnpm test` 全绿（307/307 Vitest，10/10 Playwright E2E）。本轮 `P1-Coord` 仅编辑并提交 `docs/**` 文档，未修改任何代码包，故未重跑 Phase 0 单测。
-- 证据路径见 [project-status.json](./project-status.json) 与 [docs/02-phase1-atlas-spec.md](../02-phase1-atlas-spec.md)。
+- 本轮在 `integration/phase-1@82ea02a` 实跑：`pnpm install --offline --frozen-lockfile`、`pnpm check --force`、`pnpm build --force`、`pnpm test --force`（364/364）、`pnpm --filter @senkiro/web test:e2e`（20/20，Chromium 硬件 GPU）。
+- 未覆盖：真实 `.pmtiles` 在浏览器中的加载（`P1-S1` 尚未合入）、地图画布点击拾取的端到端断言、跨标签页 `pool-busy` 实况（待 `P1-S3` Worker 回传原因）、Firefox / WebKit / 软件渲染（属 `P1-W2` 范围）。
+- 证据路径见 [project-status.json](./project-status.json) 与 [P1-S2 交接报告](../dispatch/reports/p1-s2-atlas-ui.md)。
