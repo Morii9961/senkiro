@@ -1,0 +1,67 @@
+.root {
+  --sk-line-color-resolved: var(--sk-line-color, var(--sk-color-hairline-strong));
+  display: inline-flex;
+  align-items: stretch;
+  gap: var(--sk-space-2);
+  padding-right: var(--sk-space-2);
+  background: var(--sk-color-surface);
+  border: var(--sk-hairline) solid var(--sk-color-hairline);
+  border-radius: var(--sk-radius-sm);
+  color: var(--sk-color-text);
+  font-size: var(--sk-text-sm);
+  line-height: var(--sk-leading-tight);
+  overflow: hidden;
+  vertical-align: middle;
+}
+
+.strip {
+  flex: none;
+  width: var(--sk-strip);
+  background: var(--sk-line-color-resolved);
+}
+
+.code {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  min-width: 2.1em;
+  margin: var(--sk-space-1) 0;
+  padding: 1px 3px;
+  border: 2px solid var(--sk-line-color-resolved);
+  border-radius: var(--sk-radius-sm);
+  background: var(--sk-color-surface-raised);
+  font-family: var(--sk-font-mono);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.code[data-unverified="true"] {
+  border-style: dashed;
+  color: var(--sk-color-unknown);
+}
+
+.prefix {
+  font-size: 0.72em;
+  letter-spacing: 0.04em;
+}
+
+.number {
+  font-size: 1em;
+}
+
+.name {
+  align-self: center;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.sm {
+  font-size: var(--sk-text-xs);
+}
+
+.md {
+  font-size: var(--sk-text-sm);
+}

@@ -1,0 +1,24 @@
+.root {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sk-space-1);
+  padding: 0 var(--sk-space-2) 0 var(--sk-space-1);
+  border: var(--sk-hairline) dashed var(--sk-color-unknown-border);
+  border-radius: var(--sk-radius-sm);
+  color: var(--sk-color-unknown);
+  font-size: var(--sk-text-xs);
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+.mark {
+  display: inline-grid;
+  place-items: center;
+  width: 1.1em;
+  height: 1.1em;
+  border-radius: 50%;
+  border: var(--sk-hairline) solid currentColor;
+  font-family: var(--sk-font-mono);
+  font-size: 0.85em;
+  line-height: 1;
+}

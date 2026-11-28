@@ -1,0 +1,21 @@
+.root {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 1.5px solid var(--sk-color-hairline-strong);
+  border-radius: var(--sk-radius-sm);
+  background: var(--sk-color-surface-raised);
+  color: var(--sk-color-text-muted);
+  font-family: var(--sk-font-mono);
+  font-size: var(--sk-text-xs);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.root[data-active="true"] {
+  border-color: var(--sk-color-accent);
+  background: var(--sk-color-accent);
+  color: var(--sk-color-accent-ink);
+}

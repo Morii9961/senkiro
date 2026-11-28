@@ -1,0 +1,145 @@
+/*
+ * SENKIRO design tokens — original Japanese-wayfinding visual language.
+ *
+ * Light: washi-paper base, sumi-grey ink, precise hairlines.
+ * Dark: graphite base (#181c22 / #262b33) with high-contrast body text.
+ * Line identity colours are NEVER tokens for large surfaces: components apply them only
+ * as thin strips or station-number badge borders (see LineBadge).
+ *
+ * Theme is selected with `data-theme="light" | "dark"` on <html>; dark is the default to
+ * match DEFAULT_APP_SEARCH_PARAMS.theme in @senkiro/contracts.
+ */
+
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* Surfaces */
+  --sk-color-canvas: #181c22;
+  --sk-color-surface: #262b33;
+  --sk-color-surface-raised: #2e343d;
+  --sk-color-surface-sunken: #13161b;
+  --sk-color-overlay: rgb(10 12 16 / 0.62);
+
+  /* Ink */
+  --sk-color-text: #eef1f5;
+  --sk-color-text-muted: #b4bcc8;
+  --sk-color-text-subtle: #8c95a3;
+  --sk-color-text-inverse: #15181d;
+
+  /* Lines and grid */
+  --sk-color-hairline: rgb(238 241 245 / 0.14);
+  --sk-color-hairline-strong: rgb(238 241 245 / 0.3);
+  --sk-color-grid-minor: rgb(180 188 200 / 0.08);
+  --sk-color-grid-major: rgb(180 188 200 / 0.2);
+
+  /* Brand signal (original SENKIRO vermilion, used for focus/active marks only) */
+  --sk-color-accent: #ff8a65;
+  --sk-color-accent-ink: #15181d;
+  --sk-color-accent-soft: rgb(255 138 101 / 0.16);
+  --sk-color-focus: #ffb199;
+
+  /* Station-sign band (brand bar) */
+  --sk-color-sign: #0e1014;
+  --sk-color-sign-text: #f5f6f8;
+
+  /* Honesty semantics */
+  --sk-color-unknown: #c3cad4;
+  --sk-color-unknown-border: rgb(195 202 212 / 0.5);
+  --sk-color-synthetic: #ffc46b;
+  --sk-color-synthetic-soft: rgb(255 196 107 / 0.14);
+  --sk-color-verified: #7fd6a8;
+  --sk-color-verified-soft: rgb(127 214 168 / 0.12);
+
+  --sk-shadow-float: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 12px 32px rgb(0 0 0 / 0.42);
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+
+  --sk-color-canvas: #f4f1ea;
+  --sk-color-surface: #fbfaf6;
+  --sk-color-surface-raised: #ffffff;
+  --sk-color-surface-sunken: #ebe7dd;
+  --sk-color-overlay: rgb(40 36 30 / 0.28);
+
+  --sk-color-text: #23272e;
+  --sk-color-text-muted: #4f5662;
+  --sk-color-text-subtle: #6b7280;
+  --sk-color-text-inverse: #fbfaf6;
+
+  --sk-color-hairline: rgb(35 39 46 / 0.14);
+  --sk-color-hairline-strong: rgb(35 39 46 / 0.32);
+  --sk-color-grid-minor: rgb(35 39 46 / 0.06);
+  --sk-color-grid-major: rgb(35 39 46 / 0.16);
+
+  --sk-color-accent: #b8432a;
+  --sk-color-accent-ink: #ffffff;
+  --sk-color-accent-soft: rgb(184 67 42 / 0.1);
+  --sk-color-focus: #b8432a;
+
+  --sk-color-sign: #23272e;
+  --sk-color-sign-text: #fbfaf6;
+
+  --sk-color-unknown: #4f5662;
+  --sk-color-unknown-border: rgb(79 86 98 / 0.45);
+  --sk-color-synthetic: #8a5a00;
+  --sk-color-synthetic-soft: rgb(196 140 30 / 0.14);
+  --sk-color-verified: #1f7a4d;
+  --sk-color-verified-soft: rgb(31 122 77 / 0.1);
+
+  --sk-shadow-float: 0 1px 2px rgb(35 39 46 / 0.08), 0 10px 28px rgb(35 39 46 / 0.12);
+}
+
+:root {
+  /* Typography: system stacks only (no network fonts), per-script fallbacks. */
+  --sk-font-sans:
+    system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Hiragino Kaku Gothic ProN",
+    "Noto Sans JP", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", "Yu Gothic UI", sans-serif;
+  --sk-font-mono: ui-monospace, "SFMono-Regular", "Cascadia Mono", Consolas, monospace;
+
+  --sk-text-2xs: 0.6875rem;
+  --sk-text-xs: 0.75rem;
+  --sk-text-sm: 0.8125rem;
+  --sk-text-md: 0.9375rem;
+  --sk-text-lg: 1.125rem;
+  --sk-text-xl: 1.375rem;
+  --sk-leading-tight: 1.25;
+  --sk-leading-body: 1.55;
+  --sk-tracking-sign: 0.14em;
+
+  /* 4px spacing grid */
+  --sk-space-1: 0.25rem;
+  --sk-space-2: 0.5rem;
+  --sk-space-3: 0.75rem;
+  --sk-space-4: 1rem;
+  --sk-space-5: 1.25rem;
+  --sk-space-6: 1.5rem;
+  --sk-space-8: 2rem;
+
+  --sk-radius-xs: 2px;
+  --sk-radius-sm: 4px;
+  --sk-radius-md: 8px;
+  --sk-radius-lg: 12px;
+
+  --sk-hairline: 1px;
+  --sk-strip: 4px;
+  --sk-control-height: 2rem;
+  --sk-touch-target: 2.75rem;
+
+  --sk-duration-fast: 120ms;
+  --sk-duration-base: 200ms;
+  --sk-ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  --sk-z-map: 0;
+  --sk-z-float: 10;
+  --sk-z-drawer: 20;
+  --sk-z-popover: 30;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --sk-duration-fast: 0ms;
+    --sk-duration-base: 0ms;
+  }
+}
