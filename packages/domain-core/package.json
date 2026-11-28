@@ -1,0 +1,38 @@
+{
+  "name": "@senkiro/domain-core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "SENKIRO region-neutral domain core: TrackGraph / ServiceGraph / FareRuleGraph indexes, 650 m cross-source alignment guard and schematic C0 elevation solver.",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "biome lint --error-on-warnings .",
+    "check": "biome check --error-on-warnings .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@senkiro/contracts": "workspace:*"
+  }
+}
