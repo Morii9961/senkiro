@@ -14,5 +14,7 @@ export * from './i18n.ts';
 export * from './plan2d/layout.ts';
 export * from './plan2d/StationPlan2D.tsx';
 export * from './route/search.ts';
+export * from './scene/StationSceneController.ts';
 export * from './theme.ts';
+export * from './ui/StationExplorer.tsx';
 export * from './ui/UnknownValue.tsx';

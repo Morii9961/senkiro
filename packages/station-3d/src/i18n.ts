@@ -12,6 +12,9 @@ import {
 } from '@senkiro/contracts';
 
 const STRINGS = {
+  viewMode: { 'zh-CN': '视图', ja: '表示', en: 'View' },
+  focus: { 'zh-CN': '定位至此', ja: 'ここに移動', en: 'Focus here' },
+  resetView: { 'zh-CN': '重置视角', ja: '視点をリセット', en: 'Reset view' },
   unknown: { 'zh-CN': '未知', ja: '不明', en: 'Unknown' },
   unverified: { 'zh-CN': '未核实', ja: '未確認', en: 'Unverified' },
   floor: { 'zh-CN': '楼层', ja: 'フロア', en: 'Floor' },
