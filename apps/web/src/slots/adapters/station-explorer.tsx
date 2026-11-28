@@ -76,6 +76,7 @@ function HubStationExplorer({
   onLevelChange,
   onSelectionChange,
   onStepFreeChange,
+  onNavigateExternalLine,
 }: StationExplorerSlotProps & { pending: TrackedPromise<StationHubDataset> }) {
   // Suspend only while the chunk is still loading; a loaded hub renders synchronously.
   const dataset =
@@ -93,6 +94,7 @@ function HubStationExplorer({
       onSelect={onSelectionChange}
       stepFree={stepFree}
       onStepFreeChange={onStepFreeChange}
+      {...(onNavigateExternalLine === undefined ? {} : { onNavigateExternalLine })}
     />
   );
 }

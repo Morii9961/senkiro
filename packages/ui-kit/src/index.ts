@@ -1,11 +1,16 @@
 /**
  * `@senkiro/ui-kit` — SENKIRO original Japanese-wayfinding design system.
  *
- * Import the tokens once at the app root:
+ * Import the tokens and the global base once at the app root, in this order:
  *   import '@senkiro/ui-kit/tokens.css';
- * then use the components below. Every component that renders words takes a `lang` prop
- * (`zh-CN` / `ja` / `en`) or receives already-localised text.
+ *   import '@senkiro/ui-kit/base.css';
+ * then use the components below. The side-effect imports below only help dev mode and
+ * library tests: with CSS-only `sideEffects` in package.json a production (rolldown) build treats
+ * this entry as side-effect free and drops them, so apps must import both subpaths.
+ * Every component that renders words takes a `lang` prop (`zh-CN` / `ja` / `en`) or
+ * receives already-localised text.
  */
+
 import './styles/tokens.css';
 import './styles/base.css';
 

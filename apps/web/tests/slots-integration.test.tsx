@@ -129,7 +129,8 @@ describe('Umeda through the station-explorer slot', () => {
       SLOTS,
     );
     const view = await explorer();
-    expect(view.querySelector('[data-selected-name]')?.textContent).not.toBe('');
+    // Fails when the element is missing as well as when it is empty (P0-W2 follow-up #6).
+    expect(view.querySelector('[data-selected-name]')).toHaveTextContent(/\S/);
     const other = [...view.querySelectorAll<SVGElement>('[data-place-id]')].find(
       (node) => node.dataset.placeId !== selected,
     );

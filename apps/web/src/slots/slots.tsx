@@ -6,7 +6,7 @@
  * heavy 3D and SQLite code stays out of the shell chunk. A missing slot renders an honest
  * "not connected" placeholder, and tests can inject their own slots.
  */
-import type { AppHub, AppTheme, Locale } from '@senkiro/contracts';
+import type { AppHub, AppTheme, Locale, SkId } from '@senkiro/contracts';
 import {
   Component,
   type ComponentType,
@@ -30,6 +30,11 @@ export interface StationExplorerSlotProps {
   onLevelChange: (level: string | null) => void;
   onSelectionChange: (selection: string | null) => void;
   onStepFreeChange: (stepFree: boolean) => void;
+  /**
+   * In-station → atlas deep link (spec §5.2.3): the user picked one of the hub's external
+   * lines. The shell switches to the Atlas module and opens that line's encyclopedia entry.
+   */
+  onNavigateExternalLine?: (lineId: SkId<'line'>) => void;
 }
 
 /** Props for the local SQLite status probe from `@senkiro/local-db`. */

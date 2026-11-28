@@ -73,14 +73,23 @@ export interface Messages {
     dataSovereigntyBody: string;
     localDb: string;
   };
-  slots: { localDbPending: string };
+  slots: { localDbPending: string; localDbLoading: string; localDbError: string };
   /** `@senkiro/local-db` status probe (Profile / Journey). */
   probe: {
     opening: string;
     failed: string;
+    /** Operation-level error; the probe stays usable. `{error}` placeholder. */
+    actionFailed: string;
     mode: string;
     modes: Record<'opfs-sahpool' | 'memory-fallback', string>;
-    modeNotes: Record<'opfs-sahpool' | 'memory-fallback', string>;
+    /** Note for the persistent mode. */
+    persistentNote: string;
+    /**
+     * Why the Worker fell back to memory (spec §5.3 `persistenceFallbackReason`).
+     * `unreported` covers drivers that predate the field: the cause is then not claimed.
+     */
+    fallbackNotes: Record<'unsupported' | 'pool-busy' | 'unknown' | 'unreported', string>;
+    fallbackReason: string;
     isolation: string;
     yes: string;
     no: string;
@@ -209,16 +218,27 @@ const zhCN: Messages = {
     dataSovereigntyBody: '你的记录优先保存在本设备，可随时完整导出；无需注册即可使用。',
     localDb: '本地数据库',
   },
-  slots: { localDbPending: '待连接 @senkiro/local-db 本地数据库状态探针。' },
+  slots: {
+    localDbPending: '待连接 @senkiro/local-db 本地数据库状态探针。',
+    localDbLoading: '正在加载本地数据库模块…',
+    localDbError: '本地数据库模块加载失败，未显示任何替代数据。',
+  },
   probe: {
     opening: '正在打开本地数据库…',
     failed: '本地数据库无法打开：{error}',
+    actionFailed: '操作未完成：{error}。数据库仍处于打开状态，可以重试。',
     mode: '存储模式',
     modes: { 'opfs-sahpool': 'OPFS sahpool', 'memory-fallback': '内存回退' },
-    modeNotes: {
-      'opfs-sahpool': '数据保存在本浏览器的源私有文件系统中，刷新后仍在。',
-      'memory-fallback': '此浏览器不支持 OPFS 同步访问句柄，数据只保留到页面关闭。',
+    persistentNote: '数据保存在本浏览器的源私有文件系统中，刷新后仍在。',
+    fallbackNotes: {
+      unsupported:
+        '此浏览器不支持 OPFS 同步访问句柄，当前标签页改用内存临时库，数据只保留到页面关闭。',
+      'pool-busy':
+        'OPFS 存储已被同源的其他标签页占用，当前标签页回退至内存临时库，数据只保留到页面关闭。关闭其他 SENKIRO 标签页后刷新即可恢复持久存储。',
+      unknown: 'OPFS 存储初始化失败（原因未明），当前标签页改用内存临时库，数据只保留到页面关闭。',
+      unreported: '当前标签页使用内存临时库，数据只保留到页面关闭；存储层未报告回退原因。',
     },
+    fallbackReason: '回退原因',
     isolation: '跨源隔离',
     yes: '是',
     no: '否',
@@ -356,18 +376,32 @@ const ja: Messages = {
       '記録はまずこの端末に保存され、いつでもすべて書き出せます。登録は不要です。',
     localDb: 'ローカルデータベース',
   },
-  slots: { localDbPending: '@senkiro/local-db の状態プローブへの接続待ちです。' },
+  slots: {
+    localDbPending: '@senkiro/local-db の状態プローブへの接続待ちです。',
+    localDbLoading: 'ローカルデータベースのモジュールを読み込み中…',
+    localDbError:
+      'ローカルデータベースのモジュールを読み込めませんでした。代わりのデータは表示していません。',
+  },
   probe: {
     opening: 'ローカルデータベースを開いています…',
     failed: 'ローカルデータベースを開けません：{error}',
+    actionFailed:
+      '操作を完了できませんでした：{error}。データベースは開いたままなので、もう一度試せます。',
     mode: '保存方式',
     modes: { 'opfs-sahpool': 'OPFS sahpool', 'memory-fallback': 'メモリ（代替）' },
-    modeNotes: {
-      'opfs-sahpool':
-        'このブラウザのオリジン専用ファイルシステムに保存され、再読み込み後も残ります。',
-      'memory-fallback':
-        'このブラウザは OPFS の同期アクセスハンドルに対応していないため、ページを閉じるまでの保存です。',
+    persistentNote:
+      'このブラウザのオリジン専用ファイルシステムに保存され、再読み込み後も残ります。',
+    fallbackNotes: {
+      unsupported:
+        'このブラウザは OPFS の同期アクセスハンドルに対応していないため、このタブはメモリ上の一時データベースを使います。ページを閉じるまでの保存です。',
+      'pool-busy':
+        'OPFS の保存領域を同じオリジンの別のタブが使用中のため、このタブはメモリ上の一時データベースに切り替えました。ページを閉じるまでの保存です。ほかの SENKIRO タブを閉じて再読み込みすると、永続保存に戻ります。',
+      unknown:
+        'OPFS の初期化に失敗しました（原因不明）。このタブはメモリ上の一時データベースを使い、ページを閉じるまでの保存です。',
+      unreported:
+        'このタブはメモリ上の一時データベースを使い、ページを閉じるまでの保存です。保存層は切り替えの理由を報告していません。',
     },
+    fallbackReason: '切り替えの理由',
     isolation: 'クロスオリジン分離',
     yes: 'はい',
     no: 'いいえ',
@@ -514,17 +548,30 @@ const en: Messages = {
       'Records are stored on this device first and can be fully exported at any time. No sign-up needed.',
     localDb: 'Local database',
   },
-  slots: { localDbPending: 'Waiting for the @senkiro/local-db status probe.' },
+  slots: {
+    localDbPending: 'Waiting for the @senkiro/local-db status probe.',
+    localDbLoading: 'Loading the local database module…',
+    localDbError: 'The local database module failed to load. No substitute data is shown.',
+  },
   probe: {
     opening: 'Opening the local database…',
     failed: 'The local database could not be opened: {error}',
+    actionFailed:
+      'The operation did not finish: {error}. The database is still open, so you can try again.',
     mode: 'Storage mode',
     modes: { 'opfs-sahpool': 'OPFS sahpool', 'memory-fallback': 'Memory fallback' },
-    modeNotes: {
-      'opfs-sahpool': "Stored in this browser's origin private file system; it survives a reload.",
-      'memory-fallback':
-        'This browser lacks OPFS sync access handles, so data lasts only until the page closes.',
+    persistentNote: "Stored in this browser's origin private file system; it survives a reload.",
+    fallbackNotes: {
+      unsupported:
+        'This browser lacks OPFS sync access handles, so this tab uses a temporary in-memory database; data lasts only until the page closes.',
+      'pool-busy':
+        'OPFS storage is held by another tab of this site, so this tab fell back to a temporary in-memory database; data lasts only until the page closes. Close the other SENKIRO tabs and reload to get persistent storage back.',
+      unknown:
+        'OPFS storage failed to initialise (cause unknown), so this tab uses a temporary in-memory database; data lasts only until the page closes.',
+      unreported:
+        'This tab uses a temporary in-memory database; data lasts only until the page closes. The storage layer did not report why it fell back.',
     },
+    fallbackReason: 'Fallback reason',
     isolation: 'Cross-origin isolated',
     yes: 'yes',
     no: 'no',
