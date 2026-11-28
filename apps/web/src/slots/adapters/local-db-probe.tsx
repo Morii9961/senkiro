@@ -9,6 +9,10 @@
  * would make the second one fall back to memory. All probes therefore share one
  * reference-counted connection; the last probe to unmount closes it (`driver.close()`) after
  * a short grace period, which also absorbs React StrictMode's mount → unmount → mount.
+ *
+ * `memory-fallback` is explained by the optional `persistenceFallbackReason` the driver may
+ * carry (spec §5.3, added to `@senkiro/local-db` in P1-S3). Drivers without the field are
+ * still accepted; the probe then says the cause was not reported instead of guessing one.
  */
 import {
   JOURNEY_DDL,
@@ -117,8 +121,31 @@ export async function settleLocalDbProbes(open: OpenLocalDb): Promise<void> {
   await closing.get(open);
 }
 
+export type PersistenceFallbackReason = 'unsupported' | 'pool-busy' | 'unknown';
+
+const FALLBACK_REASONS: readonly PersistenceFallbackReason[] = [
+  'unsupported',
+  'pool-busy',
+  'unknown',
+];
+
+function isFallbackReason(value: unknown): value is PersistenceFallbackReason {
+  return typeof value === 'string' && (FALLBACK_REASONS as readonly string[]).includes(value);
+}
+
+/**
+ * Reads the optional `persistenceFallbackReason` without depending on a driver type that
+ * has it, so the probe works with drivers from before and after P1-S3. Anything other than
+ * one of the three documented reasons counts as "not reported".
+ */
+export function readFallbackReason(driver: LocalDbDriver): PersistenceFallbackReason | null {
+  const value: unknown = Reflect.get(driver, 'persistenceFallbackReason');
+  return isFallbackReason(value) ? value : null;
+}
+
 interface ProbeStatus {
   mode: LocalDbPersistenceMode;
+  fallbackReason: PersistenceFallbackReason | null;
   tablesReady: number;
   probeRows: number;
 }
@@ -134,6 +161,7 @@ async function readStatus({ driver }: Session): Promise<ProbeStatus> {
   ]);
   return {
     mode: driver.persistenceMode,
+    fallbackReason: readFallbackReason(driver),
     tablesReady: Number(tables?.[0] ?? 0),
     probeRows: Number(rows?.[0] ?? 0),
   };
@@ -197,25 +225,29 @@ export function LocalDbStatusProbe({ open, lang }: LocalDbStatusProbeProps) {
   const m = MESSAGES[lang].probe;
   const [state, setState] = useState<ProbeState>({ phase: 'opening' });
   const [busy, setBusy] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [exported, setExported] = useState<{ bytes: number; url: string } | null>(null);
   const session = useRef<Session | null>(null);
 
   useEffect(() => {
     let active = true;
-    acquire(open).then(
-      async (opened) => {
-        session.current = opened;
+    // Both the open and the first status read can fail; either one ends "opening".
+    acquire(open)
+      .then(async (opened) => {
+        if (active) {
+          session.current = opened;
+        }
         const status = await readStatus(opened);
         if (active) {
           setState({ phase: 'ready', status });
         }
-      },
-      (error: unknown) => {
+      })
+      .catch((error: unknown) => {
         if (active) {
+          session.current = null;
           setState({ phase: 'failed', error: errorText(error) });
         }
-      },
-    );
+      });
     return () => {
       active = false;
       session.current = null;
@@ -231,6 +263,7 @@ export function LocalDbStatusProbe({ open, lang }: LocalDbStatusProbeProps) {
       return;
     }
     setBusy(true);
+    setActionError(null);
     try {
       await action(opened);
       const status = await readStatus(opened);
@@ -238,8 +271,9 @@ export function LocalDbStatusProbe({ open, lang }: LocalDbStatusProbeProps) {
         setState({ phase: 'ready', status });
       }
     } catch (error) {
+      // An operation failure is not an open failure: keep the status and every button.
       if (session.current === opened) {
-        setState({ phase: 'failed', error: errorText(error) });
+        setActionError(errorText(error));
       }
     } finally {
       setBusy(false);
@@ -263,11 +297,13 @@ export function LocalDbStatusProbe({ open, lang }: LocalDbStatusProbeProps) {
   const { status } = state;
   const mode = status.mode === 'opfs-sahpool' ? 'opfs-sahpool' : 'memory-fallback';
   const isolated = typeof crossOriginIsolated === 'boolean' && crossOriginIsolated;
+  const fallback = mode === 'memory-fallback' ? (status.fallbackReason ?? 'unreported') : null;
   return (
     <div
       className={styles.stack}
       data-local-db-probe="ready"
       data-persistence-mode={status.mode}
+      data-fallback-reason={fallback ?? undefined}
       data-tables-ready={status.tablesReady}
       data-probe-rows={status.probeRows}
     >
@@ -276,6 +312,14 @@ export function LocalDbStatusProbe({ open, lang }: LocalDbStatusProbeProps) {
         <dd>
           <code>{status.mode}</code> · {m.modes[mode]}
         </dd>
+        {status.fallbackReason !== null && mode === 'memory-fallback' ? (
+          <>
+            <dt>{m.fallbackReason}</dt>
+            <dd>
+              <code>{status.fallbackReason}</code>
+            </dd>
+          </>
+        ) : null}
         <dt>{m.isolation}</dt>
         <dd>{isolated ? m.yes : m.no}</dd>
         <dt>{m.tables}</dt>
@@ -285,7 +329,9 @@ export function LocalDbStatusProbe({ open, lang }: LocalDbStatusProbeProps) {
         <dt>{m.probeRows}</dt>
         <dd>{status.probeRows}</dd>
       </dl>
-      <p className={styles.lead}>{m.modeNotes[mode]}</p>
+      <p className={styles.lead} data-probe-mode-note={fallback ?? 'persistent'}>
+        {fallback === null ? m.persistentNote : m.fallbackNotes[fallback]}
+      </p>
       <div className={styles.actions}>
         <button
           type="button"
@@ -323,6 +369,11 @@ export function LocalDbStatusProbe({ open, lang }: LocalDbStatusProbeProps) {
           {m.exportJson}
         </button>
       </div>
+      {actionError !== null ? (
+        <p role="alert" data-probe-action-error="">
+          {m.actionFailed.replace('{error}', actionError)}
+        </p>
+      ) : null}
       {exported ? (
         <p role="status" data-probe-export-bytes={exported.bytes}>
           {m.exported.replace('{bytes}', String(exported.bytes))}

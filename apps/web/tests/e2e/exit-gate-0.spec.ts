@@ -6,6 +6,7 @@
  * SwiftShader drew the 3D view.
  */
 import { type Browser, expect, type Page, type TestInfo, test } from '@playwright/test';
+import { KANSAI_FIXTURE_BUNDLE } from '../fixtures/atlas-bundle.ts';
 
 interface Collected {
   errors: string[];
@@ -101,14 +102,48 @@ test.describe('trilingual shell and themes', () => {
     await expect(html).toHaveAttribute('lang', 'en');
     await expect(html).toHaveAttribute('data-theme', 'light');
     await expect(page).toHaveTitle(/SENKIRO/);
+    // P0-W2 follow-up #10: after the reload the tokens and the URL are re-checked too.
+    expect(await canvasToken(page)).toBe('#f4f1ea');
+    expect(search(page).get('lang')).toBe('en');
+    expect(search(page).get('theme')).toBe('light');
 
     await page.getByRole('button', { name: /display|preferences/i }).click();
     await page.getByRole('radio', { name: '简体中文' }).click();
     await page.getByRole('radio', { name: '深色' }).click();
     await expect(html).toHaveAttribute('lang', 'zh-CN');
     await expect(html).toHaveAttribute('data-theme', 'dark');
+    expect(await canvasToken(page)).toBe('#181c22');
     // Defaults are omitted: the canonical home URL has no query again.
     await expect.poll(() => new URL(page.url()).search).toBe('');
+  });
+
+  test('ships the ui-kit base.css in production (P0-W2 follow-up #1)', async ({ page }) => {
+    await page.goto('/');
+    const base = await page.evaluate(() => {
+      const body = getComputedStyle(document.body);
+      const button = document.querySelector('button');
+      return {
+        margin: body.margin,
+        boxSizing: body.boxSizing,
+        buttonBoxSizing: button === null ? null : getComputedStyle(button).boxSizing,
+        bodyFont: body.fontFamily,
+        buttonFont: button === null ? null : getComputedStyle(button).fontFamily,
+      };
+    });
+    expect(base.margin).toBe('0px');
+    expect(base.boxSizing).toBe('border-box');
+    expect(base.buttonBoxSizing).toBe('border-box');
+    // `button { font: inherit }`: no Arial fallback.
+    expect(base.buttonFont).toBe(base.bodyFont);
+    // Keyboard focus draws the token focus ring.
+    await page.keyboard.press('Tab');
+    const outline = await page.evaluate(() => {
+      const active = document.activeElement;
+      return active === null || active === document.body
+        ? null
+        : getComputedStyle(active).outlineStyle;
+    });
+    expect(outline).toBe('solid');
   });
 });
 
@@ -206,8 +241,20 @@ test.describe('Kyoto honest placeholder', () => {
     await expect(dialog).toContainText('Phase 1 建设中');
     await expect(page.locator('[data-station-explorer]')).toHaveCount(0);
     await page.waitForLoadState('networkidle');
+    const hubChunk = /\/(station-explorer|umeda|shinjuku)-/;
     const requests = collected.get(page)?.requests ?? [];
-    expect(requests.filter((url) => /\/(station-explorer|umeda|shinjuku)-/.test(url))).toEqual([]);
+    expect(requests.filter((url) => hubChunk.test(url))).toEqual([]);
+
+    // P0-W2 follow-up #9, positive control: the same pattern does match the chunks Umeda
+    // and Shinjuku really load, so the empty result above is meaningful.
+    await page.goto('/?hub=umeda');
+    await openExplorer(page);
+    await page.goto('/?hub=shinjuku');
+    await openExplorer(page);
+    const loaded = (collected.get(page)?.requests ?? []).filter((url) => hubChunk.test(url));
+    expect(loaded.some((url) => /\/station-explorer-/.test(url))).toBe(true);
+    expect(loaded.some((url) => /\/umeda-/.test(url))).toBe(true);
+    expect(loaded.some((url) => /\/shinjuku-/.test(url))).toBe(true);
   });
 });
 
@@ -261,6 +308,11 @@ test.describe('isomorphic SQLite in the browser', () => {
       await page.goto('/?module=profile&lang=en');
       const ready = await probe(page);
       await expect(ready).toHaveAttribute('data-persistence-mode', 'memory-fallback');
+      // P0-W2 follow-up #3: never blamed on another tab. 'unreported' until P1-S3's Worker
+      // reports a reason, 'unsupported' afterwards.
+      expect(['unsupported', 'unreported']).toContain(
+        await ready.getAttribute('data-fallback-reason'),
+      );
       await expect(ready).toHaveAttribute('data-tables-ready', '6');
       await ready.getByRole('button', { name: 'Write a self-check row' }).click();
       await expect(ready).toHaveAttribute('data-probe-rows', '1');
@@ -294,8 +346,41 @@ async function isolatedPageWithoutSyncAccessHandles(browser: Browser): Promise<P
 test.describe('narrow layout (390 × 844)', () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
+  /**
+   * P0-W2 follow-up #2: the map, dock, quick entry and drawers are `position: fixed`, so
+   * `documentElement.scrollWidth` can never see them overflow. Measure each fixed surface
+   * and every drawer body directly instead.
+   */
+  async function overflow(page: Page) {
+    return page.evaluate(() => {
+      const width = window.innerWidth;
+      const roots = [
+        ...document.querySelectorAll<HTMLElement>(
+          '[role="dialog"], [data-station-explorer], [data-local-db-probe], [data-atlas-entry], [data-atlas-search], [data-map-status], section[aria-label], aside',
+        ),
+      ];
+      const outside = roots
+        .map((element) => ({ element, rect: element.getBoundingClientRect() }))
+        .filter(({ rect }) => rect.width > 0 && (rect.right > width + 0.5 || rect.left < -0.5))
+        .map(
+          ({ element, rect }) =>
+            `${element.tagName.toLowerCase()}${element.getAttribute('role') ? `[role=${element.getAttribute('role')}]` : ''} ${Math.round(rect.left)}..${Math.round(rect.right)}`,
+        );
+      const scrolling = [...document.querySelectorAll<HTMLElement>('[role="dialog"] *')]
+        .filter((element) => {
+          const style = getComputedStyle(element);
+          return (
+            (style.overflowX === 'auto' || style.overflowY === 'auto') &&
+            element.scrollWidth > element.clientWidth + 1
+          );
+        })
+        .map((element) => `${element.className} ${element.scrollWidth}>${element.clientWidth}`);
+      return { width, measured: roots.length, outside, scrolling };
+    });
+  }
+
   for (const path of ['/', '/?hub=umeda', '/?hub=shinjuku&lang=ja', '/?module=profile&lang=en']) {
-    test(`has no horizontal overflow at ${path}`, async ({ page }) => {
+    test(`keeps every fixed surface inside the viewport at ${path}`, async ({ page }) => {
       await page.goto(path);
       if (path.includes('hub=')) {
         await openExplorer(page);
@@ -303,11 +388,35 @@ test.describe('narrow layout (390 × 844)', () => {
       if (path.includes('profile')) {
         await probe(page);
       }
-      const overflow = await page.evaluate(() => ({
-        scroll: document.documentElement.scrollWidth,
-        inner: window.innerWidth,
-      }));
-      expect(overflow.scroll).toBeLessThanOrEqual(overflow.inner);
+      const result = await overflow(page);
+      expect(result.measured).toBeGreaterThan(0);
+      expect(result.outside).toEqual([]);
+      expect(result.scrolling).toEqual([]);
     });
   }
+
+  test('control: the measurement does catch a fixed surface that overflows', async ({ page }) => {
+    await page.goto('/');
+    await page.evaluate(() => {
+      const wide = document.createElement('div');
+      wide.setAttribute('role', 'dialog');
+      wide.style.cssText = 'position:fixed;top:0;left:0;width:480px;height:10px';
+      document.body.append(wide);
+    });
+    const result = await overflow(page);
+    expect(result.outside).toHaveLength(1);
+    expect(result.outside[0]).toContain('[role=dialog] 0..480');
+  });
+
+  test('keeps the Atlas entry sheet inside the viewport', async ({ page }, testInfo) => {
+    await page.addInitScript((bundle) => {
+      Reflect.set(globalThis, '__SENKIRO_ATLAS_PREVIEW__', { kansai: bundle });
+    }, KANSAI_FIXTURE_BUNDLE);
+    await page.goto('/?complex=sk:complex:kansai:kyoto&lang=en');
+    await expect(page.locator('[data-atlas-entry="complex"]')).toBeVisible();
+    await page.screenshot({ path: testInfo.outputPath('atlas-entry-narrow.png') });
+    const result = await overflow(page);
+    expect(result.outside).toEqual([]);
+    expect(result.scrolling).toEqual([]);
+  });
 });

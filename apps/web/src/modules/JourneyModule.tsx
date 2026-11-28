@@ -30,7 +30,7 @@ export function JourneyModule() {
           {LocalDbStatusProbe === undefined ? (
             m.slots.localDbPending
           ) : (
-            <SlotBoundary fallback={m.hubs.slotError} loading={m.hubs.loading}>
+            <SlotBoundary fallback={m.slots.localDbError} loading={m.slots.localDbLoading}>
               <LocalDbStatusProbe lang={lang} />
             </SlotBoundary>
           )}

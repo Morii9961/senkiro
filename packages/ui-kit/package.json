@@ -14,6 +14,7 @@
       "default": "./src/index.ts"
     },
     "./tokens.css": "./src/styles/tokens.css",
+    "./base.css": "./src/styles/base.css",
     "./package.json": "./package.json"
   },
   "files": [

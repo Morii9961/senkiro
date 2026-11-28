@@ -23,7 +23,9 @@ export default defineConfig({
     target: 'es2023',
     sourcemap: true,
     // Chunks above Vite's 500 kB default are lazy only: three.js inside the station-explorer
-    // adapter and the Shinjuku dataset (~80 kB gzip). The shell entry stays ~150 kB gzip.
+    // adapter, MapLibre + pmtiles inside AtlasMapView and the Shinjuku dataset. This limit
+    // cannot catch a shell regression on its own; tests/e2e/bundle.spec.ts asserts that the
+    // entry chunk holds neither engine and stays inside its gzip budget.
     chunkSizeWarningLimit: 1200,
   },
 });
