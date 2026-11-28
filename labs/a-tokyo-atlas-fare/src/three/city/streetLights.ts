@@ -256,7 +256,7 @@ export function buildTokyoStreetLightNetwork(
     if (Math.abs(ix) > 14_500 || Math.abs(iz) > 14_500) continue;
     const h = hashDet(Math.round(ix), Math.round(iz), 19);
     const floodHex = h > 0.45 ? 0xfff2de : 0xeef6ff;
-    pushLamp(ix, 8.4, iz, floodHex, 11.5, 1.25, 16, true);
+    pushLamp(ix, 8.4, iz, floodHex, 7.2, 0.72, 16, true);
 
     if (rad >= 9 && lampSize.length < MAX_LAMP_POINTS) {
       const ang = h * Math.PI * 2;
@@ -342,7 +342,7 @@ export function buildTokyoStreetLightNetwork(
               const sideSign = poleSeq % 2 === 0 ? 1 : -1;
               const off = Math.min(r.w * 0.25, 2.2) * sideSign;
               const hex = rnd > 0.4 ? 0xffad42 : 0xffbf66;
-              pushLamp(cx + nx * off, lampY, cz + nz * off, hex, 9.2, 1.10 + rnd * 0.25, 10);
+              pushLamp(cx + nx * off, lampY, cz + nz * off, hex, 5.8, 0.64 + rnd * 0.16, 10);
             } else if (r.hw === 'trunk') {
               // Both curbs on Tokyo trunk arterials (opposite side staggered half-phase)
               const hA = hashDet(Math.round(cx), Math.round(cz), 31);
@@ -352,8 +352,8 @@ export function buildTokyoStreetLightNetwork(
                 lampY,
                 cz + nz * curbOffset,
                 hexA,
-                9.5,
-                1.05 + hA * 0.30,
+                6.0,
+                0.62 + hA * 0.18,
                 10,
               );
 
@@ -370,8 +370,8 @@ export function buildTokyoStreetLightNetwork(
                   lampY,
                   ocz - nz * curbOffset,
                   hexB,
-                  9.5,
-                  1.05 + hB * 0.30,
+                  6.0,
+                  0.62 + hB * 0.18,
                   10,
                 );
               }
@@ -383,8 +383,8 @@ export function buildTokyoStreetLightNetwork(
                 lampY,
                 cz + nz * curbOffset * side,
                 hex,
-                8.0,
-                0.85 + rnd * 0.30,
+                5.0,
+                0.50 + rnd * 0.18,
                 10,
               );
             } else if (r.hw === 'secondary') {
@@ -395,8 +395,8 @@ export function buildTokyoStreetLightNetwork(
                 lampY,
                 cz + nz * curbOffset * side,
                 hex,
-                6.2,
-                0.55 + rnd * 0.25,
+                3.8,
+                0.32 + rnd * 0.14,
                 10,
               );
             } else {
@@ -407,8 +407,8 @@ export function buildTokyoStreetLightNetwork(
                 lampY,
                 cz + nz * curbOffset,
                 hex,
-                4.6,
-                0.34 + rnd * 0.18,
+                2.8,
+                0.20 + rnd * 0.10,
                 10,
               );
             }
@@ -453,8 +453,8 @@ export function buildTokyoStreetLightNetwork(
       uOpacity: { value: 1.0 },
       uPixelScale: { value: initialScale },
       uDpr: { value: initialDpr },
-      uMinPx: { value: 1.8 },
-      uMaxPx: { value: 14.0 },
+      uMinPx: { value: 1.2 },
+      uMaxPx: { value: 7.5 },
     },
     transparent: true,
     depthWrite: false,
@@ -564,8 +564,8 @@ export function buildTokyoStreetLightNetwork(
           roadY,
           bz - nz * laneOff,
           headlightCol,
-          4.8,
-          1.12,
+          3.4,
+          0.80,
           basePhase,
           speedNorm,
         );
@@ -577,8 +577,8 @@ export function buildTokyoStreetLightNetwork(
           roadY,
           az + nz * laneOff,
           taillightCol,
-          4.4,
-          1.08,
+          3.2,
+          0.78,
           (basePhase + 0.53) % 1,
           speedNorm,
         );
@@ -607,8 +607,8 @@ export function buildTokyoStreetLightNetwork(
       uOpacity: { value: 1.0 },
       uPixelScale: { value: initialScale },
       uDpr: { value: initialDpr },
-      uMinPx: { value: 1.4 },
-      uMaxPx: { value: 8.0 },
+      uMinPx: { value: 1.1 },
+      uMaxPx: { value: 5.5 },
     },
     transparent: true,
     depthWrite: false,

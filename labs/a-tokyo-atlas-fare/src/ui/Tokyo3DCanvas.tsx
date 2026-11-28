@@ -35,6 +35,8 @@ import type { PlacedMapLabel } from '../three/camera/labelLayout.js';
 import { SpatialLabelRegistry } from '../three/camera/labelSystem.js';
 import type { RollingStockRendererAdapter } from '../three/contracts/adapters.js';
 import { TOKYO_HUB_PRESETS } from '../three/geoProjection.js';
+import { getTokyoLocalHour } from '../three/environment/skyEnvironment.js';
+import type { VisualMode } from '../three/materials/groundShader.js';
 import { Metropolitan3DScene, type SceneCallbacks } from '../three/Metropolitan3DScene.js';
 import { createRollingStockRenderer } from '../three/rollingstock/index.js';
 import type {
@@ -68,6 +70,7 @@ interface Tokyo3DCanvasProps {
 
 type SceneWithTimeOfDay = Metropolitan3DScene & {
   setTimeOfDay?: (hour: number) => void;
+  setVisualMode?: (mode: VisualMode) => void;
 };
 
 type SceneCallbacksWithClear = SceneCallbacks & {
@@ -129,6 +132,7 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
   const [timeOfDayHour, setTimeOfDayHour] = useState<number>(() =>
     theme === 'dark' ? 21.0 : 13.5,
   );
+  const [visualMode, setVisualMode] = useState<VisualMode>('cinematic');
   const [autoTimePlay, setAutoTimePlay] = useState(false);
   const timeOfDayRef = useRef(timeOfDayHour);
   timeOfDayRef.current = timeOfDayHour;
@@ -318,11 +322,8 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
         (ctrl as SceneWithTimeOfDay).setTimeOfDay?.(normalized);
       },
       setVisualMode: (mode) => {
-        (
-          ctrl as Metropolitan3DScene & {
-            setVisualMode?: (m: 'atlas' | 'cinematic') => void;
-          }
-        ).setVisualMode?.(mode);
+        setVisualMode(mode);
+        (ctrl as SceneWithTimeOfDay).setVisualMode?.(mode);
       },
       getMetrics: () =>
         (window as unknown as { __SENKIRO_3D_METRICS__?: unknown }).__SENKIRO_3D_METRICS__ ?? null,
@@ -350,6 +351,10 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
   useEffect(() => {
     (sceneRef.current as SceneWithTimeOfDay | null)?.setTimeOfDay?.(timeOfDayHour);
   }, [timeOfDayHour]);
+
+  useEffect(() => {
+    (sceneRef.current as SceneWithTimeOfDay | null)?.setVisualMode?.(visualMode);
+  }, [visualMode]);
 
   // Smooth continuous time-lapse playback (~0.8 simulated hours/sec)
   useEffect(() => {
@@ -611,6 +616,17 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
     setTimeOfDayHour(nextHour);
   }, []);
 
+  const handleToggleVisualMode = useCallback(() => {
+    setVisualMode((prev) => (prev === 'cinematic' ? 'atlas' : 'cinematic'));
+  }, []);
+
+  const handleJumpTokyoLiveTime = useCallback(() => {
+    setAutoTimePlay(false);
+    const liveHour = getTokyoLocalHour();
+    timeOfDayRef.current = liveHour;
+    setTimeOfDayHour(liveHour);
+  }, []);
+
   const handleCloseLine = useCallback(() => {
     sceneRef.current?.stopLineTrace();
     cbRef.current.onClearLine?.();
@@ -686,6 +702,7 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
         locale={locale}
         modeState={modeState}
         sceneNight={sceneNight}
+        visualMode={visualMode}
         timeOfDayHour={timeOfDayHour}
         autoTimePlay={autoTimePlay}
         fareQuote={fareQuote}
@@ -700,6 +717,8 @@ export const Tokyo3DCanvas: React.FC<Tokyo3DCanvasProps> = ({
         onSelectHub={handleHubClick}
         onJumpExplorerLine={(lid) => camBridgeRef.current?.jumpToTunnelLine(lid)}
         onToggleNight={handleToggleDayNight}
+        onToggleVisualMode={handleToggleVisualMode}
+        onJumpTokyoLiveTime={handleJumpTokyoLiveTime}
         onChangeTimeOfDay={handleChangeTimeOfDay}
         onToggleAutoTimePlay={() => setAutoTimePlay((p) => !p)}
         onStartOrToggleTrace={handleStartOrToggleTrace}

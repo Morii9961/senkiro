@@ -48,12 +48,18 @@ import type {
 } from './contracts/adapters.js';
 import { createRollingStockRenderer } from './rollingstock/index.js';
 import { CutawayPitVisuals } from './environment/cutawayVisuals.js';
-import { SkyEnvironmentSystem } from './environment/skyEnvironment.js';
+import { SkyEnvironmentSystem, type SolarLightingState } from './environment/skyEnvironment.js';
+import { buildOuterMetroEnvironment, type OuterMetroHandle } from './city/outerMetroEnvironment.js';
 import { CityChunkManager } from './generators/buildingGenerator.js';
 import { CityTerrainLayer } from './generators/cityTerrainGenerator.js';
 import { RailTrackLayer, type RailwayLodTier } from './generators/railTrackGenerator.js';
 import { TunnelAndStationLayer } from './generators/tunnelGenerator.js';
 import { ViaductLayer } from './generators/viaductGenerator.js';
+import {
+  createCityLightingUniforms,
+  type CityLightingUniforms,
+  type VisualMode,
+} from './materials/groundShader.js';
 import {
   configureHighQualitySunShadow,
   createOptimalRenderer,
@@ -107,9 +113,11 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
   private readonly clipPlanes: THREE.Plane[];
 
   private readonly skyEnv: SkyEnvironmentSystem;
+  private readonly lightingUniforms: CityLightingUniforms;
   private readonly cutawayUniforms: CutawayUniforms;
   private readonly cutawayVisuals: CutawayPitVisuals;
   private readonly terrainLayer: CityTerrainLayer;
+  private readonly outerMetro: OuterMetroHandle;
   private readonly buildingManager: CityChunkManager;
   private readonly railLayer: RailTrackLayer;
   private readonly viaductLayer: ViaductLayer;
@@ -129,6 +137,8 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
   private enclosedUndergroundActive = false;
   private currentTimeOfDayHour: number;
   private currentNightFactor: number;
+  private visualMode: VisualMode = 'cinematic';
+  private lastShadowSpan = 1850;
   private webGpuAdapterName: string | null = null;
 
   // v2.0 Subsystem Plugin Slots (injected by Integration Coordinator as branches merge)
@@ -244,22 +254,37 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
     this.clipPlanes = [this.clipPlane];
 
     // 7. Instantiate Procedural Layers + Global Ghost-Surface Underground Alignment Guides (Scheme A)
+    this.lightingUniforms = createCityLightingUniforms();
     this.cutawayUniforms = createCutawayUniforms();
     this.cutawayVisuals = new CutawayPitVisuals(isDark, this.solved.stationNodes);
-    this.terrainLayer = new CityTerrainLayer(isDark, this.clipPlanes, this.cutawayUniforms);
-    this.buildingManager = new CityChunkManager(isDark, this.clipPlanes, this.cutawayUniforms);
+    this.terrainLayer = new CityTerrainLayer(
+      isDark,
+      this.clipPlanes,
+      this.cutawayUniforms,
+      this.lightingUniforms,
+    );
+    this.outerMetro = buildOuterMetroEnvironment(this.clipPlanes, this.lightingUniforms);
+    this.buildingManager = new CityChunkManager(
+      isDark,
+      this.clipPlanes,
+      this.cutawayUniforms,
+      undefined,
+      this.lightingUniforms,
+    );
     this.railLayer = new RailTrackLayer(this.solved, this.clipPlanes);
     this.viaductLayer = new ViaductLayer(this.solved, null, this.clipPlanes);
     this.tunnelLayer = new TunnelAndStationLayer(this.solved, this.clipPlanes);
 
     this.scene.add(
       this.terrainLayer.group,
+      this.outerMetro.group,
       this.cutawayVisuals.group,
       this.buildingManager.group,
       this.viaductLayer.group,
       this.tunnelLayer.group,
       this.railLayer.group,
     );
+    this.applySolarState(this.skyEnv.applyTimeOfDay(this.scene, this.currentTimeOfDayHour));
 
     // 7b. v2.0 Simulation Engine & Rolling Stock Renderer plugins (Wave 1 + Wave 2 defaults)
     this.attachSimulationEngine(plugins?.simulationEngine ?? createTrainSimulationEngine());
@@ -508,34 +533,70 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
     const normalizedHour = ((hour % 24) + 24) % 24;
     this.currentTimeOfDayHour = normalizedHour;
     const solar = this.skyEnv.applyTimeOfDay(this.scene, normalizedHour);
+    this.applySolarState(solar);
+  }
+
+  setVisualMode(mode: VisualMode): void {
+    if (this.visualMode === mode) return;
+    this.visualMode = mode;
+    this.lightingUniforms.uVisualMode.value = mode === 'cinematic' ? 1.0 : 0.0;
+    const solar = this.skyEnv.applyTimeOfDay(this.scene, this.currentTimeOfDayHour);
+    this.applySolarState(solar);
+  }
+
+  getVisualMode(): VisualMode {
+    return this.visualMode;
+  }
+
+  private applySolarState(solar: SolarLightingState): void {
     this.currentNightFactor = solar.nightFactor;
+    const isAtlas = this.visualMode === 'atlas';
 
     this.hemiLight.color.copy(solar.hemiSkyColor);
     this.hemiLight.groundColor.copy(solar.hemiGroundColor);
-    this.hemiLight.intensity = solar.hemiIntensity;
+    this.hemiLight.intensity = solar.hemiIntensity * (isAtlas ? 1.08 : 1.0);
 
     this.sunLight.color.copy(solar.sunLightColor);
-    this.sunLight.intensity = solar.sunLightIntensity;
+    this.sunLight.intensity = solar.sunLightIntensity * (isAtlas ? 0.94 : 1.0);
 
     this.subFillLight.color.copy(solar.subFillColor);
     const cutawayBoost = this.cutawayActive || this.selectedStationUnderground ? 0.35 : 0.0;
     this.subFillLight.intensity = solar.subFillIntensity + cutawayBoost;
 
-    this.renderer.toneMappingExposure = solar.toneMappingExposure;
-    this.rendererBundle.setNightFactor(solar.nightFactor);
+    // Position opposite-side cool bounce fill perpendicular/opposite to active light direction
+    this.subFillLight.position.set(
+      -solar.activeLightDirection.x * 1400,
+      -260,
+      -solar.activeLightDirection.z * 1400,
+    );
 
-    if (this.isDark !== solar.isDark) {
-      this.isDark = solar.isDark;
-      this.terrainLayer.setTheme(solar.isDark);
-      this.buildingManager.setTheme(solar.isDark);
-      this.lastChunkUpdateTime = 0;
-      this.cutawayVisuals.setTheme(solar.isDark);
-      this.tunnelLayer.setTheme(solar.isDark);
-    }
+    this.renderer.toneMappingExposure = solar.toneMappingExposure * (isAtlas ? 1.02 : 1.0);
+    this.rendererBundle.setNightFactor(solar.nightFactor);
+    this.rendererBundle.setBloomTuning(
+      solar.bloomStrength * (isAtlas ? 0.42 : 1.0),
+      isAtlas ? Math.min(0.98, solar.bloomThreshold + 0.08) : solar.bloomThreshold,
+    );
+
+    // Sync unified shader uniforms continuously without destructive texture/LOD0 rebuilds!
+    this.lightingUniforms.uTimeHour.value = solar.hour;
+    this.lightingUniforms.uSunDir.value.copy(solar.sunDirection);
+    this.lightingUniforms.uSunColor.value.copy(solar.sunLightColor);
+    this.lightingUniforms.uSkyTopColor.value.copy(solar.skyTopColor);
+    this.lightingUniforms.uSkyHorizonColor.value.copy(solar.skyHorizonColor);
+    this.lightingUniforms.uNightFactor.value = solar.nightFactor;
+    this.lightingUniforms.uGoldenFactor.value = solar.goldenFactor;
+    this.lightingUniforms.uBlueHourFactor.value = solar.blueHourFactor;
+    this.lightingUniforms.uVisualMode.value = isAtlas ? 0.0 : 1.0;
+    this.lightingUniforms.uAerialColor.value.copy(solar.aerialScatterColor);
+
+    this.scene.environmentIntensity = solar.envIntensity * (isAtlas ? 0.72 : 1.0);
+    this.isDark = solar.isDark;
 
     this.buildingManager.setNightFactor(solar.nightFactor);
-    this.terrainLayer.setTimeOfDay(normalizedHour, solar.nightFactor);
+    this.terrainLayer.setTimeOfDay(solar.hour, solar.nightFactor);
+    this.outerMetro.setTimeOfDay(solar.nightFactor, solar.goldenFactor, solar.blueHourFactor);
     this.tunnelLayer.setNightFactor(solar.nightFactor);
+    this.cutawayVisuals.setTheme(solar.isDark);
 
     if (this.enclosedUndergroundActive) {
       this.scene.background = new THREE.Color(0x0a0f18);
@@ -553,30 +614,7 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
 
   setTheme(isDark: boolean): void {
     if (this.isDark === isDark) return;
-    this.isDark = isDark;
-    this.currentTimeOfDayHour = isDark ? 21.0 : 13.5;
-    this.currentNightFactor = isDark ? 1.0 : 0.0;
-    this.skyEnv.applyToScene(this.scene, isDark);
-    this.hemiLight.color.setHex(isDark ? 0x7da4cc : 0xdcebf9);
-    this.hemiLight.groundColor.setHex(isDark ? 0x16202e : 0xa6a096);
-    this.hemiLight.intensity = isDark ? 0.58 : 0.78;
-    this.sunLight.color.setHex(isDark ? 0xa3c4f0 : 0xfff3de);
-    this.sunLight.intensity = isDark ? 0.92 : 1.78;
-    this.subFillLight.color.setHex(isDark ? 0x3b82f6 : 0xbdd7f0);
-    this.subFillLight.intensity = isDark ? 0.48 : 0.34;
-    this.rendererBundle.setNightFactor(this.currentNightFactor);
-    this.terrainLayer.setTheme(isDark);
-    this.terrainLayer.setTimeOfDay(this.currentTimeOfDayHour, this.currentNightFactor);
-    this.buildingManager.setTheme(isDark);
-    this.lastChunkUpdateTime = 0;
-    this.buildingManager.setNightFactor(this.currentNightFactor);
-    this.cutawayVisuals.setTheme(isDark);
-    this.tunnelLayer.setTheme(isDark);
-    this.tunnelLayer.setNightFactor(this.currentNightFactor);
-    if (this.enclosedUndergroundActive) {
-      this.scene.background = new THREE.Color(0x0a0f18);
-      this.scene.fog = new THREE.Fog(0x0a0f18, 85, 390);
-    }
+    this.setTimeOfDay(isDark ? 21.5 : 13.5);
   }
 
   applyFilters(params: {
@@ -1079,6 +1117,7 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
   };
 
   private handleControlsEnd = (): void => {
+    this.syncWindowCameraSnapshot();
     if (!this.callbacks.onCameraMoved) return;
     const { lon, lat, zoom } = this.getViewLonLatZoom();
     this.callbacks.onCameraMoved(lon, lat, zoom);
@@ -1123,6 +1162,11 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
     };
     (window as unknown as { __SENKIRO_3D_METRICS__?: SceneTelemetry }).__SENKIRO_3D_METRICS__ =
       telemetry;
+    this.syncWindowCameraSnapshot();
+    this.callbacks.onTelemetry?.(telemetry);
+  }
+
+  private syncWindowCameraSnapshot(): void {
     const focus = this.camCtrl.getFocusTarget();
     (
       window as unknown as {
@@ -1141,7 +1185,6 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
       ],
       target: [Math.round(focus.x), Math.round(focus.y), Math.round(focus.z)],
     };
-    this.callbacks.onTelemetry?.(telemetry);
   }
 
   private animate = (): void => {
@@ -1188,6 +1231,7 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
     } else {
       this.camCtrl.update(now, dtSec);
     }
+    this.syncWindowCameraSnapshot();
 
     // 3. Enclosed subterranean atmosphere & surface occlusion when camera is physically inside a tunnel
     const wantEnclosedUnderground = this.camera.position.y < -4.2 && !this.cutawayActive;
@@ -1196,13 +1240,14 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
       const skyDome = this.scene.getObjectByName('atmospheric-sky-dome');
       if (skyDome) skyDome.visible = !wantEnclosedUnderground;
       this.terrainLayer.group.visible = !wantEnclosedUnderground;
+      this.outerMetro.setVisibility(!wantEnclosedUnderground);
       this.buildingManager.group.visible = !wantEnclosedUnderground;
       this.viaductLayer.group.visible = !wantEnclosedUnderground;
       if (wantEnclosedUnderground) {
         this.scene.background = new THREE.Color(0x0a0f18);
         this.scene.fog = new THREE.Fog(0x0a0f18, 85, 390);
       } else {
-        this.skyEnv.applyToScene(this.scene, this.isDark);
+        this.applySolarState(this.skyEnv.applyTimeOfDay(this.scene, this.currentTimeOfDayHour));
       }
     }
 
@@ -1252,6 +1297,7 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
 
     this.skyEnv.updateForCamera(this.camera.position, this.camera.far);
     this.skyEnv.updateTime(now * 0.001);
+    this.lightingUniforms.uTimeSec.value = now * 0.001;
     this.terrainLayer.updateAnimation(now * 0.001);
 
     // Smoothly track cutaway pit center onto camera focus target unless pinned (P5)
@@ -1278,12 +1324,24 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
       );
     }
 
-    // Keep shadow frustum centered near camera target along solar direction for crisp local shadows!
-    this.sunLight.target.position.set(focusTarget.x, 0, focusTarget.z);
+    // Dynamic camera-distance adaptive shadow frustum + texel-snapping to eliminate shadow swimming
+    const targetSpan = Math.max(520, Math.min(2600, camDist * 0.88));
+    if (Math.abs(targetSpan - this.lastShadowSpan) / this.lastShadowSpan > 0.14) {
+      this.lastShadowSpan = targetSpan;
+      this.sunLight.shadow.camera.left = -targetSpan;
+      this.sunLight.shadow.camera.right = targetSpan;
+      this.sunLight.shadow.camera.top = targetSpan;
+      this.sunLight.shadow.camera.bottom = -targetSpan;
+      this.sunLight.shadow.camera.updateProjectionMatrix();
+    }
+    const texelWorld = (this.lastShadowSpan * 2) / 2048;
+    const snapX = Math.round(focusTarget.x / texelWorld) * texelWorld;
+    const snapZ = Math.round(focusTarget.z / texelWorld) * texelWorld;
+    this.sunLight.target.position.set(snapX, 0, snapZ);
     this.sunLight.position.set(
-      focusTarget.x + this.skyEnv.sunDirection.x * 3000,
-      this.skyEnv.sunDirection.y * 3000,
-      focusTarget.z + this.skyEnv.sunDirection.z * 3000,
+      snapX + this.skyEnv.activeLightDirection.x * 3600,
+      this.skyEnv.activeLightDirection.y * 3600,
+      snapZ + this.skyEnv.activeLightDirection.z * 3600,
     );
 
     // Throttled chunk streaming, lazy LOD0 & GPU memory eviction (~4Hz)
@@ -1308,6 +1366,7 @@ export class Metropolitan3DScene implements AtlasV2SceneApi {
     this.skyEnv.dispose();
     this.cutawayVisuals.dispose();
     this.terrainLayer.dispose();
+    this.outerMetro.dispose();
     this.buildingManager.dispose();
     this.railLayer.dispose();
     this.viaductLayer.dispose();

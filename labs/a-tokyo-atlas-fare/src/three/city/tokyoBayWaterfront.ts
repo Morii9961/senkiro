@@ -9,223 +9,23 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { injectRadialCutaway, type CutawayUniforms } from '../materials/cutawayShader.js';
 import type { UrbanBaseEnvironment } from '../types.js';
 import { pointInPoly } from './cityGeometryHelpers.js';
+import {
+  isPointInTokyoBayWater,
+  isPointOnHanedaAirport,
+  isPointOnTokyoBayPort,
+  TOKYO_BAY_ISLANDS,
+  TOKYO_BAY_OCEAN_POLYGON,
+  type ReclaimedIslandSpec,
+} from './tokyoCoastlineData.js';
 
-/**
- * Multi-point Tokyo Bay mainland ocean boundary polygon (world meters relative to Tokyo Station).
- * Follows real Tokyo 23-ward coastline from Urayasu/Kasai -> Tatsumi -> Tsukiji -> Takeshiba ->
- * Shibaura -> Shinagawa Konan -> Samezu -> Omori -> Tama River Mouth -> Kawasaki -> Tokyo Bay.
- */
-export const TOKYO_BAY_OCEAN_POLYGON: readonly [number, number][] = [
-  [12921, 4579],
-  [10661, 4801],
-  [8852, 4468],
-  [7044, 4579],
-  [6140, 3467],
-  [5235, 3578],
-  [4060, 2912],
-  [2794, 2134],
-  [1347, 1911],
-  [81, 2356],
-  [-552, 3245],
-  [-1004, 4468],
-  [-1637, 5579],
-  [-1727, 6690],
-  [-2089, 8135],
-  [-2360, 10135],
-  [-2179, 12580],
-  [-1817, 14358],
-  [-1365, 15470],
-  [-2270, 16803],
-  [-1094, 19026],
-  [-2450, 22360],
-  [-6067, 25694],
-  [25580, 25694],
-  [25580, 2356],
-  [17442, 2912],
-];
-
-export interface ReclaimedIslandSpec {
-  id: string;
-  name: string;
-  kind: 'urban' | 'port' | 'airport';
-  pts: readonly [number, number][];
-}
-
-/**
- * Reclaimed artificial islands in Tokyo Bay (aligned to OSM roads, bridges, parks & port blocks).
- */
-export const TOKYO_BAY_ISLANDS: readonly ReclaimedIslandSpec[] = [
-  {
-    id: 'harumi-toyosu',
-    name: 'Harumi / Toyosu',
-    kind: 'urban',
-    pts: [
-      [580, 2680],
-      [1890, 2245],
-      [3180, 2790],
-      [3380, 4050],
-      [2071, 4380],
-      [680, 3810],
-    ],
-  },
-  {
-    id: 'tatsumi-shinkiba',
-    name: 'Tatsumi / Shin-Kiba / Yumenoshima',
-    kind: 'urban',
-    pts: [
-      [3450, 3120],
-      [6450, 3245],
-      [6620, 4720],
-      [4602, 5060],
-      [3517, 4260],
-    ],
-  },
-  {
-    id: 'ariake',
-    name: 'Ariake',
-    kind: 'urban',
-    pts: [
-      [1360, 4780],
-      [2630, 4220],
-      [3420, 5023],
-      [2880, 6680],
-      [1680, 6080],
-    ],
-  },
-  {
-    id: 'odaiba-aomi',
-    name: 'Odaiba / Aomi Container Terminal',
-    kind: 'port',
-    pts: [
-      [-190, 5560],
-      [840, 5110],
-      [1480, 5580],
-      [2860, 5940],
-      [2860, 7560],
-      [2380, 8890],
-      [860, 8880],
-      [480, 8220],
-      [310, 6800],
-    ],
-  },
-  {
-    id: 'shinagawa-oi-wharf',
-    name: 'Shinagawa Wharf / Oi Wharf & Shinkansen Rail Yard',
-    kind: 'port',
-    pts: [
-      [-1460, 4020],
-      [-540, 4020],
-      [-480, 5780],
-      [-320, 7750],
-      [-260, 10840],
-      [-1440, 10860],
-      [-1640, 8357],
-      [-1546, 6579],
-    ],
-  },
-  {
-    id: 'central-breakwater',
-    name: 'Central Breakwater Reclaimed Islands',
-    kind: 'port',
-    pts: [
-      [2380, 7480],
-      [4420, 7520],
-      [4440, 9480],
-      [2460, 9160],
-    ],
-  },
-  {
-    id: 'heiwajima-showajima',
-    name: 'Heiwajima / Showajima',
-    kind: 'port',
-    pts: [
-      [-1998, 10620],
-      [-480, 10820],
-      [-220, 12580],
-      [-1546, 12803],
-    ],
-  },
-  {
-    id: 'jonanjima-keihinjima',
-    name: 'Jonanjima / Keihinjima',
-    kind: 'port',
-    pts: [
-      [-160, 10940],
-      [1820, 11140],
-      [1640, 12580],
-      [-20, 12360],
-    ],
-  },
-  {
-    id: 'haneda-airport',
-    name: 'Haneda International Airport (HND)',
-    kind: 'airport',
-    pts: [
-      [-1275, 13247],
-      [1347, 12914],
-      [3156, 14136],
-      [3517, 16025],
-      [2071, 16692],
-      [-461, 16137],
-      [-1546, 14914],
-    ],
-  },
-  {
-    id: 'haneda-runway-d',
-    name: 'Haneda Runway D Pier (05/23)',
-    kind: 'airport',
-    pts: [
-      [2520, 16100],
-      [4850, 15020],
-      [5120, 15580],
-      [2820, 16660],
-    ],
-  },
-];
-
-/**
- * Returns true if world coordinate `(x, z)` lies over open Tokyo Bay water
- * (inside the ocean coastline polygon and NOT on any reclaimed artificial island).
- */
-export function isPointInTokyoBayWater(x: number, z: number): boolean {
-  if (z < 1850) return false;
-  if (!pointInPoly(x, z, TOKYO_BAY_OCEAN_POLYGON as [number, number][])) return false;
-  for (const isl of TOKYO_BAY_ISLANDS) {
-    if (pointInPoly(x, z, isl.pts as [number, number][])) {
-      return false;
-    }
-  }
-  return true;
-}
-
-/**
- * Returns true if `(x, z)` lies on Haneda Airport landmass (protects runways from urban infill).
- */
-export function isPointOnHanedaAirport(x: number, z: number): boolean {
-  if (z < 12800 || z > 17000 || x < -1700 || x > 5300) return false;
-  for (const isl of TOKYO_BAY_ISLANDS) {
-    if (isl.kind === 'airport' && pointInPoly(x, z, isl.pts as [number, number][])) {
-      return true;
-    }
-  }
-  return false;
-}
-
-/**
- * Returns true if `(x, z)` lies on Tokyo Bay container port terminals or Breakwater port islands
- * (protects container yards & reclaimed port aprons from suburban residential infill).
- */
-export function isPointOnTokyoBayPort(x: number, z: number): boolean {
-  if (z < 3950 || z > 13000 || x < -2100 || x > 4600) return false;
-  for (const isl of TOKYO_BAY_ISLANDS) {
-    if (isl.kind !== 'port') continue;
-    if (isl.id === 'odaiba-aomi' && z < 6200) continue;
-    if (pointInPoly(x, z, isl.pts as [number, number][])) {
-      return true;
-    }
-  }
-  return false;
-}
+export {
+  isPointInTokyoBayWater,
+  isPointOnHanedaAirport,
+  isPointOnTokyoBayPort,
+  TOKYO_BAY_ISLANDS,
+  TOKYO_BAY_OCEAN_POLYGON,
+  type ReclaimedIslandSpec,
+};
 
 function hashDet(x: number, z: number, salt = 31): number {
   const h = Math.sin(x * 0.0173 + z * 0.0291 + salt * 43.17) * 43758.5453123;

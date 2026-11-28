@@ -696,8 +696,16 @@ export class SpatialCameraController
       const surfaceTarget = new THREE.Vector3(target.x, 0, target.z);
       const dist = nextState.mode === 'street_level' ? 145 : 1150;
       const polar = nextState.mode === 'street_level' ? 74 : 54;
+      const azimuth = this.getCurrentAzimuthDeg();
       this.controls.enabled = !nextState.freeLookEnabled;
-      this.animateTo(surfaceTarget, dist, polar, this.getCurrentAzimuthDeg(), 620);
+      if (prevMode === 'underground_explorer') {
+        const emergePos = this.sphericalToPos(surfaceTarget, Math.min(dist, 220), polar, azimuth);
+        this.camera.position.copy(emergePos);
+        this.controls.target.copy(surfaceTarget);
+        this.camera.lookAt(surfaceTarget);
+      }
+      this.animateTo(surfaceTarget, dist, polar, azimuth, 560);
+      this.onCameraMoved?.();
       return;
     }
 
@@ -787,6 +795,11 @@ export class SpatialCameraController
     const faceSign = this.tunnelDistAlong > bestCorridor.totalDist * 0.65 ? -1 : 1;
 
     const endPos = new THREE.Vector3(pt.x, pt.y + this.tunnelHeadHeightM, pt.z);
+    const startPos = new THREE.Vector3(
+      pt.x - tan.x * 14 * faceSign,
+      pt.y + this.tunnelHeadHeightM,
+      pt.z - tan.z * 14 * faceSign,
+    );
     const endTarget = new THREE.Vector3(
       pt.x + tan.x * 48 * faceSign,
       pt.y + this.tunnelHeadHeightM + tan.y * 24 * faceSign,
@@ -797,13 +810,17 @@ export class SpatialCameraController
     this.yaw = Math.atan2(-lookVec.x, -lookVec.z);
     this.pitch = Math.asin(THREE.MathUtils.clamp(lookVec.y, -0.75, 0.75));
 
+    this.camera.position.copy(startPos);
+    this.controls.target.copy(endTarget);
+    this.camera.lookAt(endTarget);
+
     this.anim = {
-      startPos: this.camera.position.clone(),
+      startPos,
       endPos,
-      startTarget: this.getFocusTarget().clone(),
+      startTarget: endTarget.clone(),
       endTarget,
       startTime: performance.now(),
-      durationMs: 680,
+      durationMs: 420,
     };
     this.onCameraMoved?.();
     return true;

@@ -34,6 +34,7 @@ import type { CameraOrientationInfo } from '../three/camera/collisionGuard.js';
 import type { UndergroundExplorerLocation } from '../three/camera/controllerBridge.js';
 import type { PlacedMapLabel } from '../three/camera/labelLayout.js';
 import { TOKYO_HUB_PRESETS } from '../three/geoProjection.js';
+import type { VisualMode } from '../three/materials/groundShader.js';
 import type { LineTraceStatus, SceneTelemetry } from '../three/types.js';
 import { UI_TEXT, type Locale } from './i18n.js';
 
@@ -54,16 +55,25 @@ function getTimePeriodInfo(hour: number, locale: Locale): {
   label: string;
 } {
   const h = ((hour % 24) + 24) % 24;
-  if (h >= 5.0 && h < 8.5) {
+  if (h >= 4.75 && h < 5.75) {
+    return { icon: <Sunrise size={12} />, label: tr(locale, '薄明', '黎明蓝调', 'Blue Dawn') };
+  }
+  if (h >= 5.75 && h < 8.5) {
     return { icon: <Sunrise size={12} />, label: tr(locale, '朝焼け', '清晨', 'Dawn') };
   }
-  if (h >= 8.5 && h < 16.5) {
+  if (h >= 8.5 && h < 16.25) {
     return { icon: <Sun size={12} />, label: tr(locale, '日中', '日间', 'Day') };
   }
-  if (h >= 16.5 && h < 18.5) {
+  if (h >= 16.25 && h < 17.65) {
+    return { icon: <Sunset size={12} />, label: tr(locale, 'ゴールデン', '黄金时刻', 'Golden Hour') };
+  }
+  if (h >= 17.65 && h < 18.2) {
     return { icon: <Sunset size={12} />, label: tr(locale, '夕暮れ', '日落', 'Sunset') };
   }
-  return { icon: <Moon size={12} />, label: tr(locale, '夜間', '夜间', 'Night') };
+  if (h >= 18.2 && h < 19.1) {
+    return { icon: <Moon size={12} />, label: tr(locale, 'ブルーアワー', '蓝调时刻', 'Blue Hour') };
+  }
+  return { icon: <Moon size={12} />, label: tr(locale, '夜間', '夜晚', 'Night') };
 }
 
 const MODE_ZH_FALLBACK: Record<
@@ -125,7 +135,8 @@ const TIME_PRESETS: {
 }[] = [
   { id: 'morning', hour: 7.5, labelJa: '朝 07:30', labelZh: '清晨 07:30', labelEn: 'Morning 07:30' },
   { id: 'noon', hour: 13.0, labelJa: '正午 13:00', labelZh: '正午 13:00', labelEn: 'Noon 13:00' },
-  { id: 'sunset', hour: 17.25, labelJa: '夕暮れ 17:15', labelZh: '日落 17:15', labelEn: 'Sunset 17:15' },
+  { id: 'sunset', hour: 17.25, labelJa: '夕景 17:15', labelZh: '黄金日落 17:15', labelEn: 'Golden 17:15' },
+  { id: 'bluehour', hour: 18.42, labelJa: '蒼時 18:25', labelZh: '蓝调 18:25', labelEn: 'Blue Hr 18:25' },
   { id: 'night', hour: 21.5, labelJa: '夜間 21:30', labelZh: '夜晚 21:30', labelEn: 'Night 21:30' },
 ];
 
@@ -254,6 +265,7 @@ interface CameraHudProps {
   locale: Locale;
   modeState: CameraModeState;
   sceneNight: boolean;
+  visualMode: VisualMode;
   timeOfDayHour: number;
   autoTimePlay: boolean;
   fareQuote: FareQuote | null;
@@ -268,6 +280,8 @@ interface CameraHudProps {
   onSelectHub: (hubId: string) => void;
   onJumpExplorerLine: (lineId: SkId<'line'>) => void;
   onToggleNight: () => void;
+  onToggleVisualMode: () => void;
+  onJumpTokyoLiveTime: () => void;
   onChangeTimeOfDay: (hour: number) => void;
   onToggleAutoTimePlay: () => void;
   onStartOrToggleTrace: () => void;
@@ -306,6 +320,7 @@ export const CameraHud: React.FC<CameraHudProps> = ({
   locale,
   modeState,
   sceneNight,
+  visualMode,
   timeOfDayHour,
   autoTimePlay,
   fareQuote,
@@ -320,6 +335,8 @@ export const CameraHud: React.FC<CameraHudProps> = ({
   onSelectHub,
   onJumpExplorerLine,
   onToggleNight,
+  onToggleVisualMode,
+  onJumpTokyoLiveTime,
   onChangeTimeOfDay,
   onToggleAutoTimePlay,
   onStartOrToggleTrace,
@@ -457,6 +474,26 @@ export const CameraHud: React.FC<CameraHudProps> = ({
                 {sceneNight
                   ? tr(locale, '昼間', '白天', 'Day')
                   : tr(locale, '夜間', '夜晚', 'Night')}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              className={`hub-chip ${visualMode === 'cinematic' ? 'active-sky' : ''}`}
+              data-testid="toggle-visual-mode"
+              title={tr(
+                locale,
+                '表現モード切替 (Cinematic / Atlas)',
+                '切换画面风格（写实电影 / 清晰图谱）',
+                'Switch Visual Style (Cinematic / Atlas)',
+              )}
+              onClick={onToggleVisualMode}
+            >
+              <Layers size={12} />
+              <span>
+                {visualMode === 'cinematic'
+                  ? tr(locale, '写実', '写实', 'Cinematic')
+                  : tr(locale, '図譜', '图谱', 'Atlas')}
               </span>
             </button>
 
@@ -615,6 +652,15 @@ export const CameraHud: React.FC<CameraHudProps> = ({
                   </button>
                 );
               })}
+              <button
+                type="button"
+                data-testid="time-live-tokyo-btn"
+                className="tod-preset-chip"
+                title={tr(locale, '現在の東京時刻 (JST) に合わせる', '同步当前东京实时时间 (JST)', 'Sync to Current Tokyo Time (JST)')}
+                onClick={onJumpTokyoLiveTime}
+              >
+                {tr(locale, '東京現在 (JST)', '东京实时 (JST)', 'Tokyo Live (JST)')}
+              </button>
             </div>
           </div>
         )}

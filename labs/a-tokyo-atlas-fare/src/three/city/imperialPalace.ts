@@ -18,6 +18,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { SURFACE_ELEVATION_LAYERS } from '../../contracts/atlasV2.js';
 import { injectRadialCutaway, type CutawayUniforms } from '../materials/cutawayShader.js';
+import { injectUrbanGroundShader, type CityLightingUniforms } from '../materials/groundShader.js';
 import { pointInPoly } from './cityGeometryHelpers.js';
 
 export const IMPERIAL_PALACE_PLATEAU_Y = 4.2;
@@ -367,6 +368,7 @@ export function buildImperialPalaceModel(
   clipPlanes: THREE.Plane[],
   waterMaterial: THREE.MeshStandardMaterial,
   cutawayUniforms?: CutawayUniforms,
+  lightingUniforms?: CityLightingUniforms,
 ): ImperialPalaceHandle {
   const group = new THREE.Group();
   group.name = 'imperial-palace-3d';
@@ -394,7 +396,7 @@ export function buildImperialPalaceModel(
   );
   const plateauGroundMat = mkMat(
     {
-      color: isDark ? 0x1b3424 : 0x5c854e,
+      color: isDark ? 0x203828 : 0x4e7444,
       roughness: 0.95,
       metalness: 0.0,
     },
@@ -402,7 +404,7 @@ export function buildImperialPalaceModel(
   );
   const gravelPlazaMat = mkMat(
     {
-      color: isDark ? 0x2c3440 : 0xd6d0c4,
+      color: isDark ? 0x2d3540 : 0x9e9588,
       roughness: 0.94,
       metalness: 0.01,
       polygonOffset: true,
@@ -411,6 +413,10 @@ export function buildImperialPalaceModel(
     },
     'terrain',
   );
+  if (lightingUniforms) {
+    injectUrbanGroundShader(plateauGroundMat, lightingUniforms, 'forestFloor');
+    injectUrbanGroundShader(gravelPlazaMat, lightingUniforms, 'plaza');
+  }
   const plasterWallMat = mkMat(
     {
       color: isDark ? 0xa3adb8 : 0xf2eee6,
@@ -468,7 +474,7 @@ export function buildImperialPalaceModel(
   // ---- 1. Elevated Castle Plateau & Battered Ishigaki Moat Walls ----
   const innerTopPts = insetPolygon(IMPERIAL_PALACE_INNER_POLY, 6.0);
   stoneGeoms.push(buildBatteredWallSkirt(IMPERIAL_PALACE_INNER_POLY, innerTopPts, -1.25, P_Y));
-  groundGeoms.push(buildPolygonTop(innerTopPts, P_Y));
+  groundGeoms.push(buildPolygonTop(innerTopPts, P_Y, true));
 
   // Honmaru East Gardens slightly raised inner lawn terrace (-958, -645)
   const honmaruLawnPts: [number, number][] = [
@@ -480,7 +486,7 @@ export function buildImperialPalaceModel(
   stoneGeoms.push(
     buildBatteredWallSkirt(honmaruLawnPts, insetPolygon(honmaruLawnPts, 2.5), P_Y - 0.2, P_Y + 0.55),
   );
-  groundGeoms.push(buildPolygonTop(insetPolygon(honmaruLawnPts, 2.5), P_Y + 0.55));
+  groundGeoms.push(buildPolygonTop(insetPolygon(honmaruLawnPts, 2.5), P_Y + 0.55, true));
 
   // ---- 2. Kokyo Gaien Outer Garden Emerald Lawn & Compact Ceremonial Gravel Forecourt ----
   const kokyoGaienLawnPts: [number, number][] = [
@@ -492,16 +498,16 @@ export function buildImperialPalaceModel(
     [-1050, -60],
     [-1245, 305],
   ];
-  groundGeoms.push(buildPolygonTop(kokyoGaienLawnPts, SURFACE_ELEVATION_LAYERS.parkMinY + 0.008));
+  groundGeoms.push(buildPolygonTop(kokyoGaienLawnPts, SURFACE_ELEVATION_LAYERS.parkMinY + 0.008, true));
 
-  // Compact ceremonial white-gravel forecourt directly facing Nijubashi (皇居前広場)
+  // Compact ceremonial gravel forecourt directly facing Nijubashi (皇居前広場)
   const gaienPlazaPts: [number, number][] = [
     [-1165, 165],
     [-920, 120],
     [-895, 295],
     [-1155, 325],
   ];
-  gravelGeoms.push(buildPolygonTop(gaienPlazaPts, SURFACE_ELEVATION_LAYERS.sidewalkPlazaY + 0.015));
+  gravelGeoms.push(buildPolygonTop(gaienPlazaPts, SURFACE_ELEVATION_LAYERS.sidewalkPlazaY + 0.015, true));
 
   // Gyoko-dori ceremonial approach promenade toward Tokyo Station
   const gyokoPathPts: [number, number][] = [
@@ -510,7 +516,7 @@ export function buildImperialPalaceModel(
     [-575, 35],
     [-920, 85],
   ];
-  gravelGeoms.push(buildPolygonTop(gyokoPathPts, SURFACE_ELEVATION_LAYERS.sidewalkPlazaY + 0.012));
+  gravelGeoms.push(buildPolygonTop(gyokoPathPts, SURFACE_ELEVATION_LAYERS.sidewalkPlazaY + 0.012, true));
 
   // ---- 3. Kyuden Imperial Palace Complex (皇居宮殿 at -1356, -144) ----
   const kyX = -1356;
@@ -618,6 +624,20 @@ export function buildImperialPalaceModel(
     castShadow = true,
   ) => {
     if (geoms.length === 0) return;
+    const anyUv = geoms.some((g) => Boolean(g.getAttribute('uv')));
+    if (anyUv) {
+      for (const g of geoms) {
+        if (!g.getAttribute('uv')) {
+          const pos = g.getAttribute('position');
+          const uvs = new Float32Array(pos.count * 2);
+          for (let i = 0; i < pos.count; i++) {
+            uvs[i * 2] = pos.getX(i);
+            uvs[i * 2 + 1] = pos.getZ(i);
+          }
+          g.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+        }
+      }
+    }
     const merged = mergeGeometries(geoms, false);
     for (const g of geoms) g.dispose();
     if (merged) {
@@ -643,8 +663,8 @@ export function buildImperialPalaceModel(
     group,
     setTheme(nextDark: boolean): void {
       stoneWallMat.color.setHex(nextDark ? 0x4b5563 : 0x9b978f);
-      plateauGroundMat.color.setHex(nextDark ? 0x1b3424 : 0x5c854e);
-      gravelPlazaMat.color.setHex(nextDark ? 0x2c3440 : 0xd6d0c4);
+      plateauGroundMat.color.setHex(nextDark ? 0x203828 : 0x4e7444);
+      gravelPlazaMat.color.setHex(nextDark ? 0x2d3540 : 0x9e9588);
       plasterWallMat.color.setHex(nextDark ? 0xa3adb8 : 0xf2eee6);
       slateRoofMat.color.setHex(nextDark ? 0x26313d : 0x3f4954);
       verdigrisRoofMat.color.setHex(nextDark ? 0x244943 : 0x3c7a6e);

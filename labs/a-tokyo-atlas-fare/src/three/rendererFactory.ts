@@ -41,6 +41,7 @@ export interface OptimalRendererBundle {
   render(scene: THREE.Scene, camera: THREE.Camera): void;
   setSize(width: number, height: number): void;
   setNightFactor(nightFactor: number): void;
+  setBloomTuning(strength: number, threshold: number): void;
   setBloomEnabled(enabled: boolean): void;
   isBloomEnabled(): boolean;
   getSceneRenderStats(): { calls: number; triangles: number };
@@ -93,14 +94,14 @@ export function configureHighQualitySunShadow(
 ): void {
   light.castShadow = true;
   light.shadow.mapSize.set(2048, 2048);
-  light.shadow.camera.near = 200;
-  light.shadow.camera.far = 7600;
+  light.shadow.camera.near = 150;
+  light.shadow.camera.far = 8800;
   light.shadow.camera.left = -spanM;
   light.shadow.camera.right = spanM;
   light.shadow.camera.top = spanM;
   light.shadow.camera.bottom = -spanM;
-  light.shadow.bias = -0.0003;
-  light.shadow.normalBias = 1.45;
+  light.shadow.bias = -0.00025;
+  light.shadow.normalBias = 1.2;
   light.shadow.camera.updateProjectionMatrix();
 }
 
@@ -147,7 +148,7 @@ export function createOptimalRenderer(
 ): OptimalRendererBundle {
   const width = Math.max(1, container.clientWidth || 960);
   const height = Math.max(1, container.clientHeight || 640);
-  const maxDpr = options.maxPixelRatio ?? 2;
+  let maxDpr = options.maxPixelRatio ?? 2;
   const getClampedPixelRatio = (): number =>
     typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, maxDpr) : 1;
   let pixelRatio = getClampedPixelRatio();
@@ -164,9 +165,20 @@ export function createOptimalRenderer(
     logarithmicDepthBuffer: true,
   });
 
+  const gl = renderer.getContext();
+  const dbgExt = gl.getExtension('WEBGL_debug_renderer_info');
+  const glRendererStr = String(
+    (dbgExt ? gl.getParameter(dbgExt.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER)) ?? '',
+  );
+  const isSoftwareRenderer = /swiftshader|llvmpipe|software|basic render/i.test(glRendererStr);
+  if (isSoftwareRenderer) {
+    maxDpr = 0.75;
+    pixelRatio = 0.75;
+  }
+
   renderer.setPixelRatio(pixelRatio);
   renderer.setSize(width, height, false);
-  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.enabled = !isSoftwareRenderer;
   renderer.shadowMap.type = THREE.PCFShadowMap;
   renderer.localClippingEnabled = true;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -182,8 +194,10 @@ export function createOptimalRenderer(
   const maxAnisotropy = Math.min(16, Math.max(1, renderer.capabilities.getMaxAnisotropy()));
   const isWebGL2 = renderer.capabilities.isWebGL2;
 
-  let bloomEnabled = options.enableBloom ?? true;
+  let bloomEnabled = isSoftwareRenderer ? false : (options.enableBloom ?? true);
   let nightFactor = Math.max(0, Math.min(1, options.initialNightFactor ?? 0));
+  let customBloomStrength: number | null = null;
+  let customBloomThreshold: number | null = null;
   let curW = width;
   let curH = height;
 
@@ -238,9 +252,9 @@ export function createOptimalRenderer(
       sanitizePass = new ShaderPass(HDR_SANITIZE_SHADER);
       bloomPass = new UnrealBloomPass(
         new THREE.Vector2(rtWidth, rtHeight),
-        computeBloomStrength(nightFactor),
+        customBloomStrength ?? computeBloomStrength(nightFactor),
         0.38, // crisp architectural halation radius
-        0.92 - nightFactor * 0.10,
+        customBloomThreshold ?? (0.92 - nightFactor * 0.10),
       );
       outputPass = new OutputPass();
       fxaaPass = new ShaderPass(FXAAShader);
@@ -272,9 +286,10 @@ export function createOptimalRenderer(
       renderer.setScissorTest(false);
       renderer.setViewport(0, 0, curW, curH);
 
-      // Use HDR Bloom + FXAA during golden hour / dusk / night where emissive glow matters;
+      // Use HDR Bloom + FXAA during golden hour / blue hour / night where emissive glow matters;
       // use crisp native hardware MSAA direct rendering during bright midday!
-      if (bloomEnabled && nightFactor >= 0.08) {
+      const effectiveStrength = customBloomStrength ?? computeBloomStrength(nightFactor);
+      if (bloomEnabled && (nightFactor >= 0.08 || effectiveStrength >= 0.09)) {
         const comp = ensureComposer(scene, camera);
         if (comp) {
           comp.render();
@@ -308,14 +323,23 @@ export function createOptimalRenderer(
     setNightFactor(nf: number): void {
       nightFactor = Math.max(0, Math.min(1, nf));
       if (bloomPass) {
-        bloomPass.strength = computeBloomStrength(nightFactor);
+        bloomPass.strength = customBloomStrength ?? computeBloomStrength(nightFactor);
         // Only genuine HDR highlights (skyscraper windows, beacons, headlights) bloom cleanly
-        bloomPass.threshold = 0.92 - nightFactor * 0.10;
+        bloomPass.threshold = customBloomThreshold ?? (0.92 - nightFactor * 0.10);
+      }
+    },
+
+    setBloomTuning(strength: number, threshold: number): void {
+      customBloomStrength = Math.max(0, Math.min(0.6, strength));
+      customBloomThreshold = Math.max(0.5, Math.min(1.2, threshold));
+      if (bloomPass) {
+        bloomPass.strength = customBloomStrength;
+        bloomPass.threshold = customBloomThreshold;
       }
     },
 
     setBloomEnabled(enabled: boolean): void {
-      bloomEnabled = enabled;
+      bloomEnabled = isSoftwareRenderer ? false : enabled;
     },
 
     isBloomEnabled(): boolean {

@@ -31,6 +31,11 @@ import {
   getStreetscapeForCutaway,
 } from '../city/streetscapeRegistry.js';
 import { injectRadialCutaway, type CutawayUniforms } from '../materials/cutawayShader.js';
+import type { CityLightingUniforms } from '../materials/groundShader.js';
+import {
+  buildIrregularFootprintPoly,
+  sampleDistrictProfile,
+} from '../city/districtProfiles.js';
 import {
   FacadeMaterialLibrary,
   getBuildingTintHex,
@@ -283,6 +288,22 @@ type RoofBucketKey = 'roof' | 'roofPitched';
 interface BuildingGeometryBuckets {
   walls: Record<WallBucketKey, THREE.BufferGeometry[]>;
   roofs: Record<RoofBucketKey, THREE.BufferGeometry[]>;
+  contactAos: THREE.BufferGeometry[];
+}
+
+const PITCHED_ROOF_TINTS = [0xd8dce0, 0xc4cad0, 0xb8bec6, 0xd8c8bc] as const;
+
+function makeContactAoApron(b: UrbanBuildingRecord): THREE.BufferGeometry {
+  const pad = Math.min(2.2, Math.max(0.9, Math.min(b.w, b.d) * 0.12));
+  const g = new THREE.PlaneGeometry(b.w + pad * 2, b.d + pad * 2);
+  g.rotateX(-Math.PI / 2);
+  g.rotateY(-b.a);
+  g.translate(b.cx, 0.028, b.cz);
+  const ni = g.index ? g.toNonIndexed() : g;
+  if (ni !== g) g.dispose();
+  if (ni.getAttribute('uv')) ni.deleteAttribute('uv');
+  ni.computeVertexNormals();
+  return ni;
 }
 
 function makeMassPart(
@@ -306,6 +327,8 @@ function appendBuildingToBuckets(
   const tintHex = getBuildingTintHex(b.id, b.t, isDark);
   const variant = selectFacadeVariant(b.id, b.t, b.h);
   const uOffset = ((Math.abs(b.id) % 97) / 97) * 19.0;
+  const pitchedTint = PITCHED_ROOF_TINTS[Math.abs(b.id) % PITCHED_ROOF_TINTS.length]!;
+  buckets.contactAos.push(makeContactAoApron(b));
 
   const pushSplit = (
     raw: THREE.BufferGeometry | null,
@@ -358,7 +381,7 @@ function appendBuildingToBuckets(
         wallH,
         ridgeH,
       );
-      pushSplit(gableRaw, variant, 'roofPitched', { tintOverride: 0xd8dce0 });
+      pushSplit(gableRaw, variant, 'roofPitched', { tintOverride: pitchedTint });
     } else {
       pushSplit(makeMassPart(b, -1.25, b.h + 1.25, 1.0), variant, 'roof');
     }
@@ -1067,10 +1090,13 @@ export class CityChunkManager {
   readonly landmarksGroup = new THREE.Group();
   private manifest: UrbanManifest | null = null;
   private infillMask: UrbanInfillExclusionMask | null = null;
+  private waterBounds: { minX: number; maxX: number; minZ: number; maxZ: number; pts: [number, number][] }[] = [];
   private readonly loaded = new Map<string, LoadedChunk>();
   private readonly loadingKeys = new Set<string>();
   private readonly unitBoxGeom = new THREE.BoxGeometry(1, 1, 1);
   private readonly facadeLib: FacadeMaterialLibrary;
+  private readonly contactAoMaterial: THREE.MeshBasicMaterial;
+  private readonly lightingUniforms?: CityLightingUniforms;
   private readonly cutawayUniforms?: CutawayUniforms;
   private readonly onChunkLoadedCb?: (meta: UrbanChunkMeta, buildings: UrbanBuildingRecord[]) => void;
 
@@ -1083,14 +1109,26 @@ export class CityChunkManager {
     clipPlanes: THREE.Plane[],
     cutawayUniforms?: CutawayUniforms,
     onChunkLoaded?: (meta: UrbanChunkMeta, buildings: UrbanBuildingRecord[]) => void,
+    lightingUniforms?: CityLightingUniforms,
   ) {
     this.isDark = isDark;
+    this.lightingUniforms = lightingUniforms;
     this.cutawayUniforms = cutawayUniforms;
     this.onChunkLoadedCb = onChunkLoaded;
     this.group.name = 'city-buildings-chunked';
     this.landmarksGroup.name = 'tokyo-procedural-landmarks';
     this.group.add(this.landmarksGroup);
-    this.facadeLib = new FacadeMaterialLibrary(isDark, clipPlanes);
+    this.facadeLib = new FacadeMaterialLibrary(isDark, clipPlanes, lightingUniforms);
+    this.contactAoMaterial = new THREE.MeshBasicMaterial({
+      color: 0x0e1218,
+      transparent: true,
+      opacity: 0.26,
+      depthWrite: false,
+      polygonOffset: true,
+      polygonOffsetFactor: -0.2,
+      polygonOffsetUnits: -0.2,
+      clippingPlanes: clipPlanes,
+    });
 
     if (cutawayUniforms) {
       for (const mat of this.getGenericCityMaterials()) {
@@ -1099,6 +1137,11 @@ export class CityChunkManager {
       for (const mat of this.getLandmarkMaterials()) {
         injectRadialCutaway(mat, cutawayUniforms, 'building');
       }
+      injectRadialCutaway(
+        this.contactAoMaterial as unknown as THREE.MeshStandardMaterial,
+        cutawayUniforms,
+        'terrain',
+      );
     }
   }
 
@@ -1130,6 +1173,29 @@ export class CityChunkManager {
 
   setEnvironmentForInfill(env: UrbanBaseEnvironment): void {
     this.infillMask = new UrbanInfillExclusionMask(env);
+    this.waterBounds = env.waterPolygons.map((wp) => {
+      let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
+      for (const [x, z] of wp.pts) {
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (z < minZ) minZ = z;
+        if (z > maxZ) maxZ = z;
+      }
+      return { minX, maxX, minZ, maxZ, pts: wp.pts };
+    });
+  }
+
+  private isRuntimeWaterOrExclusion(b: UrbanBuildingRecord): boolean {
+    if (b.t === 's') return false;
+    if (isPointInTokyoBayWater(b.cx, b.cz)) return true;
+    if (isPointInImperialExclusion(b.cx, b.cz)) return true;
+    if (b.hb !== 'p') return false;
+    for (let i = 0; i < this.waterBounds.length; i++) {
+      const wb = this.waterBounds[i]!;
+      if (b.cx < wb.minX || b.cx > wb.maxX || b.cz < wb.minZ || b.cz > wb.maxZ) continue;
+      if (pointInPoly(b.cx, b.cz, wb.pts)) return true;
+    }
+    return false;
   }
 
   setNightFactor(nightFactor: number): void {
@@ -1177,8 +1243,11 @@ export class CityChunkManager {
 
     const camPos = camera.position;
     const camDist = camPos.distanceTo(target);
-    const allowLod0 = camDist < 5500;
-    const loadRadius = Math.min(22_000, Math.max(9_500, camDist * 3.0));
+    const allowLod0 = camDist < 5800;
+    const loadRadius = Math.min(28_000, Math.max(9_500, camDist * 3.0));
+    if (this.lightingUniforms) {
+      this.lightingUniforms.uMaxLoadRadius.value = loadRadius;
+    }
     const lod0EnterRadius = 3200;
     const lod0ExitRadius = 4000;
 
@@ -1259,19 +1328,19 @@ export class CityChunkManager {
   }
 
   /**
-   * Deterministically fills sparse Tokyo street-block sub-cells with road-aligned low-rise
-   * and mid-rise Japanese infill buildings (`hb: 'p'`, `h = 7..28m`) strictly clear of roads,
-   * rivers, Tokyo Bay, parks, rail corridors, landmarks, Imperial Palace, and existing OSM buildings.
+   * Deterministically fills sparse Tokyo street-block sub-cells with road-oriented,
+   * district-correlated parcel infill (`hb: 'p'`) strictly clear of roads, rivers,
+   * Tokyo Bay, parks, rail corridors, landmarks, Imperial Palace, and existing OSM buildings.
    */
   private synthesizeChunkInfill(
     meta: UrbanChunkMeta,
     sourceBuildings: UrbanBuildingRecord[],
   ): { meta: UrbanChunkMeta; buildings: UrbanBuildingRecord[] } {
-    if (
-      !this.infillMask ||
-      Math.abs(meta.centerX) >= 11_500 ||
-      Math.abs(meta.centerZ) >= 10_500
-    ) {
+    if (!this.infillMask) {
+      return { meta, buildings: sourceBuildings };
+    }
+    const chunkProfile = sampleDistrictProfile(meta.centerX, meta.centerZ);
+    if (chunkProfile.urbanDensityFactor < 0.06) {
       return { meta, buildings: sourceBuildings };
     }
 
@@ -1284,8 +1353,6 @@ export class CityChunkManager {
     const minZ = chunkMinZ + 12;
     const maxZ = meta.centerZ + half - 12;
 
-    // 4x4 sub-block (500m x 500m) density counters so dense OSM hubs stay untouched
-    // while sparse halves of boundary chunks get cohesive urban street-block infill
     const subCellSize = chunkSize / 4;
     const subCounts = new Uint16Array(16);
     const getSubIdx = (x: number, z: number): number => {
@@ -1294,7 +1361,6 @@ export class CityChunkManager {
       return sr * 4 + sc;
     };
 
-    // Fast 4m local occupancy grid using oriented rectangular footprints
     const occCell = 4;
     const occCols = Math.ceil((chunkSize + 64) / occCell);
     const occRows = Math.ceil((chunkSize + 64) / occCell);
@@ -1330,7 +1396,6 @@ export class CityChunkManager {
         for (let c = c0; c <= c1; c++) {
           const wx = occOriginX + (c + 0.5) * occCell;
           const dx = wx - cx;
-          // Transform cell center into oriented building local frame
           const lx = dx * cosA + dz * sinA;
           const lz = -dx * sinA + dz * cosA;
           if (Math.abs(lx) <= hw && Math.abs(lz) <= hd) {
@@ -1351,74 +1416,96 @@ export class CityChunkManager {
     }
 
     const combined = sourceBuildings.slice();
-    const distChunk = Math.hypot(meta.centerX, meta.centerZ);
-    const targetCount = distChunk < 7500 ? 2050 : 1450;
+    const targetCount = Math.round(
+      650 + chunkProfile.urbanDensityFactor * (meta.hub ? 1150 : 850),
+    );
     if (combined.length >= targetCount) {
       return { meta, buildings: sourceBuildings };
     }
 
-    const step = 19;
     const chunkSalt = Math.imul(meta.cx + 512, 73856093) ^ Math.imul(meta.cz + 512, 19349663);
     let nextId = 900_000_000 + Math.abs(chunkSalt % 80_000_000);
     let added = 0;
 
-    // Interleaved stride keeps coverage uniform even if targetCount is reached early
-    const cols = Math.floor((maxX - minX) / step);
-    const rows = Math.floor((maxZ - minZ) / step);
-    const totalSlots = Math.max(1, cols * rows);
-    const primeStride = 43;
+    // Road-oriented variable parcel strips per 250m urban block cell (eliminates rigid world grid!)
+    const blockSize = 250;
+    const bxCount = Math.floor((maxX - minX) / blockSize);
+    const bzCount = Math.floor((maxZ - minZ) / blockSize);
 
-    for (let s = 0; s < totalSlots && combined.length < targetCount; s++) {
-      const slot = (s * primeStride) % totalSlots;
-      const gx = slot % Math.max(1, cols);
-      const gz = Math.floor(slot / Math.max(1, cols));
+    for (let bz = 0; bz < bzCount && combined.length < targetCount; bz++) {
+      for (let bx = 0; bx < bxCount && combined.length < targetCount; bx++) {
+        const bcx = minX + (bx + 0.5) * blockSize;
+        const bcz = minZ + (bz + 0.5) * blockSize;
+        const angle = this.infillMask.sampleRoadAngle(bcx, bcz);
+        const profile = sampleDistrictProfile(bcx, bcz);
+        if (profile.urbanDensityFactor < 0.08) continue;
 
-      const r1 = hashInfill(gx, gz, chunkSalt ^ 11);
-      // Leave ~8% natural courtyards / pocket parks for Tokyo breathing room
-      if (r1 < 0.08) continue;
+        const cosA = Math.cos(angle);
+        const sinA = Math.sin(angle);
+        const stepU = (profile.parcelWidthMin + profile.parcelWidthMax) * 0.52 + profile.buildingGapM;
+        const stepV = (profile.parcelDepthMin + profile.parcelDepthMax) * 0.52 + profile.buildingGapM + 2.5;
 
-      const r2 = hashInfill(gx, gz, chunkSalt ^ 29);
-      const r3 = hashInfill(gx, gz, chunkSalt ^ 53);
-      const r4 = hashInfill(gx, gz, chunkSalt ^ 97);
-      const r5 = hashInfill(gx, gz, chunkSalt ^ 149);
+        for (let lv = -110; lv <= 110 && combined.length < targetCount; lv += stepV) {
+          for (let lu = -110; lu <= 110 && combined.length < targetCount; lu += stepU) {
+            const salt = chunkSalt ^ Math.imul(bx * 31 + Math.round(lu), 19349663) ^ Math.imul(bz * 17 + Math.round(lv), 83492791);
+            const rVoid = hashInfill(bx, bz, salt ^ 11);
+            if (rVoid < profile.courtyardVoidProb) continue;
 
-      const cx = minX + (gx + 0.5) * step + (r2 - 0.5) * 7;
-      const cz = minZ + (gz + 0.5) * step + (r3 - 0.5) * 7;
-      const subIdx = getSubIdx(cx, cz);
-      if (subCounts[subIdx]! >= 135) continue;
+            const rJitU = hashInfill(bx, bz, salt ^ 29);
+            const rJitV = hashInfill(bx, bz, salt ^ 53);
+            const rW = hashInfill(bx, bz, salt ^ 97);
+            const rD = hashInfill(bx, bz, salt ^ 149);
+            const rH = hashInfill(bx, bz, salt ^ 191);
+            const rShape = hashInfill(bx, bz, salt ^ 239);
 
-      const angle = this.infillMask.sampleRoadAngle(cx, cz);
-      const distFromCore = Math.hypot(cx, cz);
-      const coreFactor = Math.max(0, 1 - distFromCore / 10_500);
+            const u = lu + (rJitU - 0.5) * 4.5;
+            const v = lv + (rJitV - 0.5) * 4.5;
+            const cx = bcx + u * cosA - v * sinA;
+            const cz = bcz + u * sinA + v * cosA;
+            if (cx < minX || cx > maxX || cz < minZ || cz > maxZ) continue;
 
-      const isMidBlock = coreFactor > 0.35 && r4 > 0.72;
-      const w = isMidBlock ? 18 + r4 * 10 : 11 + r4 * 12; // 18..28m or 11..23m
-      const d = isMidBlock ? 14 + r5 * 8 : 10 + r5 * 10; // 14..22m or 10..20m
+            const subIdx = getSubIdx(cx, cz);
+            if (subCounts[subIdx]! >= 125) continue;
 
-      if (!checkOrMarkRect(cx, cz, w, d, angle, 1.6, false)) continue;
-      if (!this.infillMask.isFootprintClear(cx, cz, w, d, angle)) continue;
+            const w = profile.parcelWidthMin + rW * (profile.parcelWidthMax - profile.parcelWidthMin);
+            const d = profile.parcelDepthMin + rD * (profile.parcelDepthMax - profile.parcelDepthMin);
 
-      // Realistic Tokyo urban height profile: 7..28m in central wards, 7..18m in mid-ring wards
-      const maxBoost = distFromCore < 7500 ? 11 + coreFactor * 10 : 11;
-      const rawH = 7 + Math.pow(r1, 1.25) * maxBoost;
-      const typology: 'c' | 'r' =
-        rawH >= 15.0 || (coreFactor > 0.42 && r4 > 0.52) ? 'c' : 'r';
-      const h = Math.round((typology === 'c' ? Math.max(rawH, 11.5) : rawH) * 10) / 10;
+            if (!checkOrMarkRect(cx, cz, w, d, angle, profile.buildingGapM * 0.65, false)) continue;
+            if (!this.infillMask.isFootprintClear(cx, cz, w, d, angle)) continue;
 
-      combined.push({
-        id: nextId++,
-        cx: Math.round(cx * 10) / 10,
-        cz: Math.round(cz * 10) / 10,
-        w: Math.round(w * 10) / 10,
-        d: Math.round(d * 10) / 10,
-        a: Math.round(angle * 1000) / 1000,
-        h: Math.min(28, Math.max(7, h)),
-        hb: 'p',
-        t: typology,
-      });
-      checkOrMarkRect(cx, cz, w, d, angle, 1.6, true);
-      subCounts[subIdx]!++;
-      added++;
+            const rawH =
+              profile.heightMin +
+              Math.pow(rH, profile.heightExponent) * (profile.heightMax - profile.heightMin);
+            const typology: 'c' | 'r' | 'o' =
+              rVoid < profile.commercialRatio
+                ? rawH >= 44 && rShape < profile.officeShare
+                  ? 'o'
+                  : 'c'
+                : 'r';
+            const h = Math.round(Math.max(6.2, Math.min(72, rawH)) * 10) / 10;
+            const irregularPoly =
+              rShape < profile.irregularFootprintProb && w >= 10 && d >= 9
+                ? buildIrregularFootprintPoly(w, d, angle, rShape * 11.3)
+                : undefined;
+
+            combined.push({
+              id: nextId++,
+              cx: Math.round(cx * 10) / 10,
+              cz: Math.round(cz * 10) / 10,
+              w: Math.round(w * 10) / 10,
+              d: Math.round(d * 10) / 10,
+              a: Math.round(angle * 1000) / 1000,
+              h,
+              hb: 'p',
+              t: typology,
+              ...(irregularPoly ? { p: irregularPoly } : {}),
+            });
+            checkOrMarkRect(cx, cz, w, d, angle, profile.buildingGapM * 0.65, true);
+            subCounts[subIdx]!++;
+            added++;
+          }
+        }
+      }
     }
 
     if (added === 0) return { meta, buildings: sourceBuildings };
@@ -1442,7 +1529,8 @@ export class CityChunkManager {
       const res = await fetch(`./data/urban-chunks/${meta.file}`);
       if (!res.ok) return;
       const data = (await res.json()) as UrbanChunkData;
-      const enriched = this.synthesizeChunkInfill(meta, data.buildings);
+      const filteredBuildings = data.buildings.filter((b) => !this.isRuntimeWaterOrExclusion(b));
+      const enriched = this.synthesizeChunkInfill(meta, filteredBuildings);
       const built = this.buildChunkLod1(enriched.meta, enriched.buildings);
       this.loaded.set(meta.key, built);
       this.group.add(built.lod1Mesh);
@@ -1489,6 +1577,7 @@ export class CityChunkManager {
         roof: [],
         roofPitched: [],
       },
+      contactAos: [],
     };
 
     for (const b of buildings) {
@@ -1542,6 +1631,19 @@ export class CityChunkManager {
         lod0Group.add(roofMesh);
       }
       geoms.forEach((g) => g.dispose());
+    }
+
+    if (buckets.contactAos.length > 0) {
+      const mergedAo = mergeGeometries(buckets.contactAos, false);
+      buckets.contactAos.forEach((g) => g.dispose());
+      if (mergedAo) {
+        const aoMesh = new THREE.Mesh(mergedAo, this.contactAoMaterial);
+        aoMesh.name = `chunk-ao-${meta.key}`;
+        aoMesh.castShadow = false;
+        aoMesh.receiveShadow = false;
+        aoMesh.renderOrder = 7;
+        lod0Group.add(aoMesh);
+      }
     }
 
     return lod0Group;
@@ -1709,6 +1811,7 @@ export class CityChunkManager {
       if (o instanceof THREE.Mesh) o.geometry.dispose();
     });
     this.unitBoxGeom.dispose();
+    this.contactAoMaterial.dispose();
     this.facadeLib.dispose();
   }
 }

@@ -112,7 +112,12 @@ export interface UrbanBaseEnvironment {
   origin: { lon: number; lat: number };
   waterPolygons: { name: string | null; pts: [number, number][] }[];
   riverLines: { name: string | null; width: number; pts: [number, number][] }[];
-  parkPolygons: { name: string | null; pts: [number, number][] }[];
+  parkPolygons: {
+    name: string | null;
+    kind?: 'forest' | 'park' | 'grass' | 'soil';
+    pts: [number, number][];
+  }[];
+  bareSoilPolygons?: { name: string | null; pts: [number, number][] }[];
   landuseBlocks?: UrbanLanduseBlock[];
   stationPlazas?: UrbanStationPlaza[];
   plazaPolygons?: { pts: [number, number][] }[];

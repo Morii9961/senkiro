@@ -17,6 +17,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import {
+  buildIrregularFootprintPoly,
+  sampleDistrictProfile,
+} from '../src/three/city/districtProfiles.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -24,6 +28,35 @@ const RAW_URBAN = path.join(ROOT, 'data', 'raw', 'urban');
 const ATLAS_PATH = path.join(ROOT, 'data', 'processed', 'atlas.json');
 const VERT_PATH = path.join(ROOT, 'data', 'processed', 'osm-vertical.json');
 const OUT_DIR = path.join(ROOT, 'public', 'data', 'urban-chunks');
+const COASTLINE_PATH = path.join(ROOT, 'src', 'three', 'city', 'tokyoCoastline.json');
+const COASTLINE = JSON.parse(fs.readFileSync(COASTLINE_PATH, 'utf8'));
+
+function isPointInTokyoBayWater(x, z) {
+  if (z < 1850) return false;
+  if (!pointInPolygon(x, z, COASTLINE.oceanPolygon)) return false;
+  for (const isl of COASTLINE.islands) {
+    if (pointInPolygon(x, z, isl.pts)) return false;
+  }
+  return true;
+}
+
+function isPointOnHanedaAirport(x, z) {
+  if (z < 12800 || z > 17000 || x < -1700 || x > 5300) return false;
+  for (const isl of COASTLINE.islands) {
+    if (isl.kind === 'airport' && pointInPolygon(x, z, isl.pts)) return true;
+  }
+  return false;
+}
+
+function isPointOnTokyoBayPort(x, z) {
+  if (z < 3950 || z > 13000 || x < -2100 || x > 4600) return false;
+  for (const isl of COASTLINE.islands) {
+    if (isl.kind !== 'port') continue;
+    if (isl.id === 'odaiba-aomi' && z < 6200) continue;
+    if (pointInPolygon(x, z, isl.pts)) return true;
+  }
+  return false;
+}
 
 fs.mkdirSync(OUT_DIR, { recursive: true });
 
@@ -491,14 +524,7 @@ const TOKYO_LANDMARKS = [
   },
 ];
 
-// Bay backdrop polygon (matches CityTerrainLayer) so infill never spawns on Tokyo Bay water
-const TOKYO_BAY_POLY = [
-  [1500, 4200],
-  [18000, 2200],
-  [25000, 24000],
-  [-6000, 24000],
-  [-2000, 11500],
-];
+// Shared coastline loaded from src/three/city/tokyoCoastline.json above
 
 async function main() {
   console.log('Building spatial railway corridor clearance grid & station plazas from atlas.json...');
@@ -585,17 +611,20 @@ async function main() {
     }
   }
 
-  // ---- 1. Process Water Bodies, Parks, Urban Landuse & Plazas ----
-  console.log('Processing real OSM water bodies, parks, urban landuse blocks & plazas...');
+  // ---- 1. Process Water Bodies, Parks, Grass, Forests, Bare Soil, Urban Landuse & Plazas ----
+  console.log('Processing real OSM water bodies, parks/forests/grass/soil, urban landuse & plazas...');
   const waterPolygons = [];
   const riverLines = [];
   const parkPolygons = [];
+  const bareSoilPolygons = [];
   const landuseBlocks = [];
   const plazaPolygons = [];
   const seenWayIds = new Set();
 
-  // Keep bboxes for fast point-in-water/park exclusion check during schematic infill
+  // Keep bboxes for fast point-in-water/park exclusion check
   const exclusionPolys = [];
+  const waterExclusionPolys = [];
+  const riverSegmentsForExclusion = [];
 
   function ingestEnvElement(el) {
     if (el.type !== 'way' || !Array.isArray(el.geometry) || el.geometry.length < 2) return;
@@ -619,25 +648,72 @@ async function main() {
       const pts = simp.map(([x, z]) => [round0(x), round0(z)]);
       waterPolygons.push({ name: tags.name ?? null, pts });
       exclusionPolys.push({ pts, b });
+      waterExclusionPolys.push({ pts, b });
     } else if (tags.waterway === 'river') {
       const simp = simplifyLine(worldPts, 22);
       if (simp.length >= 2) {
         seenWayIds.add(el.id);
-        const width = tags.name?.includes('荒川') ? 160 : tags.name?.includes('隅田川') ? 110 : 32;
+        const isCulvert = tags.name && tags.name.includes('暗渠');
+        const width = tags.name?.includes('荒川')
+          ? 150
+          : tags.name?.includes('隅田川')
+            ? 105
+            : tags.name?.includes('神田川')
+              ? 22
+              : tags.name?.includes('目黒川')
+                ? 18
+                : tags.name?.includes('渋谷川')
+                  ? 11
+                  : 24;
         const pts = simp.map(([x, z]) => [round0(x), round0(z)]);
         riverLines.push({ name: tags.name ?? null, width, pts });
-        markPolyline(blockedInfillGrid, pts, width * 0.48 + 18);
+        if (!isCulvert) {
+          markPolyline(blockedInfillGrid, pts, width * 0.5 + 14);
+          const rb = polyBounds(pts);
+          riverSegmentsForExclusion.push({ pts, halfW: width * 0.45, b: rb });
+        }
       }
-    } else if (tags.leisure === 'park' || tags.landuse === 'forest') {
+    } else if (
+      tags.leisure === 'park' ||
+      tags.landuse === 'forest' ||
+      tags.natural === 'wood' ||
+      tags.landuse === 'grass' ||
+      tags.landuse === 'meadow' ||
+      tags.landuse === 'recreation_ground'
+    ) {
       if (!isClosed) return;
       const simp = simplifyLine(worldPts, 14);
       if (simp.length < 4) return;
       const b = polyBounds(simp);
-      if ((b.maxX - b.minX) * (b.maxZ - b.minZ) < 4_500) return;
+      if ((b.maxX - b.minX) * (b.maxZ - b.minZ) < 4_000) return;
       seenWayIds.add(el.id);
       const pts = simp.map(([x, z]) => [round0(x), round0(z)]);
-      parkPolygons.push({ name: tags.name ?? null, pts });
+      const kind =
+        tags.landuse === 'forest' || tags.natural === 'wood'
+          ? 'forest'
+          : tags.landuse === 'grass' || tags.landuse === 'meadow'
+            ? 'grass'
+            : 'park';
+      parkPolygons.push({ name: tags.name ?? null, kind, pts });
       exclusionPolys.push({ pts, b });
+    } else if (
+      tags.natural === 'sand' ||
+      tags.natural === 'bare_rock' ||
+      tags.landuse === 'construction' ||
+      tags.landuse === 'brownfield' ||
+      tags.leisure === 'pitch'
+    ) {
+      if (!isClosed) return;
+      const simp = simplifyLine(worldPts, 12);
+      if (simp.length < 4) return;
+      const b = polyBounds(simp);
+      if ((b.maxX - b.minX) * (b.maxZ - b.minZ) < 3_500) return;
+      seenWayIds.add(el.id);
+      const pts = simp.map(([x, z]) => [round0(x), round0(z)]);
+      bareSoilPolygons.push({ name: tags.name ?? null, pts });
+      if (tags.leisure === 'pitch' || tags.landuse === 'construction') {
+        exclusionPolys.push({ pts, b });
+      }
     } else if (tags.place === 'square' || (tags.highway === 'pedestrian' && tags.area === 'yes')) {
       if (!isClosed) return;
       const simp = simplifyLine(worldPts, 8);
@@ -752,6 +828,7 @@ async function main() {
     waterPolygons,
     riverLines,
     parkPolygons,
+    bareSoilPolygons,
     landuseBlocks,
     plazaPolygons,
     stationPlazas,
@@ -762,7 +839,7 @@ async function main() {
   };
   fs.writeFileSync(path.join(OUT_DIR, 'base-environment.json'), JSON.stringify(baseEnvironment));
   console.log(
-    `Wrote base-environment.json: ${waterPolygons.length} water, ${riverLines.length} rivers, ${parkPolygons.length} parks, ${landuseBlocks.length} landuse blocks, ${plazaPolygons.length} OSM plazas, ${stationPlazas.length} station plazas, ${railCorridors.length} rail yards, ${roads.length} roads, ${landmarksWorld.length} landmarks.`,
+    `Wrote base-environment.json: ${waterPolygons.length} water, ${riverLines.length} rivers, ${parkPolygons.length} parks, ${bareSoilPolygons.length} bareSoil, ${landuseBlocks.length} landuse blocks, ${plazaPolygons.length} OSM plazas, ${stationPlazas.length} station plazas, ${railCorridors.length} rail yards, ${roads.length} roads, ${landmarksWorld.length} landmarks.`,
   );
 
   // ---- 3. Stream & Spatially Chunk Real OSM Buildings (2km x 2km tiles!) ----
@@ -791,6 +868,38 @@ async function main() {
   const seenIds = new Set();
   let totalRawProcessed = 0;
   let totalSkippedRailOverlap = 0;
+  let totalSkippedWaterOverlap = 0;
+
+  function isPointInSurfaceWater(px, pz) {
+    if (isPointInTokyoBayWater(px, pz)) return true;
+    for (const wp of waterExclusionPolys) {
+      if (px >= wp.b.minX && px <= wp.b.maxX && pz >= wp.b.minZ && pz <= wp.b.maxZ) {
+        if (pointInPolygon(px, pz, wp.pts)) return true;
+      }
+    }
+    for (const rv of riverSegmentsForExclusion) {
+      if (
+        px < rv.b.minX - rv.halfW ||
+        px > rv.b.maxX + rv.halfW ||
+        pz < rv.b.minZ - rv.halfW ||
+        pz > rv.b.maxZ + rv.halfW
+      ) {
+        continue;
+      }
+      for (let i = 0; i < rv.pts.length - 1; i++) {
+        const [ax, az] = rv.pts[i];
+        const [bx, bz] = rv.pts[i + 1];
+        const dx = bx - ax;
+        const dz = bz - az;
+        const lenSq = dx * dx + dz * dz || 1;
+        const t = Math.max(0, Math.min(1, ((px - ax) * dx + (pz - az) * dz) / lenSq));
+        const cx = ax + t * dx;
+        const cz = az + t * dz;
+        if (Math.hypot(px - cx, pz - cz) <= rv.halfW) return true;
+      }
+    }
+    return false;
+  }
 
   function ingestBuildingElement(el, isCoreHubFile) {
     if (el.type !== 'way' || !el.tags?.building || !Array.isArray(el.geometry) || el.geometry.length < 3) {
@@ -802,15 +911,22 @@ async function main() {
     const geom = analyzeBuildingFootprint(worldPts);
     if (!geom) return;
 
-    if (Math.abs(geom.cx) > 15_000 || Math.abs(geom.cz) > 13_500) return;
+    if (Math.abs(geom.cx) > 16_500 || Math.abs(geom.cz) > 15_000) return;
 
     const meta = classifyBuilding(el.tags, geom.area);
-    const inHub = isCoreHubFile || isNearFocusHub(geom.cx, geom.cz, 1650);
+    const inHub = isCoreHubFile || isNearFocusHub(geom.cx, geom.cz, 1850);
 
-    // Keep far more real OSM buildings across inner 23 wards (only drop tiny sheds far out)
-    if (!inHub && meta.h < 10 && geom.area < 190) return;
+    // Keep far more real OSM buildings across 23 wards (preserve residential houses near core & mid-ring)
+    if (!inHub && meta.h < 7.5 && geom.area < 110) return;
 
     if (isNearLandmark(geom.cx, geom.cz) && meta.h > 35) return;
+
+    const isWaterStructure =
+      el.tags.bridge === 'yes' || el.tags.man_made === 'pier' || meta.t === 's';
+    if (!isWaterStructure && isPointInSurfaceWater(geom.cx, geom.cz)) {
+      totalSkippedWaterOverlap++;
+      return;
+    }
 
     if (meta.t !== 's' && railGrid.has(cellKey(geom.cx, geom.cz))) {
       totalSkippedRailOverlap++;
@@ -834,7 +950,7 @@ async function main() {
       hb: meta.hb,
       t: meta.t,
       area: geom.area,
-      poly: inHub || meta.h >= 24 ? geom.poly : null,
+      poly: inHub || meta.h >= 14 || geom.area >= 160 ? geom.poly : null,
       score: (inHub ? 1000 : 0) + meta.h * 4 + Math.sqrt(geom.area) * 1.5,
     });
     totalRawProcessed++;
@@ -858,7 +974,7 @@ async function main() {
     (el) => ingestBuildingElement(el, false),
   );
   console.log(
-    `Scanned ${tallCount} 23-ward raw elements; kept ${totalRawProcessed} real OSM buildings before per-chunk budget cap (${totalSkippedRailOverlap} skipped for surface rail clearance).`,
+    `Scanned ${tallCount} 23-ward raw elements; kept ${totalRawProcessed} real OSM buildings before per-chunk budget cap (${totalSkippedRailOverlap} skipped for rail, ${totalSkippedWaterOverlap} skipped for water clearance).`,
   );
 
   // Select real OSM buildings per chunk first and mark their footprints in blockedInfillGrid
@@ -868,7 +984,7 @@ async function main() {
     const centerX = (chx + 0.5) * CHUNK_SIZE;
     const centerZ = (chz + 0.5) * CHUNK_SIZE;
     const hubChunk = focusCenters.some(([fx, fz]) => Math.hypot(centerX - fx, centerZ - fz) < 2500);
-    const cap = hubChunk ? 820 : 340;
+    const cap = hubChunk ? 1050 : 640;
 
     list.sort((a, b) => b.score - a.score);
     const selected = list.slice(0, cap).map((b) => {
@@ -891,15 +1007,32 @@ async function main() {
     }
   }
 
-  // ---- 4. Strictly Guarded Schematic Street-Block Infill (hb="p", P1) ----
-  console.log('Generating road- & landuse-aligned schematic street-block infill (strictly clear of roads/water/parks/rail)...');
+  // ---- 4. Strictly Guarded District-Correlated Urban Parcel Infill (hb="p") ----
+  console.log('Generating district-correlated urban parcel infill (strictly clear of water/parks/rail/roads)...');
+
+  const stationWorldCoords = atlas.stations
+    .map((s) => lonLatToWorld(s.coordinates[0], s.coordinates[1]))
+    .filter(([x, z]) => Math.abs(x) <= 18_000 && Math.abs(z) <= 16_000);
+
+  function nearestStationDist(px, pz) {
+    let bestSq = 1e12;
+    for (let i = 0; i < stationWorldCoords.length; i++) {
+      const sx = stationWorldCoords[i][0] - px;
+      const sz = stationWorldCoords[i][1] - pz;
+      const dSq = sx * sx + sz * sz;
+      if (dSq < bestSq) bestSq = dSq;
+    }
+    return Math.sqrt(bestSq);
+  }
 
   function isExcludedPoint(px, pz) {
-    if (Math.abs(px) > 13_000 || Math.abs(pz) > 11_500) return true;
+    if (Math.abs(px) > 13_500 || Math.abs(pz) > 12_000) return true;
     // Imperial Palace & East Gardens protected green enclosure (west of Tokyo Station)
-    if (px >= -1920 && px <= -320 && pz >= -1380 && pz <= 160) return true;
+    if (px >= -1960 && px <= -480 && pz >= -1520 && pz <= 610) return true;
+    if (isPointInTokyoBayWater(px, pz)) return true;
+    if (isPointOnHanedaAirport(px, pz)) return true;
+    if (isPointOnTokyoBayPort(px, pz)) return true;
     if (blockedInfillGrid.has(cellKey(px, pz))) return true;
-    if (pointInPolygon(px, pz, TOKYO_BAY_POLY)) return true;
     for (const ex of exclusionPolys) {
       if (px >= ex.b.minX - 6 && px <= ex.b.maxX + 6 && pz >= ex.b.minZ - 6 && pz <= ex.b.maxZ + 6) {
         if (pointInPolygon(px, pz, ex.pts)) return true;
@@ -908,7 +1041,7 @@ async function main() {
     return false;
   }
 
-  function tryPlaceInfill(cx, cz, w, d, angle, h, t, nextIdRef) {
+  function tryPlaceInfill(cx, cz, w, d, angle, h, t, irregularPoly, nextIdRef) {
     const chx = Math.floor(cx / CHUNK_SIZE);
     const chz = Math.floor(cz / CHUNK_SIZE);
     const key = `${chx}_${chz}`;
@@ -921,9 +1054,9 @@ async function main() {
       selectedByChunk.set(key, entry);
     }
 
-    // Cap total density cleanly so chunks remain crisp & fast
-    const maxTotal = entry.hubChunk ? 940 : 460;
-    const maxInfill = entry.hubChunk ? 260 : 280;
+    // Cap total density cleanly so chunks remain crisp & fast while respecting real OSM dominance
+    const maxTotal = entry.hubChunk ? 1150 : 720;
+    const maxInfill = entry.hubChunk ? 220 : 240;
     if (entry.real.length + entry.infill.length >= maxTotal || entry.infill.length >= maxInfill) {
       return false;
     }
@@ -931,8 +1064,8 @@ async function main() {
     // Check center + 4 corners against roads/water/parks/rail/real-buildings!
     const cosA = Math.cos(angle);
     const sinA = Math.sin(angle);
-    const hw = w * 0.5 + 3;
-    const hd = d * 0.5 + 3;
+    const hw = w * 0.5 + 3.0;
+    const hd = d * 0.5 + 3.0;
     const ptsToCheck = [
       [cx, cz],
       [cx + hw * cosA - hd * sinA, cz + hw * sinA + hd * cosA],
@@ -945,7 +1078,7 @@ async function main() {
     }
 
     // Reserve cells so subsequent infill never collides
-    markDisc(blockedInfillGrid, cx, cz, Math.max(w, d) * 0.52 + 5);
+    markDisc(blockedInfillGrid, cx, cz, Math.max(w, d) * 0.52 + 4.5);
     entry.infill.push({
       id: nextIdRef.val++,
       cx: round1(cx),
@@ -956,79 +1089,120 @@ async function main() {
       h: round1(h),
       hb: 'p',
       t,
+      ...(irregularPoly ? { p: irregularPoly } : {}),
     });
     return true;
   }
 
   const nextInfillId = { val: 9_000_000_001 };
 
-  // Pass 4a: Street-aligned block frontage along real OSM primary/secondary/tertiary streets!
+  // Pass 4a: Organic variable-parcel street frontage & inner block parcels along real OSM streets
   for (const r of roads) {
     if (r.el === 1 || r.hw === 'motorway') continue;
-    const isCommercialAvenue = r.hw === 'trunk' || r.hw === 'primary' || r.hw === 'secondary';
+    const isArterial = r.hw === 'trunk' || r.hw === 'primary' || r.hw === 'secondary';
     for (let i = 0; i < r.pts.length - 1; i++) {
       const [ax, az] = r.pts[i];
       const [bx, bz] = r.pts[i + 1];
       const dx = bx - ax;
       const dz = bz - az;
       const segLen = Math.hypot(dx, dz);
-      if (segLen < 24) continue;
+      if (segLen < 22) continue;
 
       const angle = Math.atan2(dz, dx);
       const nx = -dz / segLen;
       const nz = dx / segLen;
-      const step = isCommercialAvenue ? 32 : 28;
 
-      for (let dist = 16; dist < segLen - 12; dist += step) {
+      let dist = 14;
+      while (dist < segLen - 12) {
         const px = ax + (dx * dist) / segLen;
         const pz = az + (dz * dist) / segLen;
-        if (Math.abs(px) > 12_500 || Math.abs(pz) > 11_000) continue;
-
-        for (const side of [-1, 1]) {
-          // Row 1: Street frontage
-          const rnd1 = hashDet(px, pz, side * 13 + 7);
-          const w1 = (isCommercialAvenue ? 18 : 14) + rnd1 * 12;
-          const d1 = (isCommercialAvenue ? 14 : 11) + hashDet(px, pz, side * 29) * 8;
-          const off1 = r.w * 0.5 + d1 * 0.5 + 10;
-          const nearCore = Math.hypot(px, pz) < 6800;
-          const h1 = isCommercialAvenue
-            ? (nearCore ? 18 : 13) + hashDet(px, pz, side * 41) * (nearCore ? 20 : 12)
-            : 9 + hashDet(px, pz, side * 53) * 10;
-          const t1 = isCommercialAvenue && (nearCore || rnd1 > 0.4) ? 'c' : 'r';
-
-          tryPlaceInfill(
-            px + nx * side * off1,
-            pz + nz * side * off1,
-            w1,
-            d1,
-            angle,
-            h1,
-            t1,
-            nextInfillId,
-          );
-
-          // Row 2: Inner residential block behind frontage
-          const rnd2 = hashDet(px, pz, side * 71 + 3);
-          const w2 = 13 + rnd2 * 11;
-          const d2 = 11 + hashDet(px, pz, side * 83) * 8;
-          const off2 = off1 + d1 * 0.5 + d2 * 0.5 + 10;
-          const h2 = 8.5 + hashDet(px, pz, side * 97) * 9.5;
-          tryPlaceInfill(
-            px + nx * side * off2,
-            pz + nz * side * off2,
-            w2,
-            d2,
-            angle,
-            h2,
-            'r',
-            nextInfillId,
-          );
+        if (Math.abs(px) > 13_000 || Math.abs(pz) > 11_500) {
+          dist += 30;
+          continue;
         }
+
+        const profile = sampleDistrictProfile(px, pz, null, nearestStationDist(px, pz));
+        if (profile.urbanDensityFactor < 0.08) {
+          dist += 35;
+          continue;
+        }
+
+        let maxParcelAdvance = 18;
+        for (const side of [-1, 1]) {
+          const rVoid = hashDet(px, pz, side * 19 + 5);
+          const rW = hashDet(px, pz, side * 13 + 7);
+          const rD = hashDet(px, pz, side * 29 + 3);
+          const rH = hashDet(px, pz, side * 41 + 11);
+          const rShape = hashDet(px, pz, side * 67 + 17);
+
+          const w1 =
+            profile.parcelWidthMin + rW * (profile.parcelWidthMax - profile.parcelWidthMin);
+          const d1 =
+            profile.parcelDepthMin + rD * (profile.parcelDepthMax - profile.parcelDepthMin);
+          maxParcelAdvance = Math.max(maxParcelAdvance, w1 + profile.buildingGapM);
+
+          // Respect natural courtyards, pocket lots & parking spaces
+          if (rVoid >= profile.courtyardVoidProb) {
+            const setback = profile.roadSetbackM + (rVoid - 0.3) * 2.2;
+            const off1 = r.w * 0.5 + d1 * 0.5 + setback + 4.5;
+            const bx1 = px + nx * side * off1;
+            const bz1 = pz + nz * side * off1;
+
+            const streetBoost = isArterial ? 1.28 : 0.92;
+            const rawH1 =
+              profile.heightMin +
+              Math.pow(rH, profile.heightExponent) *
+                (profile.heightMax - profile.heightMin) *
+                streetBoost;
+            const h1 = Math.max(6.2, Math.min(115, rawH1));
+            const isComm = rVoid < profile.commercialRatio + (isArterial ? 0.25 : -0.1);
+            const t1 = isComm ? (h1 >= 44 && rShape < profile.officeShare ? 'o' : 'c') : 'r';
+            const poly1 =
+              rShape < profile.irregularFootprintProb && w1 >= 10 && d1 >= 9
+                ? buildIrregularFootprintPoly(w1, d1, angle, rShape * 11.7)
+                : null;
+            tryPlaceInfill(bx1, bz1, w1, d1, angle, h1, t1, poly1, nextInfillId);
+          }
+
+          // Inner block parcel row behind frontage (always lower scale & mostly residential)
+          const r2Void = hashDet(px, pz, side * 71 + 3);
+          if (r2Void >= profile.courtyardVoidProb * 1.25 && profile.urbanDensityFactor > 0.25) {
+            const w2 =
+              profile.parcelWidthMin * 0.88 +
+              hashDet(px, pz, side * 79) * (profile.parcelWidthMax - profile.parcelWidthMin) * 0.72;
+            const d2 =
+              profile.parcelDepthMin * 0.88 +
+              hashDet(px, pz, side * 83) * (profile.parcelDepthMax - profile.parcelDepthMin) * 0.72;
+            const off2 =
+              r.w * 0.5 + d1 + profile.roadSetbackM + profile.buildingGapM + d2 * 0.5 + 8.0;
+            const h2 =
+              profile.heightMin +
+              Math.pow(hashDet(px, pz, side * 97), 1.6) *
+                Math.min(18, profile.heightMax * 0.45);
+            const poly2 =
+              r2Void < profile.irregularFootprintProb
+                ? buildIrregularFootprintPoly(w2, d2, angle, r2Void * 9.3)
+                : null;
+            tryPlaceInfill(
+              px + nx * side * off2,
+              pz + nz * side * off2,
+              w2,
+              d2,
+              angle,
+              Math.max(6.0, h2),
+              'r',
+              poly2,
+              nextInfillId,
+            );
+          }
+        }
+        dist += maxParcelAdvance + hashDet(px, pz, 211) * 4.5;
       }
     }
   }
 
   // Pass 4b: Fill interior of real OSM urban landuse polygons (commercial/residential/industrial)
+  // along rotated local block coordinates so blocks never look world-grid aligned
   for (let bi = 0; bi < landuseBlocks.length; bi++) {
     const blk = landuseBlocks[bi];
     if (blk.kind === 'railway') continue;
@@ -1037,7 +1211,6 @@ async function main() {
     const spanZ = b.maxZ - b.minZ;
     if (spanX < 40 || spanZ < 40) continue;
 
-    // Align interior parcels to the longest edge of the landuse block
     let blockAngle = 0;
     let bestEdge = 0;
     for (let i = 0; i < blk.pts.length - 1; i++) {
@@ -1048,22 +1221,48 @@ async function main() {
       }
     }
 
-    const spacing = blk.kind === 'commercial' ? 36 : 30;
-    for (let x = b.minX + 18; x < b.maxX - 18; x += spacing) {
-      for (let z = b.minZ + 18; z < b.maxZ - 18; z += spacing) {
-        if (!pointInPolygon(x, z, blk.pts)) continue;
-        const r1 = hashDet(x, z, bi + 5);
-        const r2 = hashDet(x, z, bi + 19);
-        const w = (blk.kind === 'industrial' ? 20 : 13) + r1 * 11;
-        const d = (blk.kind === 'industrial' ? 16 : 11) + r2 * 9;
-        const h =
+    const cxMid = (b.minX + b.maxX) * 0.5;
+    const czMid = (b.minZ + b.maxZ) * 0.5;
+    const profile = sampleDistrictProfile(cxMid, czMid, blk.kind, nearestStationDist(cxMid, czMid));
+    const cosB = Math.cos(blockAngle);
+    const sinB = Math.sin(blockAngle);
+    const radius = Math.hypot(spanX * 0.5, spanZ * 0.5);
+    const stepU = (profile.parcelWidthMin + profile.parcelWidthMax) * 0.5 + profile.buildingGapM + 4;
+    const stepV = (profile.parcelDepthMin + profile.parcelDepthMax) * 0.5 + profile.buildingGapM + 5;
+
+    for (let u = -radius + 14; u < radius - 14; u += stepU) {
+      for (let v = -radius + 14; v < radius - 14; v += stepV) {
+        const jU = u + (hashDet(u, v, bi + 31) - 0.5) * 5.0;
+        const jV = v + (hashDet(u, v, bi + 47) - 0.5) * 5.0;
+        const wx = cxMid + jU * cosB - jV * sinB;
+        const wz = czMid + jU * sinB + jV * cosB;
+        if (!pointInPolygon(wx, wz, blk.pts)) continue;
+
+        const rVoid = hashDet(wx, wz, bi + 13);
+        if (rVoid < profile.courtyardVoidProb) continue;
+
+        const r1 = hashDet(wx, wz, bi + 5);
+        const r2 = hashDet(wx, wz, bi + 19);
+        const rH = hashDet(wx, wz, bi + 89);
+        const w = profile.parcelWidthMin + r1 * (profile.parcelWidthMax - profile.parcelWidthMin);
+        const d = profile.parcelDepthMin + r2 * (profile.parcelDepthMax - profile.parcelDepthMin);
+        const h = Math.max(
+          6.2,
+          profile.heightMin + Math.pow(rH, profile.heightExponent) * (profile.heightMax - profile.heightMin),
+        );
+        const t =
           blk.kind === 'commercial'
-            ? 15 + hashDet(x, z, 101) * 18
+            ? h >= 44 && r1 < profile.officeShare
+              ? 'o'
+              : 'c'
             : blk.kind === 'industrial'
-              ? 10 + hashDet(x, z, 107) * 10
-              : 8 + hashDet(x, z, 113) * 9;
-        const t = blk.kind === 'commercial' ? 'c' : 'r';
-        tryPlaceInfill(x, z, w, d, blockAngle, h, t, nextInfillId);
+              ? 'c'
+              : 'r';
+        const poly =
+          rVoid < profile.irregularFootprintProb
+            ? buildIrregularFootprintPoly(w, d, blockAngle, r1 * 13.1)
+            : null;
+        tryPlaceInfill(wx, wz, w, d, blockAngle, h, t, poly, nextInfillId);
       }
     }
   }

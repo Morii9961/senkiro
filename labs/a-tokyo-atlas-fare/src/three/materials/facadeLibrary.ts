@@ -9,6 +9,8 @@
 
 import * as THREE from 'three';
 import { injectInstancedFacadeUv } from './cutawayShader.js';
+import { injectBuildingLightingShader } from './buildingLightingShader.js';
+import type { CityLightingUniforms } from './groundShader.js';
 
 export type FacadeMaterialKey =
   | 'officeGlassCool'
@@ -1352,7 +1354,11 @@ export class FacadeMaterialLibrary {
   private nightFactor: number;
   private readonly instancedNightUniform: { value: number };
 
-  constructor(isDark: boolean, clipPlanes: THREE.Plane[]) {
+  constructor(
+    isDark: boolean,
+    clipPlanes: THREE.Plane[],
+    lightingUniforms?: CityLightingUniforms,
+  ) {
     this.isDark = isDark;
     this.nightFactor = isDark ? 1.0 : 0.0;
     this.instancedNightUniform = { value: this.nightFactor };
@@ -1376,9 +1382,9 @@ export class FacadeMaterialLibrary {
         emissiveMap: this.sets.officeGlassCool.emissiveMap,
         emissive: new THREE.Color(isDark ? 0xf0f6ff : 0x000000),
         emissiveIntensity: isDark ? 1.05 : 0.0,
-        roughness: 0.54,
-        metalness: 0.46,
-        envMapIntensity: isDark ? 1.1 : 1.55,
+        roughness: 1.0,
+        metalness: 0.36,
+        envMapIntensity: isDark ? 1.15 : 1.65,
         vertexColors: true,
       }),
       officeGlassWarm: baseOpaque({
@@ -1389,9 +1395,9 @@ export class FacadeMaterialLibrary {
         emissiveMap: this.sets.officeGlassWarm.emissiveMap,
         emissive: new THREE.Color(isDark ? 0xffffff : 0x000000),
         emissiveIntensity: isDark ? 0.98 : 0.0,
-        roughness: 0.52,
-        metalness: 0.48,
-        envMapIntensity: isDark ? 1.05 : 1.48,
+        roughness: 1.0,
+        metalness: 0.38,
+        envMapIntensity: isDark ? 1.1 : 1.58,
         vertexColors: true,
       }),
       commercialStone: baseOpaque({
@@ -1402,9 +1408,9 @@ export class FacadeMaterialLibrary {
         emissiveMap: this.sets.commercialStone.emissiveMap,
         emissive: new THREE.Color(isDark ? 0xffffff : 0x000000),
         emissiveIntensity: isDark ? 0.74 : 0.0,
-        roughness: 0.84,
-        metalness: 0.08,
-        envMapIntensity: 0.65,
+        roughness: 1.0,
+        metalness: 0.06,
+        envMapIntensity: 0.72,
         vertexColors: true,
       }),
       commercialMetal: baseOpaque({
@@ -1415,9 +1421,9 @@ export class FacadeMaterialLibrary {
         emissiveMap: this.sets.commercialMetal.emissiveMap,
         emissive: new THREE.Color(isDark ? 0xffffff : 0x000000),
         emissiveIntensity: isDark ? 0.85 : 0.0,
-        roughness: 0.56,
-        metalness: 0.52,
-        envMapIntensity: 1.2,
+        roughness: 1.0,
+        metalness: 0.44,
+        envMapIntensity: 1.25,
         vertexColors: true,
       }),
       commercialTile: baseOpaque({
@@ -1428,9 +1434,9 @@ export class FacadeMaterialLibrary {
         emissiveMap: this.sets.commercialTile.emissiveMap,
         emissive: new THREE.Color(isDark ? 0xffffff : 0x000000),
         emissiveIntensity: isDark ? 0.76 : 0.0,
-        roughness: 0.76,
-        metalness: 0.06,
-        envMapIntensity: 0.6,
+        roughness: 1.0,
+        metalness: 0.05,
+        envMapIntensity: 0.65,
         vertexColors: true,
       }),
       concreteModern: baseOpaque({
@@ -1441,9 +1447,9 @@ export class FacadeMaterialLibrary {
         emissiveMap: this.sets.concreteModern.emissiveMap,
         emissive: new THREE.Color(isDark ? 0xffffff : 0x000000),
         emissiveIntensity: isDark ? 0.68 : 0.0,
-        roughness: 0.88,
-        metalness: 0.05,
-        envMapIntensity: 0.5,
+        roughness: 1.0,
+        metalness: 0.04,
+        envMapIntensity: 0.55,
         vertexColors: true,
       }),
       residentialBalcony: baseOpaque({
@@ -1454,9 +1460,9 @@ export class FacadeMaterialLibrary {
         emissiveMap: this.sets.residentialBalcony.emissiveMap,
         emissive: new THREE.Color(isDark ? 0xffffff : 0x000000),
         emissiveIntensity: isDark ? 0.54 : 0.0,
-        roughness: 0.88,
-        metalness: 0.04,
-        envMapIntensity: 0.45,
+        roughness: 1.0,
+        metalness: 0.03,
+        envMapIntensity: 0.48,
         vertexColors: true,
       }),
       residentialPlaster: baseOpaque({
@@ -1467,9 +1473,9 @@ export class FacadeMaterialLibrary {
         emissiveMap: this.sets.residentialPlaster.emissiveMap,
         emissive: new THREE.Color(isDark ? 0xffffff : 0x000000),
         emissiveIntensity: isDark ? 0.50 : 0.0,
-        roughness: 0.9,
+        roughness: 1.0,
         metalness: 0.02,
-        envMapIntensity: 0.38,
+        envMapIntensity: 0.42,
         vertexColors: true,
       }),
       groundStorefront: baseOpaque({
@@ -1480,9 +1486,9 @@ export class FacadeMaterialLibrary {
         emissiveMap: this.sets.groundStorefront.emissiveMap,
         emissive: new THREE.Color(isDark ? 0xffffff : 0xfff0d6),
         emissiveIntensity: isDark ? 1.10 : 0.06,
-        roughness: 0.58,
-        metalness: 0.28,
-        envMapIntensity: 1.05,
+        roughness: 1.0,
+        metalness: 0.24,
+        envMapIntensity: 1.1,
         vertexColors: true,
       }),
       stationCivic: baseOpaque({
@@ -1493,9 +1499,9 @@ export class FacadeMaterialLibrary {
         emissiveMap: this.sets.stationCivic.emissiveMap,
         emissive: new THREE.Color(isDark ? 0xe6f0ff : 0x000000),
         emissiveIntensity: isDark ? 0.78 : 0.0,
-        roughness: 0.68,
-        metalness: 0.22,
-        envMapIntensity: 0.95,
+        roughness: 1.0,
+        metalness: 0.18,
+        envMapIntensity: 1.0,
         vertexColors: true,
       }),
       brick: baseOpaque({
@@ -1506,16 +1512,16 @@ export class FacadeMaterialLibrary {
         emissiveMap: this.sets.heritageBrick.emissiveMap,
         emissive: new THREE.Color(isDark ? 0xffffff : 0x000000),
         emissiveIntensity: isDark ? 0.82 : 0.0,
-        roughness: 0.82,
-        metalness: 0.06,
+        roughness: 1.0,
+        metalness: 0.05,
       }),
       roof: baseOpaque({
         map: this.sets.roofParapet.map,
         roughnessMap: this.sets.roofParapet.roughnessMap,
         bumpMap: this.sets.roofParapet.bumpMap,
         bumpScale: 0.38,
-        roughness: 0.92,
-        metalness: 0.05,
+        roughness: 1.0,
+        metalness: 0.04,
         vertexColors: true,
       }),
       roofPitched: baseOpaque({
@@ -1523,7 +1529,7 @@ export class FacadeMaterialLibrary {
         roughnessMap: this.sets.roofPitched.roughnessMap,
         bumpMap: this.sets.roofPitched.bumpMap,
         bumpScale: 0.55,
-        roughness: 0.82,
+        roughness: 1.0,
         metalness: 0.08,
         vertexColors: true,
       }),
@@ -1532,8 +1538,8 @@ export class FacadeMaterialLibrary {
         roughnessMap: this.sets.roofEquipment.roughnessMap,
         bumpMap: this.sets.roofEquipment.bumpMap,
         bumpScale: 0.45,
-        roughness: 0.65,
-        metalness: 0.38,
+        roughness: 1.0,
+        metalness: 0.36,
         vertexColors: true,
       }),
       foundationPlinth: baseOpaque({
@@ -1541,7 +1547,7 @@ export class FacadeMaterialLibrary {
         roughnessMap: this.sets.foundationPlinth.roughnessMap,
         bumpMap: this.sets.foundationPlinth.bumpMap,
         bumpScale: 0.35,
-        roughness: 0.92,
+        roughness: 1.0,
         metalness: 0.04,
         vertexColors: true,
       }),
@@ -1554,9 +1560,9 @@ export class FacadeMaterialLibrary {
         emissive: new THREE.Color(isDark ? 0xffffff : 0x000000),
         emissiveIntensity: isDark ? 0.92 : 0.0,
         color: 0xffffff,
-        roughness: 0.72,
-        metalness: 0.22,
-        envMapIntensity: isDark ? 0.85 : 0.95,
+        roughness: 1.0,
+        metalness: 0.18,
+        envMapIntensity: isDark ? 0.92 : 1.05,
       }),
       landmarkGlass: baseOpaque({
         map: this.sets.officeGlassCool.map,
@@ -1567,9 +1573,9 @@ export class FacadeMaterialLibrary {
         emissive: new THREE.Color(isDark ? 0xf0f6ff : 0x000000),
         emissiveIntensity: isDark ? 1.10 : 0.0,
         color: isDark ? 0x7c96b2 : 0xc8d8e6,
-        roughness: 0.46,
-        metalness: 0.52,
-        envMapIntensity: isDark ? 1.15 : 1.65,
+        roughness: 1.0,
+        metalness: 0.44,
+        envMapIntensity: isDark ? 1.2 : 1.75,
       }),
       towerOrange: baseOpaque({
         color: 0xd94820,
@@ -1589,6 +1595,30 @@ export class FacadeMaterialLibrary {
 
     // Apply per-instance world-meter UV scaling + concrete roof shading + night hierarchy to LOD1 instanced buildings
     injectInstancedFacadeUv(this.materials.instanced, this.instancedNightUniform);
+
+    if (lightingUniforms) {
+      const m = this.materials;
+      injectBuildingLightingShader(m.officeGlassCool, lightingUniforms, { isGlazed: true });
+      injectBuildingLightingShader(m.officeGlassWarm, lightingUniforms, { isGlazed: true });
+      injectBuildingLightingShader(m.commercialStone, lightingUniforms, { isGlazed: false });
+      injectBuildingLightingShader(m.commercialMetal, lightingUniforms, { isGlazed: true });
+      injectBuildingLightingShader(m.commercialTile, lightingUniforms, { isGlazed: false });
+      injectBuildingLightingShader(m.concreteModern, lightingUniforms, { isGlazed: false });
+      injectBuildingLightingShader(m.residentialBalcony, lightingUniforms, { isGlazed: false });
+      injectBuildingLightingShader(m.residentialPlaster, lightingUniforms, { isGlazed: false });
+      injectBuildingLightingShader(m.groundStorefront, lightingUniforms, { isGlazed: true });
+      injectBuildingLightingShader(m.stationCivic, lightingUniforms, { isGlazed: true });
+      injectBuildingLightingShader(m.roof, lightingUniforms, { isRoof: true });
+      injectBuildingLightingShader(m.roofPitched, lightingUniforms, { isRoof: true });
+      injectBuildingLightingShader(m.roofEquipment, lightingUniforms, { isRoof: true });
+      injectBuildingLightingShader(m.foundationPlinth, lightingUniforms, { isRoof: false });
+      injectBuildingLightingShader(m.instanced, lightingUniforms, { isGlazed: true });
+      injectBuildingLightingShader(m.landmarkGlass, lightingUniforms, { isGlazed: true, isLandmark: true });
+      injectBuildingLightingShader(m.brick, lightingUniforms, { isLandmark: true });
+      injectBuildingLightingShader(m.towerOrange, lightingUniforms, { isLandmark: true });
+      injectBuildingLightingShader(m.towerWhite, lightingUniforms, { isLandmark: true });
+    }
+
     this.setNightFactor(this.nightFactor);
   }
 
@@ -1676,12 +1706,29 @@ export class FacadeMaterialLibrary {
     const rt = Math.max(0, Math.min(1, (nf - 0.30) / 0.58));
     const roofDarken = rt * rt * (3 - 2 * rt);
     const dayCol = new THREE.Color(0xffffff);
-    const darkRoofSlate = new THREE.Color(0x4b5668);
-    const darkPitchSlate = new THREE.Color(0x556072);
+    const darkRoofSlate = new THREE.Color(0x525e72);
+    const darkPitchSlate = new THREE.Color(0x5c687c);
     m.roof.color.copy(dayCol).lerp(darkRoofSlate, roofDarken);
     m.roofEquipment.color.copy(dayCol).lerp(darkRoofSlate, roofDarken);
     m.roofPitched.color.copy(dayCol).lerp(darkPitchSlate, roofDarken);
     m.foundationPlinth.color.copy(dayCol).lerp(darkPitchSlate, roofDarken);
+
+    // Subtle twilight/night wall cooling without collapsing unlit walls into black silhouettes
+    const wallCool = new THREE.Color(0x7c8aa0);
+    for (const wm of [
+      m.officeGlassCool,
+      m.officeGlassWarm,
+      m.commercialStone,
+      m.commercialMetal,
+      m.commercialTile,
+      m.concreteModern,
+      m.residentialBalcony,
+      m.residentialPlaster,
+      m.groundStorefront,
+      m.stationCivic,
+    ]) {
+      wm.color.copy(dayCol).lerp(wallCool, roofDarken * 0.65);
+    }
 
     // Rich daytime sky sheen -> atmospheric twilight/night reflection balance
     m.officeGlassCool.envMapIntensity = 1.55 - nf * 0.45;
